@@ -11,8 +11,8 @@ See [08-setup-windows.md](08-setup-windows.md).
 - [x] Configure git identity; `gh auth login`
 - [x] Add `.gitignore`, `.gitattributes`, `.editorconfig`, `backend/.env.example`, `web/.env.example`
 - [x] Pre-commit hooks with gitleaks secret scanning (doc 09 §3); verified a fake key is blocked
-- [ ] Create GitHub repo `the-swann-index`, push these docs as the first commit
-- [ ] Get CFBD API key; create Neon project (`main` + `dev` branches); fill in local `.env` files
+- [x] Create GitHub repo `the-swann-index`, push these docs as the first commit
+- [x] Get CFBD API key; create Neon project (`main` + `dev` branches); fill in local `.env` files (both verified live)
 - [x] Create `.claude/skills/SOURCES.md` (skill install log; skills are installed per phase, doc 09 §5)
 
 **Done when:** docs are on GitHub, all tools respond to `--version`, and a test commit containing a fake key is blocked by the hook.
