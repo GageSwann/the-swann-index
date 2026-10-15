@@ -82,7 +82,8 @@ rating = (prior_weight · prior + n · observed) / (prior_weight + n)
 - Offense and defense priors are fit separately. Target: that season's final `season` rating. Coefficients are fit on 2015–2022 target seasons only (validation stays out-of-sample; train seasons are in-sample for these few coefficients).
 - **Missing inputs:** a separate model for every subset of {last FBS rating, talent, returning production}; each team uses the largest subset it has. A team that was FCS last year has no "last FBS rating".
 - The non-FBS pooled team keeps its season fit. HFA blends the same way using average games played; the prior HFA is the train-season average (~2.8 pts).
-- **Tuned within the midseason rule (#23):** `k` = 10, `n_cutoff` = 8 (train MAE 13.33). Longer cutoffs scored slightly better (12–14 games: −0.05 pts on validation), but would keep last season in the predictions for most of the year. The owner's call; not adopted.
+- **Tuned for maximum accuracy (#33, owner):** `k` = 6, `n_cutoff` = 14 (train MAE plateaus at 14–16 games; never fading is slightly worse). Rankings never use the prior, so this only affects predictions.
+- **Win probability:** σ is chosen to minimize log loss on train (#34): σ ≈ 12.7, not the raw residual SD (~18, inflated by blowouts). Calibration bins (validation): +1.1 / −1.2 / −3.3 / +1.4 / −0.3 pts.
 
 | Validation 2023–25 (FBS-vs-FBS) | Games | `season` | **`predictive`** | Elo | Vegas |
 |---|---|---|---|---|---|
@@ -157,3 +158,37 @@ Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI 
 - Applied **after** the stats model: `rating_adjusted = rating_raw + Σ adjustments`
 - Predictions store both raw and adjusted. The UI shows an "adjusted" badge with the reason.
 - The report card tracks whether adjustments helped or hurt (raw vs. adjusted accuracy).
+
+## 12. Improvement backlog (brainstorm, 2026-10-14)
+Goal: the most accurate predictions and the most defensible rankings. **Rules for every idea:**
+- Test in the walk-forward harness, one idea at a time.
+- Adopt only if **train** MAE improves and validation doesn't get worse.
+- Record the result in `decisions.md`.
+- **Never use market lines as model inputs.** They're the benchmark; using them would make every "edge" circular.
+
+**Tier 1: likely gains, data already loaded**
+| # | Idea | Why it might help |
+|---|---|---|
+| B1 | **Learned blend ("stacking")**: fit margin = Σ βₖ·(component difference) on train, with components PPD, EPA, success rate, rush/pass EPA, prior, Elo, and weights that can shift with games played | Replaces hand-picked weights (w = 0.75, one prior curve) with weights the data chooses; ensembles usually beat their parts |
+| B2 | ~~Recency weighting~~ **tested, rejected (#35)**: half-life 30/60/120 days → train −0.01 to −0.02, validation +0.06 to 0.00 | Noise-level; not worth fitting twice |
+| B3 | **Week-varying PPD/EPA weight** | EPA stabilizes faster than points per drive, so it should matter more early |
+| B4 | **Ridge toward the prior** (shrink toward the preseason estimate instead of toward 0) | One principled fit instead of fit-then-blend; avoids shrinking twice early in the season |
+| B5 | **Success rate as a third opponent-adjusted metric** | Success rate is very stable and predictive; we already store it |
+| B6 | **Context-dependent σ** (wider for mismatches and high-pace games) | Better win probabilities and calibration, which matter for the book |
+| B7 | **Split the pooled non-FBS team** into FCS and D-II/III | One pooled team mixes NDSU with D-III schools |
+
+**Tier 2: needs new data (CFBD calls)**
+| # | Idea | Data |
+|---|---|---|
+| B8 | Richer prior: QB/passing returning production (already in the cached returning response), two seasons of ratings, recruiting classes, transfer portal, coaching changes | `/recruiting/teams`, `/player/portal`, `/coaches` |
+| B9 | Situational home field: travel distance, altitude, dome, rest days | venues (loaded) + schedule |
+| B10 | QB injuries/changes | manual adjustments layer (Phase 9) |
+
+**Tier 3: ranking quality**
+| # | Idea |
+|---|---|
+| B11 | Rating **uncertainty** (ridge standard errors): show ± bands; base "provisional" on uncertainty instead of a fixed 4 games |
+| B12 | Résumé with dynamic SOS (planned, Phase 2) |
+| B13 | Optional "form" view (recency-weighted `season` rating) alongside the full-season Power rating |
+
+**SP+ comparison caveat:** CFBD's historical SP+ (`/ratings/sp`) is end-of-season only. Comparing our week-by-week predictions against final SP+ would give SP+ look-ahead, so it isn't a fair *prediction* benchmark. It can still serve as a sanity check on final ratings (rank correlation).

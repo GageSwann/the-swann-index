@@ -3,9 +3,9 @@
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
+from tsi.backtest.walk_forward import refit_day, walk_forward
 from tsi.db.queries.results import GameResult
 from tsi.db.queries.stats import OffenseRow
-from tsi.services.walk_forward import refit_day, walk_forward
 
 SAT = datetime(2024, 9, 7, 19, 0, tzinfo=UTC)
 

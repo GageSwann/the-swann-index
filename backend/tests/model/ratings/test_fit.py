@@ -4,7 +4,7 @@ import pytest
 
 from tsi.model.ratings.design import POOLED_ID, build_design, involves_rated_team
 from tsi.model.ratings.fit import AVERAGE, RatingParams, fit_ratings, predicted_margin
-from tsi.model.ratings.probability import residual_sigma, win_prob
+from tsi.model.ratings.probability import fit_sigma, residual_sigma, win_prob
 
 
 @dataclass(frozen=True)
@@ -110,3 +110,13 @@ def test_win_probability_and_sigma() -> None:
     assert win_prob(0, 15) == pytest.approx(0.5)
     assert win_prob(15, 15) == pytest.approx(0.8413, abs=1e-4)
     assert residual_sigma([0, 0, 0, 0], [1, -1, 1, -1]) == pytest.approx(2 / 3**0.5)
+
+
+def test_fit_sigma_recovers_the_true_spread() -> None:
+    import random
+
+    rng = random.Random(1)
+    preds = [rng.uniform(-20, 20) for _ in range(4000)]
+    actual = [p + rng.gauss(0, 15) for p in preds]
+
+    assert fit_sigma(preds, actual) == pytest.approx(15, abs=1.0)

@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 in progress:** Elo (val MAE 13.15), ridge `season` ratings, preseason prior + `predictive` blend done. **Predictive val MAE 12.84 vs. Vegas 12.00, SU 71.1%.** Next: SP+ comparison ingest, then the backtest harness (saved runs, calibration).
+- **Phase 2 in progress:** Elo (val MAE 13.15), ridge `season` ratings, preseason prior + `predictive` blend done. Backtest harness done. **Predictive val MAE 12.79 vs. Vegas 12.00, SU 71.0%, calibrated.** Next: backlog experiments (doc 04 §12), starting with B1 stacking.
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -73,7 +73,7 @@ uv run pytest                   # tests (tests/ mirrors src/tsi/); DB tests use 
 uv run pytest -m "not db"       # skip DB-backed tests (offline)
 uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)
 uv run tsi model elo            # Elo baseline vs. closing line, by season (train/validate split)
-uv run tsi model ratings        # walk-forward season + predictive vs. Elo + Vegas (--lam, --ppd-weight, --prior-games, --cutoff-games)
+uv run tsi backtest run         # full walk-forward backtest + calibration + ATS; saved to model_runs (--no-save, --lam, ...)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
 uv run tsi ingest daily         # refresh current season (also runs nightly in GitHub Actions)

@@ -36,6 +36,10 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 30 | 2026-10-14 | Elo baseline tuned on 2015–22 (K=45, HFA=55, carryover 0.90); scored on FBS-vs-FBS games with a closing line; points-per-Elo fit on train only | A fair (not strawman) bar: validation MAE 13.15 vs. Vegas 12.00. Gains past these settings were <0.01 pts (noise) |
 | 31 | 2026-10-14 | Ridge ratings: standardized targets, drive/play weights, pooled non-FBS team, FBS-centered; walk-forward refits at 10:00 UTC daily (mirrors production); preliminary λ=2, PPD weight 0.75 | λ=25 crushed ratings (top team +11, HFA inflated to 5.9). λ=2 gives realistic spreads (2025: Indiana +33, UMass −30, HFA 4.0) and beats Elo once teams have 4+ games |
 | 32 | 2026-10-14 | Preseason prior = per-input-subset least squares (handles missing inputs); fading blend k=10 games, cutoff 8 games (kept within the owner's midseason rule even though a 12–14 game cutoff scored ~0.05 better) | Predictive validation MAE 12.84 vs. Vegas 12.00 (meets the ~1 pt target); early-season games 15.55 → 13.74 |
+| 33 | 2026-10-14 | Prior fade re-tuned for maximum accuracy: worth 6 games, gone after 14 (supersedes the midseason cutoff in #23/#32; rankings still never use the prior) | Owner: "as much accuracy as possible". Train MAE plateaus at 14–16 games; validation 12.84 → 12.79 |
+| 34 | 2026-10-14 | Win-probability σ fit by minimizing log loss on train (≈12.7), not the residual SD (≈18) | Fat-tailed margins inflated σ, so favorites won more often than predicted (80–90% bin was +7.4 off); now within ±3 in 4 of 5 bins |
+| 35 | 2026-10-14 | Recency weighting (B2) tested and rejected | Half-life 30/60/120 days moved train by ≤0.02 and validation by ≥0.00 (no gain); not worth fitting twice |
+| 36 | 2026-10-14 | `tsi backtest run` replaces `tsi model ratings`; runs saved to `model_runs` (kind `backtest`) with config, metrics, git SHA | One harness for every experiment; reproducible history |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)

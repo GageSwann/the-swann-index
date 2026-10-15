@@ -4,7 +4,7 @@
     rating          = (prior_weight * prior + n * season) / (prior_weight + n)
 
 At n = 0 the rating is the prior; at n >= cutoff it is exactly the `season`
-rating, so `predictive` and `season` agree from midseason on (decision #23).
+rating. Rankings always use `season`, so the prior only affects predictions.
 Home-field advantage blends the same way, using the average games played.
 """
 
@@ -17,10 +17,10 @@ from tsi.model.ratings.fit import RatingSet, TeamRating
 
 @dataclass(frozen=True)
 class BlendParams:
-    # Tuned on 2015-2022 within the owner's midseason rule (#23): best k for cutoff 8.
-    # (A 12-14 game cutoff would gain only ~0.05 pts MAE but keep last season around longer.)
-    prior_games: float = 10.0  # k: how many games the prior is worth before week 1
-    cutoff_games: float = 8.0  # the prior is gone once a team has played this many
+    # Tuned on 2015-2022 train MAE for maximum accuracy (decision #33). Train MAE plateaus
+    # for cutoffs of 14-16 games; never fading is slightly worse. Rankings never use the prior.
+    prior_games: float = 6.0  # k: how many games the prior is worth before week 1
+    cutoff_games: float = 14.0  # the prior is gone once a team has played this many
 
 
 def prior_weight(games_played: float, params: BlendParams) -> float:
