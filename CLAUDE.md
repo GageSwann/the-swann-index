@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 next:** model v1 + backtest. Start with the Elo baseline.
+- **Phase 2 in progress:** Elo baseline done (validation MAE 13.15 vs. Vegas 12.00). Next: opponent-adjusted ridge ratings.
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -71,6 +71,7 @@ uv run tsi --help               # CLI entry point (src/tsi/cli/)
 uv run pytest                   # tests (tests/ mirrors src/tsi/); DB tests use a throwaway schema
 uv run pytest -m "not db"       # skip DB-backed tests (offline)
 uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)
+uv run tsi model elo            # Elo baseline vs. closing line, by season (train/validate split)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
 uv run tsi ingest daily         # refresh current season (also runs nightly in GitHub Actions)

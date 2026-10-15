@@ -99,7 +99,18 @@ For each team: the probability that a **benchmark team** would have a record at 
 Strength of schedule is also shown: the average current `season` rating of opponents, plus the benchmark team's expected win % against the schedule.
 
 ## 8. Baseline: Elo
-Build a simple margin-aware Elo as the baseline. If the main model doesn't clearly beat Elo in backtest, something is wrong.
+A simple margin-aware Elo (`model/elo.py`) is the baseline. If the main model doesn't clearly beat Elo in backtest, something is wrong.
+
+- Every team carries one rating across seasons. New teams start at their division mean (FBS 1500, FCS 1300, II 1100, III/other 1000). Between seasons, ratings keep 90% of their distance from the mean.
+- **Tuned on 2015–2022** (grid over K, HFA, carryover): K=45, HFA=55 Elo points. Points per Elo is fit on train seasons (~22 Elo ≈ 1 point).
+- **The bar to beat** (FBS-vs-FBS games with a closing line; `tsi model elo`):
+
+| Period | Games | Elo MAE | Vegas MAE | Elo SU% | Vegas SU% | Elo Brier |
+|---|---|---|---|---|---|---|
+| Train 2015–22 | 5,927 | 13.45 | 12.45 | 71.0 | 74.3 | 0.189 |
+| **Validate 2023–25** | 2,398 | **13.15** | **12.00** | **70.5** | **72.7** | 0.191 |
+
+Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI is within ~1 point of the closing line, so TSI must beat Elo by a real margin.
 
 ## 9. Backtesting (walk-forward)
 - Seasons 2015–2025 (2020 included as normal). For every week *w*, fit using **only** games before week *w*, predict week *w*, and store the results.

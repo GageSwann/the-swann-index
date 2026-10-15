@@ -42,7 +42,7 @@ See [08-setup-windows.md](08-setup-windows.md).
 
 ## Phase 2: Model v1 + backtest
 Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`season` for rankings, `predictive` for predictions, #23), dynamic Résumé vs. a #12 benchmark (#24), daily refits (#25), 2020 treated normally (#26).
-- [ ] Elo baseline
+- [x] Elo baseline (`model/elo.py`, `tsi model elo`). Tuned on train: K=45, HFA=55, carryover 0.90. **Validation 2023–25: MAE 13.15 vs. Vegas 12.00; straight-up 70.5% vs. 72.7%.** The main model must clearly beat this
 - [ ] Opponent-adjusted ridge ratings (PPD + EPA), HFA, pooled FCS team. Games without advanced stats count in PPD only
 - [ ] `season` ratings (this season only) + `predictive` ratings (prior fading to zero by a cutoff week); migration adds `basis`, `games_played`, `provisional` to `team_ratings`
 - [ ] Preseason prior with fallbacks (missing returning production for new FBS teams, e.g. NDSU/Sacramento State 2026; no talent before 2015)

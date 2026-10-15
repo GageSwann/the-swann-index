@@ -7,7 +7,7 @@ attached here with `app.add_typer(...)` as they are built.
 import typer
 
 from tsi import __version__
-from tsi.cli import ingest
+from tsi.cli import ingest, model
 from tsi.cli.check import check
 from tsi.cli.runtime import configure_logging
 
@@ -18,6 +18,7 @@ app = typer.Typer(
     add_completion=False,
 )
 app.add_typer(ingest.app, name="ingest")
+app.add_typer(model.app, name="model")
 app.command(name="check")(check)
 
 
