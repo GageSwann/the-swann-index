@@ -88,7 +88,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | `ingest_log` | endpoint, params (jsonb), season, week, fetched_at, from_cache, row_count, status. Powers frozen-week skipping and the monthly CFBD call budget (cache hits don't count) |
 | `priors` | season, team_id, last_season_rating, returning_ppa (CFBD `percentPPA`: share 0–1 of last season's PPA returning), talent (247 composite), prior_rating. Inputs are loaded independently; each fills only its own column |
 | `model_runs` | id, **kind** (`live`/`backtest`), season, week, season_type, run_at, model_version, params (jsonb), git_sha |
-| `team_ratings` | run_id, team_id, **variant** (`raw`/`adjusted`), rating, off_rating, def_rating, pace, rank_power, sor, rank_resume |
+| `team_ratings` | run_id, team_id, **variant** (`raw`/`adjusted`), rating, off_rating, def_rating, pace, rank_power, sor, rank_resume. **Phase 2 adds `basis`** (`season`/`predictive`, decision #23) to the key, plus `games_played` / `provisional` |
 | `predictions` | id, run_id, game_id, **variant** (`raw`/`adjusted`), published_at, proj_home, proj_away, spread, total, home_win_prob, sigma_margin, sigma_total, rho, fair/book ML, book spread/total odds. **Insert-only, enforced by a DB trigger** (no UPDATE; DELETE only for backtest runs). The "locked" snapshot is derived (latest `published_at` < `start_time`) |
 | `picks` | prediction_id, market (spread/total/ml), side, line_taken, odds_taken, edge, tier (1–3), stake_units, kelly_units, closing_line, closing_odds, result, units_won, graded_at |
 | `adjustments` (later) | team_id, points, reason, start_week, end_week, active |
@@ -112,10 +112,14 @@ Responses are Pydantic models; the OpenAPI spec generates TypeScript types for `
 
 ## Data flow per week (in season)
 
-0. **Daily 10:00 UTC** (`.github/workflows/daily-refresh.yml`): refresh the current season's games (stats and a rating refit join this job in later phases, so rankings update the morning after any game).
-1. **Sunday ~10:00 UTC:** ingest completed games and stats → refit ratings → grade last week's picks → write new `model_run` → revalidate site.
-2. **Tuesday & Thursday:** ingest latest market lines → generate predictions for upcoming games → publish snapshots → revalidate.
-3. **Lock:** the locked prediction is the latest snapshot published before kickoff (a query, not a scheduled job); picks are graded against it and the closing line.
+**Daily, 10:00 UTC** (`.github/workflows/daily-refresh.yml`), one job:
+1. Ingest current-season games, advanced stats, lines (built: Phase 1)
+2. Refit `season` + `predictive` ratings → new `model_run` → rankings + Résumé (Phase 2)
+3. Generate and publish prediction snapshots for upcoming games; grade finished picks (Phase 3)
+4. Revalidate the site (Phase 6)
+
+Rankings therefore move the morning after any game, including midweek games.
+**Lock:** the locked prediction is the latest snapshot published before kickoff (a query, not a scheduled job); picks are graded against it and the closing line.
 
 ## Caching & revalidation
 - Next.js pages use ISR with tags (`rankings`, `week-{n}`, `team-{slug}`, `game-{id}`).

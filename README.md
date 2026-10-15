@@ -4,11 +4,11 @@ A personal college football power rating model and prediction engine, with a pub
 
 TSI rates every FBS team from opponent-adjusted efficiency data, then turns those ratings into a full sportsbook-style board for every game: projected scores, spreads, totals, moneylines, win probabilities, and edges against the betting market. Every prediction is timestamped and graded, so the model's track record is public and honest.
 
-> Status: **Planning.** See [docs/07-roadmap.md](docs/07-roadmap.md) for the current phase.
+> Status: **Phase 2 (model v1 + backtest).** Data pipeline complete: 2014–2026 loaded and refreshed nightly. See [docs/07-roadmap.md](docs/07-roadmap.md).
 
 ## What's in it
 
-- **Rankings:** Power (who's best) and Résumé (who's earned it), updated weekly
+- **Rankings:** Power (who's best) and Résumé (who's earned it), based only on this season and updated every morning
 - **Team pages:** rating trend, offense/defense profile, schedule with win odds, projected wins
 - **Weekly board:** every matchup with TSI lines vs. Vegas lines, flagged edges
 - **Game center:** projected score, full odds board, alt-line ladder, score distribution

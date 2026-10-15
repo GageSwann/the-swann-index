@@ -28,7 +28,11 @@
 - Toggle: Power | Résumé. Filters: conference, Top 25 / all.
 - Columns: Rank, Δ (movement arrow), Team (logo + name), Record, TSI rating, Off (rank), Def (rank), SOS, SOR, Proj. wins (later), CFP % (later).
 - Sortable (TanStack Table). Sticky header. Clicking a row opens the team page.
-- Side widget: biggest risers/fallers this week.
+- Side widget: biggest risers/fallers since yesterday and since last week.
+- **This season only:** both rankings use the `season` ratings (no preseason prior). A one-line note under the toggle says so.
+- **Provisional:** teams with fewer than 4 games show a *provisional* tag next to their rank.
+- **Updated daily:** the header shows "Updated {date}". Δ arrows compare to the previous day's run and to a week ago.
+- **Résumé tab:** a short explainer: "How hard would it be for a typical #12 team to match this record against this schedule? Re-evaluated daily as opponents' seasons play out." Clicking a team's SOR shows its wins/losses with each opponent's *current* rating.
 
 ### Matchup board `/week/[season]/[week]`
 - Week selector + filters: Top 25 only, conference, "TSI plays only", sort by kickoff / edge / win prob.

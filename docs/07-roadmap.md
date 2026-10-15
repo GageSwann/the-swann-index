@@ -1,6 +1,6 @@
 # 07 – Roadmap
 
-Each phase ends with a working, committed state. **Work one item at a time** (build → test → tick → commit; see [09-conventions.md](09-conventions.md) §1). Tick boxes as items are done. **Timing note:** the 2026 season is in progress (planning began 2026-10-14, ~Week 7). Phases 0–6 are prioritized so TSI is live before bowl season and the CFP.
+Each phase ends with a working, committed state. **Work one item at a time** (build → test → tick → commit; see [09-conventions.md](09-conventions.md) §1). Tick boxes as items are done. **Timing note:** the 2026 season is in progress (planning began 2026-10-14, ~Week 7). There's no launch deadline (decision #27): quality over speed, and Phase 2 gets full tuning before go-live.
 
 ---
 
@@ -41,15 +41,19 @@ See [08-setup-windows.md](08-setup-windows.md).
 **Phase 2 data notes:** 2014 has no talent (247 composite starts 2015); 2020 is COVID-shortened (534 FBS-vs-FBS games; FBS teams played 0–13, avg 8.6, and some programs sat out entirely); the prior needs fallbacks for missing returning production.
 
 ## Phase 2: Model v1 + backtest
+Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`season` for rankings, `predictive` for predictions, #23), dynamic Résumé vs. a #12 benchmark (#24), daily refits (#25), 2020 treated normally (#26).
 - [ ] Elo baseline
-- [ ] Opponent-adjusted ridge ratings (PPD + EPA), HFA, pooled FCS team
-- [ ] Preseason prior + in-season blending (handle missing inputs: teams new to FBS lack returning production, e.g. NDSU and Sacramento State in 2026; 4 FBS games in 2024 lack advanced stats)
-- [ ] Walk-forward backtest harness + metrics + saved runs
-- [ ] Tune on 2015–2022, validate on 2023–2025
-- [ ] Résumé (SOR) and SOS calculations
-- [ ] Notebook or report summarizing results vs. closing line / SP+ / Elo
+- [ ] Opponent-adjusted ridge ratings (PPD + EPA), HFA, pooled FCS team. Games without advanced stats count in PPD only
+- [ ] `season` ratings (this season only) + `predictive` ratings (prior fading to zero by a cutoff week); migration adds `basis`, `games_played`, `provisional` to `team_ratings`
+- [ ] Preseason prior with fallbacks (missing returning production for new FBS teams, e.g. NDSU/Sacramento State 2026; no talent before 2015)
+- [ ] Ingest SP+ ratings (`/ratings/sp`, ~1 call/season) for comparison only, **never as model input**
+- [ ] Walk-forward backtest harness + metrics + saved runs (`model_runs.kind = 'backtest'`)
+- [ ] Tune on 2015–2022, validate on 2023–2025 (incl. provisional threshold and prior cutoff week)
+- [ ] Résumé (SOR) vs. a #12 benchmark using opponents' **current** ratings, plus SOS
+- [ ] Daily job: refit both rating sets after ingest → rankings update every morning
+- [ ] Report summarizing results vs. closing line / SP+ / Elo (use the `dataviz` skill for charts)
 
-**Done when:** validation MAE and calibration meet the targets in doc 01 (or the gap is understood and documented).
+**Done when:** validation MAE and calibration meet the targets in doc 01 (or the gap is understood and documented), and the daily job produces fresh 2026 rankings.
 
 ## Phase 3: Prediction engine & book core
 - [ ] Score projection with pace

@@ -17,8 +17,8 @@
 There are no user accounts. Operator actions happen locally or through GitHub Actions, not through the website.
 
 ## Core features (MVP)
-1. **TSI Power Rankings:** all FBS teams rated in points vs. an average team, with offense/defense split and week-over-week movement.
-2. **TSI Résumé Rankings:** strength-of-record ranking (who has earned the most with their results).
+1. **TSI Power Rankings:** all FBS teams rated in points vs. an average team, from **this season's games only**, with offense/defense split; updated daily with day-over-day and week-over-week movement.
+2. **TSI Résumé Rankings:** strength-of-record ranking (who has earned the most with their results), re-evaluated daily against opponents' current ratings.
 3. **Team pages:** colors/logo, rating trend, efficiency profile, schedule with win probabilities, projected record.
 4. **Weekly matchup board:** every game with TSI spread/total/moneyline next to market lines, with edges flagged.
 5. **Game center:** projected score, win probability, full odds board, alt lines, score distribution chart, head-to-head comparison; graded after the game.

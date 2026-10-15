@@ -26,11 +26,21 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 20 | 2026-10-14 | Efficiency stats garbage-time filtered; plays/drives from full-game stats; `/drives` and `/ppa/games` dropped | Points per drive must use full-game drives to match full-game points (1,048 of 3,212 2024 team-games differ); advanced stats already include drive counts, saving calls |
 | 21 | 2026-10-14 | Market lines stored as change-only snapshots; closing = snapshot at/after kickoff (or latest row flagged); lines added to the daily job | Real line-movement history without ~800 duplicate rows per day; closing lines needed for CLV and the report card |
 | 22 | 2026-10-14 | DB-backed tests run in a throwaway `test_<random>` schema inside the dev database (dropped after); skipped when no DB is configured | No local Postgres/Docker needed; real tables untouched; catches SQL/ORM bugs that pure tests miss |
+| 23 | 2026-10-14 | **Two rating sets:** `season` (this season's games only) drives Power/Résumé rankings; `predictive` (adds a preseason prior that fades to zero by midseason) drives predictions and the Book. Teams with <4 games are ranked as *provisional* | Owner: rankings must reflect only the current season, not prior years; predictions still need early-season accuracy |
+| 24 | 2026-10-14 | Résumé benchmark = a typical **#12** team; SOR uses each opponent's **current** rating, so past wins lose or gain value as opponents' seasons play out (dynamic SOS) | #12 ≈ playoff bubble in a 12-team CFP. Owner wants wins re-valued as opponents rise or fall. Résumé is retrospective, so this isn't look-ahead |
+| 25 | 2026-10-14 | Rankings and ratings refit **daily** in the nightly job (not weekly) | Owner: midweek games (e.g. Tuesday MACtion) should show by the next morning |
+| 26 | 2026-10-14 | 2020 (COVID) treated like any other season in fitting, tuning, and backtests | Owner preference; it's real data, just fewer games |
+| 27 | 2026-10-14 | No go-live deadline: Phase 2 gets full tuning (2015–22) and validation (2023–25) before launch | Owner isn't constrained by bowl season |
+| 28 | 2026-10-14 | v1 model = baseline exactly as doc 04 (PPD + EPA ridge, HFA, pooled FCS, fading prior, Elo comparison); refinements after it's working end to end | Get a complete, honest baseline first |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)
 - Recharts vs. visx for the distribution chart (decide in Phase 5)
 - Exact CFP format/seeding rules for the playoff projector (verify before Phase 8)
-- Should the Résumé benchmark be "typical #12 team" or "typical #25 team"? (test in Phase 2)
-- Go-live scope: if Phase 2 tuning runs long, launch with untuned defaults + Elo comparison before bowls and finish tuning after? (decide end of Phase 1)
-- CFBD paid tier: is the free 1,000 calls/month enough after the backfill? (decide after the 2024 test-season ingest)
+- Provisional threshold (4 games?) and prior cutoff week (6–8?): set in Phase 2 backtest
+- Off-season: pause the nightly job Feb–Jul to save calls? (low priority: ~124 calls/month fits easily)
+
+## Resolved
+- ~~Résumé benchmark #12 vs. #25~~ → #12 (#24)
+- ~~Go-live scope~~ → no deadline; tune fully (#27)
+- ~~Is the CFBD free tier enough?~~ → yes: full 2014–2026 backfill took ~90 calls; ongoing ~124/month of ~1,000
