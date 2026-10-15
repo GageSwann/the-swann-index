@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     database_url: SecretStr
     # Direct (non-pooled) connection for Alembic migrations; falls back to database_url.
     database_url_direct: SecretStr | None = None
-    cfbd_monthly_call_budget: int = Field(default=1000, ge=0)
+    cfbd_monthly_call_budget: int = Field(default=980, ge=0)
     tsi_cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
     # Raw CFBD response cache (gitignored).
     tsi_cache_dir: Path = BACKEND_DIR / ".cache"

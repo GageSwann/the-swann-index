@@ -18,3 +18,11 @@ def test_help_lists_tsi_description() -> None:
 
     assert result.exit_code == 0
     assert "The Swann Index" in result.output
+
+
+def test_ingest_group_lists_loaders() -> None:
+    result = runner.invoke(app, ["ingest", "--help"])
+
+    assert result.exit_code == 0
+    assert "venues" in result.output
+    assert "teams" in result.output

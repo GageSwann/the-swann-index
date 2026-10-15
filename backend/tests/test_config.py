@@ -33,7 +33,7 @@ def test_loads_from_environment_with_defaults(required_env: pytest.MonkeyPatch) 
     settings = load_settings(env_file=None)
 
     assert settings.cfbd_api_key.get_secret_value() == SECRET_KEY
-    assert settings.cfbd_monthly_call_budget == 1000
+    assert settings.cfbd_monthly_call_budget == 980
     assert settings.tsi_cors_origins == ["http://localhost:3000"]
 
 

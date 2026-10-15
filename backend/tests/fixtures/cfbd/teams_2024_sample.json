@@ -1,0 +1,251 @@
+[
+ {
+  "id": 38,
+  "school": "Colorado",
+  "mascot": "Buffaloes",
+  "abbreviation": "COLO",
+  "alternateNames": [
+   "COLO",
+   "Colorado"
+  ],
+  "conference": "Big 12",
+  "division": null,
+  "classification": "fbs",
+  "color": "#cfb87c",
+  "alternateColor": "#000000",
+  "logos": [
+   "https://cdn.collegefootballdata.com/logos/500/38.png",
+   "https://cdn.collegefootballdata.com/logos-dark/500/38.png"
+  ],
+  "twitter": "@CUBuffsFootball",
+  "location": {
+   "id": 3726,
+   "name": "Folsom Field",
+   "city": "Boulder",
+   "state": "CO",
+   "zip": "80309",
+   "countryCode": "US",
+   "timezone": "America/Denver",
+   "latitude": 40.0094746,
+   "longitude": -105.266905,
+   "elevation": "1634.041138",
+   "capacity": 50183,
+   "constructionYear": 1924,
+   "grass": true,
+   "dome": false
+  }
+ },
+ {
+  "id": 62,
+  "school": "Hawai'i",
+  "mascot": "Rainbow Warriors",
+  "abbreviation": "HAW",
+  "alternateNames": [
+   "HAW",
+   "Hawai'i"
+  ],
+  "conference": "Mountain West",
+  "division": null,
+  "classification": "fbs",
+  "color": "#024731",
+  "alternateColor": "#000000",
+  "logos": [
+   "https://cdn.collegefootballdata.com/logos/500/62.png",
+   "https://cdn.collegefootballdata.com/logos-dark/500/62.png"
+  ],
+  "twitter": "@HawaiiFootball",
+  "location": {
+   "id": 7220,
+   "name": "Clarence T.C. Ching Athletics Complex",
+   "city": "Honolulu",
+   "state": "HI",
+   "zip": "96822",
+   "countryCode": "US",
+   "timezone": "Pacific/Honolulu",
+   "latitude": 21.294294,
+   "longitude": -157.819338,
+   "elevation": "20",
+   "capacity": 15194,
+   "constructionYear": 2015,
+   "grass": false,
+   "dome": false
+  }
+ },
+ {
+  "id": 193,
+  "school": "Miami (OH)",
+  "mascot": "RedHawks",
+  "abbreviation": "M-OH",
+  "alternateNames": [
+   "M-OH",
+   "Miami OH"
+  ],
+  "conference": "Mid-American",
+  "division": null,
+  "classification": "fbs",
+  "color": "#c41230",
+  "alternateColor": "#ffffff",
+  "logos": [
+   "https://cdn.collegefootballdata.com/logos/500/193.png",
+   "https://cdn.collegefootballdata.com/logos-dark/500/193.png"
+  ],
+  "twitter": "@MiamiOHFootball",
+  "location": {
+   "id": 3996,
+   "name": "Yager Stadium",
+   "city": "Oxford",
+   "state": "OH",
+   "zip": "45056",
+   "countryCode": "US",
+   "timezone": "America/New_York",
+   "latitude": 39.5197009,
+   "longitude": -84.7330255,
+   "elevation": "242.2643585",
+   "capacity": 24286,
+   "constructionYear": 1983,
+   "grass": false,
+   "dome": false
+  }
+ },
+ {
+  "id": 2449,
+  "school": "North Dakota State",
+  "mascot": "Bison",
+  "abbreviation": "NDSU",
+  "alternateNames": [
+   "NDSU",
+   "N Dakota St"
+  ],
+  "conference": "MVFC",
+  "division": null,
+  "classification": "fcs",
+  "color": "#00583d",
+  "alternateColor": "#ffc425",
+  "logos": [
+   "https://cdn.collegefootballdata.com/logos/500/2449.png",
+   "https://cdn.collegefootballdata.com/logos-dark/500/2449.png"
+  ],
+  "twitter": "@NDSUFootball",
+  "location": {
+   "id": 3714,
+   "name": "Fargodome",
+   "city": "Fargo",
+   "state": "ND",
+   "zip": "51802",
+   "countryCode": "US",
+   "timezone": "America/Chicago",
+   "latitude": 46.9029938,
+   "longitude": -96.8003251,
+   "elevation": "274.4847717",
+   "capacity": 18700,
+   "constructionYear": 1992,
+   "grass": false,
+   "dome": true
+  }
+ },
+ {
+  "id": 87,
+  "school": "Notre Dame",
+  "mascot": "Fighting Irish",
+  "abbreviation": "ND",
+  "alternateNames": [
+   "ND",
+   "Notre Dame"
+  ],
+  "conference": "FBS Independents",
+  "division": null,
+  "classification": "fbs",
+  "color": "#0c2340",
+  "alternateColor": "#c99700",
+  "logos": [
+   "https://cdn.collegefootballdata.com/logos/500/87.png",
+   "https://cdn.collegefootballdata.com/logos-dark/500/87.png"
+  ],
+  "twitter": "@NDFootball",
+  "location": {
+   "id": 3855,
+   "name": "Notre Dame Stadium",
+   "city": "Notre Dame",
+   "state": "IN",
+   "zip": "46556",
+   "countryCode": "US",
+   "timezone": "America/Indiana/Indianapolis",
+   "latitude": 41.698378,
+   "longitude": -86.2339425,
+   "elevation": "222.645401",
+   "capacity": 80795,
+   "constructionYear": 1930,
+   "grass": false,
+   "dome": false
+  }
+ },
+ {
+  "id": 245,
+  "school": "Texas A&M",
+  "mascot": "Aggies",
+  "abbreviation": "TA&M",
+  "alternateNames": [
+   "TA&M",
+   "Texas A&M"
+  ],
+  "conference": "SEC",
+  "division": null,
+  "classification": "fbs",
+  "color": "#500000",
+  "alternateColor": "#ffffff",
+  "logos": [
+   "https://cdn.collegefootballdata.com/logos/500/245.png",
+   "https://cdn.collegefootballdata.com/logos-dark/500/245.png"
+  ],
+  "twitter": "@AggieFootball",
+  "location": {
+   "id": 3795,
+   "name": "Kyle Field",
+   "city": "College Station",
+   "state": "TX",
+   "zip": "77843",
+   "countryCode": "US",
+   "timezone": "America/Chicago",
+   "latitude": 30.6098891,
+   "longitude": -96.3403828,
+   "elevation": "108.824585",
+   "capacity": 102733,
+   "constructionYear": 1927,
+   "grass": true,
+   "dome": false
+  }
+ },
+ {
+  "id": 2129,
+  "school": "Cheyney",
+  "mascot": "Wolves",
+  "abbreviation": "CHE",
+  "alternateNames": [
+   "CHE",
+   "Cheyney"
+  ],
+  "conference": "Pennsylvania State Athletic",
+  "division": null,
+  "classification": "ii",
+  "color": "#000000",
+  "alternateColor": "#null",
+  "logos": [],
+  "twitter": null,
+  "location": {
+   "id": null,
+   "name": null,
+   "city": null,
+   "state": null,
+   "zip": null,
+   "countryCode": null,
+   "timezone": null,
+   "latitude": null,
+   "longitude": null,
+   "elevation": null,
+   "capacity": null,
+   "constructionYear": null,
+   "grass": null,
+   "dome": null
+  }
+ }
+]

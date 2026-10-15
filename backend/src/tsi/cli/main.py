@@ -7,6 +7,8 @@ attached here with `app.add_typer(...)` as they are built.
 import typer
 
 from tsi import __version__
+from tsi.cli import ingest
+from tsi.cli.runtime import configure_logging
 
 app = typer.Typer(
     name="tsi",
@@ -14,6 +16,7 @@ app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
 )
+app.add_typer(ingest.app, name="ingest")
 
 
 def _print_version(value: bool) -> None:
@@ -31,5 +34,7 @@ def main(
         callback=_print_version,
         is_eager=True,
     ),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Debug logging."),
 ) -> None:
     """The Swann Index: college football ratings, predictions, and book."""
+    configure_logging(verbose)
