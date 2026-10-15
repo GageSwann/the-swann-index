@@ -31,11 +31,14 @@ See [08-setup-windows.md](08-setup-windows.md).
 - [x] Test-season ingest (2024); confirm the call count matches the doc 03 budget (9 calls per season: teams, calendar, games, 2× stats, lines, talent, returning, plus 1 for venues once. That's under the 10–25 estimate)
 - [x] Current-season freshness: finished seasons cached forever, in-progress season expires after 6h (`ingest/freshness.py`)
 - [x] Daily refresh: `tsi ingest daily` + GitHub Actions cron at 10:00 UTC (pulled forward from Phase 6). Later phases add stats, rating refit, and publish to this job
-- [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed). _Done so far: everything for 2024–2026 (teams, calendar, games, stats, lines, priors)._
-- [ ] Data quality checks (doc 03) as `tsi check`. Fail on problems in FBS-involved games; only warn on lower divisions (2024–26 has 5 completed D-II/III/NAIA games with no score, and some small-college games never marked final). Also report FBS games missing advanced stats (2024: Army–Rice, Sam Houston–NMSU, Miami (OH)–Kent State, WMU–EMU); the model must handle them
-- [ ] Unit tests for loaders (fixtures, no live API in tests). Transforms are covered; the DB half of loaders is still only checked by live runs (a SQLAlchemy 2.1 `dict(result)` bug slipped through in 5d). Add DB-backed loader tests against a throwaway Neon branch or local Postgres
+- [x] `tsi ingest season --season X [--through Y]`: every loader in dependency order
+- [x] Backfill 2014–2026 (all 13 seasons; 2014–2023 took 81 calls). 31,200 games, 27,368 team-game stat rows, 37,403 line snapshots
+- [x] Data quality checks as `tsi check` (14 rules, `quality/checks.py`): 7 `fail` rules (look-ahead, integrity, FBS scores/stats) and 7 `warn` rules for known CFBD gaps. All seasons: **0 failures**. Warnings: 47 FBS-vs-FBS games without advanced stats (mostly 2014–16), 16 FBS team-seasons without returning production (new FBS members, 2021 ODU/UConn), App State–Liberty 2024 cancelled, small-college missing scores
+- [x] Loader tests: transforms on saved fixtures, plus DB-backed tests (`tests/db_integration/`) that load fixtures through a fake CFBD into a throwaway schema in the dev database. These caught a real bug: an unknown venue would have crashed the games loader
 
-**Done when:** `tsi ingest --season 2026` is idempotent and quality checks pass for all seasons.
+**Done when:** `tsi ingest --season 2026` is idempotent and quality checks pass for all seasons. ✅ **Phase 1 complete (2026-10-14).**
+
+**Phase 2 data notes:** 2014 has no talent (247 composite starts 2015); 2020 is COVID-shortened (534 FBS-vs-FBS games; FBS teams played 0–13, avg 8.6, and some programs sat out entirely); the prior needs fallbacks for missing returning production.
 
 ## Phase 2: Model v1 + backtest
 - [ ] Elo baseline

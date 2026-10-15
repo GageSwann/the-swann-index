@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
-from tsi.db.models import Game, Team, TeamSeason
+from tsi.db.models import Game, Team, TeamSeason, Venue
 from tsi.db.upsert import upsert_rows
 from tsi.ingest.client import CfbdClient
 from tsi.ingest.transform.games import game_rows, participant_team_seasons, placeholder_teams
@@ -32,8 +32,9 @@ def load_games(
     raw = client.get("/games", {"year": season, "seasonType": "both"}, refresh=refresh)
     with session_factory.begin() as session:
         known = set(session.scalars(select(Team.id)))
+        venues = set(session.scalars(select(Venue.id)))
         placeholders = placeholder_teams(raw, known)
         upsert_rows(session, Team, placeholders, update=False)
         upsert_rows(session, TeamSeason, participant_team_seasons(raw), update=False)
-        games = upsert_rows(session, Game, game_rows(raw))
+        games = upsert_rows(session, Game, game_rows(raw, known_venues=venues))
     return GamesLoadResult(season, games, len(placeholders))

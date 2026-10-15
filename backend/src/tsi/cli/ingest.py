@@ -13,6 +13,7 @@ from tsi.ingest.loaders.stats import load_team_game_stats
 from tsi.ingest.loaders.teams import load_teams
 from tsi.ingest.loaders.venues import load_venues
 from tsi.services.daily import run_daily
+from tsi.services.season import run_season
 
 app = typer.Typer(help="Load CFBD data into the database.", no_args_is_help=True)
 
@@ -31,6 +32,24 @@ def daily() -> None:
         f"{'; teams loaded' if result.loaded_teams else ''}"
         f"{'; calendar loaded' if result.loaded_calendar else ''}"
     )
+
+
+@app.command()
+def season(
+    season: int = SEASON,
+    through: int | None = typer.Option(
+        None, "--through", help="Load every season from --season through this one."
+    ),
+    refresh: bool = REFRESH,
+) -> None:
+    """Everything for a season (or a range), in dependency order: ~9 CFBD calls each."""
+    last = through or season
+    if last < season:
+        raise typer.BadParameter("--through must be >= --season")
+    with ingest_runtime() as (client, sessions):
+        for year in range(season, last + 1):
+            result = run_season(client, sessions, year, refresh=refresh)
+            typer.echo(f"season {result.summary()}")
 
 
 @app.command()
@@ -90,7 +109,8 @@ def lines(season: int = SEASON, refresh: bool = REFRESH) -> None:
         result = load_lines(client, sessions, season, refresh=refresh)
     typer.echo(
         f"lines {result.season}: {result.inserted} new snapshots, "
-        f"{result.marked_closing} marked closing, {result.unchanged} unchanged"
+        f"{result.marked_closing} marked closing, {result.unchanged} unchanged, "
+        f"{result.skipped} skipped (game not loaded)"
     )
 
 

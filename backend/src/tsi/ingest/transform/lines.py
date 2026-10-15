@@ -29,6 +29,8 @@ class StoredLine:
 class LinePlan:
     inserts: list[dict[str, Any]] = field(default_factory=list)
     mark_closing: list[int] = field(default_factory=list)  # existing row ids
+    unchanged: int = 0
+    skipped: int = 0  # game not in our games table
 
 
 def line_snapshots(raw: list[dict[str, Any]]) -> dict[LineKey, dict[str, Any]]:
@@ -60,7 +62,8 @@ def plan_line_changes(
     plan = LinePlan()
     for key, snap in snapshots.items():
         if key[0] not in kickoff:
-            continue  # game not in our games table
+            plan.skipped += 1
+            continue
         start = kickoff[key[0]]
         after_kickoff = start is not None and fetched_at >= start
         stored = latest.get(key)
@@ -69,6 +72,8 @@ def plan_line_changes(
             plan.inserts.append({**snap, "fetched_at": fetched_at, "is_closing": after_kickoff})
         elif after_kickoff and not stored.is_closing:
             plan.mark_closing.append(stored.id)
+        else:
+            plan.unchanged += 1
     return plan
 
 

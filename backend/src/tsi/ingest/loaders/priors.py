@@ -29,7 +29,9 @@ def load_prior_inputs(
     talent_raw = client.get("/talent", {"year": season}, refresh=refresh)
     returning_raw = client.get("/player/returning", {"year": season}, refresh=refresh)
     with session_factory.begin() as session:
-        team_ids = dict(session.execute(select(Team.school, Team.id)).tuples().all())
+        team_ids = {
+            school: team_id for school, team_id in session.execute(select(Team.school, Team.id))
+        }
         talent = talent_rows(talent_raw, season, team_ids)
         returning = returning_rows(returning_raw, season, team_ids)
         upsert_rows(session, Prior, talent)

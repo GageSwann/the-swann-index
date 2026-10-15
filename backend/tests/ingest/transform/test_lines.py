@@ -50,6 +50,7 @@ def test_first_snapshot_after_kickoff_is_closing(snapshots) -> None:
     plan = plan_line_changes(snapshots, {}, {COLORADO_GAME: KICKOFF}, KICKOFF + timedelta(days=700))
 
     assert len(plan.inserts) == 3  # Colorado game only; Arizona game isn't in `kickoff`
+    assert plan.skipped == 3
     assert all(row["is_closing"] for row in plan.inserts)
 
 
@@ -62,6 +63,7 @@ def test_unchanged_pre_kickoff_snapshot_adds_nothing(snapshots) -> None:
     )
 
     assert plan.inserts == [] and plan.mark_closing == []
+    assert plan.unchanged == 1
 
 
 def test_line_move_adds_a_new_pre_kickoff_snapshot(snapshots) -> None:

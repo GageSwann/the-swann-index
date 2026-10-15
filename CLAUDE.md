@@ -40,12 +40,15 @@ Backend (run from `backend/`):
 ```powershell
 uv sync                         # install/update deps into backend/.venv
 uv run tsi --help               # CLI entry point (src/tsi/cli/)
-uv run pytest                   # tests (tests/ mirrors src/tsi/)
+uv run pytest                   # tests (tests/ mirrors src/tsi/); DB tests use a throwaway schema
+uv run pytest -m "not db"       # skip DB-backed tests (offline)
+uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
 uv run tsi ingest daily         # refresh current season (also runs nightly in GitHub Actions)
 uv run tsi ingest venues        # CFBD -> DB (cache-first; --refresh re-fetches and uses calls)
-uv run tsi ingest teams --season 2024     # then: calendar, games, stats, lines, priors (same --season, in order)
+uv run tsi ingest season --season 2014 --through 2026   # all loaders in order (~9 calls/season if not cached)
+uv run tsi ingest teams --season 2024     # single loaders: teams, calendar, games, stats, lines, priors
 uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)
 uv run alembic revision --autogenerate -m "msg"   # after changing models; review before applying
 uv run alembic check            # models and DB in sync?

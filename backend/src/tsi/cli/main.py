@@ -8,6 +8,7 @@ import typer
 
 from tsi import __version__
 from tsi.cli import ingest
+from tsi.cli.check import check
 from tsi.cli.runtime import configure_logging
 
 app = typer.Typer(
@@ -17,6 +18,7 @@ app = typer.Typer(
     add_completion=False,
 )
 app.add_typer(ingest.app, name="ingest")
+app.command(name="check")(check)
 
 
 def _print_version(value: bool) -> None:

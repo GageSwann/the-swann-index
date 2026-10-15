@@ -23,8 +23,11 @@ def relevant_games(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return list(by_id.values())
 
 
-def game_rows(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [
+def game_rows(
+    raw: list[dict[str, Any]], known_venues: set[int] | None = None
+) -> list[dict[str, Any]]:
+    """Game rows. A venue id not in `known_venues` becomes None (venues list may lag)."""
+    rows = [
         {
             "id": g["id"],
             "season": g["season"],
@@ -44,6 +47,11 @@ def game_rows(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
         }
         for g in relevant_games(raw)
     ]
+    if known_venues is not None:
+        for row in rows:
+            if row["venue_id"] not in known_venues:
+                row["venue_id"] = None
+    return rows
 
 
 def participant_team_seasons(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:

@@ -57,8 +57,16 @@ Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count 
 - **Caveat:** for historical seasons, CFBD gives one line per provider (plus the opening spread/total), not a timestamped history. Treat that line as the approximate close. During the live season, our own Tue/Thu fetches create real snapshots.
 - Optional later: The Odds API for fresher in-week odds and line movement.
 
-## Data quality checks (run after every ingest)
-- Every FBS team has the expected number of games for completed weeks
-- No game has stats for only one side
-- Scores in `games` match points in `team_game_stats`
-- Every upcoming game has at least one market line by Thursday (warn, don't fail)
+## Data quality checks (`tsi check`, rules in `quality/checks.py`)
+**Fail** (correctness; exit code 1):
+- Look-ahead: completed game with a future kickoff, stats on an unplayed game, closing line captured before kickoff
+- Integrity: a game's team without a `team_seasons` row, stats points ≠ game score
+- FBS data the model needs: FBS game with stats for only one side, or completed without a score
+
+**Warn** (known CFBD gaps the model must tolerate):
+- Non-FBS completed games without a score
+- FBS-vs-FBS games without advanced stats or without a closing spread
+- FBS game 2+ days past kickoff but not final (cancelled/stale)
+- FBS game within 3 days of kickoff with no line yet
+- FBS team with fewer than 10 games in a finished season (2020 excluded)
+- FBS team missing talent or returning production

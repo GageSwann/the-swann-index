@@ -34,6 +34,13 @@ def test_game_row_maps_fields_and_kickoff_is_utc(raw) -> None:
     assert game["notes"] is None
 
 
+def test_unknown_venue_becomes_none(raw) -> None:
+    rows = by_id(game_rows(raw, known_venues=set()))
+
+    assert rows[401634206]["venue_id"] is None  # Folsom Field not "known" here
+    assert by_id(game_rows(raw, known_venues={3726}))[401634206]["venue_id"] == 3726
+
+
 def test_tbd_kickoff_is_flagged(raw) -> None:
     assert by_id(game_rows(raw))[401693677]["start_time_tbd"] is True
 

@@ -25,6 +25,7 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 19 | 2026-10-14 | Until Phase 6, the daily job writes to the Neon **dev** branch (`DATABASE_URL` secret) | Production isn't in use yet; switch the secret to `production` at go-live |
 | 20 | 2026-10-14 | Efficiency stats garbage-time filtered; plays/drives from full-game stats; `/drives` and `/ppa/games` dropped | Points per drive must use full-game drives to match full-game points (1,048 of 3,212 2024 team-games differ); advanced stats already include drive counts, saving calls |
 | 21 | 2026-10-14 | Market lines stored as change-only snapshots; closing = snapshot at/after kickoff (or latest row flagged); lines added to the daily job | Real line-movement history without ~800 duplicate rows per day; closing lines needed for CLV and the report card |
+| 22 | 2026-10-14 | DB-backed tests run in a throwaway `test_<random>` schema inside the dev database (dropped after); skipped when no DB is configured | No local Postgres/Docker needed; real tables untouched; catches SQL/ORM bugs that pure tests miss |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)
