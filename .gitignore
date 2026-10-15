@@ -1,0 +1,43 @@
+# --- Secrets: never commit real env files ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# --- CFBD raw response cache (doc 03) ---
+backend/.cache/
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.vercel/
+
+# --- Editors / OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Claude Code local settings (project skills in .claude/skills ARE committed) ---
+.claude/settings.local.json

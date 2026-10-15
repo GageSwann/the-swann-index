@@ -1,0 +1,58 @@
+# 03 – Data Sources
+
+## Primary: CollegeFootballData.com (CFBD)
+- Get a key at https://collegefootballdata.com/key. Store it as `CFBD_API_KEY`.
+- Official Python client: `cfbd` (PyPI). Uses Bearer auth.
+- **The free tier is ~1,000 calls/month** (per CFBD's API v2 announcement; paid Patreon tiers raise it, and the limits can change, so confirm when signing up). That's why caching is mandatory: completed seasons are fetched once and live in Postgres forever.
+
+### Call budget
+Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count against `CFBD_MONTHLY_CALL_BUDGET` and stops before exceeding it.
+
+| Job | Calls (estimate) |
+|---|---|
+| Backfill, per season: prefer **season-wide** requests (`year=` with no week) for games, advanced stats, PPA, drives, lines, talent, returning production | ~10–25 |
+| Full backfill 2014–2026 (13 seasons) | ~150–325, spread over **2+ sessions** with the disk cache on |
+| In season: Sun stats + Tue/Thu lines | ~10–15 per week (~60/month) |
+
+- Fetch a small test season (e.g. 2024) first and verify the call count before the full backfill.
+- If the budget gets tight, drop `/games/teams` (advanced stats cover most of it) or move to a paid tier.
+
+### Endpoints we use
+
+| Data | Endpoint (client method area) | Used for |
+|---|---|---|
+| Teams (FBS list, colors, logos) | `/teams`, `/teams/fbs` | `teams` table, branding |
+| Venues | `/venues` | neutral site / travel (later) |
+| Calendar | `/calendar` | season/week boundaries |
+| Games & scores | `/games` | `games` table |
+| Team box stats | `/games/teams` | basic per-game stats |
+| Advanced game stats | `/stats/game/advanced` | EPA, success rate, explosiveness, havoc (garbage time excluded) |
+| PPA/EPA by game | `/ppa/games` | offense/defense EPA per play |
+| Drives | `/drives` | drives per game, points per drive, pace |
+| Betting lines | `/lines` | spreads, totals, moneylines by provider |
+| Talent composite | `/talent` | preseason prior |
+| Returning production | `/player/returning` | preseason prior |
+| Recruiting | `/recruiting/teams` | prior (optional) |
+| SP+, Elo, FPI | `/ratings/sp`, `/ratings/elo`, `/ratings/fpi` | comparison only, **never model inputs** |
+| AP / Coaches poll | `/rankings` | comparison only |
+
+### Ingestion rules
+- **Historical backfill:** seasons 2014–2025 (2014 provides the priors for 2015, the first backtest season).
+- **Idempotent upserts:** re-running ingest for a week never duplicates rows.
+- **Completed weeks are frozen:** after a week is final and ingested, it isn't re-fetched unless the operator forces it (`tsi ingest --force`).
+- **Raw response cache:** store raw JSON responses on disk (`backend/.cache/`, gitignored) during development to avoid repeat calls.
+- **Garbage time:** use CFBD's garbage-time-filtered advanced stats where offered.
+- **FCS opponents:** ingest the games and the FCS team rows (division = `fcs`) so FCS expansion needs no schema change.
+- **Conference/division per season:** write `team_seasons` from each season's `/teams?year=` response, because teams change conferences and move FCS→FBS.
+
+### Market lines
+- CFBD `/lines` returns lines from multiple providers. Use a **consensus** line (provider = consensus if present, else the median across providers).
+- Treat the last pre-kickoff line as `is_closing = true` for CLV and evaluation.
+- **Caveat:** for historical seasons, CFBD gives one line per provider (plus the opening spread/total), not a timestamped history. Treat that line as the approximate close. During the live season, our own Tue/Thu fetches create real snapshots.
+- Optional later: The Odds API for fresher in-week odds and line movement.
+
+## Data quality checks (run after every ingest)
+- Every FBS team has the expected number of games for completed weeks
+- No game has stats for only one side
+- Scores in `games` match points in `team_game_stats`
+- Every upcoming game has at least one market line by Thursday (warn, don't fail)
