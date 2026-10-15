@@ -41,7 +41,7 @@ def test_raw_and_adjusted_variants_are_separate_rows() -> None:
     # Rule 6: raw and adjusted output stored separately.
     assert "variant" in TABLES["predictions"].columns
     rating_pk = [col.name for col in TABLES["team_ratings"].primary_key.columns]
-    assert rating_pk == ["run_id", "team_id", "variant"]
+    assert rating_pk == ["run_id", "team_id", "basis", "variant"]
 
 
 def test_predictions_have_no_mutable_lock_flag() -> None:

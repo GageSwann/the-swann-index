@@ -1,117 +1,105 @@
-"""Walk-forward evaluation of `season` ratings (this season's games only), vs. Elo and Vegas.
+"""Walk-forward report: `season` and `predictive` TSI ratings vs. Elo and the closing line.
 
-Mirrors the daily job: games kicking off in [D 10:00 UTC, D+1 10:00 UTC) are
-predicted from ratings fit on this season's games that kicked off before
-D 10:00 UTC. Win-probability spread (sigma) is fit on TRAIN seasons only.
+Scored set: completed FBS-vs-FBS games with a closing spread, 2015 onward.
+Win-probability sigma and prior coefficients are fit on TRAIN seasons only.
 """
 
-from collections import defaultdict
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy.orm import Session
 
 from tsi.backtest.evaluate import ScoredGame, Summary, summarize
 from tsi.db.queries.market import closing_spreads
-from tsi.db.queries.results import GameResult, completed_games
-from tsi.db.queries.stats import OffenseRow, offense_rows
+from tsi.db.queries.priors import fbs_teams, prior_inputs
+from tsi.db.queries.results import completed_games
+from tsi.db.queries.stats import offense_rows
+from tsi.model.blend import BlendParams
 from tsi.model.elo import EloParams
-from tsi.model.ratings.fit import RatingParams, fit_ratings, predicted_margin
+from tsi.model.ratings.fit import RatingParams
 from tsi.model.ratings.probability import residual_sigma, win_prob
-from tsi.services.elo_report import FIRST_SCORED_SEASON, TRAIN, VALIDATE, elo_picks, is_scored
+from tsi.services.elo_report import TRAIN, VALIDATE, elo_picks, is_scored
+from tsi.services.prior_setup import build_prior_setup, rows_by_season
+from tsi.services.walk_forward import Pick, walk_forward
 
-REFIT_HOUR = 10  # UTC, same as the nightly job
-ESTABLISHED_GAMES = 4  # provisional threshold (doc 04)
-
-
-@dataclass(frozen=True)
-class _Pick:
-    game: GameResult
-    margin: float
-    established: bool
+FIRST_DATA_SEASON = 2014  # supplies 2015's "last season" ratings
 
 
 @dataclass(frozen=True)
 class ComparisonRow:
-    tsi: Summary
+    season: Summary  # TSI `season` set (this season only)
+    predictive: Summary  # TSI `predictive` set (with fading prior)
     elo: Summary
 
 
 @dataclass(frozen=True)
 class RatingsReport:
-    params: RatingParams
-    sigma: float
+    rating_params: RatingParams
+    blend_params: BlendParams
+    prior_hfa: float
     rows: list[ComparisonRow]
 
 
-def refit_day(kickoff: datetime) -> date:
-    """The daily run whose ratings a game is predicted from."""
-    return (kickoff - timedelta(hours=REFIT_HOUR)).date()
-
-
 def run_ratings_report(
-    session: Session, through_season: int, params: RatingParams | None = None
+    session: Session,
+    through_season: int,
+    rating_params: RatingParams | None = None,
+    blend_params: BlendParams | None = None,
 ) -> RatingsReport:
-    params = params or RatingParams()
+    rating_params = rating_params or RatingParams()
+    blend_params = blend_params or BlendParams()
     games = completed_games(session, through_season)
     closing = closing_spreads(session, through_season)
-    rows = offense_rows(session, FIRST_SCORED_SEASON, through_season)
+    grouped = rows_by_season(offense_rows(session, FIRST_DATA_SEASON, through_season))
+    fbs = fbs_teams(session, FIRST_DATA_SEASON, through_season)
+    table = prior_inputs(session, FIRST_DATA_SEASON, through_season)
     _, elo = elo_picks(games, closing, EloParams())
 
-    picks = _walk_forward(games, rows, closing, params)
-    train = [p for p in picks if TRAIN[0] <= p.game.season <= TRAIN[1]]
-    sigma = residual_sigma([p.margin for p in train], [p.game.margin for p in train])
+    setup = build_prior_setup(
+        grouped, range(FIRST_DATA_SEASON, through_season), fbs, table, TRAIN, rating_params
+    )
+    scored_seasons = range(TRAIN[0], through_season + 1)
+    priors = {s: setup.priors_for(s, fbs.get(s, set()), table) for s in scored_seasons}
+    scored_games = [g for g in games if is_scored(g, closing)]
+    picks = walk_forward(
+        scored_games, grouped, priors, setup.prior_hfa, rating_params, blend_params
+    )
 
-    def scored(model: str, subset: list[_Pick]) -> list[ScoredGame]:
+    def sigma(margin: Callable[[Pick], float]) -> float:
+        train = [p for p in picks if TRAIN[0] <= p.game.season <= TRAIN[1]]
+        return residual_sigma([margin(p) for p in train], [p.game.margin for p in train])
+
+    sigmas = {
+        "season": sigma(lambda p: p.season_margin),
+        "pred": sigma(lambda p: p.predictive_margin),
+    }
+
+    def scored(subset: Sequence[Pick], model: str) -> list[ScoredGame]:
         out = []
         for p in subset:
-            margin = p.margin if model == "tsi" else elo[p.game.id].margin
-            prob = win_prob(margin, sigma) if model == "tsi" else elo[p.game.id].home_win_prob
-            out.append(ScoredGame(p.game.season, margin, prob, p.game.margin, -closing[p.game.id]))
+            g = p.game
+            if model == "elo":
+                margin, prob = elo[g.id].margin, elo[g.id].home_win_prob
+            else:
+                margin = p.season_margin if model == "season" else p.predictive_margin
+                prob = win_prob(margin, sigmas[model])
+            out.append(ScoredGame(g.season, margin, prob, g.margin, -closing[g.id]))
         return out
 
-    def row(label: str, subset: list[_Pick]) -> ComparisonRow:
+    def row(label: str, subset: Sequence[Pick]) -> ComparisonRow:
         return ComparisonRow(
-            summarize(label, scored("tsi", subset)), summarize(label, scored("elo", subset))
+            *(summarize(label, scored(subset, m)) for m in ("season", "pred", "elo"))
         )
 
-    def seasons(first: int, last: int) -> list[_Pick]:
+    def in_seasons(first: int, last: int) -> list[Pick]:
         return [p for p in picks if first <= p.game.season <= last]
 
-    validate = seasons(*VALIDATE)
-    report_rows = [row(str(s), seasons(s, s)) for s in sorted({p.game.season for p in picks})]
-    report_rows += [
-        row(f"Train {TRAIN[0]}-{TRAIN[1]}", seasons(*TRAIN)),
+    validate = in_seasons(*VALIDATE)
+    rows = [row(str(s), in_seasons(s, s)) for s in sorted({p.game.season for p in picks})]
+    rows += [
+        row(f"Train {TRAIN[0]}-{TRAIN[1]}", in_seasons(*TRAIN)),
         row(f"Validate {VALIDATE[0]}-{VALIDATE[1]}", validate),
         row("  both teams 4+ games", [p for p in validate if p.established]),
         row("  provisional (<4)", [p for p in validate if not p.established]),
     ]
-    return RatingsReport(params, sigma, report_rows)
-
-
-def _walk_forward(
-    games: list[GameResult],
-    rows: list[OffenseRow],
-    closing: dict[int, float],
-    params: RatingParams,
-) -> list[_Pick]:
-    rows_by_season: dict[int, list[OffenseRow]] = defaultdict(list)
-    for r in rows:
-        rows_by_season[r.season].append(r)
-    slates: dict[tuple[int, date], list[GameResult]] = defaultdict(list)
-    for g in games:
-        if is_scored(g, closing) and g.start_time is not None:
-            slates[(g.season, refit_day(g.start_time))].append(g)
-
-    picks = []
-    for (season, day), slate in sorted(slates.items()):
-        cutoff = datetime.combine(day, time(REFIT_HOUR), tzinfo=UTC)
-        known = [r for r in rows_by_season[season] if r.start_time and r.start_time < cutoff]
-        ratings = fit_ratings(known, params)
-        for g in slate:
-            home = ratings.get(g.home_id, g.home_div)
-            away = ratings.get(g.away_id, g.away_div)
-            played = min(ratings.games.get(g.home_id, 0), ratings.games.get(g.away_id, 0))
-            margin = predicted_margin(ratings, home, away, g.neutral)
-            picks.append(_Pick(g, margin, played >= ESTABLISHED_GAMES))
-    return picks
+    return RatingsReport(rating_params, blend_params, setup.prior_hfa, rows)

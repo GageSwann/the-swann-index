@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 in progress:** Elo baseline (val MAE 13.15) and ridge `season` ratings done (val MAE 12.72 once teams have 4+ games; Vegas 12.06). Next: `season` + `predictive` rating sets (schema + prior).
+- **Phase 2 in progress:** Elo (val MAE 13.15), ridge `season` ratings, preseason prior + `predictive` blend done. **Predictive val MAE 12.84 vs. Vegas 12.00, SU 71.1%.** Next: SP+ comparison ingest, then the backtest harness (saved runs, calibration).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -54,6 +54,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Upserts:** always go through `db/upsert.py` (batched executemany, skips unchanged rows). Never send the same primary key twice in one batch (Postgres error); de-duplicate first.
 - **Neon latency** is ~43ms per round trip. Performance means fewer round trips and transactions, not faster Python.
 - **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
+- **Alembic** autogenerate misses primary-key changes; hand-write those. With our naming convention, pass the short constraint name (e.g. `"basis"`), never the full `ck_table_name`.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
 - **Windows shell:** PowerShell here-strings mangle inline Python; write scripts to the scratchpad. `sed` replacements containing `#` need another delimiter.
 - **GitHub Actions:** `astral-sh/setup-uv` has no floating major tag; pin the exact version (e.g. `v10.3.0`).
@@ -72,7 +73,7 @@ uv run pytest                   # tests (tests/ mirrors src/tsi/); DB tests use 
 uv run pytest -m "not db"       # skip DB-backed tests (offline)
 uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)
 uv run tsi model elo            # Elo baseline vs. closing line, by season (train/validate split)
-uv run tsi model ratings        # walk-forward season ratings vs. Elo + Vegas (--lam, --ppd-weight)
+uv run tsi model ratings        # walk-forward season + predictive vs. Elo + Vegas (--lam, --ppd-weight, --prior-games, --cutoff-games)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
 uv run tsi ingest daily         # refresh current season (also runs nightly in GitHub Actions)

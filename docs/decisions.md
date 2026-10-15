@@ -35,6 +35,7 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 29 | 2026-10-14 | Refactor: batched executemany upserts that skip unchanged rows; cache hits no longer logged; dead columns dropped (`team_game_stats.yards`/`havoc_rate`, `ingest_log.from_cache`); pool pre-ping kept | Measured: game upsert 0.84s → 0.22s, warm season load ~3.7s → ~2.1s; nightly re-load writes only changes. Pre-ping costs ~0.2s but guards against Neon idle-suspend |
 | 30 | 2026-10-14 | Elo baseline tuned on 2015–22 (K=45, HFA=55, carryover 0.90); scored on FBS-vs-FBS games with a closing line; points-per-Elo fit on train only | A fair (not strawman) bar: validation MAE 13.15 vs. Vegas 12.00. Gains past these settings were <0.01 pts (noise) |
 | 31 | 2026-10-14 | Ridge ratings: standardized targets, drive/play weights, pooled non-FBS team, FBS-centered; walk-forward refits at 10:00 UTC daily (mirrors production); preliminary λ=2, PPD weight 0.75 | λ=25 crushed ratings (top team +11, HFA inflated to 5.9). λ=2 gives realistic spreads (2025: Indiana +33, UMass −30, HFA 4.0) and beats Elo once teams have 4+ games |
+| 32 | 2026-10-14 | Preseason prior = per-input-subset least squares (handles missing inputs); fading blend k=10 games, cutoff 8 games (kept within the owner's midseason rule even though a 12–14 game cutoff scored ~0.05 better) | Predictive validation MAE 12.84 vs. Vegas 12.00 (meets the ~1 pt target); early-season games 15.55 → 13.74 |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)

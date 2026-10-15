@@ -3,12 +3,13 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index
+from sqlalchemy import CheckConstraint, ForeignKey, Index, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tsi.db.base import Base, CreatedAtMixin
 
 VARIANT_CHECK = "variant IN ('raw', 'adjusted')"
+BASIS_CHECK = "basis IN ('season', 'predictive')"
 
 
 class Prior(CreatedAtMixin, Base):
@@ -43,14 +44,25 @@ class ModelRun(CreatedAtMixin, Base):
 
 
 class TeamRating(CreatedAtMixin, Base):
-    """Ratings in points vs. an average team. `raw` = pure stats; `adjusted` adds manual tweaks."""
+    """Ratings in points vs. an average FBS team (decision #23).
+
+    basis: `season` = this season's games only (rankings);
+           `predictive` = plus the fading preseason prior (predictions).
+    variant: `raw` = pure stats; `adjusted` adds manual tweaks (Phase 9).
+    """
 
     __tablename__ = "team_ratings"
-    __table_args__ = (CheckConstraint(VARIANT_CHECK, name="variant"),)
+    __table_args__ = (
+        CheckConstraint(VARIANT_CHECK, name="variant"),
+        CheckConstraint(BASIS_CHECK, name="basis"),
+    )
 
     run_id: Mapped[int] = mapped_column(ForeignKey("model_runs.id"), primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), primary_key=True)
+    basis: Mapped[str] = mapped_column(primary_key=True, server_default="season")
     variant: Mapped[str] = mapped_column(primary_key=True, default="raw")
+    games_played: Mapped[int] = mapped_column(server_default="0")
+    provisional: Mapped[bool] = mapped_column(server_default=true())
     rating: Mapped[float]
     off_rating: Mapped[float]
     def_rating: Mapped[float]

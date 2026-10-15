@@ -78,6 +78,19 @@ rating = (prior_weight · prior + n · observed) / (prior_weight + n)
 ```
 `k` (starting weight in games) and `n_cutoff` are tuned in backtest. At `n = 0` the predictive rating is the prior; at `n ≥ n_cutoff` it's pure this-season data.
 
+**Implementation** (`model/prior.py`, `model/blend.py`, `services/prior_setup.py`):
+- Offense and defense priors are fit separately. Target: that season's final `season` rating. Coefficients are fit on 2015–2022 target seasons only (validation stays out-of-sample; train seasons are in-sample for these few coefficients).
+- **Missing inputs:** a separate model for every subset of {last FBS rating, talent, returning production}; each team uses the largest subset it has. A team that was FCS last year has no "last FBS rating".
+- The non-FBS pooled team keeps its season fit. HFA blends the same way using average games played; the prior HFA is the train-season average (~2.8 pts).
+- **Tuned within the midseason rule (#23):** `k` = 10, `n_cutoff` = 8 (train MAE 13.33). Longer cutoffs scored slightly better (12–14 games: −0.05 pts on validation), but would keep last season in the predictions for most of the year. The owner's call; not adopted.
+
+| Validation 2023–25 (FBS-vs-FBS) | Games | `season` | **`predictive`** | Elo | Vegas |
+|---|---|---|---|---|---|
+| All | 2,398 | 13.51 | **12.84** | 13.15 | 12.00 |
+| Both teams 4+ games | 1,728 | 12.72 | **12.50** | 12.94 | 12.06 |
+| Provisional (<4) | 670 | 15.55 | **13.74** | 13.72 | 11.86 |
+| Straight-up % | | | **71.1** | 70.5 | 72.7 |
+
 ## 4. Home-field advantage
 - v1: one global HFA fit in the regression (recent CFB ≈ 2–3 points; let the data decide)
 - Later: team-specific HFA (shrunk heavily), travel distance, rest days, altitude
