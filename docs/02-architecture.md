@@ -68,7 +68,7 @@ Module size and layering rules are in [09-conventions.md](09-conventions.md) §2
 | Charts | Recharts | visx if something needs more control |
 | Tables | TanStack Table | Sortable/filterable rankings |
 | Lint (web) | ESLint + Prettier | |
-| DB host | Neon Postgres (free tier) | `dev` and `main` branches, no local Docker needed |
+| DB host | Neon Postgres (free tier) | `production` (Neon's default) and `dev` branches, no local Docker needed |
 | Web host | Vercel | |
 | API host | Render or Fly.io | Cold starts are hidden by ISR caching |
 | Scheduling | GitHub Actions cron | |
@@ -127,7 +127,7 @@ All secrets come from environment variables; none are in code. See [09-conventio
 | Var | Secret? | Where |
 |---|---|---|
 | `CFBD_API_KEY` | yes | `backend/.env`, GitHub Actions secret |
-| `DATABASE_URL` | yes | `backend/.env` (Neon dev branch), GH secret + API host (main branch) |
+| `DATABASE_URL` | yes | `backend/.env` (Neon dev branch), GH secret + API host (production branch) |
 | `CFBD_MONTHLY_CALL_BUDGET` | no | `backend/.env` (default 1000); ingest refuses to exceed it |
 | `TSI_CORS_ORIGINS` | no | API host (the Vercel URL); `http://localhost:3000` locally |
 | `TSI_API_URL` | no | `web/.env.local`, Vercel env |

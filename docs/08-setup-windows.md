@@ -51,7 +51,7 @@ gh repo create the-swann-index --public --source . --remote origin --push
 
 ## 6. Accounts & keys
 - **CFBD:** request a key at https://collegefootballdata.com/key → `CFBD_API_KEY`
-- **Neon:** create a free project at https://neon.tech, add a `dev` branch → `DATABASE_URL` (use the dev branch locally)
+- **Neon:** create a free project at https://neon.tech (default branch: `production`), then Branches → New branch → `dev` from `production` → `DATABASE_URL` (use the dev branch locally)
 - Copy `backend/.env.example` → `backend/.env` and paste the values there. `.env` is gitignored; **never** paste keys into code, docs, or chat logs.
 - If a key is ever committed or pasted somewhere public, **rotate it** (CFBD: request a new key; Neon: reset the role password).
 - Later (Phase 6): Vercel and Render/Fly accounts, both signed in with GitHub.
