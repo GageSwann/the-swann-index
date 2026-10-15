@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
+from tsi.model.ratings.components import fit_components
 from tsi.model.ratings.design import POOLED_ID, build_design, involves_rated_team
 from tsi.model.ratings.fit import AVERAGE, RatingParams, fit_ratings, predicted_margin
 from tsi.model.ratings.probability import fit_sigma, residual_sigma, win_prob
@@ -16,6 +17,8 @@ class Row:
     drives: int | None = 12
     plays: int | None = 70
     epa_per_play: float | None = 0.1
+    success_rate: float | None = 0.45
+    start_time: None = None
     team_div: str = "fbs"
     opp_div: str = "fbs"
 
@@ -91,7 +94,21 @@ def test_no_games_means_everyone_is_average() -> None:
 def test_all_neutral_site_games_fit_without_home_field() -> None:
     rows = game(1, 2, 35, 10, neutral=True) + game(3, 4, 20, 17, neutral=True)
 
-    assert fit_ratings(rows).hfa == pytest.approx(0, abs=1e-6)
+    components = fit_components(rows, lam=2.0)
+
+    assert components.ppd.hfa == pytest.approx(0, abs=1e-6)  # no home games: no HFA signal
+    assert fit_ratings(rows).hfa == RatingParams().hfa  # rankings use the learned constant
+
+
+def test_rating_is_the_learned_blend_of_ppd_and_success() -> None:
+    rows = round_robin({1: 10, 2: -10})
+    components = fit_components(rows, lam=2.0)
+    p = RatingParams()
+
+    rating = fit_ratings(rows, p).teams[1]
+
+    ppd, sr = components.ppd.teams[1], components.success.teams[1]
+    assert rating.off == pytest.approx(p.ppd_weight * ppd.off + p.success_weight * sr.off)
 
 
 def test_predicted_margin_is_antisymmetric_at_neutral_site() -> None:

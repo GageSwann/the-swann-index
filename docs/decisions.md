@@ -40,6 +40,8 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 34 | 2026-10-14 | Win-probability σ fit by minimizing log loss on train (≈12.7), not the residual SD (≈18) | Fat-tailed margins inflated σ, so favorites won more often than predicted (80–90% bin was +7.4 off); now within ±3 in 4 of 5 bins |
 | 35 | 2026-10-14 | Recency weighting (B2) tested and rejected | Half-life 30/60/120 days moved train by ≤0.02 and validation by ≥0.00 (no gain); not worth fitting twice |
 | 36 | 2026-10-14 | `tsi backtest run` replaces `tsi model ratings`; runs saved to `model_runs` (kind `backtest`) with config, metrics, git SHA | One harness for every experiment; reproducible history |
+| 37 | 2026-10-14 | **Predictive margin = stacked model** (site, PPD, success rate, prior, Elo; weights per season stage; ridge λ=1000, site unpenalized). Replaces the hand-set fading blend (`blend.py` removed); the fade is learned. EPA dropped from the stack | LOSO train 13.30 → 12.96, validation 12.79 → 12.47, SU 71.0% → 72.2%. EPA was redundant (unstable negative weights). The weights make football sense (prior 1.1 → 0.15 as games accrue) |
+| 38 | 2026-10-14 | **Rankings (`season`) = learned blend** 0.726·PPD + 0.635·success rate, HFA 3.24, one weight set for the whole season; this-season inputs only. EPA kept for display | Validation 13.51 → 13.37 (4+ games: 12.72 → 12.55) while honoring the season-only rule (#23). Per-stage weights were only 0.07 better and can't give one rating per team |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)

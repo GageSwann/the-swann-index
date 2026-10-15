@@ -47,9 +47,11 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] `season` ratings (this season only) + `predictive` ratings (prior fading to zero by a cutoff; `model/blend.py`, `services/walk_forward.py`); migration 4 adds `basis`, `games_played`, `provisional` to `team_ratings` (applied)
 - [x] Preseason prior with fallbacks (`model/prior.py`): a separate least-squares model for every subset of inputs (last FBS rating, talent, returning production), fit on 2015–22 targets. Re-tuned for maximum accuracy (#33): prior worth 6 games, gone after 14. **Validation: predictive MAE 12.79 vs. Elo 13.15 vs. Vegas 12.00 (within the ~1 pt target); SU 71.0%** (target 72%)
 - [ ] Ingest SP+ ratings (`/ratings/sp`, ~1 call/season) for comparison only, **never as model input**. ⚠ CFBD history is end-of-season only, so it's a final-ratings sanity check, not a fair prediction benchmark (doc 04 §12). Needs a new table (migration); owner decision pending
-- [ ] Model improvements from the doc 04 §12 backlog, one at a time in the harness
+- [x] Model improvements round 1 (doc 04 §12): stacking B1 + success rate B5 + learned rankings blend B14 adopted; recency B2 rejected. **v1.1 validation: predictions 12.47 vs. Vegas 12.00 (SU 72.2% ✅), rankings 13.37**
+- [ ] Model improvements round 2: B6 context σ, B7 split pooled FCS, B8 richer prior (needs CFBD calls), B11 rating uncertainty
+- [ ] Production stack weights: fit on all completed seasons and store them (the daily job needs them; the backtest refits on train only)
 - [x] Walk-forward backtest harness + metrics + saved runs: `tsi backtest run` (season/predictive/Elo/Vegas tables, calibration bins, ATS by edge size), saved to `model_runs` (kind `backtest`, config + metrics + git SHA). σ fit by log loss (#34) → calibration within ±3 in 4 of 5 bins. ATS vs. closing 50.8%; no edge yet
-- [ ] Tune on 2015–2022, validate on 2023–2025 (incl. provisional threshold and prior cutoff week)
+- [x] Tune on 2015–2022, validate on 2023–2025 (λ, rankings blend weights, stack weights and penalty, σ; the prior fade is now learned by the stack)
 - [ ] Résumé (SOR) vs. a #12 benchmark using opponents' **current** ratings, plus SOS
 - [ ] Daily job: refit both rating sets after ingest → rankings update every morning
 - [ ] Report summarizing results vs. closing line / SP+ / Elo (use the `dataviz` skill for charts)

@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 in progress:** Elo (val MAE 13.15), ridge `season` ratings, preseason prior + `predictive` blend done. Backtest harness done. **Predictive val MAE 12.79 vs. Vegas 12.00, SU 71.0%, calibrated.** Next: backlog experiments (doc 04 §12), starting with B1 stacking.
+- **Phase 2 in progress:** Elo (val MAE 13.15), ridge `season` ratings, preseason prior + `predictive` blend done. Harness + **model v1.1** done: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.47 vs. Vegas 12.00, SU 72.2%**, calibrated). Next: Résumé/SOS, production stack weights + daily refit, round-2 backlog.
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -34,11 +34,11 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 6. Raw model output and manual adjustments are stored separately; the UI must be able to show both.
 
 ## Model decisions (doc 04)
-- **Two rating sets (#23):** `season` = this season's games only and drives **Power + Résumé rankings**. `predictive` = adds a preseason prior that fades to zero by midseason and drives **predictions/Book**. Fewer than 4 games = *provisional* rank.
+- **Two rating sets (#23, #37, #38):** `season` = this season's games only (learned 0.726·PPD + 0.635·success rate, HFA 3.24) and drives **Power + Résumé rankings**. `predictive` = **stacked** margin (site, PPD, success, prior, Elo; per-stage weights) and drives **predictions/Book**. Fewer than 4 games = *provisional* rank.
 - **Résumé (#24):** strength of record vs. a typical **#12** team, recomputed daily with opponents' **current** ratings (dynamic SOS: a win loses value if that opponent collapses).
 - **Daily (#25):** the nightly job refits ratings, so midweek games show up the next morning.
 - **2020** treated normally (#26). **v1 = baseline as specified** in doc 04; refine later (#28).
-- Tune on 2015–2022, validate on 2023–2025.
+- Tune on 2015–2022, validate on 2023–2025. Adopt an idea only if train improves and validation doesn't get worse (doc 04 §12). **Never use market lines as model inputs.**
 
 ## Data conventions (learned in Phase 1)
 - **Spread sign:** home team's view, **negative = home favored** (CFBD and TSI agree; verified).

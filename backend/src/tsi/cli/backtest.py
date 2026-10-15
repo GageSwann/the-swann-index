@@ -8,9 +8,9 @@ from tsi.backtest.ats import BREAK_EVEN
 from tsi.backtest.calibration import TOLERANCE
 from tsi.cli.runtime import db_runtime
 from tsi.ingest.freshness import current_season
-from tsi.model.blend import BlendParams
 from tsi.model.config import ModelConfig
 from tsi.model.ratings.fit import RatingParams
+from tsi.model.stack import DEFAULT_LAM
 from tsi.services.backtest import BacktestResult, run_backtest
 from tsi.services.backtest_data import load_backtest_data
 from tsi.services.backtest_store import save_backtest_run
@@ -22,17 +22,12 @@ app = typer.Typer(help="Walk-forward backtests.", no_args_is_help=True)
 def run(
     through: int | None = typer.Option(None, "--through", help="Last season (default: current)."),
     lam: float = typer.Option(RatingParams.lam, help="Ridge penalty."),
-    ppd_weight: float = typer.Option(RatingParams.ppd_weight, help="Share of PPD vs. EPA."),
-    prior_games: float = typer.Option(BlendParams.prior_games, help="Prior's weight in games."),
-    cutoff_games: float = typer.Option(BlendParams.cutoff_games, help="Games until prior = 0."),
+    stack_lam: float = typer.Option(DEFAULT_LAM, help="Ridge penalty on the predictive stack."),
     save: bool = typer.Option(True, help="Save the run to model_runs (kind='backtest')."),
 ) -> None:
     """TSI `season` + `predictive` vs. Elo and Vegas, plus calibration and ATS (validation)."""
     last = through or current_season(datetime.now(UTC))
-    config = ModelConfig(
-        RatingParams(lam=lam, ppd_weight=ppd_weight),
-        BlendParams(prior_games=prior_games, cutoff_games=cutoff_games),
-    )
+    config = ModelConfig(RatingParams(lam=lam), stack_lam)
     with db_runtime() as sessions:
         with sessions() as session:
             data = load_backtest_data(session, last)
@@ -49,10 +44,10 @@ def run(
 def _print_summary(result: BacktestResult) -> None:
     c = result.config
     typer.echo(
-        f"TSI {c.to_dict()['version']}: lam={c.rating.lam:g} PPD weight={c.rating.ppd_weight:g} | "
-        f"prior {c.blend.prior_games:g} games, gone after {c.blend.cutoff_games:g} | "
-        f"sigma {result.sigma:.1f}\n"
-        "MAE: Season = this season only (rankings), Pred = with prior (predictions)\n"
+        f"TSI {c.to_dict()['version']}: lam={c.rating.lam:g} | season blend PPD "
+        f"{c.rating.ppd_weight:g} + success {c.rating.success_weight:g}, HFA {c.rating.hfa:g} | "
+        f"stack lam {c.stack_lam:g} | sigma {result.sigma:.1f}\n"
+        "MAE: Season = this season only (rankings), Pred = stacked prediction\n"
     )
     typer.echo(
         f"{'':<24}{'games':>6}  {'Season':>6} {'Pred':>5} {'Elo':>5} {'Vegas':>5}  "

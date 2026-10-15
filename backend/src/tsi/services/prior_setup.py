@@ -19,7 +19,6 @@ InputsTable = Mapping[tuple[int, int], tuple[float | None, float | None]]
 @dataclass(frozen=True)
 class PriorSetup:
     model: PriorModel
-    prior_hfa: float
     finals: dict[int, RatingSet]  # completed seasons' end-of-season `season` ratings
 
     def priors_for(
@@ -50,8 +49,7 @@ def build_prior_setup(
         if season in finals
         for team in fbs.get(season, set()) & set(finals[season].teams)
     ]
-    train_hfas = [finals[s].hfa for s in range(train[0], train[1] + 1) if s in finals]
-    return PriorSetup(fit_prior_model(samples), sum(train_hfas) / len(train_hfas), finals)
+    return PriorSetup(fit_prior_model(samples), finals)
 
 
 def _inputs(

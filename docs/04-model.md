@@ -21,6 +21,11 @@ Each model run produces two sets of ratings, stored separately:
 - **Provisional ranks:** a team with fewer than **4** games this season (threshold tunable) is still ranked, but shown as *provisional*.
 - **Updated daily:** the nightly job (10:00 UTC) refits both sets after loading data, so a Tuesday-night game moves the rankings by Wednesday morning. Each day's run is a new `model_runs` row; published snapshots are never edited (rule 2).
 
+### Model v1.1 at a glance (decisions #37–#38)
+- **`season` (rankings):** `off = 0.726 × PPD off + 0.635 × success-rate off` (same for def), HFA 3.24 pts. The weights were learned on 2015–22 walk-forward games, but the inputs are **this season's games only**. EPA is fitted for display but not used in ratings.
+- **`predictive` (predictions):** a stacked margin, learned per season stage, from home field, PPD margin, success-rate margin, prior difference and Elo margin (`model/stack.py`). The prior's fade is **learned**: its weight drops from ~1.1 with no games to ~0.15 at 9+ games. The hand-set fading blend (§3 formula) was removed.
+- **Validation 2023–25:** rankings MAE 13.37 (12.55 with 4+ games); predictions **12.47 vs. Vegas 12.00**, SU 72.2%; calibration within ±1 in 4 of 5 bins.
+
 ## 1. Game-level inputs
 From `team_game_stats` (one row per team per game = that team's **offense**; its defense is the opponent's row):
 - Points (from `games`), drives and plays **for the full game**, so points per drive (PPD) is consistent
@@ -169,12 +174,12 @@ Goal: the most accurate predictions and the most defensible rankings. **Rules fo
 **Tier 1: likely gains, data already loaded**
 | # | Idea | Why it might help |
 |---|---|---|
-| B1 | **Learned blend ("stacking")**: fit margin = Σ βₖ·(component difference) on train, with components PPD, EPA, success rate, rush/pass EPA, prior, Elo, and weights that can shift with games played | Replaces hand-picked weights (w = 0.75, one prior curve) with weights the data chooses; ensembles usually beat their parts |
+| B1 | ✅ **Adopted (#37):** **Learned blend ("stacking")**: fit margin = Σ βₖ·(component difference) on train, with components PPD, EPA, success rate, rush/pass EPA, prior, Elo, and weights that can shift with games played | Replaces hand-picked weights (w = 0.75, one prior curve) with weights the data chooses; ensembles usually beat their parts |
 | B2 | ~~Recency weighting~~ **tested, rejected (#35)**: half-life 30/60/120 days → train −0.01 to −0.02, validation +0.06 to 0.00 | Noise-level; not worth fitting twice |
-| B3 | **Week-varying PPD/EPA weight** | EPA stabilizes faster than points per drive, so it should matter more early |
-| B4 | **Ridge toward the prior** (shrink toward the preseason estimate instead of toward 0) | One principled fit instead of fit-then-blend; avoids shrinking twice early in the season |
-| B5 | **Success rate as a third opponent-adjusted metric** | Success rate is very stable and predictive; we already store it |
-| B6 | **Context-dependent σ** (wider for mismatches and high-pace games) | Better win probabilities and calibration, which matter for the book |
+| B3 | ✅ Subsumed by B1 (per-stage weights): **Week-varying PPD/EPA weight** | EPA stabilizes faster than points per drive, so it should matter more early |
+| B4 | ✅ Subsumed by B1 (the stack learns the prior's weight): **Ridge toward the prior** (shrink toward the preseason estimate instead of toward 0) | One principled fit instead of fit-then-blend; avoids shrinking twice early in the season |
+| B5 | ✅ **Adopted (#37/#38), a top signal in both sets:** **Success rate as a third opponent-adjusted metric** | Success rate is very stable and predictive; we already store it |
+| B6 | ◐ Partly done: σ fit by log loss (#34); context-dependent σ still open (80–90% bin +3.8): **Context-dependent σ** (wider for mismatches and high-pace games) | Better win probabilities and calibration, which matter for the book |
 | B7 | **Split the pooled non-FBS team** into FCS and D-II/III | One pooled team mixes NDSU with D-III schools |
 
 **Tier 2: needs new data (CFBD calls)**
@@ -192,3 +197,4 @@ Goal: the most accurate predictions and the most defensible rankings. **Rules fo
 | B13 | Optional "form" view (recency-weighted `season` rating) alongside the full-season Power rating |
 
 **SP+ comparison caveat:** CFBD's historical SP+ (`/ratings/sp`) is end-of-season only. Comparing our week-by-week predictions against final SP+ would give SP+ look-ahead, so it isn't a fair *prediction* benchmark. It can still serve as a sanity check on final ratings (rank correlation).
+| B14 | ✅ **Adopted (#38):** learned weights for the `season` (rankings) blend: PPD + success rate, this-season inputs only |

@@ -3,16 +3,16 @@
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from tsi.model.blend import BlendParams
 from tsi.model.ratings.fit import RatingParams
+from tsi.model.stack import DEFAULT_LAM
 
-MODEL_VERSION = "tsi-v1.0"
+MODEL_VERSION = "tsi-v1.1"  # v1.1: learned season blend + stacked predictive margin
 
 
 @dataclass(frozen=True)
 class ModelConfig:
     rating: RatingParams = field(default_factory=RatingParams)
-    blend: BlendParams = field(default_factory=BlendParams)
+    stack_lam: float = DEFAULT_LAM  # ridge penalty on the predictive stack weights
 
     def to_dict(self) -> dict[str, Any]:
         return {"version": MODEL_VERSION, **asdict(self)}

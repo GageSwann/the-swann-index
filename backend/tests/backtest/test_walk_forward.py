@@ -24,6 +24,7 @@ def rows_for(g: GameResult) -> list[OffenseRow]:
         drives=12,
         plays=70,
         epa_per_play=0.1,
+        success_rate=0.45,
     )
     return [
         OffenseRow(team_id=g.home_id, opp_id=g.away_id, site=1, points=g.home_points, **common),
@@ -33,7 +34,7 @@ def rows_for(g: GameResult) -> list[OffenseRow]:
 
 def run(games):
     rows = {2024: [r for g in games for r in rows_for(g)]}
-    return walk_forward(games, rows, priors={}, prior_hfa=0.0)
+    return walk_forward(games, rows, priors={})
 
 
 def test_refit_day_uses_the_10am_utc_run() -> None:
