@@ -1,5 +1,7 @@
 """`tsi ingest ...`: pull CFBD data into the database (cache-first, idempotent)."""
 
+from datetime import UTC, datetime
+
 import typer
 
 from tsi.cli.runtime import ingest_runtime
@@ -7,11 +9,24 @@ from tsi.ingest.loaders.calendar import load_calendar
 from tsi.ingest.loaders.games import load_games
 from tsi.ingest.loaders.teams import load_teams
 from tsi.ingest.loaders.venues import load_venues
+from tsi.services.daily import run_daily
 
 app = typer.Typer(help="Load CFBD data into the database.", no_args_is_help=True)
 
 SEASON = typer.Option(..., "--season", "-s", min=2000, help="Season year, e.g. 2024.")
 REFRESH = typer.Option(False, "--refresh", help="Ignore the disk cache and re-fetch (uses calls).")
+
+
+@app.command()
+def daily() -> None:
+    """Refresh the in-progress season (what the nightly GitHub Action runs)."""
+    with ingest_runtime() as (client, sessions):
+        result = run_daily(client, sessions, datetime.now(UTC))
+    typer.echo(
+        f"daily {result.season}: {result.games} games refreshed"
+        f"{'; teams loaded' if result.loaded_teams else ''}"
+        f"{'; calendar loaded' if result.loaded_calendar else ''}"
+    )
 
 
 @app.command()

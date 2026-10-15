@@ -39,8 +39,12 @@ Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count 
 ### Ingestion rules
 - **Historical backfill:** seasons 2014–2025 (2014 provides the priors for 2015, the first backtest season).
 - **Idempotent upserts:** re-running ingest for a week never duplicates rows.
-- **Completed weeks are frozen:** after a week is final and ingested, it isn't re-fetched unless the operator forces it (`tsi ingest --force`).
-- **Raw response cache:** store raw JSON responses on disk (`backend/.cache/`, gitignored) during development to avoid repeat calls.
+- **Raw response cache + freshness** (`ingest/freshness.py`): raw JSON is cached on disk (`backend/.cache/`, gitignored).
+  - **Finished season** (a response fetched after Feb 1 of the following year): served from cache forever.
+  - **In-progress season:** a cached response expires after 6 hours, so the daily job always gets new results.
+  - **No season** (e.g. `/venues`): expires after 30 days.
+  - `--refresh` forces a re-fetch.
+- **Daily job:** `tsi ingest daily` runs from GitHub Actions at 10:00 UTC. It re-fetches current-season games (~1 call/day); teams and calendar are loaded only when a season first appears.
 - **Garbage time:** use CFBD's garbage-time-filtered advanced stats where offered.
 - **FCS opponents:** ingest the games and the FCS team rows (division = `fcs`) so FCS expansion needs no schema change.
 - **Conference/division per season:** write `team_seasons` from each season's `/teams?year=` response, because teams change conferences and move FCS→FBS.

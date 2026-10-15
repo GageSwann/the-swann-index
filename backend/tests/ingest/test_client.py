@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
@@ -24,7 +25,17 @@ class FakeApi:
         return httpx.Response(self.status, json=self.body)
 
 
-def make_client(tmp_path: Path, ledger, api: FakeApi, budget: int = 1000) -> CfbdClient:
+class Clock:
+    def __init__(self, now: datetime) -> None:
+        self.now = now
+
+    def __call__(self) -> datetime:
+        return self.now
+
+
+def make_client(
+    tmp_path: Path, ledger, api: FakeApi, budget: int = 1000, clock: Clock | None = None
+) -> CfbdClient:
     http = httpx.Client(base_url="https://cfbd.test", transport=httpx.MockTransport(api.handler))
     return CfbdClient(
         api_key=SecretStr(API_KEY),
@@ -32,6 +43,7 @@ def make_client(tmp_path: Path, ledger, api: FakeApi, budget: int = 1000) -> Cfb
         ledger=ledger,
         monthly_budget=budget,
         http=http,
+        **({"clock": clock} if clock else {}),
     )
 
 
@@ -57,6 +69,21 @@ def test_refresh_bypasses_cache(tmp_path: Path, ledger) -> None:
     client.get("/games", {"year": 2024}, refresh=True)
 
     assert len(api.requests) == 2
+
+
+def test_live_season_cache_expires_and_refetches(tmp_path: Path, ledger) -> None:
+    api = FakeApi()
+    clock = Clock(datetime(2026, 10, 14, 10, 0, tzinfo=UTC))
+    client = make_client(tmp_path, ledger, api, clock=clock)
+
+    client.get("/games", {"year": 2026})
+    clock.now += timedelta(hours=1)
+    client.get("/games", {"year": 2026})  # same day: cache
+    clock.now += timedelta(days=1)
+    client.get("/games", {"year": 2026})  # next day: fresh fetch
+
+    assert len(api.requests) == 2
+    assert [r.from_cache for r in ledger.records] == [False, True, False]
 
 
 def test_none_params_are_dropped(tmp_path: Path, ledger) -> None:

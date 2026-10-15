@@ -1,0 +1,36 @@
+# Nightly refresh of the in-progress season (games now; stats + ratings in later phases).
+# Secrets: CFBD_API_KEY, DATABASE_URL (repo Settings -> Secrets and variables -> Actions).
+name: Daily refresh
+
+on:
+  schedule:
+    - cron: "0 10 * * *" # 10:00 UTC = 5-6 AM US Eastern, after late West Coast games end
+  workflow_dispatch: # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Refresh current season from CFBD
+        run: uv run tsi ingest daily
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

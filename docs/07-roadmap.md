@@ -29,7 +29,8 @@ See [08-setup-windows.md](08-setup-windows.md).
   - [ ] 5c. advanced stats + drives → `team_game_stats`
   - [ ] 5d. lines, talent, returning production
 - [ ] Test-season ingest (2024); confirm the call count matches the doc 03 budget
-- [ ] Current-season freshness: the disk cache must not freeze an in-progress season. Until then, re-load 2026 with `--refresh`
+- [x] Current-season freshness: finished seasons cached forever, in-progress season expires after 6h (`ingest/freshness.py`)
+- [x] Daily refresh: `tsi ingest daily` + GitHub Actions cron at 10:00 UTC (pulled forward from Phase 6). Later phases add stats, rating refit, and publish to this job
 - [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed). _Done so far: teams/calendar/games for 2024–2026._
 - [ ] Data quality checks (doc 03) as `tsi check`. Fail on problems in FBS-involved games; only warn on lower divisions (2024–26 has 5 completed D-II/III/NAIA games with no score, and some small-college games never marked final)
 - [ ] Unit tests for loaders (fixtures, no live API in tests)

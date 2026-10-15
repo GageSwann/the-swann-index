@@ -1,15 +1,23 @@
 """On-disk cache of raw CFBD JSON responses (default `backend/.cache/`, gitignored).
 
 One file per (endpoint, params) pair. Only response bodies are stored; never
-request headers, so the API key cannot end up in the cache.
+request headers, so the API key cannot end up in the cache. Whether an entry is
+still usable is decided by `tsi.ingest.freshness`, not here.
 """
 
 import hashlib
 import json
 from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+
+@dataclass(frozen=True)
+class CachedResponse:
+    data: Any
+    fetched_at: datetime
 
 
 def cache_key(endpoint: str, params: Mapping[str, Any]) -> str:
@@ -28,20 +36,27 @@ class DiskCache:
         folder = endpoint.strip("/").replace("/", "_") or "root"
         return self.root / "cfbd" / folder / f"{cache_key(endpoint, params)}.json"
 
-    def get(self, endpoint: str, params: Mapping[str, Any]) -> Any | None:
-        """Cached response body, or None if absent (CFBD never returns a null body)."""
+    def get(self, endpoint: str, params: Mapping[str, Any]) -> CachedResponse | None:
         path = self.path_for(endpoint, params)
         if not path.exists():
             return None
-        return json.loads(path.read_text(encoding="utf-8"))["data"]
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return CachedResponse(payload["data"], datetime.fromisoformat(payload["fetched_at"]))
 
-    def put(self, endpoint: str, params: Mapping[str, Any], data: Any) -> None:
+    def put(
+        self,
+        endpoint: str,
+        params: Mapping[str, Any],
+        data: Any,
+        *,
+        fetched_at: datetime | None = None,
+    ) -> None:
         path = self.path_for(endpoint, params)
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "endpoint": endpoint,
             "params": dict(params),
-            "fetched_at": datetime.now(UTC).isoformat(),
+            "fetched_at": (fetched_at or datetime.now(UTC)).isoformat(),
             "data": data,
         }
         tmp = path.with_suffix(".tmp")

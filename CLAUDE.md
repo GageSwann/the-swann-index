@@ -43,6 +43,7 @@ uv run tsi --help               # CLI entry point (src/tsi/cli/)
 uv run pytest                   # tests (tests/ mirrors src/tsi/)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
+uv run tsi ingest daily         # refresh current season (also runs nightly in GitHub Actions)
 uv run tsi ingest venues        # CFBD -> DB (cache-first; --refresh re-fetches and uses calls)
 uv run tsi ingest teams --season 2024     # then: calendar, games (same --season)
 uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)

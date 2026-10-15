@@ -1,13 +1,19 @@
+from datetime import UTC, datetime
 from pathlib import Path
 
 from tsi.ingest.cache import DiskCache, cache_key
 
 
-def test_round_trip(tmp_path: Path) -> None:
+def test_round_trip_keeps_data_and_fetch_time(tmp_path: Path) -> None:
     cache = DiskCache(tmp_path)
-    cache.put("/games", {"year": 2024}, [{"id": 1}])
+    fetched = datetime(2026, 10, 14, 20, 0, tzinfo=UTC)
+    cache.put("/games", {"year": 2024}, [{"id": 1}], fetched_at=fetched)
 
-    assert cache.get("/games", {"year": 2024}) == [{"id": 1}]
+    entry = cache.get("/games", {"year": 2024})
+
+    assert entry is not None
+    assert entry.data == [{"id": 1}]
+    assert entry.fetched_at == fetched
 
 
 def test_missing_entry_returns_none(tmp_path: Path) -> None:

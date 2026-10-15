@@ -112,6 +112,7 @@ Responses are Pydantic models; the OpenAPI spec generates TypeScript types for `
 
 ## Data flow per week (in season)
 
+0. **Daily 10:00 UTC** (`.github/workflows/daily-refresh.yml`): refresh the current season's games (stats and a rating refit join this job in later phases, so rankings update the morning after any game).
 1. **Sunday ~10:00 UTC:** ingest completed games and stats → refit ratings → grade last week's picks → write new `model_run` → revalidate site.
 2. **Tuesday & Thursday:** ingest latest market lines → generate predictions for upcoming games → publish snapshots → revalidate.
 3. **Lock:** the locked prediction is the latest snapshot published before kickoff (a query, not a scheduled job); picks are graded against it and the closing line.

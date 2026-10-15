@@ -13,7 +13,10 @@ import httpx
 from pydantic import SecretStr
 
 from tsi.ingest.cache import DiskCache
+from tsi.ingest.freshness import is_fresh
 from tsi.ingest.ledger import CallLedger, CallRecord
+
+FreshnessRule = Callable[[Mapping[str, Any], datetime, datetime], bool]
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +42,7 @@ class CfbdClient:
         http: httpx.Client | None = None,
         base_url: str = DEFAULT_BASE_URL,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+        freshness: FreshnessRule = is_fresh,
     ) -> None:
         self._api_key = api_key
         self._cache = cache
@@ -46,21 +50,26 @@ class CfbdClient:
         self._budget = monthly_budget
         self._http = http or httpx.Client(base_url=base_url, timeout=30.0)
         self._clock = clock
+        self._is_fresh = freshness
 
     def get(
         self, endpoint: str, params: Mapping[str, Any] | None = None, *, refresh: bool = False
     ) -> Any:
-        """Return the JSON body for `endpoint`; `refresh=True` bypasses the cache."""
+        """Return the JSON body for `endpoint`.
+
+        Served from cache when the entry is still fresh (see `tsi.ingest.freshness`);
+        `refresh=True` always re-fetches.
+        """
         clean = {k: v for k, v in (params or {}).items() if v is not None}
         if not refresh:
             cached = self._cache.get(endpoint, clean)
-            if cached is not None:
-                self._record(endpoint, clean, from_cache=True, status="ok", data=cached)
-                return cached
+            if cached is not None and self._is_fresh(clean, cached.fetched_at, self._clock()):
+                self._record(endpoint, clean, from_cache=True, status="ok", data=cached.data)
+                return cached.data
 
         self._check_budget()
         data = self._fetch(endpoint, clean)
-        self._cache.put(endpoint, clean, data)
+        self._cache.put(endpoint, clean, data, fetched_at=self._clock())
         self._record(endpoint, clean, from_cache=False, status="ok", data=data)
         return data
 

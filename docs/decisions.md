@@ -21,6 +21,8 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 15 | 2026-10-14 | Use vetted third-party skills (Anthropic / vendor first), installed per phase, reviewed and recorded in `.claude/skills/SOURCES.md` | Reuse proven patterns without supply-chain surprises |
 | 16 | 2026-10-14 | `team_game_stats` stores offense only; `model_runs.kind` = live/backtest; DB trigger enforces prediction immutability | No duplicated defensive rows; backtests share tables but can be re-run; rule 2 enforced by the database, not just code |
 | 17 | 2026-10-14 | CFBD accessed via a thin `httpx` client instead of the official `cfbd` package | Raw JSON is easy to cache on disk and every call is logged to `ingest_log`; fewer dependencies |
+| 18 | 2026-10-14 | Daily automated refresh (GitHub Actions, 10:00 UTC) instead of only weekly; cache freshness rule by season | Owner wants rankings to update the day after games; ~30 CFBD calls/month for games |
+| 19 | 2026-10-14 | Until Phase 6, the daily job writes to the Neon **dev** branch (`DATABASE_URL` secret) | Production isn't in use yet; switch the secret to `production` at go-live |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)
