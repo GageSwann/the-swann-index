@@ -20,8 +20,6 @@ from tsi.db.base import Base
 from tsi.db.engine import make_engine, make_session_factory
 from tsi.ingest.cache import CachedResponse
 
-pytestmark = pytest.mark.db
-
 
 @pytest.fixture(scope="session")
 def db_engine() -> Iterator[Engine]:

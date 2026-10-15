@@ -13,7 +13,7 @@ class FakeLedger:
         self.records: list[CallRecord] = []
 
     def calls_this_month(self, now: datetime) -> int:
-        return self.used + sum(not r.from_cache for r in self.records)
+        return self.used + len(self.records)
 
     def record(self, entry: CallRecord) -> None:
         self.records.append(entry)

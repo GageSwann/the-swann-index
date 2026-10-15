@@ -2,8 +2,7 @@
 
 import typer
 
-from tsi.config import ConfigError, get_settings
-from tsi.db.engine import make_engine, make_session_factory
+from tsi.cli.runtime import db_runtime
 from tsi.quality.runner import CheckResult, run_checks
 
 COLORS = {"PASS": "green", "WARN": "yellow", "FAIL": "red"}
@@ -14,18 +13,8 @@ def check(
     details: bool = typer.Option(False, "--details", "-d", help="Show example rows."),
 ) -> None:
     """Run data quality checks (doc 03). Fails on correctness problems, warns on source gaps."""
-    try:
-        settings = get_settings()
-    except ConfigError as exc:
-        typer.secho(str(exc), fg="red", err=True)
-        raise typer.Exit(1) from None
-
-    engine = make_engine(settings)
-    try:
-        with make_session_factory(engine)() as session:
-            results = run_checks(session, season)
-    finally:
-        engine.dispose()
+    with db_runtime() as sessions, sessions() as session:
+        results = run_checks(session, season)
 
     for result in results:
         _print_result(result, details)

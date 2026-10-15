@@ -6,7 +6,7 @@
 - **The free tier is ~1,000 calls/month** (per CFBD's API v2 announcement; paid Patreon tiers raise it, and the limits can change, so confirm when signing up). That's why caching is mandatory: completed seasons are fetched once and live in Postgres forever.
 
 ### Call budget
-Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count against `CFBD_MONTHLY_CALL_BUDGET` and stops before exceeding it.
+Every real CFBD request (including failed ones) is recorded in `ingest_log`; cache hits are free and not logged. Ingest checks the month's count against `CFBD_MONTHLY_CALL_BUDGET` and stops before exceeding it.
 
 | Job | Calls (estimate) |
 |---|---|

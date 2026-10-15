@@ -6,7 +6,8 @@ import pytest
 from pydantic import SecretStr
 
 from tsi.ingest.cache import DiskCache
-from tsi.ingest.client import BudgetExceededError, CfbdClient, CfbdError
+from tsi.ingest.client import CfbdClient
+from tsi.ingest.errors import BudgetExceededError, CfbdError
 
 API_KEY = "fakekey"  # deliberately low-entropy so the gitleaks hook doesn't flag it
 GAMES = [{"id": 1}, {"id": 2}]
@@ -57,7 +58,7 @@ def test_first_call_fetches_with_bearer_then_cache_serves(tmp_path: Path, ledger
     assert len(api.requests) == 1
     assert api.requests[0].headers["Authorization"] == f"Bearer {API_KEY}"
     assert api.requests[0].url.params["year"] == "2024"
-    assert [r.from_cache for r in ledger.records] == [False, True]
+    assert len(ledger.records) == 1  # cache hits aren't logged
     assert ledger.records[0].row_count == 2
 
 
@@ -83,7 +84,7 @@ def test_live_season_cache_expires_and_refetches(tmp_path: Path, ledger) -> None
     client.get("/games", {"year": 2026})  # next day: fresh fetch
 
     assert len(api.requests) == 2
-    assert [r.from_cache for r in ledger.records] == [False, True, False]
+    assert len(ledger.records) == 2
 
 
 def test_get_response_reports_original_fetch_time(tmp_path: Path, ledger) -> None:
@@ -124,8 +125,7 @@ def test_http_error_is_recorded_and_never_leaks_key(tmp_path: Path, ledger) -> N
 
     assert "HTTP 401" in str(exc_info.value)
     assert API_KEY not in str(exc_info.value)
-    assert ledger.records[-1].status == "error"
-    assert ledger.records[-1].from_cache is False
+    assert ledger.records[-1].status == "error"  # failed calls still count
     assert DiskCache(tmp_path).get("/games", {"year": 2024}) is None  # errors aren't cached
 
 

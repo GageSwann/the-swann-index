@@ -28,9 +28,9 @@ def test_run_season_loads_everything_and_is_idempotent(sessions, fake_cfbd) -> N
     snapshot = {m: count(sessions, m) for m in (Venue, Team, TeamSeason, Game, TeamGameStats)}
     second = run_season(fake_cfbd, sessions, 2024)
 
-    assert first.games == 4 and first.stat_rows == 2
-    assert first.new_line_snapshots == 3  # Colorado game x 3 providers; others not loaded
-    assert second.new_line_snapshots == 0
+    assert first.results.games == 4 and first.results.stat_rows == 2
+    assert first.results.new_line_snapshots == 3  # Colorado game x 3 providers; others not loaded
+    assert second.results.new_line_snapshots == 0
     assert {m: count(sessions, m) for m in snapshot} == snapshot  # nothing duplicated
     with sessions() as s:
         stats = s.get(TeamGameStats, (COLORADO_GAME, COLORADO))

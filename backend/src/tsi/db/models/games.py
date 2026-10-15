@@ -48,11 +48,9 @@ class TeamGameStats(CreatedAtMixin, Base):
     points: Mapped[int | None]
     plays: Mapped[int | None]
     drives: Mapped[int | None]
-    yards: Mapped[int | None]
     epa_per_play: Mapped[float | None]
     rush_epa_per_play: Mapped[float | None]
     pass_epa_per_play: Mapped[float | None]
     success_rate: Mapped[float | None]
     explosiveness: Mapped[float | None]
-    havoc_rate: Mapped[float | None]  # havoc allowed by this offense
     garbage_time_filtered: Mapped[bool] = mapped_column(default=True)

@@ -1,7 +1,9 @@
 """Thin CFBD HTTP client: disk cache first, then a budget-checked API request.
 
-Every loader goes through `CfbdClient.get`. The API key is sent only as a request
-header; it is never logged, cached, or included in error messages.
+Every loader goes through `CfbdClient.get` / `get_response`. The API key is sent
+only as a request header; it is never logged, cached, or included in error
+messages. Only real API requests are recorded in the ledger (cache hits are free
+and not logged).
 """
 
 import logging
@@ -13,6 +15,7 @@ import httpx
 from pydantic import SecretStr
 
 from tsi.ingest.cache import CachedResponse, DiskCache
+from tsi.ingest.errors import BudgetExceededError, CfbdError
 from tsi.ingest.freshness import is_fresh
 from tsi.ingest.ledger import CallLedger, CallRecord
 
@@ -21,14 +24,6 @@ FreshnessRule = Callable[[Mapping[str, Any], datetime, datetime], bool]
 logger = logging.getLogger(__name__)
 
 DEFAULT_BASE_URL = "https://api.collegefootballdata.com"
-
-
-class CfbdError(RuntimeError):
-    """A CFBD request failed."""
-
-
-class BudgetExceededError(CfbdError):
-    """This month's call budget is used up; no request was sent."""
 
 
 class CfbdClient:
@@ -70,14 +65,14 @@ class CfbdClient:
         if not refresh:
             cached = self._cache.get(endpoint, clean)
             if cached is not None and self._is_fresh(clean, cached.fetched_at, self._clock()):
-                self._record(endpoint, clean, from_cache=True, status="ok", data=cached.data)
+                logger.debug("CFBD %s %s served from cache", endpoint, clean)
                 return cached
 
         self._check_budget()
         fetched_at = self._clock()
         data = self._fetch(endpoint, clean)
         self._cache.put(endpoint, clean, data, fetched_at=fetched_at)
-        self._record(endpoint, clean, from_cache=False, status="ok", data=data)
+        self._record(endpoint, clean, status="ok", data=data)
         return CachedResponse(data, fetched_at)
 
     def _check_budget(self) -> None:
@@ -96,11 +91,11 @@ class CfbdClient:
         try:
             response = self._http.get(endpoint, params=params, headers=headers)
         except httpx.HTTPError as exc:
-            self._record(endpoint, params, from_cache=False, status="error")
+            self._record(endpoint, params, status="error")
             raise CfbdError(f"CFBD request to {endpoint} failed: {type(exc).__name__}") from exc
 
         if response.status_code != httpx.codes.OK:
-            self._record(endpoint, params, from_cache=False, status="error")
+            self._record(endpoint, params, status="error")
             raise CfbdError(f"CFBD {endpoint} returned HTTP {response.status_code}")
 
         remaining = response.headers.get("X-CallLimit-Remaining")
@@ -108,20 +103,13 @@ class CfbdClient:
         return response.json()
 
     def _record(
-        self,
-        endpoint: str,
-        params: dict[str, Any],
-        *,
-        from_cache: bool,
-        status: str,
-        data: Any = None,
+        self, endpoint: str, params: dict[str, Any], *, status: str, data: Any = None
     ) -> None:
         self._ledger.record(
             CallRecord(
                 endpoint=endpoint,
                 params=params,
                 fetched_at=self._clock(),
-                from_cache=from_cache,
                 status=status,
                 row_count=len(data) if isinstance(data, list) else None,
             )

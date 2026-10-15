@@ -1,8 +1,8 @@
-"""Daily refresh of the in-progress season (run by GitHub Actions each night).
+"""Daily refresh of the in-progress season (run by GitHub Actions each morning).
 
-Games, advanced stats, and betting lines are re-fetched every day (~4 CFBD calls). Teams and
-calendar change rarely mid-season, so they're only loaded the first time a season
-appears. Later phases add: refit ratings and publish.
+Games, advanced stats, and betting lines are re-fetched every day (~4 CFBD calls).
+Teams and calendar change rarely mid-season, so they're only loaded the first
+time a season appears. Later phases add: refit ratings and publish.
 """
 
 import logging
@@ -16,10 +16,8 @@ from tsi.db.models import CalendarWeek, TeamSeason
 from tsi.ingest.client import CfbdClient
 from tsi.ingest.freshness import current_season
 from tsi.ingest.loaders.calendar import load_calendar
-from tsi.ingest.loaders.games import load_games
-from tsi.ingest.loaders.lines import load_lines
-from tsi.ingest.loaders.stats import load_team_game_stats
 from tsi.ingest.loaders.teams import load_teams
+from tsi.services.results import ResultsRefresh, refresh_results
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +27,17 @@ class DailyResult:
     season: int
     loaded_teams: bool
     loaded_calendar: bool
-    games: int
-    stat_rows: int
-    new_line_snapshots: int
+    results: ResultsRefresh
+
+    def summary(self) -> str:
+        r = self.results
+        extras = ("; teams loaded" if self.loaded_teams else "") + (
+            "; calendar loaded" if self.loaded_calendar else ""
+        )
+        return (
+            f"{self.season}: {r.games} games, {r.stat_rows} stat rows, "
+            f"{r.new_line_snapshots} new line snapshots{extras}"
+        )
 
 
 def run_daily(
@@ -46,16 +52,8 @@ def run_daily(
         load_teams(client, session_factory, season)
     if not has_calendar:
         load_calendar(client, session_factory, season)
-    games = load_games(client, session_factory, season)
-    stats = load_team_game_stats(client, session_factory, season)
-    lines = load_lines(client, session_factory, season)
-    logger.info(
-        "daily refresh %s: %s games, %s stat rows, %s new line snapshots",
-        season,
-        games.games,
-        stats.rows,
-        lines.inserted,
+    result = DailyResult(
+        season, not has_teams, not has_calendar, refresh_results(client, session_factory, season)
     )
-    return DailyResult(
-        season, not has_teams, not has_calendar, games.games, stats.rows, lines.inserted
-    )
+    logger.info("daily refresh %s", result.summary())
+    return result

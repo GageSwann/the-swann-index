@@ -83,9 +83,9 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | `team_seasons` | team_id, season, conference, **division** (fbs/fcs/…). Membership changes by year (realignment, FCS→FBS moves), so it never lives on `teams` |
 | `venues` | id, name, city, state, latitude, longitude, elevation_m, dome |
 | `games` | id, season, week, season_type, start_time (UTC), home_id, away_id, venue_id, neutral_site, conference_game, home_points, away_points, completed |
-| `team_game_stats` | game_id, team_id, points, plays, drives (full game), epa_per_play, rush/pass epa_per_play, success_rate, explosiveness (garbage time excluded), garbage_time_filtered. `yards`, `havoc_rate` exist but aren't populated (CFBD game-level advanced stats don't include them). **Offense only:** a team's defense for a game is its opponent's row |
+| `team_game_stats` | game_id, team_id, points, plays, drives (full game), epa_per_play, rush/pass epa_per_play, success_rate, explosiveness (garbage time excluded), garbage_time_filtered. **Offense only:** a team's defense for a game is its opponent's row |
 | `market_lines` | game_id, provider, spread, spread_open, total, total_open, home_ml, away_ml, fetched_at, is_closing |
-| `ingest_log` | endpoint, params (jsonb), season, week, fetched_at, from_cache, row_count, status. Powers frozen-week skipping and the monthly CFBD call budget (cache hits don't count) |
+| `ingest_log` | endpoint, params (jsonb), season, week, fetched_at, row_count, status. One row per **real** CFBD request (cache hits aren't logged); powers the monthly call budget |
 | `priors` | season, team_id, last_season_rating, returning_ppa (CFBD `percentPPA`: share 0–1 of last season's PPA returning), talent (247 composite), prior_rating. Inputs are loaded independently; each fills only its own column |
 | `model_runs` | id, **kind** (`live`/`backtest`), season, week, season_type, run_at, model_version, params (jsonb), git_sha |
 | `team_ratings` | run_id, team_id, **variant** (`raw`/`adjusted`), rating, off_rating, def_rating, pace, rank_power, sor, rank_resume. **Phase 2 adds `basis`** (`season`/`predictive`, decision #23) to the key, plus `games_played` / `provisional` |

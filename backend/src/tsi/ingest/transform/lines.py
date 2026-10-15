@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from tsi.ingest.convert import to_float, to_int
+
 VALUE_FIELDS = ("spread", "spread_open", "total", "total_open", "home_ml", "away_ml")
 LineKey = tuple[int, str]  # (game_id, provider)
 
@@ -41,12 +43,12 @@ def line_snapshots(raw: list[dict[str, Any]]) -> dict[LineKey, dict[str, Any]]:
             row = {
                 "game_id": game["id"],
                 "provider": line["provider"],
-                "spread": _num(line.get("spread")),
-                "spread_open": _num(line.get("spreadOpen")),
-                "total": _num(line.get("overUnder")),
-                "total_open": _num(line.get("overUnderOpen")),
-                "home_ml": _int(line.get("homeMoneyline")),
-                "away_ml": _int(line.get("awayMoneyline")),
+                "spread": to_float(line.get("spread")),
+                "spread_open": to_float(line.get("spreadOpen")),
+                "total": to_float(line.get("overUnder")),
+                "total_open": to_float(line.get("overUnderOpen")),
+                "home_ml": to_int(line.get("homeMoneyline")),
+                "away_ml": to_int(line.get("awayMoneyline")),
             }
             if any(row[f] is not None for f in VALUE_FIELDS):
                 snapshots[(row["game_id"], row["provider"])] = row
@@ -75,11 +77,3 @@ def plan_line_changes(
         else:
             plan.unchanged += 1
     return plan
-
-
-def _num(value: Any) -> float | None:
-    return None if value is None else float(value)
-
-
-def _int(value: Any) -> int | None:
-    return None if value is None else int(value)

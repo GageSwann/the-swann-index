@@ -51,7 +51,9 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 
 ## Gotchas
 - **SQLAlchemy 2.1:** don't `dict(session.execute(...))`; unpack rows in a comprehension. Use `.ext(postgresql.distinct_on(...))`, not `.distinct(cols)`.
-- **Upserts:** never send the same primary key twice in one batch (Postgres error); de-duplicate first.
+- **Upserts:** always go through `db/upsert.py` (batched executemany, skips unchanged rows). Never send the same primary key twice in one batch (Postgres error); de-duplicate first.
+- **Neon latency** is ~43ms per round trip. Performance means fewer round trips and transactions, not faster Python.
+- **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
 - **Windows shell:** PowerShell here-strings mangle inline Python; write scripts to the scratchpad. `sed` replacements containing `#` need another delimiter.
 - **GitHub Actions:** `astral-sh/setup-uv` has no floating major tag; pin the exact version (e.g. `v10.3.0`).

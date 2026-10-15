@@ -1,7 +1,8 @@
-"""Call ledger: records every CFBD request and counts this month's real API calls.
+"""Call ledger: records every real CFBD request and counts this month's calls.
 
 The client depends on the `CallLedger` protocol, so tests can use an in-memory
 fake; `DbCallLedger` is the real implementation backed by `ingest_log`.
+Failed requests are recorded too and count toward the budget (conservative).
 """
 
 from dataclasses import dataclass
@@ -12,6 +13,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import IngestLog
+from tsi.ingest.convert import to_int
 
 
 @dataclass(frozen=True)
@@ -19,7 +21,6 @@ class CallRecord:
     endpoint: str
     params: dict[str, Any]
     fetched_at: datetime
-    from_cache: bool
     status: str  # "ok" | "error"
     row_count: int | None = None
 
@@ -42,7 +43,7 @@ class DbCallLedger:
         query = (
             select(func.count())
             .select_from(IngestLog)
-            .where(IngestLog.from_cache.is_(False), IngestLog.fetched_at >= month_start(now))
+            .where(IngestLog.fetched_at >= month_start(now))
         )
         with self._session_factory() as session:
             return session.scalar(query) or 0
@@ -53,18 +54,10 @@ class DbCallLedger:
                 IngestLog(
                     endpoint=entry.endpoint,
                     params=entry.params,
-                    season=_as_int(entry.params.get("year")),
-                    week=_as_int(entry.params.get("week")),
+                    season=to_int(entry.params.get("year")),
+                    week=to_int(entry.params.get("week")),
                     fetched_at=entry.fetched_at,
-                    from_cache=entry.from_cache,
                     row_count=entry.row_count,
                     status=entry.status,
                 )
             )
-
-
-def _as_int(value: Any) -> int | None:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None

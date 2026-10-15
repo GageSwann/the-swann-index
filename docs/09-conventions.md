@@ -36,7 +36,9 @@ book/
 ├── snapshots.py      # publish immutable prediction snapshots
 └── grading.py        # results, units, CLV
 ```
-`model/`, `ingest/` (one loader per endpoint), and `api/routers/` (one router per resource) follow the same pattern.
+`model/`, `ingest/` (one loader per endpoint), `quality/` (rules split by severity), `cli/` (one module per command group), and `api/routers/` (one router per resource) follow the same pattern.
+
+**Database writes:** use `tsi.db.upsert.upsert_rows`. It sends rows as one batched executemany and skips rows whose values didn't change. Don't build giant `VALUES` literals; they're 3–4× slower.
 
 **Frontend:** `app/` route files stay thin and only fetch and compose. Components live in `components/<area>/`, formatting helpers live in `lib/format/`, and the API client lives in `lib/api/`.
 

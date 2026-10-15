@@ -1,4 +1,4 @@
-"""Log of every CFBD request: powers frozen-week skipping and the monthly call budget."""
+"""Log of every real CFBD request (not cache hits): powers the monthly call budget."""
 
 from datetime import datetime
 from typing import Any
@@ -19,6 +19,5 @@ class IngestLog(CreatedAtMixin, Base):
     season: Mapped[int | None]
     week: Mapped[int | None]
     fetched_at: Mapped[datetime] = mapped_column(index=True)
-    from_cache: Mapped[bool]  # cache hits don't count toward the call budget
     row_count: Mapped[int | None]
     status: Mapped[str]

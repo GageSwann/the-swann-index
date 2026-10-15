@@ -32,6 +32,7 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 26 | 2026-10-14 | 2020 (COVID) treated like any other season in fitting, tuning, and backtests | Owner preference; it's real data, just fewer games |
 | 27 | 2026-10-14 | No go-live deadline: Phase 2 gets full tuning (2015–22) and validation (2023–25) before launch | Owner isn't constrained by bowl season |
 | 28 | 2026-10-14 | v1 model = baseline exactly as doc 04 (PPD + EPA ridge, HFA, pooled FCS, fading prior, Elo comparison); refinements after it's working end to end | Get a complete, honest baseline first |
+| 29 | 2026-10-14 | Refactor: batched executemany upserts that skip unchanged rows; cache hits no longer logged; dead columns dropped (`team_game_stats.yards`/`havoc_rate`, `ingest_log.from_cache`); pool pre-ping kept | Measured: game upsert 0.84s → 0.22s, warm season load ~3.7s → ~2.1s; nightly re-load writes only changes. Pre-ping costs ~0.2s but guards against Neon idle-suspend |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)

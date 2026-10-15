@@ -1,14 +1,12 @@
 """Load one season of CFBD /lines into market_lines as change-only snapshots (1 call)."""
 
 from dataclasses import dataclass
-from itertools import batched
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import distinct_on, insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import Game, MarketLine
-from tsi.db.upsert import CHUNK_SIZE
 from tsi.ingest.client import CfbdClient
 from tsi.ingest.transform.lines import (
     VALUE_FIELDS,
@@ -43,8 +41,8 @@ def load_lines(
         plan = plan_line_changes(
             snapshots, _latest_lines(session, season), kickoff, response.fetched_at
         )
-        for chunk in batched(plan.inserts, CHUNK_SIZE):
-            session.execute(insert(MarketLine).values(list(chunk)).on_conflict_do_nothing())
+        if plan.inserts:
+            session.execute(insert(MarketLine).on_conflict_do_nothing(), plan.inserts)
         if plan.mark_closing:
             session.execute(
                 update(MarketLine)
