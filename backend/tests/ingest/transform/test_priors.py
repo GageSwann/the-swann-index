@@ -1,3 +1,5 @@
+import pytest
+
 from tsi.ingest.transform.priors import returning_rows, talent_rows
 
 TEAM_IDS = {"Alabama": 333, "Colorado": 38}
@@ -18,7 +20,8 @@ def test_returning_rows_use_percent_ppa(cfbd_fixture) -> None:
         for r in returning_rows(cfbd_fixture("returning_2024_sample"), 2024, TEAM_IDS)
     }
 
-    assert rows[38] == {"season": 2024, "team_id": 38, "returning_ppa": 0.665}
+    assert rows[38]["returning_ppa"] == 0.665
+    assert rows[38]["returning_passing_ppa"] == pytest.approx(0.994)
     assert "talent" not in rows[38]  # partial row: never overwrites talent
 
 

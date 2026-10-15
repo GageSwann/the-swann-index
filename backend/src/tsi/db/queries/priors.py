@@ -1,5 +1,7 @@
 """Preseason prior inputs and per-season FBS membership."""
 
+from dataclasses import dataclass
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -8,14 +10,28 @@ from tsi.db.models import Prior, TeamSeason
 PriorKey = tuple[int, int]  # (season, team_id)
 
 
-def prior_inputs(
-    session: Session, first_season: int, last_season: int
-) -> dict[PriorKey, tuple[float | None, float | None]]:
-    """(season, team_id) -> (talent, returning_ppa)."""
-    query = select(Prior.season, Prior.team_id, Prior.talent, Prior.returning_ppa).where(
-        Prior.season.between(first_season, last_season)
-    )
-    return {(s, t): (talent, ret) for s, t, talent, ret in session.execute(query)}
+@dataclass(frozen=True)
+class PriorRow:
+    talent: float | None = None
+    returning: float | None = None
+    returning_passing: float | None = None
+    recruiting: float | None = None
+    portal: float | None = None
+    new_coach: bool | None = None
+
+
+def prior_inputs(session: Session, first_season: int, last_season: int) -> dict[PriorKey, PriorRow]:
+    query = select(
+        Prior.season,
+        Prior.team_id,
+        Prior.talent,
+        Prior.returning_ppa,
+        Prior.returning_passing_ppa,
+        Prior.recruiting_points,
+        Prior.portal_net,
+        Prior.new_head_coach,
+    ).where(Prior.season.between(first_season, last_season))
+    return {(row[0], row[1]): PriorRow(*row[2:]) for row in session.execute(query)}
 
 
 def fbs_teams(session: Session, first_season: int, last_season: int) -> dict[int, set[int]]:

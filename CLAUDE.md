@@ -73,13 +73,14 @@ uv run pytest                   # tests (tests/ mirrors src/tsi/); DB tests use 
 uv run pytest -m "not db"       # skip DB-backed tests (offline)
 uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)
 uv run tsi model elo            # Elo baseline vs. closing line, by season (train/validate split)
+uv run tsi model rankings        # current Power + Résumé rankings (--season, --top, --by resume)
 uv run tsi model compare-sp      # sanity check: TSI final ratings vs. SP+ final (correlation)
 uv run tsi backtest run         # full walk-forward backtest + calibration + ATS; saved to model_runs (--no-save, --lam, ...)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
 uv run tsi ingest daily         # refresh current season (also runs nightly in GitHub Actions)
 uv run tsi ingest season --season 2014 --through 2026   # all loaders in order (~9 calls/season if not cached)
-uv run tsi ingest teams --season 2024     # single loaders: venues, teams, calendar, games, stats, lines, priors
+uv run tsi ingest teams --season 2024     # single loaders: venues, teams, calendar, games, stats, lines, priors, roster
 uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)
 uv run alembic revision --autogenerate -m "msg"   # after changing models; review before applying
 uv run alembic check            # models and DB in sync?

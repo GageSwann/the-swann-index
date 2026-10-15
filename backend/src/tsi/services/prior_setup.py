@@ -9,11 +9,12 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
+from tsi.db.queries.priors import PriorRow
 from tsi.db.queries.stats import OffenseRow
 from tsi.model.prior import PriorInputs, PriorModel, fit_prior_model
 from tsi.model.ratings.fit import RatingParams, RatingSet, TeamRating, fit_ratings
 
-InputsTable = Mapping[tuple[int, int], tuple[float | None, float | None]]
+InputsTable = Mapping[tuple[int, int], PriorRow]
 
 
 @dataclass(frozen=True)
@@ -57,5 +58,13 @@ def _inputs(
 ) -> PriorInputs:
     last_season = finals.get(season - 1)
     last = last_season.teams.get(team) if last_season else None
-    talent, returning = table.get((season, team), (None, None))
-    return PriorInputs(last=last, talent=talent, returning=returning)
+    row = table.get((season, team), PriorRow())
+    return PriorInputs(
+        last=last,
+        talent=row.talent,
+        returning=row.returning,
+        returning_passing=row.returning_passing,
+        recruiting=row.recruiting,
+        portal=row.portal,
+        new_coach=row.new_coach,
+    )

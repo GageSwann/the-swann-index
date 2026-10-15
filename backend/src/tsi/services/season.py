@@ -15,6 +15,7 @@ from tsi.db.models import Venue
 from tsi.ingest.client import CfbdClient
 from tsi.ingest.loaders.calendar import load_calendar
 from tsi.ingest.loaders.priors import load_prior_inputs
+from tsi.ingest.loaders.roster import load_roster_inputs
 from tsi.ingest.loaders.teams import load_teams
 from tsi.ingest.loaders.venues import load_venues
 from tsi.services.results import ResultsRefresh, refresh_results
@@ -56,6 +57,7 @@ def run_season(
     weeks = load_calendar(client, session_factory, season, refresh=refresh)
     results = refresh_results(client, session_factory, season, refresh=refresh)
     priors = load_prior_inputs(client, session_factory, season, refresh=refresh)
+    load_roster_inputs(client, session_factory, season, refresh=refresh)
 
     result = SeasonResult(season, teams.teams, weeks, results, priors.talent, priors.returning)
     logger.info("season %s", result.summary())

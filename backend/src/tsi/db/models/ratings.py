@@ -18,8 +18,12 @@ class Prior(CreatedAtMixin, Base):
     season: Mapped[int] = mapped_column(primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), primary_key=True)
     last_season_rating: Mapped[float | None]
-    returning_ppa: Mapped[float | None]
-    talent: Mapped[float | None]
+    returning_ppa: Mapped[float | None]  # share (0-1) of last season's PPA returning
+    returning_passing_ppa: Mapped[float | None]  # same, passing only (QB continuity)
+    talent: Mapped[float | None]  # 247 team talent composite
+    recruiting_points: Mapped[float | None]  # mean 247 class points, last 4 classes
+    portal_net: Mapped[float | None]  # star-weighted transfers in minus out
+    new_head_coach: Mapped[bool | None]  # preseason head coach differs from last year's
     prior_rating: Mapped[float | None]
 
 

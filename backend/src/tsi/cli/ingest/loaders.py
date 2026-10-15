@@ -8,6 +8,7 @@ from tsi.ingest.loaders.calendar import load_calendar
 from tsi.ingest.loaders.games import load_games
 from tsi.ingest.loaders.lines import load_lines
 from tsi.ingest.loaders.priors import load_prior_inputs
+from tsi.ingest.loaders.roster import load_roster_inputs
 from tsi.ingest.loaders.stats import load_team_game_stats
 from tsi.ingest.loaders.teams import load_teams
 from tsi.ingest.loaders.venues import load_venues
@@ -76,4 +77,15 @@ def priors(season: int = SEASON, refresh: bool = REFRESH) -> None:
         r = load_prior_inputs(client, sessions, season, refresh=refresh)
     typer.echo(
         f"priors {r.season}: {r.talent} talent, {r.returning} returning, {r.unmatched} unmatched"
+    )
+
+
+@app.command()
+def roster(season: int = SEASON, refresh: bool = REFRESH) -> None:
+    """Roster-change prior inputs: recruiting classes, transfer portal, head-coach change."""
+    with ingest_runtime() as (client, sessions):
+        r = load_roster_inputs(client, sessions, season, refresh=refresh)
+    typer.echo(
+        f"roster {r.season}: {r.recruiting} recruiting, {r.portal} portal, "
+        f"{r.coach_flags} coach-change flags"
     )

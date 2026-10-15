@@ -34,5 +34,6 @@ def test_ingest_group_lists_loaders() -> None:
         "stats",
         "lines",
         "priors",
+        "roster",
     ):
         assert command in result.output

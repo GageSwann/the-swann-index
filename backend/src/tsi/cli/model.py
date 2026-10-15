@@ -9,6 +9,7 @@ from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
 from tsi.model.elo import EloParams
 from tsi.services.elo_report import run_elo_report
+from tsi.services.rankings import build_rankings
 from tsi.services.sp_check import compare_with_sp
 
 app = typer.Typer(help="Run and evaluate rating models.", no_args_is_help=True)
@@ -69,3 +70,35 @@ def compare_sp(
     mean_p = sum(r.agreement.pearson for r in results) / len(results)
     mean_s = sum(r.agreement.spearman for r in results) / len(results)
     typer.secho(f"{'mean':>6} {'':>5} {mean_p:>8.3f} {mean_s:>9.3f}", bold=True)
+
+
+@app.command()
+def rankings(
+    season: int | None = typer.Option(None, "--season", help="Season (default: current)."),
+    top: int = typer.Option(25, help="How many teams to show."),
+    by: str = typer.Option("power", help="Order by 'power' or 'resume'."),
+) -> None:
+    """Current Power + Résumé rankings (this season's games only)."""
+    now = datetime.now(UTC)
+    year = season or current_season(now)
+    with db_runtime() as sessions, sessions() as session:
+        result = build_rankings(session, year, now)
+
+    teams = sorted(result.teams, key=lambda t: t.rank_resume) if by == "resume" else result.teams
+    typer.echo(
+        f"TSI {year} rankings as of {now:%Y-%m-%d %H:%M} UTC | HFA {result.ratings.hfa:.1f} | "
+        f"Résumé benchmark (#12 rating) {result.benchmark:+.1f}\n"
+    )
+    typer.echo(
+        f"{'Pwr':>3} {'Res':>3}  {'Team':<22}{'Rec':>6}  {'Rating':>6} {'Off':>6} {'Def':>6}  "
+        f"{'SOR':>6} {'SOS':>6}"
+    )
+    for t in teams[:top]:
+        r = t.resume
+        flag = "*" if t.provisional else " "
+        typer.echo(
+            f"{t.rank_power:>3} {t.rank_resume:>3}  {result.names[t.team_id][:21]:<22}"
+            f"{f'{r.wins}-{r.losses}':>6}{flag} {t.rating:>+6.1f} {t.off:>+6.1f} "
+            f"{t.defense:>+6.1f}  {r.sor:>6.3f} {r.sos:>+6.1f}"
+        )
+    typer.echo("\n* provisional (fewer than 4 games). SOR = chance a #12 team matches the record.")

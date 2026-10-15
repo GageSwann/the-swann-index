@@ -1,6 +1,10 @@
 """Preseason prior (doc 04 §3): predict a team's offense and defense before any games.
 
-    prior_side = a * last_season_side + b * talent + c * returning_production + d
+    prior_side = d + a * last_season_side + sum(b_k * input_k)
+
+Inputs: last season's final FBS rating (that side), talent composite, returning
+production (overall and passing), 4-year recruiting average, net transfer portal,
+and a new-head-coach flag.
 
 Fit by least squares on past seasons (target: that season's final `season`
 rating). Inputs can be missing (no talent before 2015, no returning production
@@ -17,7 +21,15 @@ import numpy as np
 
 from tsi.model.ratings.fit import TeamRating
 
-FEATURES = ("last", "talent", "returning")
+FEATURES = (
+    "last",
+    "talent",
+    "returning",
+    "returning_passing",
+    "recruiting",
+    "portal",
+    "new_coach",
+)
 SIDES = ("off", "defense")
 MIN_SAMPLES = 20  # don't fit a subset model on fewer teams than this
 
@@ -25,12 +37,25 @@ MIN_SAMPLES = 20  # don't fit a subset model on fewer teams than this
 @dataclass(frozen=True)
 class PriorInputs:
     last: TeamRating | None  # last season's final FBS rating
-    talent: float | None
-    returning: float | None
+    talent: float | None = None
+    returning: float | None = None
+    returning_passing: float | None = None
+    recruiting: float | None = None
+    portal: float | None = None
+    new_coach: bool | None = None
 
     def values(self, side: str) -> dict[str, float | None]:
         last = getattr(self.last, side) if self.last is not None else None
-        return {"last": last, "talent": self.talent, "returning": self.returning}
+        coach = None if self.new_coach is None else float(self.new_coach)
+        return {
+            "last": last,
+            "talent": self.talent,
+            "returning": self.returning,
+            "returning_passing": self.returning_passing,
+            "recruiting": self.recruiting,
+            "portal": self.portal,
+            "new_coach": coach,
+        }
 
 
 ModelKey = tuple[str, tuple[str, ...]]  # (side, available features)
