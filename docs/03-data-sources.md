@@ -12,7 +12,8 @@ Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count 
 |---|---|
 | Backfill, per season: prefer **season-wide** requests (`year=` with no week) for games, advanced stats, PPA, drives, lines, talent, returning production | ~10–25 |
 | Full backfill 2014–2026 (13 seasons) | ~150–325, spread over **2+ sessions** with the disk cache on |
-| In season: Sun stats + Tue/Thu lines | ~10–15 per week (~60/month) |
+| Daily job: games + 2× advanced stats | 3 per day (~93/month) |
+| In season: Tue/Thu lines (Phase 3) | ~2 per week |
 
 - Fetch a small test season (e.g. 2024) first and verify the call count before the full backfill.
 - If the budget gets tight, drop `/games/teams` (advanced stats cover most of it) or move to a paid tier.
@@ -26,9 +27,9 @@ Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count 
 | Calendar | `/calendar` | season/week boundaries |
 | Games & scores | `/games` | `games` table |
 | Team box stats | `/games/teams` | basic per-game stats |
-| Advanced game stats | `/stats/game/advanced` | EPA, success rate, explosiveness, havoc (garbage time excluded) |
-| PPA/EPA by game | `/ppa/games` | offense/defense EPA per play |
-| Drives | `/drives` | drives per game, points per drive, pace |
+| Advanced game stats | `/stats/game/advanced` (×2: `excludeGarbageTime=true` and full game) | Filtered: EPA/play, success rate, explosiveness, rush/pass EPA. Full game: plays and drives, so points per drive matches full-game points. Includes postseason. Teams are named by school, matched to our ids through the game |
+| ~~PPA/EPA by game~~ | ~~`/ppa/games`~~ | Not needed: covered by advanced stats |
+| ~~Drives~~ | ~~`/drives`~~ | Not needed: drive counts come from advanced stats |
 | Betting lines | `/lines` | spreads, totals, moneylines by provider |
 | Talent composite | `/talent` | preseason prior |
 | Returning production | `/player/returning` | preseason prior |

@@ -83,7 +83,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | `team_seasons` | team_id, season, conference, **division** (fbs/fcs/…). Membership changes by year (realignment, FCS→FBS moves), so it never lives on `teams` |
 | `venues` | id, name, city, state, latitude, longitude, elevation_m, dome |
 | `games` | id, season, week, season_type, start_time (UTC), home_id, away_id, venue_id, neutral_site, conference_game, home_points, away_points, completed |
-| `team_game_stats` | game_id, team_id, points, plays, drives, yards, epa_per_play, rush/pass epa_per_play, success_rate, explosiveness, havoc_rate, garbage_time_filtered. **Offense only:** a team's defense for a game is its opponent's row |
+| `team_game_stats` | game_id, team_id, points, plays, drives (full game), epa_per_play, rush/pass epa_per_play, success_rate, explosiveness (garbage time excluded), garbage_time_filtered. `yards`, `havoc_rate` exist but aren't populated (CFBD game-level advanced stats don't include them). **Offense only:** a team's defense for a game is its opponent's row |
 | `market_lines` | game_id, provider, spread, spread_open, total, total_open, home_ml, away_ml, fetched_at, is_closing |
 | `ingest_log` | endpoint, params (jsonb), season, week, fetched_at, from_cache, row_count, status. Powers frozen-week skipping and the monthly CFBD call budget (cache hits don't count) |
 | `priors` | season, team_id, last_season_rating, returning_ppa, talent, prior_rating |

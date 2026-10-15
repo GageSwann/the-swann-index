@@ -1,8 +1,8 @@
 """Daily refresh of the in-progress season (run by GitHub Actions each night).
 
-Games are re-fetched every day (~1 CFBD call). Teams and calendar change rarely
-mid-season, so they're only loaded the first time a season appears.
-Later phases add: advanced stats/drives, then refit ratings and publish.
+Games and advanced stats are re-fetched every day (~3 CFBD calls). Teams and
+calendar change rarely mid-season, so they're only loaded the first time a season
+appears. Later phases add: refit ratings and publish.
 """
 
 import logging
@@ -17,6 +17,7 @@ from tsi.ingest.client import CfbdClient
 from tsi.ingest.freshness import current_season
 from tsi.ingest.loaders.calendar import load_calendar
 from tsi.ingest.loaders.games import load_games
+from tsi.ingest.loaders.stats import load_team_game_stats
 from tsi.ingest.loaders.teams import load_teams
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ class DailyResult:
     loaded_teams: bool
     loaded_calendar: bool
     games: int
+    stat_rows: int
 
 
 def run_daily(
@@ -43,5 +45,6 @@ def run_daily(
     if not has_calendar:
         load_calendar(client, session_factory, season)
     games = load_games(client, session_factory, season)
-    logger.info("daily refresh %s: %s games", season, games.games)
-    return DailyResult(season, not has_teams, not has_calendar, games.games)
+    stats = load_team_game_stats(client, session_factory, season)
+    logger.info("daily refresh %s: %s games, %s stat rows", season, games.games, stats.rows)
+    return DailyResult(season, not has_teams, not has_calendar, games.games, stats.rows)

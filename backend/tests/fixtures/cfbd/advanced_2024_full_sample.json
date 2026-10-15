@@ -1,0 +1,170 @@
+[
+ {
+  "gameId": 401634206,
+  "season": 2024,
+  "seasonType": "regular",
+  "week": 1,
+  "team": "Colorado",
+  "opponent": "North Dakota State",
+  "offense": {
+   "plays": 57,
+   "drives": 9,
+   "ppa": 0.34883435466817214,
+   "totalPPA": 19.883558216085813,
+   "successRate": 0.543859649122807,
+   "explosiveness": 1.3594267965459161,
+   "powerSuccess": 0.5,
+   "stuffRate": 0.22727272727272727,
+   "lineYards": 2.5681818181818183,
+   "lineYardsTotal": 57,
+   "secondLevelYards": 0.36363636363636365,
+   "secondLevelYardsTotal": 8,
+   "openFieldYards": 0.045454545454545456,
+   "openFieldYardsTotal": 1,
+   "standardDowns": {
+    "ppa": 0.3709218194115926,
+    "successRate": 0.5652173913043478,
+    "explosiveness": 1.2951661592413386
+   },
+   "passingDowns": {
+    "ppa": 0.2564685930138685,
+    "successRate": 0.45454545454545453,
+    "explosiveness": 1.6935821105297189
+   },
+   "rushingPlays": {
+    "ppa": -0.1707992864680331,
+    "totalPPA": -3.757584302296728,
+    "successRate": 0.36363636363636365,
+    "explosiveness": 0.8066162892859042
+   },
+   "passingPlays": {
+    "ppa": 0.6754612148109297,
+    "totalPPA": 23.64114251838254,
+    "successRate": 0.6571428571428571,
+    "explosiveness": 1.5517087121146158
+   }
+  },
+  "defense": {
+   "plays": 67,
+   "drives": 9,
+   "ppa": 0.3417041062116812,
+   "totalPPA": 22.89417511618264,
+   "successRate": 0.4626865671641791,
+   "explosiveness": 1.4481423384256245,
+   "powerSuccess": 0.5,
+   "stuffRate": 0.2,
+   "lineYards": 2.455,
+   "lineYardsTotal": 98,
+   "secondLevelYards": 0.95,
+   "secondLevelYardsTotal": 38,
+   "openFieldYards": 0.975,
+   "openFieldYardsTotal": 39,
+   "standardDowns": {
+    "ppa": 0.03161987350446735,
+    "successRate": 0.40816326530612246,
+    "explosiveness": 0.9502750347119759
+   },
+   "passingDowns": {
+    "ppa": 1.1858222952479855,
+    "successRate": 0.6111111111111112,
+    "explosiveness": 2.353355617904985
+   },
+   "rushingPlays": {
+    "ppa": 0.11255734654529347,
+    "totalPPA": 4.502293861811739,
+    "successRate": 0.375,
+    "explosiveness": 1.202277865899518
+   },
+   "passingPlays": {
+    "ppa": 0.6811807871989223,
+    "totalPPA": 18.3918812543709,
+    "successRate": 0.5925925925925926,
+    "explosiveness": 1.6786402814188492
+   }
+  }
+ },
+ {
+  "gameId": 401634206,
+  "season": 2024,
+  "seasonType": "regular",
+  "week": 1,
+  "team": "North Dakota State",
+  "opponent": "Colorado",
+  "offense": {
+   "plays": 67,
+   "drives": 9,
+   "ppa": 0.3417041062116812,
+   "totalPPA": 22.89417511618264,
+   "successRate": 0.4626865671641791,
+   "explosiveness": 1.4481423384256245,
+   "powerSuccess": 0.5,
+   "stuffRate": 0.2,
+   "lineYards": 2.455,
+   "lineYardsTotal": 98,
+   "secondLevelYards": 0.95,
+   "secondLevelYardsTotal": 38,
+   "openFieldYards": 0.975,
+   "openFieldYardsTotal": 39,
+   "standardDowns": {
+    "ppa": 0.03161987350446735,
+    "successRate": 0.40816326530612246,
+    "explosiveness": 0.9502750347119759
+   },
+   "passingDowns": {
+    "ppa": 1.1858222952479855,
+    "successRate": 0.6111111111111112,
+    "explosiveness": 2.353355617904985
+   },
+   "rushingPlays": {
+    "ppa": 0.11255734654529347,
+    "totalPPA": 4.502293861811739,
+    "successRate": 0.375,
+    "explosiveness": 1.202277865899518
+   },
+   "passingPlays": {
+    "ppa": 0.6811807871989223,
+    "totalPPA": 18.3918812543709,
+    "successRate": 0.5925925925925926,
+    "explosiveness": 1.6786402814188492
+   }
+  },
+  "defense": {
+   "plays": 57,
+   "drives": 9,
+   "ppa": 0.34883435466817214,
+   "totalPPA": 19.883558216085813,
+   "successRate": 0.543859649122807,
+   "explosiveness": 1.3594267965459161,
+   "powerSuccess": 0.5,
+   "stuffRate": 0.22727272727272727,
+   "lineYards": 2.5681818181818183,
+   "lineYardsTotal": 57,
+   "secondLevelYards": 0.36363636363636365,
+   "secondLevelYardsTotal": 8,
+   "openFieldYards": 0.045454545454545456,
+   "openFieldYardsTotal": 1,
+   "standardDowns": {
+    "ppa": 0.3709218194115926,
+    "successRate": 0.5652173913043478,
+    "explosiveness": 1.2951661592413386
+   },
+   "passingDowns": {
+    "ppa": 0.2564685930138685,
+    "successRate": 0.45454545454545453,
+    "explosiveness": 1.6935821105297189
+   },
+   "rushingPlays": {
+    "ppa": -0.1707992864680331,
+    "totalPPA": -3.757584302296728,
+    "successRate": 0.36363636363636365,
+    "explosiveness": 0.8066162892859042
+   },
+   "passingPlays": {
+    "ppa": 0.6754612148109297,
+    "totalPPA": 23.64114251838254,
+    "successRate": 0.6571428571428571,
+    "explosiveness": 1.5517087121146158
+   }
+  }
+ }
+]

@@ -7,6 +7,7 @@ import typer
 from tsi.cli.runtime import ingest_runtime
 from tsi.ingest.loaders.calendar import load_calendar
 from tsi.ingest.loaders.games import load_games
+from tsi.ingest.loaders.stats import load_team_game_stats
 from tsi.ingest.loaders.teams import load_teams
 from tsi.ingest.loaders.venues import load_venues
 from tsi.services.daily import run_daily
@@ -23,7 +24,7 @@ def daily() -> None:
     with ingest_runtime() as (client, sessions):
         result = run_daily(client, sessions, datetime.now(UTC))
     typer.echo(
-        f"daily {result.season}: {result.games} games refreshed"
+        f"daily {result.season}: {result.games} games, {result.stat_rows} stat rows refreshed"
         f"{'; teams loaded' if result.loaded_teams else ''}"
         f"{'; calendar loaded' if result.loaded_calendar else ''}"
     )
@@ -65,4 +66,15 @@ def games(season: int = SEASON, refresh: bool = REFRESH) -> None:
     typer.echo(
         f"games {result.season}: {result.games} games upserted, "
         f"{result.placeholder_teams} placeholder teams added"
+    )
+
+
+@app.command()
+def stats(season: int = SEASON, refresh: bool = REFRESH) -> None:
+    """Advanced per-game team stats (run after `games` for the same season)."""
+    with ingest_runtime() as (client, sessions):
+        result = load_team_game_stats(client, sessions, season, refresh=refresh)
+    typer.echo(
+        f"stats {result.season}: {result.rows} team-game rows upserted, "
+        f"{result.unmatched} unmatched CFBD rows"
     )

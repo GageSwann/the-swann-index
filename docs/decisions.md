@@ -23,6 +23,7 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 17 | 2026-10-14 | CFBD accessed via a thin `httpx` client instead of the official `cfbd` package | Raw JSON is easy to cache on disk and every call is logged to `ingest_log`; fewer dependencies |
 | 18 | 2026-10-14 | Daily automated refresh (GitHub Actions, 10:00 UTC) instead of only weekly; cache freshness rule by season | Owner wants rankings to update the day after games; ~30 CFBD calls/month for games |
 | 19 | 2026-10-14 | Until Phase 6, the daily job writes to the Neon **dev** branch (`DATABASE_URL` secret) | Production isn't in use yet; switch the secret to `production` at go-live |
+| 20 | 2026-10-14 | Efficiency stats garbage-time filtered; plays/drives from full-game stats; `/drives` and `/ppa/games` dropped | Points per drive must use full-game drives to match full-game points (1,048 of 3,212 2024 team-games differ); advanced stats already include drive counts, saving calls |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)
