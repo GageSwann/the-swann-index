@@ -1,0 +1,38 @@
+[project]
+name = "tsi"
+version = "0.1.0"
+description = "The Swann Index: college football ratings, predictions, and book."
+authors = [
+    { name = "Gage Swann", email = "157079137+GageSwann@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.27.3",
+]
+
+[project.scripts]
+tsi = "tsi.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, isort, bugbear, pyupgrade, simplify, naming
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "N"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# importlib mode: tests/<area>/ folders need no __init__.py and may reuse file names
+addopts = "-ra --strict-markers --import-mode=importlib"

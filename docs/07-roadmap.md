@@ -19,7 +19,7 @@ See [08-setup-windows.md](08-setup-windows.md).
 **Done when:** docs are on GitHub, all tools respond to `--version`, and a test commit containing a fake key is blocked by the hook.
 
 ## Phase 1: Data foundation
-- [ ] Scaffold `backend/` (uv, ruff, pytest, `tsi` package, CLI skeleton)
+- [x] Scaffold `backend/` (uv, ruff, pytest, `tsi` package, Typer CLI skeleton)
 - [ ] `tsi/config.py` (pydantic-settings) + test that a missing variable fails clearly without echoing values
 - [ ] SQLAlchemy models + first Alembic migration (schema in doc 02, incl. `team_seasons`, `ingest_log`)
 - [ ] CFBD client wrapper with raw-response disk cache + call-budget guard

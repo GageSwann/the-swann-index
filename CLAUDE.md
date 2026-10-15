@@ -36,4 +36,12 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 pre-commit install              # once per clone: enables gitleaks + ruff hooks
 pre-commit run --all-files      # run every hook manually
 ```
-_Backend and web commands are added as they're scaffolded (Phase 1, Phase 5)._
+Backend (run from `backend/`):
+```powershell
+uv sync                         # install/update deps into backend/.venv
+uv run tsi --help               # CLI entry point (src/tsi/cli/)
+uv run pytest                   # tests (tests/ mirrors src/tsi/)
+uv run ruff check . ; uv run ruff format .
+uv add <pkg>  /  uv add --dev <pkg>
+```
+_Web commands are added when `web/` is scaffolded (Phase 5)._
