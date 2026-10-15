@@ -1,0 +1,118 @@
+[
+ {
+  "id": 401634206,
+  "season": 2024,
+  "seasonType": "regular",
+  "week": 1,
+  "startDate": "2024-08-30T00:00:00.000Z",
+  "homeTeamId": 38,
+  "homeTeam": "Colorado",
+  "homeConference": "Big 12",
+  "homeClassification": "fbs",
+  "homeScore": 31,
+  "awayTeamId": 2449,
+  "awayTeam": "North Dakota State",
+  "awayConference": "MVFC",
+  "awayClassification": "fcs",
+  "awayScore": 26,
+  "lines": [
+   {
+    "provider": "DraftKings",
+    "spread": -9,
+    "formattedSpread": "Colorado -9",
+    "spreadOpen": -8,
+    "overUnder": 59,
+    "overUnderOpen": 59.5,
+    "homeMoneyline": -470,
+    "awayMoneyline": 360
+   },
+   {
+    "provider": "Bovada",
+    "spread": -9.5,
+    "formattedSpread": "Colorado -9.5",
+    "spreadOpen": -9,
+    "overUnder": 60.5,
+    "overUnderOpen": 60.5,
+    "homeMoneyline": -360,
+    "awayMoneyline": 280
+   },
+   {
+    "provider": "ESPN Bet",
+    "spread": -11.5,
+    "formattedSpread": "Colorado -11.5",
+    "spreadOpen": null,
+    "overUnder": 54.5,
+    "overUnderOpen": null,
+    "homeMoneyline": null,
+    "awayMoneyline": null
+   }
+  ]
+ },
+ {
+  "id": 401636940,
+  "season": 2024,
+  "seasonType": "regular",
+  "week": 14,
+  "startDate": "2024-11-30T20:30:00.000Z",
+  "homeTeamId": 12,
+  "homeTeam": "Arizona",
+  "homeConference": "Big 12",
+  "homeClassification": "fbs",
+  "homeScore": 7,
+  "awayTeamId": 9,
+  "awayTeam": "Arizona State",
+  "awayConference": "Big 12",
+  "awayClassification": "fbs",
+  "awayScore": 49,
+  "lines": [
+   {
+    "provider": "Bovada",
+    "spread": 7.5,
+    "formattedSpread": "Arizona State -7.5",
+    "spreadOpen": 8.5,
+    "overUnder": 53.5,
+    "overUnderOpen": 53.5,
+    "homeMoneyline": 270,
+    "awayMoneyline": -340
+   },
+   {
+    "provider": "ESPN Bet",
+    "spread": 7.5,
+    "formattedSpread": "Arizona State -7.5",
+    "spreadOpen": 9,
+    "overUnder": 52.5,
+    "overUnderOpen": 53.5,
+    "homeMoneyline": 250,
+    "awayMoneyline": -300
+   },
+   {
+    "provider": "DraftKings",
+    "spread": 7.5,
+    "formattedSpread": "Arizona State -7.5",
+    "spreadOpen": 8.5,
+    "overUnder": 54,
+    "overUnderOpen": null,
+    "homeMoneyline": 215,
+    "awayMoneyline": -265
+   }
+  ]
+ },
+ {
+  "id": 401640992,
+  "season": 2024,
+  "seasonType": "regular",
+  "week": 5,
+  "startDate": "2024-09-28T19:30:00.000Z",
+  "homeTeamId": 2026,
+  "homeTeam": "App State",
+  "homeConference": "Sun Belt",
+  "homeClassification": "fbs",
+  "homeScore": null,
+  "awayTeamId": 2335,
+  "awayTeam": "Liberty",
+  "awayConference": "Conference USA",
+  "awayClassification": "fbs",
+  "awayScore": null,
+  "lines": []
+ }
+]

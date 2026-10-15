@@ -12,7 +12,7 @@ from typing import Any, Self
 import httpx
 from pydantic import SecretStr
 
-from tsi.ingest.cache import DiskCache
+from tsi.ingest.cache import CachedResponse, DiskCache
 from tsi.ingest.freshness import is_fresh
 from tsi.ingest.ledger import CallLedger, CallRecord
 
@@ -60,18 +60,25 @@ class CfbdClient:
         Served from cache when the entry is still fresh (see `tsi.ingest.freshness`);
         `refresh=True` always re-fetches.
         """
+        return self.get_response(endpoint, params, refresh=refresh).data
+
+    def get_response(
+        self, endpoint: str, params: Mapping[str, Any] | None = None, *, refresh: bool = False
+    ) -> CachedResponse:
+        """Like `get`, plus when the data was actually fetched from CFBD (snapshot time)."""
         clean = {k: v for k, v in (params or {}).items() if v is not None}
         if not refresh:
             cached = self._cache.get(endpoint, clean)
             if cached is not None and self._is_fresh(clean, cached.fetched_at, self._clock()):
                 self._record(endpoint, clean, from_cache=True, status="ok", data=cached.data)
-                return cached.data
+                return cached
 
         self._check_budget()
+        fetched_at = self._clock()
         data = self._fetch(endpoint, clean)
-        self._cache.put(endpoint, clean, data, fetched_at=self._clock())
+        self._cache.put(endpoint, clean, data, fetched_at=fetched_at)
         self._record(endpoint, clean, from_cache=False, status="ok", data=data)
-        return data
+        return CachedResponse(data, fetched_at)
 
     def _check_budget(self) -> None:
         used = self._ledger.calls_this_month(self._clock())

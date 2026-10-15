@@ -7,6 +7,8 @@ import typer
 from tsi.cli.runtime import ingest_runtime
 from tsi.ingest.loaders.calendar import load_calendar
 from tsi.ingest.loaders.games import load_games
+from tsi.ingest.loaders.lines import load_lines
+from tsi.ingest.loaders.priors import load_prior_inputs
 from tsi.ingest.loaders.stats import load_team_game_stats
 from tsi.ingest.loaders.teams import load_teams
 from tsi.ingest.loaders.venues import load_venues
@@ -24,7 +26,8 @@ def daily() -> None:
     with ingest_runtime() as (client, sessions):
         result = run_daily(client, sessions, datetime.now(UTC))
     typer.echo(
-        f"daily {result.season}: {result.games} games, {result.stat_rows} stat rows refreshed"
+        f"daily {result.season}: {result.games} games, {result.stat_rows} stat rows, "
+        f"{result.new_line_snapshots} new line snapshots"
         f"{'; teams loaded' if result.loaded_teams else ''}"
         f"{'; calendar loaded' if result.loaded_calendar else ''}"
     )
@@ -77,4 +80,26 @@ def stats(season: int = SEASON, refresh: bool = REFRESH) -> None:
     typer.echo(
         f"stats {result.season}: {result.rows} team-game rows upserted, "
         f"{result.unmatched} unmatched CFBD rows"
+    )
+
+
+@app.command()
+def lines(season: int = SEASON, refresh: bool = REFRESH) -> None:
+    """Betting lines by provider; stores a new snapshot only when numbers change."""
+    with ingest_runtime() as (client, sessions):
+        result = load_lines(client, sessions, season, refresh=refresh)
+    typer.echo(
+        f"lines {result.season}: {result.inserted} new snapshots, "
+        f"{result.marked_closing} marked closing, {result.unchanged} unchanged"
+    )
+
+
+@app.command()
+def priors(season: int = SEASON, refresh: bool = REFRESH) -> None:
+    """Preseason prior inputs: talent composite + returning production."""
+    with ingest_runtime() as (client, sessions):
+        result = load_prior_inputs(client, sessions, season, refresh=refresh)
+    typer.echo(
+        f"priors {result.season}: {result.talent} talent, {result.returning} returning, "
+        f"{result.unmatched} unmatched"
     )

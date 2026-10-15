@@ -86,6 +86,17 @@ def test_live_season_cache_expires_and_refetches(tmp_path: Path, ledger) -> None
     assert [r.from_cache for r in ledger.records] == [False, True, False]
 
 
+def test_get_response_reports_original_fetch_time(tmp_path: Path, ledger) -> None:
+    clock = Clock(datetime(2026, 10, 14, 10, 0, tzinfo=UTC))
+    client = make_client(tmp_path, ledger, FakeApi(), clock=clock)
+
+    first = client.get_response("/games", {"year": 2026})
+    clock.now += timedelta(hours=1)
+    second = client.get_response("/games", {"year": 2026})  # cached
+
+    assert first.fetched_at == second.fetched_at == datetime(2026, 10, 14, 10, 0, tzinfo=UTC)
+
+
 def test_none_params_are_dropped(tmp_path: Path, ledger) -> None:
     api = FakeApi()
     make_client(tmp_path, ledger, api).get("/games", {"year": 2024, "week": None})

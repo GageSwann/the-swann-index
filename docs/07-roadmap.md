@@ -27,20 +27,20 @@ See [08-setup-windows.md](08-setup-windows.md).
   - [x] 5a. venues, teams, team_seasons (`tsi ingest venues`, `tsi ingest teams --season`)
   - [x] 5b. calendar, games (`calendar_weeks`, placeholder teams for unknown opponents)
   - [x] 5c. advanced stats → `team_game_stats` (`tsi ingest stats --season`; `/drives` not needed: drive counts come from the full-game stats)
-  - [ ] 5d. lines, talent, returning production
+  - [x] 5d. lines (change-only snapshots + closing flag), talent, returning production (`tsi ingest lines` / `priors`)
 - [ ] Test-season ingest (2024); confirm the call count matches the doc 03 budget
 - [x] Current-season freshness: finished seasons cached forever, in-progress season expires after 6h (`ingest/freshness.py`)
 - [x] Daily refresh: `tsi ingest daily` + GitHub Actions cron at 10:00 UTC (pulled forward from Phase 6). Later phases add stats, rating refit, and publish to this job
-- [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed). _Done so far: teams/calendar/games/stats for 2024–2026._
+- [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed). _Done so far: everything for 2024–2026 (teams, calendar, games, stats, lines, priors)._
 - [ ] Data quality checks (doc 03) as `tsi check`. Fail on problems in FBS-involved games; only warn on lower divisions (2024–26 has 5 completed D-II/III/NAIA games with no score, and some small-college games never marked final). Also report FBS games missing advanced stats (2024: Army–Rice, Sam Houston–NMSU, Miami (OH)–Kent State, WMU–EMU); the model must handle them
-- [ ] Unit tests for loaders (fixtures, no live API in tests)
+- [ ] Unit tests for loaders (fixtures, no live API in tests). Transforms are covered; the DB half of loaders is still only checked by live runs (a SQLAlchemy 2.1 `dict(result)` bug slipped through in 5d). Add DB-backed loader tests against a throwaway Neon branch or local Postgres
 
 **Done when:** `tsi ingest --season 2026` is idempotent and quality checks pass for all seasons.
 
 ## Phase 2: Model v1 + backtest
 - [ ] Elo baseline
 - [ ] Opponent-adjusted ridge ratings (PPD + EPA), HFA, pooled FCS team
-- [ ] Preseason prior + in-season blending
+- [ ] Preseason prior + in-season blending (handle missing inputs: teams new to FBS lack returning production, e.g. NDSU and Sacramento State in 2026; 4 FBS games in 2024 lack advanced stats)
 - [ ] Walk-forward backtest harness + metrics + saved runs
 - [ ] Tune on 2015–2022, validate on 2023–2025
 - [ ] Résumé (SOR) and SOS calculations

@@ -12,8 +12,7 @@ Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count 
 |---|---|
 | Backfill, per season: prefer **season-wide** requests (`year=` with no week) for games, advanced stats, PPA, drives, lines, talent, returning production | ~10–25 |
 | Full backfill 2014–2026 (13 seasons) | ~150–325, spread over **2+ sessions** with the disk cache on |
-| Daily job: games + 2× advanced stats | 3 per day (~93/month) |
-| In season: Tue/Thu lines (Phase 3) | ~2 per week |
+| Daily job: games + 2× advanced stats + lines | 4 per day (~124/month) |
 
 - Fetch a small test season (e.g. 2024) first and verify the call count before the full backfill.
 - If the budget gets tight, drop `/games/teams` (advanced stats cover most of it) or move to a paid tier.
@@ -51,8 +50,10 @@ Every CFBD request is recorded in `ingest_log`. Ingest checks the month's count 
 - **Conference/division per season:** write `team_seasons` from each season's `/teams?year=` response, because teams change conferences and move FCS→FBS.
 
 ### Market lines
-- CFBD `/lines` returns lines from multiple providers. Use a **consensus** line (provider = consensus if present, else the median across providers).
-- Treat the last pre-kickoff line as `is_closing = true` for CLV and evaluation.
+- CFBD `/lines` returns lines from multiple providers (2024: ESPN Bet, DraftKings, Bovada), with team ids. All providers are stored. A **consensus** line (median across providers) is computed in Phase 3.
+- **Sign:** `spread` is from the home team's view, negative = home favored. Verified two ways: 0 mismatches against CFBD's `formattedSpread`, and closing-spread MAE vs. actual margin of ~12 pts (vs. ~25 if flipped).
+- **Change-only snapshots:** a new `market_lines` row is stored only when a provider's numbers change, so the daily job builds real line movement without duplicate rows.
+- **Closing:** a snapshot captured at or after kickoff is `is_closing`. If the numbers didn't change, the latest stored row is flagged instead of adding a duplicate.
 - **Caveat:** for historical seasons, CFBD gives one line per provider (plus the opening spread/total), not a timestamped history. Treat that line as the approximate close. During the live season, our own Tue/Thu fetches create real snapshots.
 - Optional later: The Odds API for fresher in-week odds and line movement.
 

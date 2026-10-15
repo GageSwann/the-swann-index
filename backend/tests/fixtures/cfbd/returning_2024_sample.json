@@ -1,0 +1,36 @@
+[
+ {
+  "season": 2024,
+  "team": "Alabama",
+  "conference": "SEC",
+  "totalPPA": 303.8,
+  "totalPassingPPA": 140.9,
+  "totalReceivingPPA": 70.9,
+  "totalRushingPPA": 92,
+  "percentPPA": 0.602,
+  "percentPassingPPA": 1.009,
+  "percentReceivingPPA": 0.303,
+  "percentRushingPPA": 0.699,
+  "usage": 0.547,
+  "passingUsage": 0.946,
+  "receivingUsage": 0.268,
+  "rushingUsage": 0.404
+ },
+ {
+  "season": 2024,
+  "team": "Colorado",
+  "conference": "Pac-12",
+  "totalPPA": 287.1,
+  "totalPassingPPA": 138.8,
+  "totalReceivingPPA": 134.5,
+  "totalRushingPPA": 13.9,
+  "percentPPA": 0.665,
+  "percentPassingPPA": 0.994,
+  "percentReceivingPPA": 0.502,
+  "percentRushingPPA": 0.567,
+  "usage": 0.621,
+  "passingUsage": 0.992,
+  "receivingUsage": 0.414,
+  "rushingUsage": 0.232
+ }
+]
