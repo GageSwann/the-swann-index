@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.0 # exact tag: setup-uv has no floating major tag
 
       - name: Install dependencies
         run: uv sync --frozen --no-dev
