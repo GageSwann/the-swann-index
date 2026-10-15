@@ -79,18 +79,18 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 
 | Table | Key columns |
 |---|---|
-| `teams` | id (CFBD id), school, slug, colors, logo_url, venue_id (stable identity only) |
+| `teams` | id (CFBD id), school, slug, mascot, abbreviation, color, alt_color, logo_url, venue_id (stable identity only) |
 | `team_seasons` | team_id, season, conference, **division** (fbs/fcs/…). Membership changes by year (realignment, FCS→FBS moves), so it never lives on `teams` |
-| `venues` | id, name, city, state, lat, lon, elevation |
-| `games` | id, season, week, season_type, start_time (UTC), home_id, away_id, neutral_site, conference_game, home_points, away_points, completed |
-| `team_game_stats` | game_id, team_id, plays, drives, points, ypp, epa_per_play, success_rate, explosiveness, havoc, … (offense & defense, garbage-time filtered) |
+| `venues` | id, name, city, state, latitude, longitude, elevation_m, dome |
+| `games` | id, season, week, season_type, start_time (UTC), home_id, away_id, venue_id, neutral_site, conference_game, home_points, away_points, completed |
+| `team_game_stats` | game_id, team_id, points, plays, drives, yards, epa_per_play, rush/pass epa_per_play, success_rate, explosiveness, havoc_rate, garbage_time_filtered. **Offense only:** a team's defense for a game is its opponent's row |
 | `market_lines` | game_id, provider, spread, spread_open, total, total_open, home_ml, away_ml, fetched_at, is_closing |
-| `ingest_log` | endpoint, params (jsonb), season, week, fetched_at, row_count, status. Powers frozen-week skipping and the monthly CFBD call budget |
+| `ingest_log` | endpoint, params (jsonb), season, week, fetched_at, from_cache, row_count, status. Powers frozen-week skipping and the monthly CFBD call budget (cache hits don't count) |
 | `priors` | season, team_id, last_season_rating, returning_ppa, talent, prior_rating |
-| `model_runs` | id, season, week, run_at, model_version, params (jsonb), git_sha |
-| `team_ratings` | run_id, team_id, rating, off_rating, def_rating, pace, rank_power, sor, rank_resume |
-| `predictions` | id, run_id, game_id, **variant** (`raw`/`adjusted`), published_at, proj_home, proj_away, spread, total, home_win_prob, sigma_margin, sigma_total, rho, fair odds…, book odds…. Insert-only. The "locked" snapshot is derived (latest `published_at` < `start_time`), so no cron job has to flip a flag at kickoff |
-| `picks` | prediction_id, market (spread/total/ml), side, line_taken, odds_taken, edge, stake_units, closing_line, result, units_won |
+| `model_runs` | id, **kind** (`live`/`backtest`), season, week, season_type, run_at, model_version, params (jsonb), git_sha |
+| `team_ratings` | run_id, team_id, **variant** (`raw`/`adjusted`), rating, off_rating, def_rating, pace, rank_power, sor, rank_resume |
+| `predictions` | id, run_id, game_id, **variant** (`raw`/`adjusted`), published_at, proj_home, proj_away, spread, total, home_win_prob, sigma_margin, sigma_total, rho, fair/book ML, book spread/total odds. **Insert-only, enforced by a DB trigger** (no UPDATE; DELETE only for backtest runs). The "locked" snapshot is derived (latest `published_at` < `start_time`) |
+| `picks` | prediction_id, market (spread/total/ml), side, line_taken, odds_taken, edge, tier (1–3), stake_units, kelly_units, closing_line, closing_odds, result, units_won, graded_at |
 | `adjustments` (later) | team_id, points, reason, start_week, end_week, active |
 | `sim_results` (later) | run_id, team_id, exp_wins, win_dist (jsonb), conf_title_prob, cfp_prob |
 

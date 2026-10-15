@@ -43,5 +43,9 @@ uv run tsi --help               # CLI entry point (src/tsi/cli/)
 uv run pytest                   # tests (tests/ mirrors src/tsi/)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
+uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)
+uv run alembic revision --autogenerate -m "msg"   # after changing models; review before applying
+uv run alembic check            # models and DB in sync?
 ```
+Migrations target the Neon **dev** branch locally. Ask before applying to any database.
 _Web commands are added when `web/` is scaffolded (Phase 5)._

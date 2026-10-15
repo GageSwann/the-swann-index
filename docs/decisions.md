@@ -19,6 +19,7 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 13 | 2026-10-14 | `ingest_log` + `CFBD_MONTHLY_CALL_BUDGET` guard; season-wide requests for backfill | Free tier ≈ 1,000 calls/month |
 | 14 | 2026-10-14 | Python installed and pinned via `uv`, not winget | Avoids Store-alias/PATH issues; one tool manages Python + packages |
 | 15 | 2026-10-14 | Use vetted third-party skills (Anthropic / vendor first), installed per phase, reviewed and recorded in `.claude/skills/SOURCES.md` | Reuse proven patterns without supply-chain surprises |
+| 16 | 2026-10-14 | `team_game_stats` stores offense only; `model_runs.kind` = live/backtest; DB trigger enforces prediction immutability | No duplicated defensive rows; backtests share tables but can be re-run; rule 2 enforced by the database, not just code |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)

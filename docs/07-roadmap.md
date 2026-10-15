@@ -21,7 +21,7 @@ See [08-setup-windows.md](08-setup-windows.md).
 ## Phase 1: Data foundation
 - [x] Scaffold `backend/` (uv, ruff, pytest, `tsi` package, Typer CLI skeleton)
 - [x] `tsi/config.py` (pydantic-settings) + test that a missing variable fails clearly without echoing values
-- [ ] SQLAlchemy models + first Alembic migration (schema in doc 02, incl. `team_seasons`, `ingest_log`)
+- [x] SQLAlchemy models + first Alembic migration (schema in doc 02, incl. `team_seasons`, `ingest_log`)
 - [ ] CFBD client wrapper with raw-response disk cache + call-budget guard
 - [ ] Ingest, one loader module per endpoint: teams/team_seasons, venues, calendar, games, advanced stats, drives, lines, talent, returning production
 - [ ] Test-season ingest (2024); confirm the call count matches the doc 03 budget
