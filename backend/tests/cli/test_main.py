@@ -24,5 +24,5 @@ def test_ingest_group_lists_loaders() -> None:
     result = runner.invoke(app, ["ingest", "--help"])
 
     assert result.exit_code == 0
-    assert "venues" in result.output
-    assert "teams" in result.output
+    for command in ("venues", "teams", "calendar", "games"):
+        assert command in result.output

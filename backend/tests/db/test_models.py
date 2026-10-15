@@ -6,6 +6,7 @@ TABLES = Base.metadata.tables
 
 def test_all_schema_tables_registered() -> None:
     assert set(TABLES) == {
+        "calendar_weeks",
         "venues",
         "teams",
         "team_seasons",

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index
+from sqlalchemy import CheckConstraint, ForeignKey, Index, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tsi.db.base import Base, CreatedAtMixin
@@ -21,6 +21,8 @@ class Game(CreatedAtMixin, Base):
     week: Mapped[int]
     season_type: Mapped[str]
     start_time: Mapped[datetime | None]  # UTC; kickoff is the look-ahead cutoff
+    # True when only the date is known (time TBD); treat start_time as approximate.
+    start_time_tbd: Mapped[bool] = mapped_column(default=False, server_default=false())
     home_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), index=True)
     away_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), index=True)
     venue_id: Mapped[int | None] = mapped_column(ForeignKey("venues.id"))
@@ -29,6 +31,7 @@ class Game(CreatedAtMixin, Base):
     home_points: Mapped[int | None]
     away_points: Mapped[int | None]
     completed: Mapped[bool] = mapped_column(default=False)
+    notes: Mapped[str | None]  # e.g. bowl name
 
 
 class TeamGameStats(CreatedAtMixin, Base):

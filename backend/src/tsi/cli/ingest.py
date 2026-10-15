@@ -3,6 +3,8 @@
 import typer
 
 from tsi.cli.runtime import ingest_runtime
+from tsi.ingest.loaders.calendar import load_calendar
+from tsi.ingest.loaders.games import load_games
 from tsi.ingest.loaders.teams import load_teams
 from tsi.ingest.loaders.venues import load_venues
 
@@ -29,4 +31,23 @@ def teams(season: int = SEASON, refresh: bool = REFRESH) -> None:
     typer.echo(
         f"teams {result.season}: {result.teams} teams, {result.team_seasons} team_seasons; "
         f"team identity {identity}"
+    )
+
+
+@app.command()
+def calendar(season: int = SEASON, refresh: bool = REFRESH) -> None:
+    """Week boundaries (regular + postseason) for one season."""
+    with ingest_runtime() as (client, sessions):
+        count = load_calendar(client, sessions, season, refresh=refresh)
+    typer.echo(f"calendar {season}: {count} weeks upserted")
+
+
+@app.command()
+def games(season: int = SEASON, refresh: bool = REFRESH) -> None:
+    """All regular-season and postseason games for one season."""
+    with ingest_runtime() as (client, sessions):
+        result = load_games(client, sessions, season, refresh=refresh)
+    typer.echo(
+        f"games {result.season}: {result.games} games upserted, "
+        f"{result.placeholder_teams} placeholder teams added"
     )
