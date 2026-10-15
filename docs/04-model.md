@@ -29,7 +29,7 @@ From `team_game_stats` (one row per team per game = that team's **offense**; its
 - Site: home / away / neutral (`games.neutral_site`)
 
 **Data realities (from Phase 1, see `tsi check`):**
-- 47 FBS-vs-FBS games (mostly 2014–16) have **no advanced stats**. Use them in the PPD/points fit and skip them in the EPA fit.
+- 47 FBS-vs-FBS games (mostly 2014–16) have **no advanced stats**, so no drive counts either. v1 excludes them from both fits. A later version could add a points-only row with league-average drives.
 - 2014 has no talent data (247 composite starts 2015). 2014 is only used for end-of-season ratings that feed the 2015 prior.
 - Some FBS team-seasons lack returning production (teams new to FBS; 2021 ODU/UConn). The prior needs a fallback (§3).
 - **2020 (COVID) is treated like any other season** (decision #26). FBS teams played 0–13 games (avg 8.6); a few programs didn't play.
@@ -43,14 +43,24 @@ m(offense i vs defense j) = μ + O_i − D_j + h · HFA + ε
 
 - One row per team per game (each game produces two rows)
 - `O_i` = offensive strength, `D_j` = defensive strength, `h` = +1 home / −1 away / 0 neutral
-- Ridge penalty λ tuned in backtest; it shrinks small samples toward average
+- Ridge penalty λ tuned in backtest; it shrinks small samples toward average. Targets are standardized, so one λ works for both metrics. Rows are weighted by drives (PPD) or plays (EPA). λ=2 (preliminary): with λ=25, a 13-game team kept only about a third of its signal
+- Non-FBS opponents are pooled into one pseudo-team; games between two non-FBS teams are dropped
+- Ratings are centered so the average FBS team = 0 (margins are unaffected)
 - Recency weighting: optional exponential decay (half-life tuned, e.g. 6–10 games)
 
 **Combining metrics:** PPD-based and EPA-based ratings are each converted to points per game (× expected drives), then blended:
 ```
 off_rating = w · off_ppd + (1 − w) · off_epa_scaled
 ```
-Weight `w` is fit in backtest. EPA is usually more predictive early in the season, while points matter more as samples grow, so `w` may vary by week.
+Weight `w` is fit in backtest (preliminary `w` = 0.75; 0.75 and 1.0 tie on train). EPA is usually more predictive early in the season, while points matter more as samples grow, so `w` may vary by week.
+
+**First walk-forward results** (`tsi model ratings`; `season` set = this season only; FBS-vs-FBS with a closing line):
+
+| Validation 2023–25 | Games | TSI MAE | Elo MAE | Vegas MAE | TSI SU% |
+|---|---|---|---|---|---|
+| All | 2,398 | 13.51 | 13.15 | 12.00 | 69.0 |
+| Both teams 4+ games | 1,728 | **12.72** | 12.94 | 12.06 | 69.7 |
+| Provisional (<4 games) | 670 | 15.55 | 13.72 | 11.86 | 67.0 |
 
 ## 3. Preseason prior (`predictive` ratings only)
 The prior is used **only** for the `predictive` set. Rankings never see it.
