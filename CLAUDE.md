@@ -73,6 +73,7 @@ uv run pytest                   # tests (tests/ mirrors src/tsi/); DB tests use 
 uv run pytest -m "not db"       # skip DB-backed tests (offline)
 uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)
 uv run tsi model elo            # Elo baseline vs. closing line, by season (train/validate split)
+uv run tsi model compare-sp      # sanity check: TSI final ratings vs. SP+ final (correlation)
 uv run tsi backtest run         # full walk-forward backtest + calibration + ATS; saved to model_runs (--no-save, --lam, ...)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>

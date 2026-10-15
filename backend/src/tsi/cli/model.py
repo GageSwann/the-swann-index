@@ -5,10 +5,11 @@ from datetime import UTC, datetime
 import typer
 
 from tsi.backtest.evaluate import Summary
-from tsi.cli.runtime import db_runtime
+from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
 from tsi.model.elo import EloParams
 from tsi.services.elo_report import run_elo_report
+from tsi.services.sp_check import compare_with_sp
 
 app = typer.Typer(help="Run and evaluate rating models.", no_args_is_help=True)
 
@@ -46,3 +47,25 @@ def _row(s: Summary) -> str:
         f"{s.label:<20}{s.games:>6}  {s.mae:>5.2f} {s.market_mae:>5.2f}  "
         f"{100 * s.su_accuracy:>5.1f} {100 * s.market_su_accuracy:>5.1f}  {s.brier:>6.3f}"
     )
+
+
+@app.command("compare-sp")
+def compare_sp(
+    first: int = typer.Option(2015, help="First season."),
+    last: int = typer.Option(2025, help="Last finished season."),
+) -> None:
+    """Sanity check: TSI final ratings vs. SP+ final ratings (~1 CFBD call/season, cached)."""
+    with ingest_runtime() as (client, sessions), sessions() as session:
+        results = compare_with_sp(client, session, range(first, last + 1))
+
+    typer.echo(
+        f"{'season':>6} {'teams':>5} {'pearson':>8} {'spearman':>9}   "
+        "biggest rank gaps (TSI vs SP+)"
+    )
+    for r in results:
+        a = r.agreement
+        gaps = ", ".join(f"{r.names[t]} {o:+.1f}/{s:+.1f}" for t, o, s in a.biggest_gaps[:3])
+        typer.echo(f"{r.season:>6} {a.teams:>5} {a.pearson:>8.3f} {a.spearman:>9.3f}   {gaps}")
+    mean_p = sum(r.agreement.pearson for r in results) / len(results)
+    mean_s = sum(r.agreement.spearman for r in results) / len(results)
+    typer.secho(f"{'mean':>6} {'':>5} {mean_p:>8.3f} {mean_s:>9.3f}", bold=True)

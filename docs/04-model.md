@@ -196,5 +196,7 @@ Goal: the most accurate predictions and the most defensible rankings. **Rules fo
 | B12 | Résumé with dynamic SOS (planned, Phase 2) |
 | B13 | Optional "form" view (recency-weighted `season` rating) alongside the full-season Power rating |
 
+**SP+ sanity check (done, #39):** mean correlation of final ratings 0.948 (2021+: 0.96–0.98; 2020: 0.82). Recurring gap: triple-option teams (Army, Air Force) rated higher by TSI, likely from their very high success rates. To check: are TSI's predictions for option teams biased?
+
 **SP+ comparison caveat:** CFBD's historical SP+ (`/ratings/sp`) is end-of-season only. Comparing our week-by-week predictions against final SP+ would give SP+ look-ahead, so it isn't a fair *prediction* benchmark. It can still serve as a sanity check on final ratings (rank correlation).
 | B14 | ✅ **Adopted (#38):** learned weights for the `season` (rankings) blend: PPD + success rate, this-season inputs only |
