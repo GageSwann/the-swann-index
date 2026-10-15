@@ -44,7 +44,7 @@ uv run pytest                   # tests (tests/ mirrors src/tsi/)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>
 uv run tsi ingest venues        # CFBD -> DB (cache-first; --refresh re-fetches and uses calls)
-uv run tsi ingest teams --season 2024
+uv run tsi ingest teams --season 2024     # then: calendar, games (same --season)
 uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)
 uv run alembic revision --autogenerate -m "msg"   # after changing models; review before applying
 uv run alembic check            # models and DB in sync?

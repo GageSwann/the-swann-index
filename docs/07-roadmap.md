@@ -25,12 +25,13 @@ See [08-setup-windows.md](08-setup-windows.md).
 - [x] CFBD client wrapper with raw-response disk cache + call-budget guard
 - Ingest, one loader module per endpoint (pure transforms + idempotent upserts):
   - [x] 5a. venues, teams, team_seasons (`tsi ingest venues`, `tsi ingest teams --season`)
-  - [ ] 5b. calendar, games
+  - [x] 5b. calendar, games (`calendar_weeks`, placeholder teams for unknown opponents)
   - [ ] 5c. advanced stats + drives → `team_game_stats`
   - [ ] 5d. lines, talent, returning production
 - [ ] Test-season ingest (2024); confirm the call count matches the doc 03 budget
-- [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed)
-- [ ] Data quality checks (doc 03) as `tsi check`
+- [ ] Current-season freshness: the disk cache must not freeze an in-progress season. Until then, re-load 2026 with `--refresh`
+- [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed). _Done so far: teams/calendar/games for 2024–2026._
+- [ ] Data quality checks (doc 03) as `tsi check`. Fail on problems in FBS-involved games; only warn on lower divisions (2024–26 has 5 completed D-II/III/NAIA games with no score, and some small-college games never marked final)
 - [ ] Unit tests for loaders (fixtures, no live API in tests)
 
 **Done when:** `tsi ingest --season 2026` is idempotent and quality checks pass for all seasons.
