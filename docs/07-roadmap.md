@@ -28,7 +28,7 @@ See [08-setup-windows.md](08-setup-windows.md).
   - [x] 5b. calendar, games (`calendar_weeks`, placeholder teams for unknown opponents)
   - [x] 5c. advanced stats → `team_game_stats` (`tsi ingest stats --season`; `/drives` not needed: drive counts come from the full-game stats)
   - [x] 5d. lines (change-only snapshots + closing flag), talent, returning production (`tsi ingest lines` / `priors`)
-- [ ] Test-season ingest (2024); confirm the call count matches the doc 03 budget
+- [x] Test-season ingest (2024); confirm the call count matches the doc 03 budget (9 calls per season: teams, calendar, games, 2× stats, lines, talent, returning, plus 1 for venues once. That's under the 10–25 estimate)
 - [x] Current-season freshness: finished seasons cached forever, in-progress season expires after 6h (`ingest/freshness.py`)
 - [x] Daily refresh: `tsi ingest daily` + GitHub Actions cron at 10:00 UTC (pulled forward from Phase 6). Later phases add stats, rating refit, and publish to this job
 - [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed). _Done so far: everything for 2024–2026 (teams, calendar, games, stats, lines, priors)._
