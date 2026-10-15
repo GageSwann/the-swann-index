@@ -20,6 +20,7 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 14 | 2026-10-14 | Python installed and pinned via `uv`, not winget | Avoids Store-alias/PATH issues; one tool manages Python + packages |
 | 15 | 2026-10-14 | Use vetted third-party skills (Anthropic / vendor first), installed per phase, reviewed and recorded in `.claude/skills/SOURCES.md` | Reuse proven patterns without supply-chain surprises |
 | 16 | 2026-10-14 | `team_game_stats` stores offense only; `model_runs.kind` = live/backtest; DB trigger enforces prediction immutability | No duplicated defensive rows; backtests share tables but can be re-run; rule 2 enforced by the database, not just code |
+| 17 | 2026-10-14 | CFBD accessed via a thin `httpx` client instead of the official `cfbd` package | Raw JSON is easy to cache on disk and every call is logged to `ingest_log`; fewer dependencies |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)

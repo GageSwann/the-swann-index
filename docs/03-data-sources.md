@@ -2,7 +2,7 @@
 
 ## Primary: CollegeFootballData.com (CFBD)
 - Get a key at https://collegefootballdata.com/key. Store it as `CFBD_API_KEY`.
-- Official Python client: `cfbd` (PyPI). Uses Bearer auth.
+- Accessed with a thin `httpx` wrapper (`tsi/ingest/client.py`), not the official `cfbd` package, so raw JSON can be cached and every call counted. Base URL `https://api.collegefootballdata.com`, Bearer auth. Responses include an `X-CallLimit-Remaining` header, which the client logs.
 - **The free tier is ~1,000 calls/month** (per CFBD's API v2 announcement; paid Patreon tiers raise it, and the limits can change, so confirm when signing up). That's why caching is mandatory: completed seasons are fetched once and live in Postgres forever.
 
 ### Call budget

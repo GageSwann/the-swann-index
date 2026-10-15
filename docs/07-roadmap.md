@@ -22,7 +22,7 @@ See [08-setup-windows.md](08-setup-windows.md).
 - [x] Scaffold `backend/` (uv, ruff, pytest, `tsi` package, Typer CLI skeleton)
 - [x] `tsi/config.py` (pydantic-settings) + test that a missing variable fails clearly without echoing values
 - [x] SQLAlchemy models + first Alembic migration (schema in doc 02, incl. `team_seasons`, `ingest_log`)
-- [ ] CFBD client wrapper with raw-response disk cache + call-budget guard
+- [x] CFBD client wrapper with raw-response disk cache + call-budget guard
 - [ ] Ingest, one loader module per endpoint: teams/team_seasons, venues, calendar, games, advanced stats, drives, lines, talent, returning production
 - [ ] Test-season ingest (2024); confirm the call count matches the doc 03 budget
 - [ ] Backfill 2014–2025 + 2026 to date (spread across sessions if needed)
