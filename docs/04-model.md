@@ -22,7 +22,7 @@ Each model run produces two sets of ratings, stored separately:
 - **Updated daily:** the nightly job (10:00 UTC) refits both sets after loading data, so a Tuesday-night game moves the rankings by Wednesday morning. Each day's run is a new `model_runs` row; published snapshots are never edited (rule 2).
 
 ### Model v1.1 at a glance (decisions #37–#38)
-- **`season` (rankings):** `off = 0.726 × PPD off + 0.635 × success-rate off` (same for def), HFA 3.24 pts. The weights were learned on 2015–22 walk-forward games, but the inputs are **this season's games only**. EPA is fitted for display but not used in ratings.
+- **`season` (rankings):** `off = 0.726 × PPD off + 0.635 × success-rate off` (same for def), HFA 3.24 pts. The weights were learned on 2015–22 walk-forward games, but the inputs are **this season's games only**. EPA is not fitted (#49): it added nothing to either rating set. Raw EPA/play can still be shown as a stat.
 - **`predictive` (predictions):** a stacked margin, learned per season stage, from home field, PPD margin, success-rate margin, prior difference and Elo margin (`model/stack.py`). The prior's fade is **learned**: its weight drops from ~1.1 with no games to ~0.15 at 9+ games. The hand-set fading blend (§3 formula) was removed.
 - **Validation 2023–25:** rankings MAE 13.37 (12.55 with 4+ games); predictions **12.47 vs. Vegas 12.00**, SU 72.2%; calibration within ±1 in 4 of 5 bins.
 
@@ -40,7 +40,7 @@ From `team_game_stats` (one row per team per game = that team's **offense**; its
 - **2020 (COVID) is treated like any other season** (decision #26). FBS teams played 0–13 games (avg 8.6); a few programs didn't play.
 
 ## 2. Opponent-adjusted ratings (core)
-Fit a ridge regression for each efficiency metric *m* (start with PPD and EPA/play):
+Fit a ridge regression for each efficiency metric *m* (v1.1 fits PPD and success rate; EPA/play was dropped, #49):
 
 ```
 m(offense i vs defense j) = μ + O_i − D_j + h · HFA + ε

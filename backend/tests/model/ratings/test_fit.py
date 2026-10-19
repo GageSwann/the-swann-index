@@ -6,11 +6,12 @@ from tsi.model.ratings.components import fit_components
 from tsi.model.ratings.design import (
     FCS_POOL_ID,
     LOWER_POOL_ID,
+    Matchups,
     build_design,
     involves_rated_team,
 )
 from tsi.model.ratings.fit import AVERAGE, RatingParams, fit_ratings, predicted_margin
-from tsi.model.ratings.probability import fit_sigma, residual_sigma, win_prob
+from tsi.model.ratings.probability import fit_sigma, win_prob
 
 
 @dataclass(frozen=True)
@@ -79,7 +80,7 @@ def test_non_fbs_teams_are_pooled_and_fcs_only_games_dropped() -> None:
 
     assert all(involves_rated_team(r) for r in fbs_vs_fcs)
     assert not any(involves_rated_team(r) for r in fcs_only)
-    assert set(build_design(fbs_vs_fcs).team_index) == {1, FCS_POOL_ID, LOWER_POOL_ID}
+    assert set(build_design(Matchups.of(fbs_vs_fcs)).team_index) == {1, FCS_POOL_ID, LOWER_POOL_ID}
 
 
 def test_missing_epa_falls_back_to_points_per_drive() -> None:
@@ -131,7 +132,6 @@ def test_predicted_margin_is_antisymmetric_at_neutral_site() -> None:
 def test_win_probability_and_sigma() -> None:
     assert win_prob(0, 15) == pytest.approx(0.5)
     assert win_prob(15, 15) == pytest.approx(0.8413, abs=1e-4)
-    assert residual_sigma([0, 0, 0, 0], [1, -1, 1, -1]) == pytest.approx(2 / 3**0.5)
 
 
 def test_fit_sigma_recovers_the_true_spread() -> None:

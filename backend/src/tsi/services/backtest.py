@@ -11,12 +11,12 @@ from dataclasses import dataclass, replace
 from tsi.backtest.ats import AtsRecord, ats_record
 from tsi.backtest.calibration import CalibrationBin, calibration_table
 from tsi.backtest.evaluate import ScoredGame, Summary, summarize
+from tsi.backtest.splits import TRAIN, VALIDATE
 from tsi.backtest.walk_forward import Pick, walk_forward
 from tsi.model.config import ModelConfig
 from tsi.model.ratings.probability import fit_sigma, win_prob
 from tsi.model.stack import StackSample, fit_stack
 from tsi.services.backtest_data import FIRST_DATA_SEASON, BacktestData
-from tsi.services.elo_report import TRAIN, VALIDATE
 from tsi.services.prior_setup import build_prior_setup
 
 ATS_EDGES = (0.0, 3.0, 5.0)

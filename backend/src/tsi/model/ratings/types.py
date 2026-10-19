@@ -20,7 +20,7 @@ AVERAGE_TEAM = TeamRating(0.0, 0.0)
 
 @dataclass(frozen=True)
 class RatingSet:
-    teams: dict[int, TeamRating]  # FBS team id (or POOLED_ID) -> rating
+    teams: dict[int, TeamRating]  # FBS team id (or pool id < 0) -> rating
     hfa: float  # home-field advantage in points of margin
     games: dict[int, int]  # FBS team id -> games counted
 

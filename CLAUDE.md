@@ -53,6 +53,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **SQLAlchemy 2.1:** don't `dict(session.execute(...))`; unpack rows in a comprehension. Use `.ext(postgresql.distinct_on(...))`, not `.distinct(cols)`.
 - **Upserts:** always go through `db/upsert.py` (batched executemany, skips unchanged rows). Never send the same primary key twice in one batch (Postgres error); de-duplicate first.
 - **Neon latency** is ~43ms per round trip. Performance means fewer round trips and transactions, not faster Python.
+- **numpy threads:** `tsi/__init__.py` caps BLAS at 1 thread (our solves are small; multithreading made them ~40× slower). A scratch script that imports numpy *before* any `tsi` module loses this; import `tsi` first or set `OPENBLAS_NUM_THREADS=1`.
 - **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
 - **Alembic** autogenerate misses primary-key changes; hand-write those. With our naming convention, pass the short constraint name (e.g. `"basis"`), never the full `ck_table_name`.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.

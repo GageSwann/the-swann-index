@@ -5,12 +5,13 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
+from tsi.backtest.elo_picks import EloPick, elo_picks
+from tsi.backtest.splits import is_scored
 from tsi.db.queries.market import closing_spreads
 from tsi.db.queries.priors import fbs_teams, prior_inputs
 from tsi.db.queries.results import GameResult, completed_games
 from tsi.db.queries.stats import OffenseRow, offense_rows
 from tsi.model.elo import EloParams
-from tsi.services.elo_report import EloPick, elo_picks, is_scored
 from tsi.services.prior_setup import InputsTable, rows_by_season
 
 FIRST_DATA_SEASON = 2014  # supplies 2015's "last season" ratings

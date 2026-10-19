@@ -6,7 +6,7 @@
 The weights were learned on 2015-2022 walk-forward games (one weight set for the
 whole season) and use ONLY this season's games: no prior, no Elo, no history.
 Ratings are points per game vs. an average FBS team; def > 0 means a good defense.
-EPA is still fitted by `fit_components` for display (team efficiency profiles).
+EPA is not fitted: it did not improve either rating set (decision #38).
 """
 
 from collections.abc import Sequence

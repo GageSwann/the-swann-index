@@ -11,12 +11,12 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from tsi.backtest.walk_forward import ESTABLISHED_GAMES
 from tsi.db.queries.priors import fbs_teams, prior_inputs
 from tsi.db.queries.results import completed_games
 from tsi.db.queries.stats import offense_rows
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
+from tsi.model.config import ESTABLISHED_GAMES
 from tsi.model.elo import run_elo
 from tsi.model.ratings.components import fit_components
 from tsi.model.ratings.fit import fit_ratings

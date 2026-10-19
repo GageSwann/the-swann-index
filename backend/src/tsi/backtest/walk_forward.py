@@ -14,6 +14,7 @@ from datetime import UTC, date, datetime, time, timedelta
 
 from tsi.db.queries.results import GameResult
 from tsi.db.queries.stats import OffenseRow
+from tsi.model.config import ESTABLISHED_GAMES
 from tsi.model.ratings.components import Components, MetricRatings, fit_components
 from tsi.model.ratings.design import rated_id
 from tsi.model.ratings.fit import AVERAGE, RatingParams, blend_components, predicted_margin
@@ -21,7 +22,6 @@ from tsi.model.ratings.types import AVERAGE_TEAM, RatingSet, TeamRating, matchup
 from tsi.model.stack import stage_bucket
 
 REFIT_HOUR = 10  # UTC, same as the nightly job
-ESTABLISHED_GAMES = 4  # provisional threshold (doc 04)
 
 
 @dataclass(frozen=True)

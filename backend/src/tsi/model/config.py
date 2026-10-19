@@ -7,6 +7,7 @@ from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
 
 MODEL_VERSION = "tsi-v1.1"  # v1.1: learned season blend + stacked predictive margin
+ESTABLISHED_GAMES = 4  # fewer games played -> provisional rank (doc 04)
 
 
 @dataclass(frozen=True)

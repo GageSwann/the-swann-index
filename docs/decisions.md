@@ -52,6 +52,7 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 46 | 2026-10-19 | B6 rejected: keep one log-loss-fit σ | σ by margin band (13.9→16.1) and logistic recalibration matched or slightly worsened validation Brier/log loss; the 80–90% bin's +4.3 is ~2.4 SE (monitor) |
 | 47 | 2026-10-19 | No option-offense correction | Prediction bias for Army/Navy/Air Force is +1.18 ± 1.70 (n.s.), smaller than Vegas's +1.83; the SP+ rating gap doesn't make predictions biased |
 | 48 | 2026-10-19 | Ridge λ stays 2; B11 (rating uncertainty) deferred to API/frontend phases | λ=1.5 gains 0.01 on predictions (noise) but worsens rankings; uncertainty bands are a display feature |
+| 49 | 2026-10-19 | Refactor: numpy BLAS capped at 1 thread (`tsi/__init__.py`); rating design kept sparse (normal equations via `bincount`); EPA component no longer fitted; split constants in `backtest/splits.py` | Full backtest 48 s → under 5 s with identical results (validation 13.37 / 12.40). Multithreaded OpenBLAS was ~40× slower on our ~300×300 solves. EPA was computed every fit but never read (#37, #38) |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)
