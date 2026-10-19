@@ -16,10 +16,10 @@ from typing import Protocol
 import numpy as np
 
 from tsi.model.ratings.design import (
-    POOLED_ID,
     RatingRow,
     build_design,
     involves_rated_team,
+    is_pooled,
     rated_id,
 )
 from tsi.model.ratings.ridge import weighted_ridge
@@ -97,7 +97,7 @@ def _fit_metric(
 
 def _center_on_fbs(teams: dict[int, TeamRating]) -> dict[int, TeamRating]:
     """Shift so the average FBS team is exactly 0 (margins are unchanged by a common shift)."""
-    fbs = [t for team, t in teams.items() if team != POOLED_ID]
+    fbs = [t for team, t in teams.items() if not is_pooled(team)]
     if not fbs:
         return teams
     off_mean = sum(t.off for t in fbs) / len(fbs)
@@ -109,6 +109,6 @@ def _games_played(rows: Sequence[StatRow]) -> dict[int, int]:
     counts: dict[int, int] = {}
     for r in rows:
         team = rated_id(r.team_id, r.team_div)
-        if team != POOLED_ID:
+        if not is_pooled(team):
             counts[team] = counts.get(team, 0) + 1
     return counts

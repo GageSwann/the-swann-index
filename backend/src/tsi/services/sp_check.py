@@ -15,7 +15,7 @@ from tsi.backtest.compare import Agreement, compare_ratings
 from tsi.db.models import Team
 from tsi.db.queries.stats import offense_rows
 from tsi.ingest.client import CfbdClient
-from tsi.model.ratings.design import POOLED_ID
+from tsi.model.ratings.design import is_pooled
 from tsi.model.ratings.fit import fit_ratings
 
 
@@ -34,7 +34,7 @@ def compare_with_sp(
     results = []
     for season in seasons:
         ours = fit_ratings(offense_rows(session, season, season))
-        ours_rating = {t: r.rating for t, r in ours.teams.items() if t != POOLED_ID}
+        ours_rating = {t: r.rating for t, r in ours.teams.items() if not is_pooled(t)}
         sp = {
             team_ids[row["team"]]: float(row["rating"])
             for row in client.get("/ratings/sp", {"year": season})

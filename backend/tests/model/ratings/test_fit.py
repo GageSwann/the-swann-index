@@ -3,7 +3,12 @@ from dataclasses import dataclass
 import pytest
 
 from tsi.model.ratings.components import fit_components
-from tsi.model.ratings.design import POOLED_ID, build_design, involves_rated_team
+from tsi.model.ratings.design import (
+    FCS_POOL_ID,
+    LOWER_POOL_ID,
+    build_design,
+    involves_rated_team,
+)
 from tsi.model.ratings.fit import AVERAGE, RatingParams, fit_ratings, predicted_margin
 from tsi.model.ratings.probability import fit_sigma, residual_sigma, win_prob
 
@@ -74,7 +79,7 @@ def test_non_fbs_teams_are_pooled_and_fcs_only_games_dropped() -> None:
 
     assert all(involves_rated_team(r) for r in fbs_vs_fcs)
     assert not any(involves_rated_team(r) for r in fcs_only)
-    assert set(build_design(fbs_vs_fcs).team_index) == {1, POOLED_ID}
+    assert set(build_design(fbs_vs_fcs).team_index) == {1, FCS_POOL_ID, LOWER_POOL_ID}
 
 
 def test_missing_epa_falls_back_to_points_per_drive() -> None:

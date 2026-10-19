@@ -181,8 +181,8 @@ Goal: the most accurate predictions and the most defensible rankings. **Rules fo
 | B3 | ✅ Subsumed by B1 (per-stage weights): **Week-varying PPD/EPA weight** | EPA stabilizes faster than points per drive, so it should matter more early |
 | B4 | ✅ Subsumed by B1 (the stack learns the prior's weight): **Ridge toward the prior** (shrink toward the preseason estimate instead of toward 0) | One principled fit instead of fit-then-blend; avoids shrinking twice early in the season |
 | B5 | ✅ **Adopted (#37/#38), a top signal in both sets:** **Success rate as a third opponent-adjusted metric** | Success rate is very stable and predictive; we already store it |
-| B6 | ◐ Partly done: σ fit by log loss (#34); context-dependent σ still open (80–90% bin +3.8): **Context-dependent σ** (wider for mismatches and high-pace games) | Better win probabilities and calibration, which matter for the book |
-| B7 | **Split the pooled non-FBS team** into FCS and D-II/III | One pooled team mixes NDSU with D-III schools |
+| B6 | ✅ Done (#46): single σ kept; band σ and logistic recalibration gave no gain. Watch the 80–90% bin (+4.3, ~2.4 SE). Was: σ fit by log loss (#34); context-dependent σ still open (80–90% bin +3.8): **Context-dependent σ** (wider for mismatches and high-pace games) | Better win probabilities and calibration, which matter for the book |
+| B7 | ✅ **Adopted (#45):** **Split the pooled non-FBS team** into FCS and D-II/III | One pooled team mixes NDSU with D-III schools |
 
 **Tier 2: needs new data (CFBD calls)**
 | # | Idea | Data |
@@ -194,11 +194,11 @@ Goal: the most accurate predictions and the most defensible rankings. **Rules fo
 **Tier 3: ranking quality**
 | # | Idea |
 |---|---|
-| B11 | Rating **uncertainty** (ridge standard errors): show ± bands; base "provisional" on uncertainty instead of a fixed 4 games |
+| B11 | ⏸ Deferred to Phases 4–5 (display, not accuracy): Rating **uncertainty** (ridge standard errors): show ± bands; base "provisional" on uncertainty instead of a fixed 4 games |
 | B12 | Résumé with dynamic SOS (planned, Phase 2) |
 | B13 | Optional "form" view (recency-weighted `season` rating) alongside the full-season Power rating |
 
-**SP+ sanity check (done, #39):** mean correlation of final ratings 0.948 (2021+: 0.96–0.98; 2020: 0.82). Recurring gap: triple-option teams (Army, Air Force) rated higher by TSI, likely from their very high success rates. To check: are TSI's predictions for option teams biased?
+**SP+ sanity check (done, #39):** mean correlation of final ratings 0.948 (2021+: 0.96–0.98; 2020: 0.82). Recurring gap: triple-option teams (Army, Air Force) rated higher by TSI, likely from their very high success rates. Checked (#47): no prediction bias for option teams (Army/Navy/Air Force, 374 games: +1.18 ± 1.70 pts, Vegas +1.83); they are just harder to predict (Army MAE 14.2 vs. Vegas 12.6).
 
 **SP+ comparison caveat:** CFBD's historical SP+ (`/ratings/sp`) is end-of-season only. Comparing our week-by-week predictions against final SP+ would give SP+ look-ahead, so it isn't a fair *prediction* benchmark. It can still serve as a sanity check on final ratings (rank correlation).
 | B14 | ✅ **Adopted (#38):** learned weights for the `season` (rankings) blend: PPD + success rate, this-season inputs only |

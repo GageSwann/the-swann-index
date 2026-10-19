@@ -1,7 +1,7 @@
 """Turn team-game rows into a regression design: y = mu + O[team] - D[opp] + hfa * site.
 
 Column layout: [intercept, hfa, O_0..O_{n-1}, D_0..D_{n-1}].
-Non-FBS teams are pooled into one pseudo-team (`POOLED_ID`) so FBS-vs-FCS games
+Non-FBS teams are pooled into pseudo-teams (FCS, and everything below FCS) so FBS-vs-FCS games
 inform FBS ratings without needing full FCS ratings (doc 04 §5). Games between
 two non-FBS teams carry no FBS information and are dropped.
 """
@@ -13,7 +13,9 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
-POOLED_ID = -1  # stands in for every non-FBS team
+FCS_POOL_ID = -1  # stands in for every FCS team
+LOWER_POOL_ID = -2  # D-II, D-III, NAIA and unclassified teams
+POOLED_ID = FCS_POOL_ID  # the pool most FBS opponents fall in
 RATED_DIVISION = "fbs"
 
 
@@ -33,7 +35,13 @@ class RatingRow(Protocol):
 
 
 def rated_id(team_id: int, division: str) -> int:
-    return team_id if division == RATED_DIVISION else POOLED_ID
+    if division == RATED_DIVISION:
+        return team_id
+    return FCS_POOL_ID if division == "fcs" else LOWER_POOL_ID
+
+
+def is_pooled(team: int) -> bool:
+    return team < 0
 
 
 def involves_rated_team(row: RatingRow) -> bool:

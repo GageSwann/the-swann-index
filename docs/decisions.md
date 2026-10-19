@@ -48,6 +48,10 @@ Add an entry when a meaningful decision is made or reversed. Newest at the botto
 | 42 | 2026-10-19 | Richer prior (B8) adopted: 7 inputs (last rating, talent, returning, returning passing, 4-yr recruiting, net portal, new coach) | Validation 12.47 → 12.40, early season 12.74 → 12.55, LOSO train 12.96 → 12.91. Biggest effects: last rating, recruiting (defense), talent; new coach ≈ −0.5 off |
 | 43 | 2026-10-19 | Production model = committed JSON artifact (`model/artifacts/current.json`) fit on all completed seasons by `tsi model fit`; the nightly `tsi rate` only loads it. `model_runs.params` stores the artifact version, not the weights | Fast, reproducible daily runs (~2 s); weights versioned in git and tied to each run's git SHA; avoids ~10 MB/yr of duplicated JSON |
 | 44 | 2026-10-19 | CFBD client retries timeouts/connection errors/5xx (waits 2 s, 5 s); every attempt counts toward the budget | A single CFBD ReadTimeout failed the 2026-10-18 nightly run |
+| 45 | 2026-10-19 | Non-FBS opponents pooled separately: FCS (−1) and D-II/III/NAIA/unknown (−2) | Prediction MAE unchanged (<0.01), but a D-III opponent no longer counts as an average FCS team in Résumé SOS; groundwork for FCS expansion |
+| 46 | 2026-10-19 | B6 rejected: keep one log-loss-fit σ | σ by margin band (13.9→16.1) and logistic recalibration matched or slightly worsened validation Brier/log loss; the 80–90% bin's +4.3 is ~2.4 SE (monitor) |
+| 47 | 2026-10-19 | No option-offense correction | Prediction bias for Army/Navy/Air Force is +1.18 ± 1.70 (n.s.), smaller than Vegas's +1.83; the SP+ rating gap doesn't make predictions biased |
+| 48 | 2026-10-19 | Ridge λ stays 2; B11 (rating uncertainty) deferred to API/frontend phases | λ=1.5 gains 0.01 on predictions (noise) but worsens rankings; uncertainty bands are a display feature |
 
 ## Open questions
 - API host: Render vs. Fly.io (decide in Phase 6)

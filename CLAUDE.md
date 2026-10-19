@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Remaining: Phase 2 report, round-2 backlog (B6, B7, B11, option teams).
+- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). Next: Phase 3 (prediction engine & book).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
