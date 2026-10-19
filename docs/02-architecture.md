@@ -114,7 +114,7 @@ Responses are Pydantic models; the OpenAPI spec generates TypeScript types for `
 
 **Daily, 10:00 UTC** (`.github/workflows/daily-refresh.yml`), one job:
 1. Ingest current-season games, advanced stats, lines (built: Phase 1)
-2. Refit `season` + `predictive` ratings → new `model_run` → rankings + Résumé (Phase 2)
+2. `tsi rate`: refit `season` + `predictive` ratings from the committed artifact → new `live` `model_run` + `team_ratings` rows (Power, Résumé, predictive) (built: Phase 2)
 3. Generate and publish prediction snapshots for upcoming games; grade finished picks (Phase 3)
 4. Revalidate the site (Phase 6)
 

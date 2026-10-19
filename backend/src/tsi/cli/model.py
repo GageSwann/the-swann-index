@@ -7,8 +7,10 @@ import typer
 from tsi.backtest.evaluate import Summary
 from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
+from tsi.model.artifact import ARTIFACT_PATH, save_artifact
 from tsi.model.elo import EloParams
 from tsi.services.elo_report import run_elo_report
+from tsi.services.model_fit import fit_production_model
 from tsi.services.rankings import build_rankings
 from tsi.services.sp_check import compare_with_sp
 
@@ -102,3 +104,20 @@ def rankings(
             f"{t.defense:>+6.1f}  {r.sor:>6.3f} {r.sos:>+6.1f}"
         )
     typer.echo("\n* provisional (fewer than 4 games). SOR = chance a #12 team matches the record.")
+
+
+@app.command()
+def fit(
+    through: int | None = typer.Option(None, "--through", help="Last completed season."),
+) -> None:
+    """Fit the production model on all completed seasons and save the artifact (commit it)."""
+    last = through or current_season(datetime.now(UTC)) - 1
+    with db_runtime() as sessions, sessions() as session:
+        artifact = fit_production_model(session, last)
+    save_artifact(artifact)
+    typer.echo(
+        f"Saved {artifact.version} fitted on {artifact.fitted_seasons[0]}-"
+        f"{artifact.fitted_seasons[1]} to {ARTIFACT_PATH}\n"
+        f"sigma predictive {artifact.sigma_predictive:.1f}, "
+        f"season {artifact.sigma_season:.1f} | {artifact.elo.elo_per_point:.1f} Elo per point"
+    )

@@ -93,6 +93,12 @@ def fake_cfbd(cfbd_fixture: Callable[[str], Any]) -> FakeCfbd:
             ("/lines", year): cfbd_fixture("lines_2024_sample"),
             ("/talent", year): cfbd_fixture("talent_2024_sample"),
             ("/player/returning", year): cfbd_fixture("returning_2024_sample"),
+            # Roster inputs: classes 2021-24, portal 2024, coaches 2024 and 2023.
+            **{("/recruiting/teams", frozenset({("year", y)})): [] for y in range(2021, 2025)},
+            ("/recruiting/teams", year): [{"year": 2024, "team": "Colorado", "points": 249.0}],
+            ("/player/portal", year): [],
+            ("/coaches", year): [],
+            ("/coaches", frozenset({("year", 2023)})): [],
         },
         fetched_at=datetime(2026, 10, 14, tzinfo=UTC),
     )

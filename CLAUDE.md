@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 in progress:** Elo (val MAE 13.15), ridge `season` ratings, preseason prior + `predictive` blend done. Harness + **model v1.1** done: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.47 vs. Vegas 12.00, SU 72.2%**, calibrated). Next: Résumé/SOS, production stack weights + daily refit, round-2 backlog.
+- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Remaining: Phase 2 report, round-2 backlog (B6, B7, B11, option teams).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -56,7 +56,8 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
 - **Alembic** autogenerate misses primary-key changes; hand-write those. With our naming convention, pass the short constraint name (e.g. `"basis"`), never the full `ck_table_name`.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
-- **Windows shell:** PowerShell here-strings mangle inline Python; write scripts to the scratchpad. `sed` replacements containing `#` need another delimiter.
+- **Windows shell:** PowerShell here-strings mangle inline Python; write scripts to the scratchpad. `sed` replacements containing `#` need another delimiter. Write commit messages with a bash heredoc + `git commit -F` (PowerShell `Set-Content -Encoding utf8` adds a BOM). Python strings written via a shell heredoc must not contain `\n` (it becomes a real newline).
+- **Model changes:** after changing the model or its params, rerun `tsi backtest run`, then `tsi model fit`, and commit the new artifact. The nightly job uses whatever artifact is on `main`.
 - **GitHub Actions:** `astral-sh/setup-uv` has no floating major tag; pin the exact version (e.g. `v10.3.0`).
 - The nightly job writes to the Neon **dev** branch until Phase 6 (#19).
 
@@ -75,6 +76,8 @@ uv run tsi check                # data quality rules; exit 1 on any `fail` (--se
 uv run tsi model elo            # Elo baseline vs. closing line, by season (train/validate split)
 uv run tsi model rankings        # current Power + Résumé rankings (--season, --top, --by resume)
 uv run tsi model compare-sp      # sanity check: TSI final ratings vs. SP+ final (correlation)
+uv run tsi model fit            # refit production artifact on all completed seasons (commit model/artifacts/current.json)
+uv run tsi rate                 # today's ratings + rankings -> live model_run (--dry-run); nightly job runs it
 uv run tsi backtest run         # full walk-forward backtest + calibration + ATS; saved to model_runs (--no-save, --lam, ...)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>

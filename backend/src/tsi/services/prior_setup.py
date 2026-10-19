@@ -25,7 +25,9 @@ class PriorSetup:
     def priors_for(
         self, season: int, teams: Iterable[int], table: InputsTable
     ) -> dict[int, TeamRating]:
-        return {t: self.model.predict(_inputs(season, t, self.finals, table)) for t in teams}
+        return {
+            t: self.model.predict(prior_inputs_for(season, t, self.finals, table)) for t in teams
+        }
 
 
 def rows_by_season(rows: Iterable[OffenseRow]) -> dict[int, list[OffenseRow]]:
@@ -45,7 +47,7 @@ def build_prior_setup(
 ) -> PriorSetup:
     finals = {s: fit_ratings(grouped[s], params) for s in completed_seasons if s in grouped}
     samples = [
-        (_inputs(season, team, finals, table), finals[season].teams[team])
+        (prior_inputs_for(season, team, finals, table), finals[season].teams[team])
         for season in range(train[0], train[1] + 1)
         if season in finals
         for team in fbs.get(season, set()) & set(finals[season].teams)
@@ -53,9 +55,10 @@ def build_prior_setup(
     return PriorSetup(fit_prior_model(samples), finals)
 
 
-def _inputs(
+def prior_inputs_for(
     season: int, team: int, finals: Mapping[int, RatingSet], table: InputsTable
 ) -> PriorInputs:
+    """Preseason inputs for one team: last season's final rating + this season's table row."""
     last_season = finals.get(season - 1)
     last = last_season.teams.get(team) if last_season else None
     row = table.get((season, team), PriorRow())

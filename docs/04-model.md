@@ -88,7 +88,7 @@ rating = (prior_weight · prior + n · observed) / (prior_weight + n)
 - **Missing inputs:** a separate model for every subset of {last FBS rating, talent, returning production}; each team uses the largest subset it has. A team that was FCS last year has no "last FBS rating".
 - The non-FBS pooled team keeps its season fit. HFA blends the same way using average games played; the prior HFA is the train-season average (~2.8 pts).
 - **Tuned for maximum accuracy (#33, owner):** `k` = 6, `n_cutoff` = 14 (train MAE plateaus at 14–16 games; never fading is slightly worse). Rankings never use the prior, so this only affects predictions.
-- **Win probability:** σ is chosen to minimize log loss on train (#34): σ ≈ 12.7, not the raw residual SD (~18, inflated by blowouts). Calibration bins (validation): +1.1 / −1.2 / −3.3 / +1.4 / −0.3 pts.
+- **Win probability:** σ is chosen to minimize log loss on train (#34), not taken from the raw residual SD (inflated by blowouts). It depends on the predictor: ≈12.7 for the old hand-set blend, **≈15.5 for the v1.1 stack** (which makes bigger, more spread-out calls); production artifact 15.2. Calibration for the stack (validation): 4 of 5 bins within ±1.5 pts; the 80–90% bin is still +3.8 to +4.3 (open item B6).
 
 | Validation 2023–25 (FBS-vs-FBS) | Games | `season` | **`predictive`** | Elo | Vegas |
 |---|---|---|---|---|---|
@@ -187,7 +187,7 @@ Goal: the most accurate predictions and the most defensible rankings. **Rules fo
 **Tier 2: needs new data (CFBD calls)**
 | # | Idea | Data |
 |---|---|---|
-| B8 | Richer prior: QB/passing returning production (already in the cached returning response), two seasons of ratings, recruiting classes, transfer portal, coaching changes | `/recruiting/teams`, `/player/portal`, `/coaches` |
+| B8 | ✅ **Adopted (#42):** Richer prior: QB/passing returning production (already in the cached returning response), two seasons of ratings, recruiting classes, transfer portal, coaching changes | `/recruiting/teams`, `/player/portal`, `/coaches` |
 | B9 | Situational home field: travel distance, altitude, dome, rest days | venues (loaded) + schedule |
 | B10 | QB injuries/changes | manual adjustments layer (Phase 9) |
 

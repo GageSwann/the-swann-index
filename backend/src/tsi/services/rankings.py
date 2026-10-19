@@ -18,7 +18,13 @@ from tsi.db.queries.results import completed_games
 from tsi.db.queries.stats import offense_rows
 from tsi.model.ratings.design import rated_id
 from tsi.model.ratings.fit import RatingParams, RatingSet, fit_ratings
-from tsi.model.resume import Resume, ScheduleGame, benchmark_rating, strength_of_record
+from tsi.model.resume import (
+    SEASON_SIGMA,
+    Resume,
+    ScheduleGame,
+    benchmark_rating,
+    strength_of_record,
+)
 
 
 @dataclass(frozen=True)
@@ -45,7 +51,11 @@ class Rankings:
 
 
 def build_rankings(
-    session: Session, season: int, as_of: datetime, params: RatingParams | None = None
+    session: Session,
+    season: int,
+    as_of: datetime,
+    params: RatingParams | None = None,
+    sigma: float = SEASON_SIGMA,
 ) -> Rankings:
     params = params or RatingParams()
     rows = [
@@ -68,7 +78,7 @@ def build_rankings(
                 opp_rating = ratings.get(opp, opp_div).rating
                 schedules[team].append(ScheduleGame(opp_rating, site, won))
 
-    resumes = {t: strength_of_record(schedules[t], benchmark, ratings.hfa) for t in rated}
+    resumes = {t: strength_of_record(schedules[t], benchmark, ratings.hfa, sigma) for t in rated}
     power_order = sorted(rated, key=lambda t: -rated[t].rating)
     resume_order = sorted(rated, key=lambda t: (resumes[t].sor, -resumes[t].wins, -rated[t].rating))
     resume_rank = {t: i + 1 for i, t in enumerate(resume_order)}

@@ -48,13 +48,13 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Preseason prior with fallbacks (`model/prior.py`): a separate least-squares model for every subset of inputs (last FBS rating, talent, returning production), fit on 2015–22 targets. Re-tuned for maximum accuracy (#33): prior worth 6 games, gone after 14. **Validation: predictive MAE 12.79 vs. Elo 13.15 vs. Vegas 12.00 (within the ~1 pt target); SU 71.0%** (target 72%)
 - [x] SP+ sanity check (`tsi model compare-sp`): TSI final `season` ratings vs. SP+ final, 2015–25. No table needed (finished seasons are cached on disk forever). **Mean correlation 0.948 (ranks 0.939); 2021+ 0.96–0.98; 2020 0.82.** TSI consistently rates option teams (Army, Air Force) higher; to investigate. Comparison only, never a model input
 - [x] Model improvements round 1 (doc 04 §12): stacking B1 + success rate B5 + learned rankings blend B14 adopted; recency B2 rejected. **v1.1 validation: predictions 12.47 vs. Vegas 12.00 (SU 72.2% ✅), rankings 13.37**
-- [ ] B8 richer prior: returning passing PPA, 4-year recruiting average, net transfer portal, new-head-coach flag (`ingest/transform/roster.py`, `tsi ingest roster`); prior model now takes 7 inputs. **Migration 5 pending approval**, then backfill (~38 calls) and backtest
+- [x] B8 richer prior: returning passing PPA, 4-year recruiting average, net transfer portal (2021+), new-head-coach flag (`tsi ingest roster`; migration 5 applied; backfilled 2014–26). **Validation 12.47 → 12.40; early season 12.74 → 12.55**
 - [ ] Model improvements round 2: B6 context σ, B7 split pooled FCS, B11 rating uncertainty; investigate option teams (Army/Air Force)
-- [ ] Production stack weights: fit on all completed seasons and store them (the daily job needs them; the backtest refits on train only)
+- [x] Production model: `tsi model fit` fits the prior model, stack, Elo scale and σ on all completed seasons (2015–25) → `model/artifacts/current.json` (committed, versioned)
 - [x] Walk-forward backtest harness + metrics + saved runs: `tsi backtest run` (season/predictive/Elo/Vegas tables, calibration bins, ATS by edge size), saved to `model_runs` (kind `backtest`, config + metrics + git SHA). σ fit by log loss (#34) → calibration within ±3 in 4 of 5 bins. ATS vs. closing 50.8%; no edge yet
 - [x] Tune on 2015–2022, validate on 2023–2025 (λ, rankings blend weights, stack weights and penalty, σ; the prior fade is now learned by the stack)
 - [x] Résumé (SOR) vs. a #12 benchmark using opponents' **current** ratings, plus SOS (`model/resume.py`, `services/rankings.py`, `tsi model rankings`). σ 15.7 (log-loss fit of `season` margins, 4+ games). Stored daily with the nightly ratings (next item)
-- [ ] Daily job: refit both rating sets after ingest → rankings update every morning
+- [x] Daily job: `tsi rate` after ingest → a `live` model_run + `team_ratings` (`season` with Power/Résumé ranks, `predictive` per team); ~2 s. CFBD client now retries transient failures (an Oct 18 timeout failed one nightly run)
 - [ ] Report summarizing results vs. closing line / SP+ / Elo (use the `dataviz` skill for charts)
 
 **Done when:** validation MAE and calibration meet the targets in doc 01 (or the gap is understood and documented), and the daily job produces fresh 2026 rankings.

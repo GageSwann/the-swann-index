@@ -9,6 +9,7 @@ import typer
 from tsi import __version__
 from tsi.cli import backtest, ingest, model
 from tsi.cli.check import check
+from tsi.cli.rate import rate
 from tsi.cli.runtime import configure_logging
 
 app = typer.Typer(
@@ -21,6 +22,7 @@ app.add_typer(ingest.app, name="ingest")
 app.add_typer(model.app, name="model")
 app.add_typer(backtest.app, name="backtest")
 app.command(name="check")(check)
+app.command(name="rate")(rate)
 
 
 def _print_version(value: bool) -> None:

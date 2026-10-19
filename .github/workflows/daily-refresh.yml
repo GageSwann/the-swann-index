@@ -1,4 +1,4 @@
-# Nightly refresh of the in-progress season (games now; stats + ratings in later phases).
+# Nightly: refresh the in-progress season from CFBD, then refit ratings + rankings.
 # Secrets: CFBD_API_KEY, DATABASE_URL (repo Settings -> Secrets and variables -> Actions).
 name: Daily refresh
 
@@ -31,6 +31,12 @@ jobs:
 
       - name: Refresh current season from CFBD
         run: uv run tsi ingest daily
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Refit ratings + rankings (saved as a live model run)
+        run: uv run tsi rate
         env:
           CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
