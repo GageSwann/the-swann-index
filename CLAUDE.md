@@ -78,6 +78,7 @@ uv run tsi model rankings        # current Power + Résumé rankings (--season, 
 uv run tsi model compare-sp      # sanity check: TSI final ratings vs. SP+ final (correlation)
 uv run tsi model fit            # refit production artifact on all completed seasons (commit model/artifacts/current.json)
 uv run tsi rate                 # today's ratings + rankings -> live model_run (--dry-run); nightly job runs it
+uv run tsi backtest export --out-dir DIR   # report tables as CSV (backtest, calibration, ATS, SP+, stack weights)
 uv run tsi backtest run         # full walk-forward backtest + calibration + ATS; saved to model_runs (--no-save, --lam, ...)
 uv run ruff check . ; uv run ruff format .
 uv add <pkg>  /  uv add --dev <pkg>

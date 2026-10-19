@@ -55,7 +55,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Tune on 2015–2022, validate on 2023–2025 (λ, rankings blend weights, stack weights and penalty, σ; the prior fade is now learned by the stack)
 - [x] Résumé (SOR) vs. a #12 benchmark using opponents' **current** ratings, plus SOS (`model/resume.py`, `services/rankings.py`, `tsi model rankings`). σ 15.7 (log-loss fit of `season` margins, 4+ games). Stored daily with the nightly ratings (next item)
 - [x] Daily job: `tsi rate` after ingest → a `live` model_run + `team_ratings` (`season` with Power/Résumé ranks, `predictive` per team); ~2 s. CFBD client now retries transient failures (an Oct 18 timeout failed one nightly run)
-- [ ] Report summarizing results vs. closing line / SP+ / Elo (use the `dataviz` skill for charts)
+- [x] Report summarizing results vs. closing line / SP+ / Elo: **TSI model report card** (claude.ai artifact https://claude.ai/artifact/AEndkhJAt49YQNJcWC2i7v, private until shared), data from `tsi backtest export`
 
 **Done when:** validation MAE and calibration meet the targets in doc 01 (or the gap is understood and documented), and the daily job produces fresh 2026 rankings.
 

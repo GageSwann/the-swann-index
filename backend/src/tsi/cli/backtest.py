@@ -1,21 +1,25 @@
 """`tsi backtest run`: walk-forward backtest of the full model, saved to model_runs."""
 
 from datetime import UTC, datetime
+from pathlib import Path
 
 import typer
 
 from tsi.backtest.ats import BREAK_EVEN
 from tsi.backtest.calibration import TOLERANCE
-from tsi.cli.runtime import db_runtime
+from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
+from tsi.model.artifact import load_artifact
 from tsi.model.config import ModelConfig
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
+from tsi.services import report_export as report
 from tsi.services.backtest import BacktestResult, run_backtest
 from tsi.services.backtest_data import load_backtest_data
 from tsi.services.backtest_store import save_backtest_run
 
 app = typer.Typer(help="Walk-forward backtests.", no_args_is_help=True)
+OUT_DIR = typer.Option(..., "--out-dir", help="Folder for the report CSVs.")
 
 
 @app.command()
@@ -83,3 +87,26 @@ def _print_ats(result: BacktestResult) -> None:
             f"  edge >= {a.min_edge:>3.0f} pts: {a.wins}-{a.losses}-{a.pushes}  "
             f"({100 * a.win_rate:.1f}% of {a.bets} bets)"
         )
+
+
+@app.command()
+def export(
+    out_dir: Path = OUT_DIR,
+    through: int | None = typer.Option(None, "--through", help="Last season (default: current)."),
+) -> None:
+    """Write the Phase 2 report tables (backtest, calibration, ATS, SP+, stack weights) as CSV."""
+    last = through or current_season(datetime.now(UTC))
+    with ingest_runtime() as (client, sessions), sessions() as session:
+        result = run_backtest(load_backtest_data(session, last))
+        sp = report.sp_agreement(client, session, 2015, last - 1)
+    tables = {
+        "by_season": report.by_season(result),
+        "periods": report.periods(result),
+        "calibration": report.calibration(result),
+        "ats": report.ats(result),
+        "sp_agreement": sp,
+        "stack_weights": report.stack_weights(load_artifact()),
+    }
+    for name, rows in tables.items():
+        report.write_csv(rows, out_dir / f"{name}.csv")
+        typer.echo(f"{name}.csv: {len(rows)} rows")
