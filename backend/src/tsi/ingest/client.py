@@ -7,7 +7,8 @@ and not logged).
 """
 
 import logging
-from collections.abc import Callable, Mapping
+import time
+from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
 from typing import Any, Self
 
@@ -24,6 +25,9 @@ FreshnessRule = Callable[[Mapping[str, Any], datetime, datetime], bool]
 logger = logging.getLogger(__name__)
 
 DEFAULT_BASE_URL = "https://api.collegefootballdata.com"
+# Transient failures (timeouts, connection errors, HTTP 5xx) are retried after these
+# waits. A 2026-10-18 nightly run failed on one CFBD ReadTimeout.
+RETRY_DELAYS = (2.0, 5.0)
 
 
 class CfbdClient:
@@ -38,6 +42,8 @@ class CfbdClient:
         base_url: str = DEFAULT_BASE_URL,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
         freshness: FreshnessRule = is_fresh,
+        retry_delays: Sequence[float] = RETRY_DELAYS,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self._api_key = api_key
         self._cache = cache
@@ -46,6 +52,8 @@ class CfbdClient:
         self._http = http or httpx.Client(base_url=base_url, timeout=30.0)
         self._clock = clock
         self._is_fresh = freshness
+        self._retry_delays = tuple(retry_delays)
+        self._sleep = sleep
 
     def get(
         self, endpoint: str, params: Mapping[str, Any] | None = None, *, refresh: bool = False
@@ -84,19 +92,32 @@ class CfbdClient:
             )
 
     def _fetch(self, endpoint: str, params: dict[str, Any]) -> Any:
+        """GET with retries on transient failures. Every attempt is logged (and counted)."""
         headers = {
             "Authorization": f"Bearer {self._api_key.get_secret_value()}",
             "Accept": "application/json",
         }
-        try:
-            response = self._http.get(endpoint, params=params, headers=headers)
-        except httpx.HTTPError as exc:
+        waits = list(self._retry_delays)
+        while True:
+            try:
+                response = self._http.get(endpoint, params=params, headers=headers)
+                problem = (
+                    None
+                    if response.status_code == httpx.codes.OK
+                    else f"HTTP {response.status_code}"
+                )
+                retryable = response.status_code >= 500
+            except httpx.TransportError as exc:  # timeouts, connection errors
+                response, problem, retryable = None, type(exc).__name__, True
+            if problem is None:
+                break
             self._record(endpoint, params, status="error")
-            raise CfbdError(f"CFBD request to {endpoint} failed: {type(exc).__name__}") from exc
-
-        if response.status_code != httpx.codes.OK:
-            self._record(endpoint, params, status="error")
-            raise CfbdError(f"CFBD {endpoint} returned HTTP {response.status_code}")
+            if not retryable or not waits:
+                prefix = "returned" if problem.startswith("HTTP") else "request failed:"
+                raise CfbdError(f"CFBD {endpoint} {prefix} {problem}")
+            wait = waits.pop(0)
+            logger.warning("CFBD %s %s (%s); retrying in %.0fs", endpoint, params, problem, wait)
+            self._sleep(wait)
 
         remaining = response.headers.get("X-CallLimit-Remaining")
         logger.info("CFBD %s %s -> 200 (calls remaining: %s)", endpoint, params, remaining)

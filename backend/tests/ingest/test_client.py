@@ -35,7 +35,12 @@ class Clock:
 
 
 def make_client(
-    tmp_path: Path, ledger, api: FakeApi, budget: int = 1000, clock: Clock | None = None
+    tmp_path: Path,
+    ledger,
+    api: FakeApi,
+    budget: int = 1000,
+    clock: Clock | None = None,
+    sleeps: list[float] | None = None,
 ) -> CfbdClient:
     http = httpx.Client(base_url="https://cfbd.test", transport=httpx.MockTransport(api.handler))
     return CfbdClient(
@@ -44,6 +49,7 @@ def make_client(
         ledger=ledger,
         monthly_budget=budget,
         http=http,
+        sleep=(sleeps if sleeps is not None else []).append,
         **({"clock": clock} if clock else {}),
     )
 
@@ -134,3 +140,47 @@ def test_cache_files_never_contain_the_key(tmp_path: Path, ledger) -> None:
 
     for path in tmp_path.rglob("*.json"):
         assert API_KEY not in path.read_text(encoding="utf-8")
+
+
+class FlakyApi(FakeApi):
+    """Fails the first `failures` requests with `error` (an exception or a status code)."""
+
+    def __init__(self, failures: int, error) -> None:
+        super().__init__()
+        self.failures, self.error = failures, error
+
+    def handler(self, request: httpx.Request) -> httpx.Response:
+        if self.failures > 0:
+            self.failures -= 1
+            self.requests.append(request)
+            if isinstance(self.error, int):
+                return httpx.Response(self.error, json={})
+            raise self.error("boom", request=request)
+        return super().handler(request)
+
+
+def test_timeouts_are_retried_with_backoff(tmp_path: Path, ledger) -> None:
+    api, sleeps = FlakyApi(2, httpx.ReadTimeout), []
+    client = make_client(tmp_path, ledger, api, sleeps=sleeps)
+
+    assert client.get("/games", {"year": 2024}) == GAMES
+
+    assert len(api.requests) == 3 and sleeps == [2.0, 5.0]
+    assert [r.status for r in ledger.records] == ["error", "error", "ok"]  # all attempts count
+
+
+def test_server_errors_are_retried_but_give_up_eventually(tmp_path: Path, ledger) -> None:
+    api = FlakyApi(5, 503)
+    client = make_client(tmp_path, ledger, api, sleeps=[])
+
+    with pytest.raises(CfbdError, match="HTTP 503"):
+        client.get("/games", {"year": 2024})
+    assert len(api.requests) == 3  # first try + 2 retries
+
+
+def test_client_errors_are_not_retried(tmp_path: Path, ledger) -> None:
+    api, sleeps = FlakyApi(1, 404), []
+
+    with pytest.raises(CfbdError, match="HTTP 404"):
+        make_client(tmp_path, ledger, api, sleeps=sleeps).get("/games", {"year": 2024})
+    assert sleeps == [] and len(api.requests) == 1
