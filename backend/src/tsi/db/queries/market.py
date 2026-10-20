@@ -1,4 +1,8 @@
-"""Market lines: closing and opening consensus (backtests) and live snapshots (publishing)."""
+"""Market lines: closing and opening consensus (backtests) and live snapshots (publishing).
+
+Every consensus is the median across sportsbooks, aggregator feeds excluded, so backtests
+and live grading measure against the same number.
+"""
 
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -33,13 +37,13 @@ class LineSnapshot:
 
 
 def closing_spreads(session: Session, through_season: int) -> dict[int, float]:
-    """game_id -> mean closing spread (home view, negative = home favored)."""
-    return _closing_mean(session, MarketLine.spread, through_season)
+    """game_id -> median closing spread across books (home view, negative = home favored)."""
+    return _closing_median(session, MarketLine.spread, through_season)
 
 
 def closing_totals(session: Session, through_season: int) -> dict[int, float]:
-    """game_id -> mean closing over/under total (points)."""
-    return _closing_mean(session, MarketLine.total, through_season)
+    """game_id -> median closing over/under total across books (points)."""
+    return _closing_median(session, MarketLine.total, through_season)
 
 
 def opening_lines(session: Session, through_season: int) -> dict[int, OpeningLine]:
@@ -110,11 +114,17 @@ def closing_snapshots(session: Session, game_ids: Iterable[int]) -> list[LineSna
     return [LineSnapshot(*row) for row in session.execute(query)]
 
 
-def _closing_mean(session: Session, column, through_season: int) -> dict[int, float]:
+def _closing_median(session: Session, column, through_season: int) -> dict[int, float]:
+    """Same consensus as live grading (book/consensus.py): median of sportsbooks only."""
     query = (
-        select(MarketLine.game_id, func.avg(column))
+        select(MarketLine.game_id, func.percentile_cont(0.5).within_group(column))
         .join(Game, Game.id == MarketLine.game_id)
-        .where(MarketLine.is_closing, column.is_not(None), Game.season <= through_season)
+        .where(
+            MarketLine.is_closing,
+            column.is_not(None),
+            MarketLine.provider.not_in(AGGREGATORS),
+            Game.season <= through_season,
+        )
         .group_by(MarketLine.game_id)
     )
     return {game_id: float(value) for game_id, value in session.execute(query)}

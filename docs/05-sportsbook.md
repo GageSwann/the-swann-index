@@ -81,13 +81,13 @@ CLV is the best long-run skill signal. If TSI consistently beats the closing lin
 - Average CLV, % of picks that beat the close
 - Filterable pick history with a link to each game center
 
-**Book backtest** (`tsi backtest book`, decision #56): the picks the Book would have made at the median opener (2021+; shrink k fit on train), graded on the final, CLV vs. the closing consensus. Moneylines are not backtested (no historical opening prices); spreads produce no picks (k_spread = 0 on train).
+**Book backtest** (`tsi backtest book`, decision #56): the picks the Book would have made at the median opener (2021+; shrink k fit on train), graded on the final, CLV vs. the closing consensus (median of sportsbooks, #59). Moneylines are not backtested (no historical opening prices); spreads produce no picks (k_spread = 0 on train).
 
 | Totals | Bets | W-L-P | Win | ROI (flat) | CLV | Beat close |
 |---|---|---|---|---|---|---|
-| Train 2021–22 (k fit here) | 126 | 65-59-2 | 52.4% | +0.1% | +1.04 | 67% |
-| **Validation 2023–25** | 185 | 107-76-2 | **58.5%** | **+11.5%** | +0.90 | 62% |
-| 1★ / 2★ / 3★ (validation) | 148 / 33 / 4 | | 56.8% / 63.6% / 75% | +8.4% / +21.5% / +43% | | |
+| Train 2021–22 (k fit here) | 123 | 63-58-2 | 52.1% | −0.6% | +1.12 | 67% |
+| **Validation 2023–25** | 181 | 104-75-2 | **58.1%** | **+10.8%** | +0.93 | 60% |
+| 1★ / 2★ / 3★ (validation) | 144 / 33 / 4 | | 56.3% / 63.6% / 75% | +7.5% / +21.5% / +43% | | |
 | 2026 to date | 22 | 10-12-0 | 45.5% | −13.2% | +0.91 | 64% |
 
 CLV is positive in every season (+0.2 to +1.8 points): lines move toward TSI's totals picks, the most reliable sign of signal. Win rates are noisy at these sample sizes (train 2★ went 15-19). Checked and rejected: an intercept in the shrink (base rate of overs) improved log loss but turned the Book into an under-only bettor (503 of 508 validation bets) with lower ROI (+2.6%).

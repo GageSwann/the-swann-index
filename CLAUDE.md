@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and distribution, market pricing, consensus + edges (`book/`) done. Edges are shrunk toward the market (#52): k_spread 0.07, k_total 0.32, so spreads rarely qualify and totals can. Picks: ★ at 1.5/3/5 pts of edge, flat 1u + ¼ Kelly (cap 3u). Book backtest: totals at the opener, validation 107-76 (+11.5% ROI, CLV +0.9). **Nightly job = `tsi run`** (ingest → rate → grade → publish). Phase 3 items all built; "done when" = first fully graded live week (week 8, games Oct 21–25).
+- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and distribution, market pricing, consensus + edges (`book/`) done. Edges are shrunk toward the market (#52): k_spread 0.07, k_total 0.32, so spreads rarely qualify and totals can. Picks: ★ at 1.5/3/5 pts of edge, flat 1u + ¼ Kelly (cap 3u). Book backtest: totals at the opener, validation 104-75 (+10.8% ROI, CLV +0.9). **Nightly job = `tsi run`** (ingest → rate → grade → publish). Phase 3 items all built; "done when" = first fully graded live week (week 8, games Oct 21–25).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -46,7 +46,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **`team_game_stats`** = one row per team per game = its **offense**; defense is the opponent's row. Efficiency stats are garbage-time filtered; plays/drives are full-game so points-per-drive matches full-game points.
 - **Division values:** `fbs`, `fcs`, `ii`, `iii`, `unknown` (CFBD `classification`). Teams missing from CFBD `/teams` (mostly NAIA) get placeholder rows with slug `name-<id>`.
 - **Times** are UTC, timezone-aware; `parse_utc` rejects naive timestamps. `games.start_time_tbd` marks date-only kickoffs.
-- **Market lines** are change-only snapshots; `is_closing` = captured at/after kickoff.
+- **Market lines** are change-only snapshots; `is_closing` = captured at/after kickoff. Every consensus (opening, closing, live) = **median across sportsbooks**, aggregator feeds (`consensus`, `teamrankings`) excluded (#59).
 - **Known gaps** (`tsi check` warns): 47 FBS games without advanced stats (mostly 2014–16), no talent before 2015, some new-FBS teams without returning production.
 - CFBD identifies teams by **school name** in stats/talent/returning, so match through our tables.
 
