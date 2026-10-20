@@ -1,12 +1,10 @@
-from datetime import UTC, datetime
-
 import pytest
+from tests.factories import make_pick
 
 from tsi.backtest.book_eval import simulate_book, summarize_book
 from tsi.backtest.walk_forward import Pick
 from tsi.book.edges import EdgeShrink
 from tsi.db.queries.market import OpeningLine
-from tsi.db.queries.results import GameResult
 from tsi.model.distribution import DistributionParams
 
 PARAMS = DistributionParams(15.4, 16.4, 0.0, 0.0)
@@ -14,9 +12,7 @@ SHRINK = EdgeShrink(k_spread=0.0, k_total=0.3)
 
 
 def pick(gid: int, home: int, away: int, total: float) -> Pick:
-    kickoff = datetime(2024, 9, 7, tzinfo=UTC)
-    g = GameResult(gid, 2024, kickoff, 1, 2, "fbs", "fbs", False, home, away)
-    return Pick(g, 0.0, 0.0, total, True, 4, (), ())
+    return make_pick(gid, home, away, total=total)
 
 
 def test_book_bets_the_opener_and_measures_clv_at_the_close() -> None:

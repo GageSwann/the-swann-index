@@ -1,16 +1,12 @@
-from datetime import UTC, datetime
-
 import pytest
+from tests.factories import make_pick
 
 from tsi.backtest.totals_eval import summarize_totals
 from tsi.backtest.walk_forward import Pick
-from tsi.db.queries.results import GameResult
 
 
 def pick(gid: int, home: int, away: int, predicted: float) -> Pick:
-    kickoff = datetime(2024, 9, 7, tzinfo=UTC)
-    g = GameResult(gid, 2024, kickoff, 1, 2, "fbs", "fbs", False, home, away)
-    return Pick(g, 0.0, 0.0, predicted, True, 4, (), ())
+    return make_pick(gid, home, away, total=predicted)
 
 
 def test_totals_summary() -> None:

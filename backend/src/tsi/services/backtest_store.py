@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import ModelRun
 from tsi.model.config import MODEL_VERSION
-from tsi.services.backtest import BacktestResult
+from tsi.services.backtest_result import BacktestResult
 
 
 def current_git_sha() -> str | None:

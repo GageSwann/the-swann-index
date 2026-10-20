@@ -79,7 +79,7 @@ def latest_snapshots(session: Session, game_ids: Iterable[int]) -> dict[int, Sna
     return {gid: SnapshotKey(fp, frozenset(picks[pid])) for pid, (gid, fp) in rows.items()}
 
 
-def locked_snapshot_ids(game_ids: Iterable[int] | None = None):
+def locked_snapshot_ids():
     """Subquery: (game_id, prediction id) of each game's locked snapshot."""
     query = (
         select(Prediction.game_id, Prediction.id.label("prediction_id"))
@@ -88,8 +88,6 @@ def locked_snapshot_ids(game_ids: Iterable[int] | None = None):
         .order_by(Prediction.game_id, Prediction.published_at.desc(), Prediction.id.desc())
         .ext(postgresql.distinct_on(Prediction.game_id))
     )
-    if game_ids is not None:
-        query = query.where(Prediction.game_id.in_(list(game_ids)))
     return query.subquery()
 
 

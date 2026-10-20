@@ -99,14 +99,17 @@ class Design:
         o, d = slice(2, 2 + n), slice(2 + n, 2 + 2 * n)
 
         gram = np.zeros((2 + 2 * n, 2 + 2 * n))
-        gram[0, 0], gram[0, 1], gram[1, 1] = w.sum(), ws.sum(), (ws * s).sum()
-        gram[0, o], gram[0, d] = w_off, -w_opp
-        gram[1, o], gram[1, d] = s_off, -s_opp
-        gram[o, d] = -np.bincount(off * n + opp, w, n * n).reshape(n, n)
-        gram[o, o] = np.diag(w_off)
-        gram[d, d] = np.diag(w_opp)
-        upper = np.triu_indices(2 + 2 * n, 1)
-        gram.T[upper] = gram[upper]  # mirror the upper triangle
+        gram[0, 0], gram[1, 1] = w.sum(), (ws * s).sum()
+        gram[0, 1] = gram[1, 0] = ws.sum()
+        gram[0, o] = gram[o, 0] = w_off
+        gram[0, d] = gram[d, 0] = -w_opp
+        gram[1, o] = gram[o, 1] = s_off
+        gram[1, d] = gram[d, 1] = -s_opp
+        cross = -np.bincount(off * n + opp, w, n * n).reshape(n, n)
+        gram[o, d], gram[d, o] = cross, cross.T  # symmetric: fill both blocks directly
+        idx = np.arange(n)
+        gram[2 + idx, 2 + idx] = w_off
+        gram[2 + n + idx, 2 + n + idx] = w_opp
 
         rhs = np.concatenate(
             ([wy.sum(), (wy * s).sum()], np.bincount(off, wy, n), -np.bincount(opp, wy, n))

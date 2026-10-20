@@ -11,8 +11,9 @@ from tsi.backtest.splits import TRAIN, VALIDATE
 from tsi.book.edges import EdgeShrink
 from tsi.book.picks import PickRules
 from tsi.model.config import ModelConfig
-from tsi.services.backtest import BacktestResult, run_backtest
+from tsi.services.backtest import run_backtest
 from tsi.services.backtest_data import BacktestData
+from tsi.services.backtest_result import BacktestResult
 
 
 @dataclass(frozen=True)
@@ -41,8 +42,13 @@ def run_book_backtest(
     def period(first: int, last: int) -> list[GradedBet]:
         return [b for b in bets if first <= b.season <= last]
 
-    records = summarize_book(f"Train {TRAIN[0]}-{TRAIN[1]}", period(*TRAIN))
-    records += summarize_book(f"Validate {VALIDATE[0]}-{VALIDATE[1]}", period(*VALIDATE))
+    def label(name: str, first: int, last: int) -> str:
+        """Name the seasons that actually have bets (openers only exist from 2021)."""
+        seasons = [b.season for b in period(first, last)] or [first, last]
+        return f"{name} {min(seasons)}-{max(seasons)}"
+
+    records = summarize_book(label("Train", *TRAIN), period(*TRAIN))
+    records += summarize_book(label("Validate", *VALIDATE), period(*VALIDATE))
     for season in sorted({b.season for b in bets}):
         records += summarize_book(str(season), period(season, season))
     return BookBacktest(shrink, records, bets, result)

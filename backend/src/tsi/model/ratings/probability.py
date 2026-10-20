@@ -9,7 +9,14 @@ than predicted). The full score distribution is model/distribution.py.
 import math
 from collections.abc import Callable, Sequence
 
+import numpy as np
+
 SIGMA_RANGE = (5.0, 40.0)
+_erf_ufunc = np.frompyfunc(math.erf, 1, 1)  # exact erf, elementwise (numpy has none)
+
+
+def erf(x: np.ndarray) -> np.ndarray:
+    return _erf_ufunc(x).astype(float)
 
 
 def win_prob(margin: float, sigma: float) -> float:
@@ -33,13 +40,11 @@ def golden_min(loss: Callable[[float], float], lo: float, hi: float, tol: float 
 
 def fit_sigma(pred: Sequence[float], actual: Sequence[float], tol: float = 0.01) -> float:
     """sigma minimizing win/loss log loss (log loss is unimodal in sigma here)."""
-    outcomes = [1.0 if a > 0 else 0.0 if a < 0 else 0.5 for a in actual]
+    margins = np.asarray(pred, dtype=float)
+    outcomes = np.sign(np.asarray(actual, dtype=float)) * 0.5 + 0.5  # win 1, loss 0, tie 0.5
 
     def loss(sigma: float) -> float:
-        total = 0.0
-        for m, o in zip(pred, outcomes, strict=True):
-            p = min(max(win_prob(m, sigma), 1e-12), 1 - 1e-12)
-            total -= o * math.log(p) + (1 - o) * math.log(1 - p)
-        return total
+        p = np.clip(0.5 * (1.0 + erf(margins / (sigma * math.sqrt(2.0)))), 1e-12, 1 - 1e-12)
+        return float(-np.sum(outcomes * np.log(p) + (1 - outcomes) * np.log(1 - p)))
 
     return golden_min(loss, *SIGMA_RANGE, tol)

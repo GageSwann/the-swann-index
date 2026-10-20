@@ -1,6 +1,5 @@
-from datetime import UTC, datetime
-
 import pytest
+from tests.factories import make_pick
 
 from tsi.backtest.market_calibration import (
     line_calibration,
@@ -9,16 +8,13 @@ from tsi.backtest.market_calibration import (
     total_samples,
 )
 from tsi.backtest.walk_forward import Pick
-from tsi.db.queries.results import GameResult
 from tsi.model.distribution import DistributionParams
 
 PARAMS = DistributionParams(15.0, 16.0, 0.0, 0.0)
 
 
 def pick(gid: int, home: int, away: int, margin: float, total: float, season=2024) -> Pick:
-    kickoff = datetime(season, 9, 7, tzinfo=UTC)
-    g = GameResult(gid, season, kickoff, 1, 2, "fbs", "fbs", False, home, away)
-    return Pick(g, margin, margin, total, True, 4, (), ())
+    return make_pick(gid, home, away, margin=margin, total=total, season=season)
 
 
 def test_spread_samples_are_home_view_and_skip_pushes() -> None:

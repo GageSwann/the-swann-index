@@ -84,17 +84,22 @@ def fit_prior_model(samples: Sequence[tuple[PriorInputs, TeamRating]]) -> PriorM
     """`samples`: (preseason inputs, that season's final rating) per team-season."""
     coefs: dict[ModelKey, np.ndarray] = {}
     for side in SIDES:
+        # One matrix per side (NaN = missing input); each subset model selects its rows.
+        values = np.array(
+            [
+                [np.nan if v is None else v for v in inputs.values(side).values()]
+                for inputs, _ in samples
+            ],
+            dtype=float,
+        ).reshape(len(samples), len(FEATURES))
+        targets = np.array([getattr(final, side) for _, final in samples], dtype=float)
         for subset in _subsets_largest_first(FEATURES):
-            usable = [
-                (inputs.values(side), getattr(final, side))
-                for inputs, final in samples
-                if all(inputs.values(side)[f] is not None for f in subset)
-            ]
-            if len(usable) < MIN_SAMPLES:
+            cols = [FEATURES.index(f) for f in subset]
+            usable = ~np.isnan(values[:, cols]).any(axis=1)
+            if usable.sum() < MIN_SAMPLES:
                 continue
-            x = np.array([[1.0, *(v[f] for f in subset)] for v, _ in usable])
-            y = np.array([target for _, target in usable])
-            coefs[(side, subset)] = np.linalg.lstsq(x, y, rcond=None)[0]
+            x = np.column_stack([np.ones(usable.sum()), values[usable][:, cols]])
+            coefs[(side, subset)] = np.linalg.lstsq(x, targets[usable], rcond=None)[0]
     return PriorModel(coefs)
 
 

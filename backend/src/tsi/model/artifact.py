@@ -83,7 +83,8 @@ def _stack_model(data: dict[str, list[float]]) -> StackModel:
 
 def save_artifact(artifact: ModelArtifact, path: Path = ARTIFACT_PATH) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(artifact.to_json(), indent=1) + "\n", encoding="utf-8")
+    # LF on every OS, so a refit on Windows doesn't show up as a whole-file change.
+    path.write_text(json.dumps(artifact.to_json(), indent=1) + "\n", encoding="utf-8", newline="\n")
 
 
 def load_artifact(path: Path = ARTIFACT_PATH) -> ModelArtifact:

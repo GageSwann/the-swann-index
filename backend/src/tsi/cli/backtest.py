@@ -14,9 +14,11 @@ from tsi.model.artifact import load_artifact
 from tsi.model.config import ModelConfig
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
+from tsi.services import report_book as book_report
 from tsi.services import report_export as report
-from tsi.services.backtest import BacktestResult, run_backtest
+from tsi.services.backtest import run_backtest
 from tsi.services.backtest_data import load_backtest_data
+from tsi.services.backtest_result import BacktestResult
 from tsi.services.backtest_store import save_backtest_run
 from tsi.services.book_backtest import run_book_backtest
 
@@ -135,10 +137,10 @@ def export(
         "ats": report.ats(result),
         "sp_agreement": sp,
         "stack_weights": report.stack_weights(load_artifact()),
-        "totals_accuracy": report.totals_accuracy(result),
-        "book_record": report.book_record(book),
-        "book_bets": report.book_bets(book),
-        "book_calibration": report.book_calibration(result),
+        "totals_accuracy": book_report.totals_accuracy(result),
+        "book_record": book_report.book_record(book),
+        "book_bets": book_report.book_bets(book),
+        "book_calibration": book_report.book_calibration(result),
     }
     for name, rows in tables.items():
         report.write_csv(rows, out_dir / f"{name}.csv")
