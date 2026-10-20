@@ -60,7 +60,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 **Done when:** validation MAE and calibration meet the targets in doc 01 (or the gap is understood and documented), and the daily job produces fresh 2026 rankings.
 
 ## Phase 3: Prediction engine & book core
-- [ ] Score projection with pace
+- [x] Score projection with pace (totals stack, v1.2: val total MAE 12.87 vs. Vegas 12.68)
 - [ ] Bivariate-normal distribution; fit σ/ρ from backtest
 - [ ] Market pricing: fair + vigged spread, total, ML, team totals, alt ladders
 - [ ] Consensus market lines + no-vig implied probabilities + edges

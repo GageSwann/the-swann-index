@@ -16,6 +16,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
         rating=RatingParams(),
         elo=EloParams(elo_per_point=22.2),
         stack=StackModel({0: np.array([3.0, 1.0, 0.5, 1.1, 0.4]), 6: np.array([1.0] * 5)}),
+        totals=StackModel({0: np.array([55.0] + [0.3] * 7)}),
         prior=PriorModel(
             {
                 ("off", ("last", "talent")): np.array([-8.0, 0.4, 0.01]),
@@ -33,6 +34,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
     assert loaded.version == "tsi-test" and loaded.fitted_seasons == (2015, 2025)
     assert loaded.elo.elo_per_point == 22.2
     np.testing.assert_allclose(loaded.stack.coefs[6], artifact.stack.coefs[6])
+    np.testing.assert_allclose(loaded.totals.coefs[0], artifact.totals.coefs[0])
     np.testing.assert_allclose(loaded.prior.coefs[("off", ("last", "talent"))], [-8.0, 0.4, 0.01])
     assert ("defense", ()) in loaded.prior.coefs
 

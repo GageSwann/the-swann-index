@@ -6,7 +6,7 @@ from typing import Any
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
 
-MODEL_VERSION = "tsi-v1.1"  # v1.1: learned season blend + stacked predictive margin
+MODEL_VERSION = "tsi-v1.2"  # v1.1: season blend + stacked margin; v1.2: + stacked totals
 ESTABLISHED_GAMES = 4  # fewer games played -> provisional rank (doc 04)
 
 

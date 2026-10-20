@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from tsi.backtest.elo_picks import elo_picks
 from tsi.backtest.splits import FIRST_SCORED_SEASON
+from tsi.backtest.stacking import fit_margin_stack, fit_total_stack
 from tsi.backtest.walk_forward import walk_forward
 from tsi.db.queries.market import closing_spreads
 from tsi.db.queries.results import completed_games
@@ -17,7 +18,6 @@ from tsi.model.artifact import ModelArtifact
 from tsi.model.config import MODEL_VERSION, ModelConfig
 from tsi.model.elo import EloParams
 from tsi.model.ratings.probability import fit_sigma
-from tsi.model.stack import StackSample, fit_stack
 from tsi.services.backtest_data import FIRST_DATA_SEASON, load_backtest_data
 from tsi.services.prior_setup import build_prior_setup
 
@@ -51,10 +51,9 @@ def fit_production_model(
         priors,
         config.rating,
         {gid: pick.margin for gid, pick in elo.items()},
+        setup.final_components,
     )
-    stack = fit_stack(
-        [StackSample(p.bucket, p.features, p.game.margin) for p in picks], config.stack_lam
-    )
+    stack = fit_margin_stack(picks, config.stack_lam)
     stacked = [stack.predict(p.bucket, p.features) for p in picks]
     actual = [p.game.margin for p in picks]
     established = [p for p in picks if p.established]
@@ -64,6 +63,7 @@ def fit_production_model(
         rating=config.rating,
         elo=elo_params,
         stack=stack,
+        totals=fit_total_stack(picks, config.stack_lam),
         prior=setup.model,
         sigma_predictive=fit_sigma(stacked, actual),
         sigma_season=fit_sigma(

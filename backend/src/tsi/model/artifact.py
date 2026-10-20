@@ -1,7 +1,7 @@
 """The fitted production model, saved as a versioned JSON file in the repo.
 
 `tsi model fit` learns everything that is estimated from history (prior model,
-stack weights, Elo points scale, win-probability sigmas) on all completed seasons
+margin and totals stack weights, Elo points scale, win-probability sigmas) on all completed seasons
 and writes it here; the daily `tsi rate` job only loads it. Committing the file
 makes every live rating reproducible from a git SHA.
 """
@@ -27,7 +27,8 @@ class ModelArtifact:
     fitted_seasons: tuple[int, int]
     rating: RatingParams
     elo: EloParams  # elo_per_point fitted
-    stack: StackModel
+    stack: StackModel  # predictive margin
+    totals: StackModel  # predictive game total (model/totals.py)
     prior: PriorModel
     sigma_predictive: float
     sigma_season: float
@@ -38,7 +39,8 @@ class ModelArtifact:
             "fitted_seasons": list(self.fitted_seasons),
             "rating": asdict(self.rating),
             "elo": {k: v for k, v in asdict(self.elo).items() if k != "division_means"},
-            "stack": {str(b): c.tolist() for b, c in sorted(self.stack.coefs.items())},
+            "stack": _stack_json(self.stack),
+            "totals": _stack_json(self.totals),
             "prior": {
                 f"{side}|{','.join(feats)}": c.tolist()
                 for (side, feats), c in sorted(self.prior.coefs.items())
@@ -58,11 +60,20 @@ class ModelArtifact:
             fitted_seasons=tuple(data["fitted_seasons"]),
             rating=RatingParams(**data["rating"]),
             elo=EloParams(**data["elo"]),
-            stack=StackModel({int(b): np.array(c) for b, c in data["stack"].items()}),
+            stack=_stack_model(data["stack"]),
+            totals=_stack_model(data["totals"]),
             prior=PriorModel(prior),
             sigma_predictive=data["sigma_predictive"],
             sigma_season=data["sigma_season"],
         )
+
+
+def _stack_json(model: StackModel) -> dict[str, list[float]]:
+    return {str(b): c.tolist() for b, c in sorted(model.coefs.items())}
+
+
+def _stack_model(data: dict[str, list[float]]) -> StackModel:
+    return StackModel({int(b): np.array(c) for b, c in data.items()})
 
 
 def save_artifact(artifact: ModelArtifact, path: Path = ARTIFACT_PATH) -> None:

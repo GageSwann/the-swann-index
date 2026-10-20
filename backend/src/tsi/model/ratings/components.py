@@ -4,7 +4,12 @@ Each metric is fit as  y = mu + O[team] - D[opp] + hfa * site  on standardized
 targets (so one penalty `lam` fits all), then put on a points-like scale:
     PPD          x average drives per game   -> points
     success rate x average plays per game    -> successful plays
-Each component is centered so the average FBS team is 0.
+    pace         drives per game (unweighted) -> drives
+    tempo        plays per game (unweighted)  -> plays
+Each component is centered so the average FBS team is 0; `level` keeps the
+absolute value for an average FBS offense vs. an average FBS defense (e.g. points
+per team-game for PPD), which the totals model needs (doc 04 §6).
+For pace/tempo, A's expected drives (plays) vs. B = level + A.off - B.defense.
 """
 
 from collections.abc import Sequence
@@ -45,12 +50,15 @@ class StatRow(RatingRow, Protocol):
 class MetricRatings:
     teams: dict[int, TeamRating]  # on the metric's points-like scale, FBS-centered
     hfa: float  # home-field effect on the margin, same scale
+    level: float  # average FBS offense vs. average FBS defense, neutral site, same scale
 
 
 @dataclass(frozen=True)
 class Components:
     ppd: MetricRatings
     success: MetricRatings | None  # None when no game so far has advanced stats
+    pace: MetricRatings  # drives per team-game
+    tempo: MetricRatings | None  # plays per team-game (None when no play counts yet)
     games: dict[int, int]  # FBS team id -> games counted
 
 
@@ -62,12 +70,20 @@ def fit_components(rows: Sequence[StatRow], lam: float) -> Components | None:
     drives = np.array([r.drives for r in usable], dtype=float)
     points = np.array([r.points for r in usable], dtype=float)
     ppd = _fit_metric(matchups, points / drives, drives, lam, float(drives.mean()))
+    pace = _fit_metric(matchups, drives, np.ones_like(drives), lam, 1.0)
+
+    plays = np.array([r.plays or 0 for r in usable], dtype=float)
+    has_plays = plays > 0
+    tempo = None
+    if has_plays.any():
+        tempo = _fit_metric(
+            matchups.subset(has_plays), plays[has_plays], np.ones(has_plays.sum()), lam, 1.0
+        )
 
     # "Advanced" rows (EPA present) set the plays-per-game scale, as in the v1.1 fit.
-    advanced = np.array([r.epa_per_play is not None and bool(r.plays) for r in usable])
+    advanced = np.array([r.epa_per_play is not None for r in usable]) & has_plays
     success = None
     if advanced.any():
-        plays = np.array([r.plays or 0 for r in usable], dtype=float)
         rate = np.array([np.nan if r.success_rate is None else r.success_rate for r in usable])
         with_sr = advanced & ~np.isnan(rate)
         if with_sr.any():
@@ -75,7 +91,7 @@ def fit_components(rows: Sequence[StatRow], lam: float) -> Components | None:
             success = _fit_metric(
                 matchups.subset(with_sr), rate[with_sr], plays[with_sr], lam, plays_pg
             )
-    return Components(ppd, success, _games_played(matchups))
+    return Components(ppd, success, pace, tempo, _games_played(matchups))
 
 
 def _fit_metric(
@@ -94,17 +110,24 @@ def _fit_metric(
         team: TeamRating(float(coef[2 + i]), float(coef[2 + n + i]))
         for team, i in design.team_index.items()
     }
-    return MetricRatings(_center_on_fbs(teams), 2 * float(coef[1]))  # home +h, away -h
+    centered, shift = _center_on_fbs(teams)
+    return MetricRatings(centered, 2 * float(coef[1]), float(coef[0]) + shift)  # hfa: home +h
 
 
-def _center_on_fbs(teams: dict[int, TeamRating]) -> dict[int, TeamRating]:
-    """Shift so the average FBS team is exactly 0 (margins are unchanged by a common shift)."""
+def _center_on_fbs(teams: dict[int, TeamRating]) -> tuple[dict[int, TeamRating], float]:
+    """Shift so the average FBS team is exactly 0 (margins are unchanged by a common shift).
+
+    Also returns mean(off) - mean(def) of the FBS teams, which moves into the level.
+    """
     fbs = [t for team, t in teams.items() if not is_pooled(team)]
     if not fbs:
-        return teams
+        return teams, 0.0
     off_mean = sum(t.off for t in fbs) / len(fbs)
     def_mean = sum(t.defense for t in fbs) / len(fbs)
-    return {team: TeamRating(t.off - off_mean, t.defense - def_mean) for team, t in teams.items()}
+    centered = {
+        team: TeamRating(t.off - off_mean, t.defense - def_mean) for team, t in teams.items()
+    }
+    return centered, off_mean - def_mean
 
 
 def _games_played(matchups: Matchups) -> dict[int, int]:

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from tsi.backtest.elo_picks import EloPick, elo_picks
 from tsi.backtest.splits import is_scored
-from tsi.db.queries.market import closing_spreads
+from tsi.db.queries.market import closing_spreads, closing_totals
 from tsi.db.queries.priors import fbs_teams, prior_inputs
 from tsi.db.queries.results import GameResult, completed_games
 from tsi.db.queries.stats import OffenseRow, offense_rows
@@ -22,6 +22,7 @@ class BacktestData:
     through_season: int
     scored_games: Sequence[GameResult]  # FBS-vs-FBS, closing line, 2015+
     closing: Mapping[int, float]  # game_id -> closing spread
+    closing_totals: Mapping[int, float]  # game_id -> closing over/under (evaluation only)
     rows: Mapping[int, Sequence[OffenseRow]]  # season -> team-game rows
     fbs: Mapping[int, set[int]]
     prior_table: InputsTable
@@ -36,6 +37,7 @@ def load_backtest_data(session: Session, through_season: int) -> BacktestData:
         through_season=through_season,
         scored_games=[g for g in games if is_scored(g, closing)],
         closing=closing,
+        closing_totals=closing_totals(session, through_season),
         rows=rows_by_season(offense_rows(session, FIRST_DATA_SEASON, through_season)),
         fbs=fbs_teams(session, FIRST_DATA_SEASON, through_season),
         prior_table=prior_inputs(session, FIRST_DATA_SEASON, through_season),

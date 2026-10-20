@@ -35,8 +35,8 @@ def stage_bucket(min_games_played: int) -> int:
 @dataclass(frozen=True)
 class StackSample:
     bucket: int
-    features: tuple[float, ...]  # in FEATURES order
-    margin: float  # actual home-view margin (target)
+    features: tuple[float, ...]  # in the stack's feature order
+    target: float  # actual home-view margin (or total points, for the totals stack)
 
 
 @dataclass(frozen=True)
@@ -50,14 +50,20 @@ class StackModel:
         return float(np.dot(coef, features))
 
 
-def fit_stack(samples: Sequence[StackSample], lam: float = DEFAULT_LAM) -> StackModel:
-    penalty = np.array([0.0 if f in UNPENALIZED else lam for f in FEATURES]) + 1e-9
+def fit_stack(
+    samples: Sequence[StackSample],
+    lam: float = DEFAULT_LAM,
+    features: Sequence[str] = FEATURES,
+    unpenalized: Sequence[str] = UNPENALIZED,
+) -> StackModel:
+    """Per-bucket ridge. Also fits the totals stack (model/totals.py) via `features`."""
+    penalty = np.array([0.0 if f in unpenalized else lam for f in features]) + 1e-9
     by_bucket: dict[int, list[StackSample]] = defaultdict(list)
     for s in samples:
         by_bucket[s.bucket].append(s)
     coefs = {}
     for bucket, group in by_bucket.items():
         x = np.array([s.features for s in group], dtype=float)
-        y = np.array([s.margin for s in group], dtype=float)
+        y = np.array([s.target for s in group], dtype=float)
         coefs[bucket] = np.linalg.solve(x.T @ x + np.diag(penalty), x.T @ y)
     return StackModel(coefs)

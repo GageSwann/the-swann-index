@@ -12,7 +12,8 @@ from dataclasses import dataclass
 from tsi.db.queries.priors import PriorRow
 from tsi.db.queries.stats import OffenseRow
 from tsi.model.prior import PriorInputs, PriorModel, fit_prior_model
-from tsi.model.ratings.fit import RatingParams, RatingSet, TeamRating, fit_ratings
+from tsi.model.ratings.components import Components, fit_components
+from tsi.model.ratings.fit import AVERAGE, RatingParams, RatingSet, TeamRating, blend_components
 
 InputsTable = Mapping[tuple[int, int], PriorRow]
 
@@ -21,6 +22,7 @@ InputsTable = Mapping[tuple[int, int], PriorRow]
 class PriorSetup:
     model: PriorModel
     finals: dict[int, RatingSet]  # completed seasons' end-of-season `season` ratings
+    final_components: dict[int, Components | None]  # same fits, per component (totals)
 
     def priors_for(
         self, season: int, teams: Iterable[int], table: InputsTable
@@ -45,14 +47,20 @@ def build_prior_setup(
     train: tuple[int, int],
     params: RatingParams | None = None,
 ) -> PriorSetup:
-    finals = {s: fit_ratings(grouped[s], params) for s in completed_seasons if s in grouped}
+    params = params or RatingParams()
+    components = {
+        s: fit_components(grouped[s], params.lam) for s in completed_seasons if s in grouped
+    }
+    finals = {
+        s: AVERAGE if c is None else blend_components(c, params) for s, c in components.items()
+    }
     samples = [
         (prior_inputs_for(season, team, finals, table), finals[season].teams[team])
         for season in range(train[0], train[1] + 1)
         if season in finals
         for team in fbs.get(season, set()) & set(finals[season].teams)
     ]
-    return PriorSetup(fit_prior_model(samples), finals)
+    return PriorSetup(fit_prior_model(samples), finals, components)
 
 
 def prior_inputs_for(

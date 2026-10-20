@@ -105,13 +105,20 @@ rating = (prior_weight · prior + n · observed) / (prior_weight + n)
 FBS vs. FCS games are included. In v1 all FCS teams are pooled into a single `FCS` pseudo-team with its own rating, so those games inform FBS ratings without needing full FCS ratings. Phase 10 replaces this with individual FCS team ratings.
 
 ## 6. Game prediction
+Margin and total are predicted by two learned stacks, then turned into scores:
 ```
-proj_points_home = league_avg_ppg + off_home − def_away + HFA/2   (pace-adjusted)
-proj_points_away = league_avg_ppg + off_away − def_home − HFA/2
-margin = proj_home − proj_away
-total  = proj_home + proj_away
+margin = predictive margin stack (§ B1, decision #37)
+total  = predictive totals stack (decision #50)
+proj_home = (total + margin) / 2
+proj_away = (total − margin) / 2
 ```
-Pace adjustment: scale by `(pace_home + pace_away) / (2 · league_avg_pace)`.
+**Totals stack** (`model/totals.py`, v1.2): per season-stage bucket, ridge over game-total features, all pre-kickoff:
+- `level`: league scoring level = this season's average FBS game total so far, shrunk toward last season's (300 team-games of weight); unpenalized
+- `ppd`, `success`: both offenses vs. the opposing defenses, added (opponent-adjusted, this season)
+- `pace` (drives) and `tempo` (plays): opponent-adjusted pace components, this season; a team's `off` adds drives/plays to its games, its `defense` removes them
+- `prior`: preseason prior offense-vs-defense sum; `last_pace`, `last_tempo`: last season's final pace/tempo
+
+The original spec (league average ± off/def, scaled by a pace ratio) is what the stack learns, but with the weights fit from data and the early-season fade learned per bucket. Plays-based tempo helped more than drives; using both was best. Last season's PPD did not help. **Validation 2023–25: total MAE 12.87 vs. Vegas closing total 12.68** (train 13.37 vs. 13.03), bias +0.5 (the 2023 clock rule lowered scoring; the level adapts as games are played).
 
 Turning these into probabilities, odds, and markets is covered in [05-sportsbook.md](05-sportsbook.md).
 

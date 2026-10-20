@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). Next: Phase 3 (prediction engine & book).
+- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection done (totals stack, v1.2). Next: bivariate-normal σ/ρ.
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -38,6 +38,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Résumé (#24):** strength of record vs. a typical **#12** team, recomputed daily with opponents' **current** ratings (dynamic SOS: a win loses value if that opponent collapses).
 - **Daily (#25):** the nightly job refits ratings, so midweek games show up the next morning.
 - **2020** treated normally (#26). **v1 = baseline as specified** in doc 04; refine later (#28).
+- **Totals (#50, v1.2):** stacked game total (league level, PPD/success sums, pace in drives + tempo in plays, prior, last season's pace); scores = (total ± margin) / 2. Val total MAE 12.87 vs. Vegas 12.68.
 - Tune on 2015–2022, validate on 2023–2025. Adopt an idea only if train improves and validation doesn't get worse (doc 04 §12). **Never use market lines as model inputs.**
 
 ## Data conventions (learned in Phase 1)

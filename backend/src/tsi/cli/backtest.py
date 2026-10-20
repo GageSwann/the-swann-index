@@ -41,6 +41,7 @@ def run(
     _print_summary(result)
     _print_calibration(result)
     _print_ats(result)
+    _print_totals(result)
     if run_id is not None:
         typer.echo(f"\nSaved as model_runs.id={run_id} (kind=backtest)")
 
@@ -64,6 +65,17 @@ def _print_summary(result: BacktestResult) -> None:
             f"{s.market_mae:>5.2f}  {100 * p.su_accuracy:>5.1f} {100 * e.su_accuracy:>5.1f} "
             f"{100 * p.market_su_accuracy:>5.1f}  {p.brier:>5.3f}",
             bold=not s.label[:1].isdigit(),
+        )
+
+
+def _print_totals(result: BacktestResult) -> None:
+    typer.echo("\nGame totals vs. closing over/under (O/U = right side of the close)")
+    typer.echo(f"{'':<24}{'games':>6}  {'TSI':>5} {'Vegas':>5}  {'bias':>5}  {'O/U%':>5}")
+    for t in result.totals:
+        typer.secho(
+            f"{t.label:<24}{t.games:>6}  {t.mae:>5.2f} {t.market_mae:>5.2f}  {t.bias:>+5.2f}  "
+            f"{100 * t.ou_accuracy:>5.1f}",
+            bold=not t.label[:1].isdigit(),
         )
 
 
