@@ -38,6 +38,8 @@ fair American odds (p < 0.5) = +100 · (1 − p) / p
 ```
 **Fair** lines have no vig. **TSI Book** lines add a configurable hold (default: spreads/totals at −110/−110, moneylines priced to ~4.5% hold) so they look like a real board. The UI shows both.
 
+**Implementation** (`book/odds.py`, `book/pricing.py`, settings in `book/config.py`): a side TSI gives probability p is priced at implied p / (1 − hold), so −110/−110 is a hold of 1/22 (4.55%). Main spread/total/team-total lines = the fair line rounded to the nearest half point (quarter points round up), priced flat at −110 (`main_line_odds`; set `None` to price from probability). Moneylines and alt ladders (±10 pts in 1-pt steps around the main line) are priced from probability. Spread probabilities are home view: home covers spread s when margin + s > 0. v1 has no push probability on whole numbers (continuous distribution).
+
 ## 3. Market comparison & edges
 For each game, using the consensus market line:
 - **Market implied probability:** remove the vig from the two-way moneyline (normalize the implied probabilities)
