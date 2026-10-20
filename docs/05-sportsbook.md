@@ -62,6 +62,8 @@ For each game, using the consensus market line:
 - Optional suggested stake: **fractional Kelly** (¼ Kelly), capped at 3 units
 - Both are tracked, so the ledger can show flat vs. Kelly results
 
+**Implementation** (`book/picks.py`, decision #54): the better side of each market becomes a pick when its edge reaches the 1★ threshold. Thresholds in probability points: spreads and totals **1.5 / 3 / 5** (1★/2★/3★), moneylines 3 / 5 / 8 and EV must be positive. With k_total ≈ 0.3 that means TSI about 5 / 7 / 10 points off the total; spreads need ~20+ points off the line (k_spread 0.07), so spread picks are rare by design. Kelly: f = (b·p − q)/b on a 100-unit bankroll, × ¼, capped at 3 units. Backtest at the median opener (k from train): validation totals 1★ 148 picks 56.1% (+8.4% ROI), 2★ 33 at 63.6%, 3★ 4 at 75%. Train has only ~126 picks (openers start in 2021), too few to tune thresholds on, so they stay at principled round values until live publish-time data accumulates.
+
 ## 5. Prediction lifecycle & integrity
 1. **Generated** when lines are ingested (Tue/Thu)
 2. **Published** as an immutable snapshot with a `published_at` timestamp

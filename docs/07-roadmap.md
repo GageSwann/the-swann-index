@@ -64,7 +64,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Bivariate-normal distribution; fit σ/ρ from backtest (σ total grows with total; ρ ∝ margin; cover/over calibration at the close fails, see doc 05 §8)
 - [x] Market pricing: fair + vigged spread, total, ML, team totals, alt ladders (`book/pricing.py`)
 - [x] Consensus market lines + no-vig implied probabilities + edges (shrunk toward the line, #52/#53)
-- [ ] Pick rules, ★ tiers, flat + ¼ Kelly staking
+- [x] Pick rules, ★ tiers, flat + ¼ Kelly staking (`book/picks.py`; #54)
 - [ ] Snapshot publishing, locking, grading, CLV
 - [ ] Backtest the book: historical ATS/O-U/ROI/CLV by tier
 - [ ] `tsi run --season --week` does ingest → rate → predict → publish end to end
