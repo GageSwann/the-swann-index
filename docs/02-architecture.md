@@ -15,7 +15,7 @@ CollegeFootballData API ──► Ingest (Python) ──► PostgreSQL (Neon)
                                                    │
                                                Public viewers
 
-GitHub Actions (cron) ── runs ingest + model ── triggers Next.js revalidation
+GitHub Actions (cron, 10:00 UTC) ── `tsi run`: ingest → rate → grade → publish ── (later) triggers Next.js revalidation
 ```
 
 The Python side owns **all** data and math. The frontend never calculates odds or ratings; it only renders what the API returns. The one exception is the hypothetical matchup tool, which calls an API endpoint that computes on demand.
@@ -32,12 +32,12 @@ the-swann-index/
 │   │   ├── config.py           # pydantic-settings; the ONLY place env is read
 │   │   ├── db/                 # SQLAlchemy models, session, repositories
 │   │   ├── ingest/             # CFBD client wrappers, loaders, cache
-│   │   ├── model/              # features, priors, ratings fit, résumé
-│   │   ├── book/               # score distributions, odds, edges, ledger
+│   │   ├── model/              # ratings components, prior, Elo, margin/totals stacks, score distribution, artifact
+│   │   ├── book/               # odds, pricing, consensus, shrunk edges, picks, grading (pure)
 │   │   ├── sim/                # season / playoff Monte Carlo (later)
-│   │   ├── backtest/           # walk-forward evaluation
+│   │   ├── backtest/           # walk-forward picks, stacking, splits, calibration, Book simulation
 │   │   ├── api/                # FastAPI app + routers + schemas
-│   │   ├── services/           # orchestration: weekly run, publish, grade
+│   │   ├── services/           # orchestration: live inputs, board, publish, grade, `tsi run`, backtests, reports
 │   │   └── cli/                # `tsi ingest`, `tsi run`, `tsi backtest`... (one file per command group)
 │   └── tests/                  # mirrors src/tsi; fixtures/ holds saved CFBD JSON
 ├── web/
