@@ -11,7 +11,7 @@ from tsi.backtest.splits import TRAIN, VALIDATE
 from tsi.book.edges import EdgeShrink
 from tsi.book.picks import PickRules
 from tsi.model.config import ModelConfig
-from tsi.services.backtest import run_backtest
+from tsi.services.backtest import BacktestResult, run_backtest
 from tsi.services.backtest_data import BacktestData
 
 
@@ -20,6 +20,7 @@ class BookBacktest:
     shrink: EdgeShrink
     records: list[BookRecord]  # by period ("Train ...", "Validate ...", single seasons)
     bets: list[GradedBet]
+    model: BacktestResult  # the model backtest the Book was built on
 
 
 def run_book_backtest(
@@ -44,4 +45,4 @@ def run_book_backtest(
     records += summarize_book(f"Validate {VALIDATE[0]}-{VALIDATE[1]}", period(*VALIDATE))
     for season in sorted({b.season for b in bets}):
         records += summarize_book(str(season), period(season, season))
-    return BookBacktest(shrink, records, bets)
+    return BookBacktest(shrink, records, bets, result)

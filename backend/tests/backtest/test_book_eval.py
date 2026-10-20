@@ -33,6 +33,7 @@ def test_book_bets_the_opener_and_measures_clv_at_the_close() -> None:
     assert [(b.side, b.result) for b in bets] == [("over", "win"), ("under", "win")]
     assert [b.clv for b in bets] == [pytest.approx(2.0), pytest.approx(2.0)]  # both beat the close
     assert all(b.units == pytest.approx(100 / 110) for b in bets)
+    assert bets[0].kickoff == picks[0].game.start_time
 
 
 def test_summary_by_market_and_tier() -> None:

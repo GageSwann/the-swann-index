@@ -8,6 +8,7 @@ are left out: history has no opening moneyline prices.
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import datetime
 
 from tsi.backtest.walk_forward import Pick
 from tsi.book.consensus import ConsensusLine
@@ -21,6 +22,7 @@ from tsi.model.distribution import DistributionParams
 @dataclass(frozen=True)
 class GradedBet:
     season: int
+    kickoff: datetime | None
     market: str
     side: str
     tier: int
@@ -81,6 +83,7 @@ def simulate_book(
             bets.append(
                 GradedBet(
                     season=g.season,
+                    kickoff=g.start_time,
                     market=d.market,
                     side=d.side,
                     tier=d.tier,

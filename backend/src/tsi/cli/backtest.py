@@ -18,6 +18,7 @@ from tsi.services import report_export as report
 from tsi.services.backtest import BacktestResult, run_backtest
 from tsi.services.backtest_data import load_backtest_data
 from tsi.services.backtest_store import save_backtest_run
+from tsi.services.book_backtest import run_book_backtest
 
 app = typer.Typer(help="Walk-forward backtests.", no_args_is_help=True)
 OUT_DIR = typer.Option(..., "--out-dir", help="Folder for the report CSVs.")
@@ -121,10 +122,11 @@ def export(
     out_dir: Path = OUT_DIR,
     through: int | None = typer.Option(None, "--through", help="Last season (default: current)."),
 ) -> None:
-    """Write the Phase 2 report tables (backtest, calibration, ATS, SP+, stack weights) as CSV."""
+    """Write the report tables (model + Book backtests, calibration, SP+, weights) as CSV."""
     last = through or current_season(datetime.now(UTC))
     with ingest_runtime() as (client, sessions), sessions() as session:
-        result = run_backtest(load_backtest_data(session, last))
+        book = run_book_backtest(load_backtest_data(session, last))
+        result = book.model
         sp = report.sp_agreement(client, session, 2015, last - 1)
     tables = {
         "by_season": report.by_season(result),
@@ -133,6 +135,10 @@ def export(
         "ats": report.ats(result),
         "sp_agreement": sp,
         "stack_weights": report.stack_weights(load_artifact()),
+        "totals_accuracy": report.totals_accuracy(result),
+        "book_record": report.book_record(book),
+        "book_bets": report.book_bets(book),
+        "book_calibration": report.book_calibration(result),
     }
     for name, rows in tables.items():
         report.write_csv(rows, out_dir / f"{name}.csv")
