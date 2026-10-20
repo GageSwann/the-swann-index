@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and distribution, market pricing, consensus + edges (`book/`) done. Edges are shrunk toward the market (#52): k_spread 0.07, k_total 0.32, so spreads rarely qualify and totals can. Picks: ★ at 1.5/3/5 pts of edge, flat 1u + ¼ Kelly (cap 3u). Next: snapshot publishing, locking, grading, CLV.
+- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and distribution, market pricing, consensus + edges (`book/`) done. Edges are shrunk toward the market (#52): k_spread 0.07, k_total 0.32, so spreads rarely qualify and totals can. Picks: ★ at 1.5/3/5 pts of edge, flat 1u + ¼ Kelly (cap 3u). Publishing + grading done (`tsi book`), not yet in the nightly job. Next: backtest the book (incl. a totals over-lean check).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -80,6 +80,8 @@ uv run tsi model rankings        # current Power + Résumé rankings (--season, 
 uv run tsi model compare-sp      # sanity check: TSI final ratings vs. SP+ final (correlation)
 uv run tsi model fit            # refit production artifact on all completed seasons (commit model/artifacts/current.json)
 uv run tsi rate                 # today's ratings + rankings -> live model_run (--dry-run); nightly job runs it
+uv run tsi book publish        # forecast + price + edges + picks for the next 8 days -> new snapshots (--dry-run, --days)
+uv run tsi book grade          # grade locked-snapshot picks of finished games, record closing lines
 uv run tsi backtest export --out-dir DIR   # report tables as CSV (backtest, calibration, ATS, SP+, stack weights)
 uv run tsi backtest run         # full walk-forward backtest + calibration + ATS; saved to model_runs (--no-save, --lam, ...)
 uv run ruff check . ; uv run ruff format .

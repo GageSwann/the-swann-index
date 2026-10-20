@@ -75,6 +75,27 @@ class EloPrediction:
 class EloRun:
     predictions: list[EloPrediction]
     ratings: dict[int, float]  # after the last game processed
+    divisions: dict[int, str] = field(default_factory=dict)  # each team's latest division
+    season: int | None = None  # season of the last game processed
+
+    def margin(
+        self,
+        params: EloParams,
+        season: int,
+        home: tuple[int, str],
+        away: tuple[int, str],
+        neutral: bool,
+    ) -> float:
+        """Pre-game Elo margin (points, home view) for a game not yet played.
+
+        Applies the between-season regression first when the game opens a new season.
+        """
+        ratings = dict(self.ratings)
+        if self.season is not None and season != self.season:
+            _regress_to_mean(ratings, self.divisions, params)
+        h = ratings.get(home[0], params.mean_for(home[1]))
+        a = ratings.get(away[0], params.mean_for(away[1]))
+        return (h - a + (0.0 if neutral else params.hfa)) / params.elo_per_point
 
 
 def home_win_prob(elo_diff: float) -> float:
@@ -114,14 +135,14 @@ def run_elo(games: Iterable[EloGame], params: EloParams | None = None) -> EloRun
         ratings[game.home_id] = home + delta
         ratings[game.away_id] = away - delta
 
-    return EloRun(predictions, ratings)
+    return EloRun(predictions, ratings, last_division, season)
 
 
 def _regress_to_mean(
     ratings: dict[int, float], last_division: Mapping[int, str], params: EloParams
 ) -> None:
     for team_id, rating in ratings.items():
-        mean = params.mean_for(last_division[team_id])
+        mean = params.mean_for(last_division.get(team_id, ""))
         ratings[team_id] = mean + params.carryover * (rating - mean)
 
 

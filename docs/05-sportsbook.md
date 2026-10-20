@@ -71,6 +71,8 @@ For each game, using the consensus market line:
 4. **Locked** at kickoff
 5. **Graded** after the final: spread/total/ML result, units won, and **CLV** (closing line value: the line TSI picked vs. the closing line)
 
+**Implementation** (decision #55): `tsi book publish` builds the board (`services/board.py`: forecast → prices → consensus as of now → edges → picks) and inserts a new snapshot + picks under a `live` model run for every game kicking off in the next 8 days whose forecast, Book prices or picks changed since its latest snapshot (unchanged games are skipped). `tsi book grade` grades picks on each game's locked snapshot only (latest `published_at` < kickoff, derived in `db/queries/predictions.py`), filling result, units and the closing consensus line; CLV is computed from those columns (`book/grading.py`). Live features match the walk-forward backtest exactly (checked on 2026 games: 0 difference).
+
 CLV is the best long-run skill signal. If TSI consistently beats the closing line, the model has real signal even when short-term results are noisy.
 
 ## 6. TSI Book ledger (what the site shows)

@@ -87,6 +87,29 @@ def line_snapshots(
     return [LineSnapshot(*row) for row in session.execute(query)]
 
 
+def closing_snapshots(session: Session, game_ids: Iterable[int]) -> list[LineSnapshot]:
+    """Each book's closing line (captured at/after kickoff) for each game."""
+    query = (
+        select(
+            MarketLine.game_id,
+            MarketLine.provider,
+            MarketLine.spread,
+            MarketLine.total,
+            MarketLine.home_ml,
+            MarketLine.away_ml,
+            MarketLine.fetched_at,
+        )
+        .where(
+            MarketLine.game_id.in_(list(game_ids)),
+            MarketLine.is_closing,
+            MarketLine.provider.not_in(AGGREGATORS),
+        )
+        .order_by(MarketLine.game_id, MarketLine.provider, MarketLine.fetched_at.desc())
+        .ext(postgresql.distinct_on(MarketLine.game_id, MarketLine.provider))
+    )
+    return [LineSnapshot(*row) for row in session.execute(query)]
+
+
 def _closing_mean(session: Session, column, through_season: int) -> dict[int, float]:
     query = (
         select(MarketLine.game_id, func.avg(column))

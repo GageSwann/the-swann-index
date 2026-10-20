@@ -6,7 +6,7 @@ market's number to TSI's:
     shrunk mean = line_mean + k * (TSI mean - line_mean)
     P(home covers spread s) = Phi(k * (TSI margin + s) / sigma_margin)
     P(over total t)         = Phi(k * (TSI total - t) / sigma_total)
-    P(home wins)            = Phi((-s + k * (TSI margin + s)) / sigma_margin)
+    P(home wins)            = market no-vig P + [Phi(shrunk margin / sigma) - Phi(-s / sigma)]
 k is learned per market on past games against the line the Book bets
 (`book/shrink_fit.py`). The market sizes the edge; it never changes TSI's own
 projection.
@@ -79,8 +79,14 @@ def over_prob(dist: ScoreDistribution, total: float, k: float) -> float:
 
 
 def _moneyline(dist: ScoreDistribution, market: ConsensusLine, k: float) -> SideEdge:
+    # TSI's shift in win probability, measured on one curve (the normal at the market's
+    # margin vs. at the shrunk margin), added to the market's own no-vig probability.
+    # Comparing Phi(margin / sigma) with moneyline prices directly would mix in how
+    # books map spreads to moneylines, which has nothing to do with TSI.
     line_margin = -market.spread
-    p_home = _phi((line_margin + k * (dist.margin - line_margin)) / dist.sigma_margin)
+    shrunk = line_margin + k * (dist.margin - line_margin)
+    shift = _phi(shrunk / dist.sigma_margin) - _phi(line_margin / dist.sigma_margin)
+    p_home = min(max(market.home_prob + shift, 0.001), 0.999)
     sides = [
         ("home", p_home, market.home_ml, market.home_prob),
         ("away", 1 - p_home, market.away_ml, 1 - market.home_prob),

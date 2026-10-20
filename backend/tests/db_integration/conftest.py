@@ -5,9 +5,11 @@ dropped afterwards, so real tables are never touched. Skipped when no database
 is configured (e.g. CI without secrets). CFBD is faked; no API calls are made.
 """
 
+import importlib.util
 import uuid
 from collections.abc import Callable, Iterator, Mapping
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -19,6 +21,8 @@ from tsi.config import ConfigError, load_settings
 from tsi.db.base import Base
 from tsi.db.engine import make_engine, make_session_factory
 from tsi.ingest.cache import CachedResponse
+
+MIGRATIONS = Path(__file__).parents[2] / "alembic" / "versions"
 
 
 @pytest.fixture(scope="session")
@@ -39,6 +43,7 @@ def db_engine() -> Iterator[Engine]:
 
     try:
         Base.metadata.create_all(engine)
+        _install_immutability_trigger(engine)
         yield engine
     finally:
         engine.dispose()
@@ -46,6 +51,22 @@ def db_engine() -> Iterator[Engine]:
         with cleanup.begin() as conn:
             conn.execute(text(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE'))
         cleanup.dispose()
+
+
+def _install_immutability_trigger(engine: Engine) -> None:
+    """Rule 2's trigger lives in the initial migration, not the ORM models; load that SQL."""
+    path = next(MIGRATIONS.glob("*_initial_schema.py"))
+    spec = importlib.util.spec_from_file_location("initial_schema", path)
+    migration = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(migration)
+    with engine.begin() as conn:
+        conn.execute(text(migration.PREDICTIONS_IMMUTABLE_FN))
+        conn.execute(
+            text(
+                "CREATE TRIGGER predictions_immutable BEFORE UPDATE OR DELETE ON predictions "
+                "FOR EACH ROW EXECUTE FUNCTION tsi_predictions_immutable()"
+            )
+        )
 
 
 @pytest.fixture

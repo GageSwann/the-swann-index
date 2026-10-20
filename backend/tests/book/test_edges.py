@@ -5,6 +5,7 @@ from tsi.book.consensus import ConsensusLine
 from tsi.book.edges import BREAK_EVEN, EdgeShrink, cover_prob, game_edges, over_prob
 from tsi.book.shrink_fit import fit_k
 from tsi.model.distribution import ScoreDistribution
+from tsi.model.distribution_fit import normal_cdf
 
 # TSI: home by 7, total 58. Market: home -3, total 52.
 DIST = ScoreDistribution(margin=7.0, total=58.0, sigma_margin=15.0, sigma_total=16.0, rho=0.0)
@@ -36,10 +37,23 @@ def test_moneyline_edge_is_against_the_no_vig_market() -> None:
     edges = game_edges(DIST, MARKET, EdgeShrink(k_spread=1.0, k_total=0.0))
     ml = edges.moneyline
 
+    # Full trust: TSI's win-probability shift (home by 7 vs. the market's 3) on the market's 0.58.
+    shift = normal_cdf(np.array(7 / 15)) - normal_cdf(np.array(3 / 15))
     assert ml.side == "home"
-    assert ml.prob == pytest.approx(DIST.home_win_prob)
-    assert ml.edge == pytest.approx(DIST.home_win_prob - 0.58)
+    assert ml.prob == pytest.approx(0.58 + shift, abs=1e-6)
+    assert ml.edge == pytest.approx(shift, abs=1e-6)
     assert ml.ev == pytest.approx(ml.prob * (100 / 150) - (1 - ml.prob))
+
+
+def test_moneyline_edge_follows_tsis_disagreement_not_the_price_mapping() -> None:
+    # Market moneylines make home a bigger favorite (0.76) than a normal curve maps -8.5 to
+    # (~0.71). TSI likes home MORE than the market, so the moneyline lean must be home.
+    dist = ScoreDistribution(13.0, 58.0, 15.4, 16.4, 0.0)
+    market = ConsensusLine(-8.5, 54.5, -320, 260, 0.76, 2)
+
+    ml = game_edges(dist, market, EdgeShrink(k_spread=0.07, k_total=0.3)).moneyline
+
+    assert ml.side == "home" and ml.edge > 0
 
 
 def test_no_market_means_no_edges() -> None:
