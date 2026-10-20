@@ -48,6 +48,13 @@ For each game, using the consensus market line:
 - **Moneyline edge:** `P_TSI(win) − market_no_vig_prob`, and expected value per unit
 - **Points disagreement:** `TSI spread − market spread` (easy to read on cards)
 
+**Implementation** (`book/consensus.py`, `book/edges.py`, `book/shrink_fit.py`; decisions #52, #53):
+- **Consensus** = each sportsbook's latest line at or before the publish time (`db/queries/market.line_snapshots`; aggregator "providers" `consensus` and `teamrankings` excluded). Spread and total: median across books. Moneyline: each book's pair de-vigged, then averaged.
+- **Shrunk probabilities:** the Book moves a fraction k from the market's number toward TSI's: P(home covers s) = Φ(k·(TSI margin + s)/σ_margin), P(over t) = Φ(k·(TSI total − t)/σ_total); moneyline uses the spread-implied margin moved by k_spread.
+- **k** is fit by log loss on leave-one-season-out predictions against the **median opening line** (history has no publish-time snapshots; the opener is the closest proxy). Production: **k_spread 0.07, k_total 0.32**. Backtest (train → validation): spread 0.00, total 0.24.
+- **Edges:** spread/total = shrunk P − 0.5238 (−110 assumed: CFBD has no spread prices); moneyline = shrunk P − no-vig P, with EV per unit at the market price. The better side of each market is reported.
+- Validation calibration at the opener (k from train): spreads 50.0% predicted / 49.9% observed; overs within ±0.5 pts in the bins holding 93% of games.
+
 **TSI Plays:** a game becomes an official pick when its edge clears a threshold. Each pick gets a 1–3 ★ confidence tier based on edge size. Thresholds are tuned in backtest so that the tiers actually mean something.
 
 ## 4. Stake sizing (paper)

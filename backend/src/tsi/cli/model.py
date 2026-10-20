@@ -119,5 +119,7 @@ def fit(
         f"Saved {artifact.version} fitted on {artifact.fitted_seasons[0]}-"
         f"{artifact.fitted_seasons[1]} to {ARTIFACT_PATH}\n"
         f"{artifact.distribution.describe()}\n"
+        f"edge shrink k spread {artifact.edge_shrink.k_spread:.3f}, "
+        f"k total {artifact.edge_shrink.k_total:.3f}\n"
         f"sigma season {artifact.sigma_season:.1f} | {artifact.elo.elo_per_point:.1f} Elo per point"
     )

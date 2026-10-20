@@ -1806,10 +1806,14 @@
   ]
  },
  "distribution": {
-  "sigma_margin": 15.198160599463268,
-  "sigma_total": 16.371908210900486,
+  "sigma_margin": 15.367978095875792,
+  "sigma_total": 16.439086466292977,
   "sigma_total_slope": 0.12,
-  "rho_per_point": 0.007467382729774045
+  "rho_per_point": 0.007411060564990527
+ },
+ "edge_shrink": {
+  "k_spread": 0.07037672319657093,
+  "k_total": 0.3236121459154969
  },
  "sigma_season": 15.636691117445743
 }

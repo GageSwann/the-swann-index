@@ -63,7 +63,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Score projection with pace (totals stack, v1.2: val total MAE 12.87 vs. Vegas 12.68)
 - [x] Bivariate-normal distribution; fit σ/ρ from backtest (σ total grows with total; ρ ∝ margin; cover/over calibration at the close fails, see doc 05 §8)
 - [x] Market pricing: fair + vigged spread, total, ML, team totals, alt ladders (`book/pricing.py`)
-- [ ] Consensus market lines + no-vig implied probabilities + edges
+- [x] Consensus market lines + no-vig implied probabilities + edges (shrunk toward the line, #52/#53)
 - [ ] Pick rules, ★ tiers, flat + ¼ Kelly staking
 - [ ] Snapshot publishing, locking, grading, CLV
 - [ ] Backtest the book: historical ATS/O-U/ROI/CLV by tier

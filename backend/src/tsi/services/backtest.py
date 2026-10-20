@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from tsi.backtest.ats import AtsRecord, ats_record
 from tsi.backtest.calibration import CalibrationBin, calibration_table
 from tsi.backtest.evaluate import ScoredGame, Summary, summarize
-from tsi.backtest.market_calibration import cover_calibration, over_calibration
+from tsi.backtest.market_calibration import LineCheck, line_check
 from tsi.backtest.splits import TRAIN, VALIDATE
 from tsi.backtest.stacking import stacked_picks
 from tsi.backtest.totals_eval import TotalsSummary, summarize_totals
@@ -42,8 +42,7 @@ class BacktestResult:
     calibration: list[CalibrationBin]  # predictive, validation seasons
     ats: list[AtsRecord]  # predictive vs. closing line, validation seasons
     totals: list[TotalsSummary]  # predictive total vs. closing total, by season + period
-    cover_calibration: list[CalibrationBin]  # P(cover closing spread), validation
-    over_calibration: list[CalibrationBin]  # P(over closing total), validation
+    lines: LineCheck  # edge shrink (train) + Book cover/over calibration at the opener
     picks: list[Pick]
 
     @property
@@ -67,6 +66,8 @@ class BacktestResult:
             "sigma_total": self.distribution.sigma_total,
             "sigma_total_slope": self.distribution.sigma_total_slope,
             "rho_per_point": self.distribution.rho_per_point,
+            "k_spread": self.lines.shrink.k_spread,
+            "k_total": self.lines.shrink.k_total,
             "validate_total_mae": self.validation_totals.mae,
             "validate_total_market_mae": self.validation_totals.market_mae,
             "validate_ou": self.validation_totals.ou_accuracy,
@@ -164,8 +165,13 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
         calibration,
         ats,
         totals,
-        cover_calibration(validate, distribution, data.closing),
-        over_calibration(validate, distribution, data.closing_totals),
+        line_check(
+            train,
+            validate,
+            distribution,
+            {g: o.spread for g, o in data.opening.items()},
+            {g: o.total for g, o in data.opening.items()},
+        ),
         picks,
     )
 

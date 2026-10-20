@@ -9,8 +9,9 @@ learn from the most data.
 from sqlalchemy.orm import Session
 
 from tsi.backtest.elo_picks import elo_picks
+from tsi.backtest.market_calibration import fit_edge_shrink, spread_samples, total_samples
 from tsi.backtest.splits import FIRST_SCORED_SEASON
-from tsi.backtest.stacking import fit_margin_stack, fit_total_stack
+from tsi.backtest.stacking import fit_margin_stack, fit_total_stack, stacked_picks
 from tsi.backtest.walk_forward import walk_forward
 from tsi.db.queries.market import closing_spreads
 from tsi.db.queries.results import completed_games
@@ -54,26 +55,31 @@ def fit_production_model(
         {gid: pick.margin for gid, pick in elo.items()},
         setup.final_components,
     )
-    stack = fit_margin_stack(picks, config.stack_lam)
-    totals = fit_total_stack(picks, config.stack_lam)
-    stacked = [stack.predict(p.bucket, p.features) for p in picks]
-    stacked_totals = [totals.predict(p.bucket, p.total_features) for p in picks]
-    actual = [p.game.margin for p in picks]
+    # Distribution and edge shrink are fit on leave-one-season-out stack predictions:
+    # in-sample predictions look sharper than live ones and would overstate edges.
+    held_out = stacked_picks(picks, config.stack_lam, seasons)
+    margins = [p.predictive_margin for p in held_out]
+    actual = [p.game.margin for p in held_out]
+    distribution = fit_distribution(
+        fit_sigma(margins, actual),
+        margins,
+        actual,
+        [p.predictive_total for p in held_out],
+        [p.game.home_points + p.game.away_points for p in held_out],
+    )
     established = [p for p in picks if p.established]
     return ModelArtifact(
         version=MODEL_VERSION,
         fitted_seasons=seasons,
         rating=config.rating,
         elo=elo_params,
-        stack=stack,
-        totals=totals,
+        stack=fit_margin_stack(picks, config.stack_lam),
+        totals=fit_total_stack(picks, config.stack_lam),
         prior=setup.model,
-        distribution=fit_distribution(
-            fit_sigma(stacked, actual),
-            stacked,
-            actual,
-            stacked_totals,
-            [p.game.home_points + p.game.away_points for p in picks],
+        distribution=distribution,
+        edge_shrink=fit_edge_shrink(
+            spread_samples(held_out, distribution, {g: o.spread for g, o in data.opening.items()}),
+            total_samples(held_out, distribution, {g: o.total for g, o in data.opening.items()}),
         ),
         sigma_season=fit_sigma(
             [p.season_margin for p in established], [p.game.margin for p in established]

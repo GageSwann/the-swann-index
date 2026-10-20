@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 
+from tsi.book.edges import EdgeShrink
 from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
 from tsi.model.prior import PriorModel
@@ -32,6 +33,7 @@ class ModelArtifact:
     totals: StackModel  # predictive game total (model/totals.py)
     prior: PriorModel
     distribution: DistributionParams  # predictive score distribution (sigmas, rho)
+    edge_shrink: EdgeShrink  # how far the Book trusts TSI over the market line (#52)
     sigma_season: float
 
     def to_json(self) -> dict[str, Any]:
@@ -47,6 +49,7 @@ class ModelArtifact:
                 for (side, feats), c in sorted(self.prior.coefs.items())
             },
             "distribution": asdict(self.distribution),
+            "edge_shrink": asdict(self.edge_shrink),
             "sigma_season": self.sigma_season,
         }
 
@@ -65,6 +68,7 @@ class ModelArtifact:
             totals=_stack_model(data["totals"]),
             prior=PriorModel(prior),
             distribution=DistributionParams(**data["distribution"]),
+            edge_shrink=EdgeShrink(**data["edge_shrink"]),
             sigma_season=data["sigma_season"],
         )
 

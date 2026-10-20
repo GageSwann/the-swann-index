@@ -29,9 +29,9 @@ def fit_margin_stack(picks: Sequence[Pick], lam: float) -> StackModel:
     return fit_stack([margin_sample(p) for p in picks], lam)
 
 
-def stacked_picks(picks: Sequence[Pick], lam: float) -> list[Pick]:
-    margin = _held_out(picks, lambda ps: fit_margin_stack(ps, lam))
-    total = _held_out(picks, lambda ps: fit_total_stack(ps, lam))
+def stacked_picks(picks: Sequence[Pick], lam: float, train: tuple[int, int] = TRAIN) -> list[Pick]:
+    margin = _held_out(picks, lambda ps: fit_margin_stack(ps, lam), train)
+    total = _held_out(picks, lambda ps: fit_total_stack(ps, lam), train)
     return [
         replace(
             p,
@@ -43,11 +43,13 @@ def stacked_picks(picks: Sequence[Pick], lam: float) -> list[Pick]:
 
 
 def _held_out(
-    picks: Sequence[Pick], fit: Callable[[Sequence[Pick]], StackModel]
+    picks: Sequence[Pick],
+    fit: Callable[[Sequence[Pick]], StackModel],
+    train: tuple[int, int],
 ) -> Callable[[Pick], StackModel]:
     """Pick -> the stack that may score it (never one trained on its own season)."""
-    train = [p for p in picks if TRAIN[0] <= p.game.season <= TRAIN[1]]
-    full = fit(train)
-    seasons = {p.game.season for p in train}
-    held = {s: fit([p for p in train if p.game.season != s]) for s in seasons}
+    fitted = [p for p in picks if train[0] <= p.game.season <= train[1]]
+    full = fit(fitted)
+    seasons = {p.game.season for p in fitted}
+    held = {s: fit([p for p in fitted if p.game.season != s]) for s in seasons}
     return lambda p: held.get(p.game.season, full)

@@ -42,8 +42,7 @@ def run(
     _print_calibration(result)
     _print_ats(result)
     _print_totals(result)
-    _print_bins("Cover probability at the closing spread, validation", result.cover_calibration)
-    _print_bins("Over probability at the closing total, validation", result.over_calibration)
+    _print_lines(result)
     if run_id is not None:
         typer.echo(f"\nSaved as model_runs.id={run_id} (kind=backtest)")
 
@@ -79,6 +78,16 @@ def _print_totals(result: BacktestResult) -> None:
             f"{100 * t.ou_accuracy:>5.1f}",
             bold=not t.label[:1].isdigit(),
         )
+
+
+def _print_lines(result: BacktestResult) -> None:
+    k = result.lines.shrink
+    typer.echo(
+        f"\nEdge shrink vs. the opening line (train): k spread {k.k_spread:.3f}, "
+        f"k total {k.k_total:.3f}  (0 = trust the line, 1 = trust TSI)"
+    )
+    _print_bins("Book P(home covers) at the opener, validation", result.lines.cover)
+    _print_bins("Book P(over) at the opener, validation", result.lines.over)
 
 
 def _print_calibration(result: BacktestResult) -> None:

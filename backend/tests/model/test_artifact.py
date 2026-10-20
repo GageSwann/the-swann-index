@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
+from tsi.book.edges import EdgeShrink
 from tsi.model.artifact import ModelArtifact, load_artifact, save_artifact
 from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
@@ -25,6 +26,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
             }
         ),
         distribution=DistributionParams(15.2, 16.5, 0.1, 0.006),
+        edge_shrink=EdgeShrink(0.05, 0.28),
         sigma_season=15.6,
     )
     path = tmp_path / "artifact.json"
@@ -35,6 +37,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
     assert loaded.version == "tsi-test" and loaded.fitted_seasons == (2015, 2025)
     assert loaded.elo.elo_per_point == 22.2
     assert loaded.distribution == artifact.distribution
+    assert loaded.edge_shrink == artifact.edge_shrink
     np.testing.assert_allclose(loaded.stack.coefs[6], artifact.stack.coefs[6])
     np.testing.assert_allclose(loaded.totals.coefs[0], artifact.totals.coefs[0])
     np.testing.assert_allclose(loaded.prior.coefs[("off", ("last", "talent"))], [-8.0, 0.4, 0.01])

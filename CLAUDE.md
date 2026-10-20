@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and bivariate-normal distribution and market pricing (`book/`) done. TSI has no edge vs. closing lines but predicts line moves and beats opening totals (doc 05 §8); edges shrink toward the market (#52). Next: consensus lines + edges.
+- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and distribution, market pricing, consensus + edges (`book/`) done. Edges are shrunk toward the market (#52): k_spread 0.07, k_total 0.32, so spreads rarely qualify and totals can. Next: pick rules, tiers, staking.
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
