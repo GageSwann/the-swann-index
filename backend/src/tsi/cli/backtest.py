@@ -7,6 +7,7 @@ import typer
 
 from tsi.backtest.ats import BREAK_EVEN
 from tsi.backtest.calibration import TOLERANCE, CalibrationBin
+from tsi.cli.backtest_book import book
 from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import load_artifact
@@ -20,6 +21,7 @@ from tsi.services.backtest_store import save_backtest_run
 
 app = typer.Typer(help="Walk-forward backtests.", no_args_is_help=True)
 OUT_DIR = typer.Option(..., "--out-dir", help="Folder for the report CSVs.")
+app.command(name="book")(book)
 
 
 @app.command()
