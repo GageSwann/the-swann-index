@@ -7,8 +7,12 @@ Every game prediction is a **joint distribution of the two teams' scores**, not 
 
 **v1: bivariate normal**
 - Means: `proj_home`, `proj_away` (from [04-model.md](04-model.md))
-- Std devs and correlation `ρ` fit from backtest residuals (expect margin σ ≈ 13–17)
-- σ can vary by matchup (e.g. larger for high-pace / high-variance teams); start with a global value
+- Std devs and correlation `ρ` fit from backtest residuals (`model/distribution.py`, `distribution_fit.py`; decision #51):
+  - margin σ = the win-probability σ (log loss at 0): **15.2** in production
+  - total σ grows with the projected total: **16.4 + 0.12 × (total − 55)**, fit by log loss of P(total > projection + d) for d = ±3…±14
+  - ρ(margin, total) = **0.0075 × projected home margin** (clipped ±0.5): ~0 in close games, ~+0.2 when a team is favored by 25+ (blowouts raise totals)
+  - team totals follow: home = (total + margin)/2, away = (total − margin)/2, both normal
+- Residuals are close to normal (kurtosis 3.0–3.5), so v1 is a reasonable start; key numbers wait for v2
 
 **v2: Monte Carlo simulation (later)**
 - Simulate 10k+ games (drive-level or score-event-level) so that scores land on real football numbers
@@ -76,3 +80,5 @@ Using the same game distributions plus **rating uncertainty** (sample team ratin
 - Totals: same for overs
 - Win probability: reliability diagram within ±3 pts per bin
 - If calibration is off, fix σ/ρ before touching anything else
+
+**First run (2026-10-19, validation 2023–25):** win probability passes (4 of 5 bins within ±3; 80–90% bin +4.3). **Cover/over probabilities at the closing line fail badly**: TSI's 70%+ covers hit 45%, 65–70% overs hit 50%. This is not a σ problem: the closing line is more accurate than TSI, so TSI's disagreement with it is mostly noise (fitted shrink factor for spreads = 0.00 on train and validation; totals 0.07). Against **opening** lines TSI does predict where the line moves (corr +0.16 to +0.21, positive CLV at every edge size), and totals beat the opener in validation (53.0% at 3+ pts edge, 55.0% at 5+, 59.4% at 7+), spreads do not (~50%). How edges turn into probabilities is decided with item 4 (market comparison & edges).

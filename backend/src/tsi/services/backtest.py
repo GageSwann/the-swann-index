@@ -2,7 +2,7 @@
 
 Scored set: completed FBS-vs-FBS games with a closing spread, 2015 onward
 (totals: the subset that also has a closing total).
-Prior coefficients, points-per-Elo and win-probability sigma are fit on TRAIN
+Prior coefficients, points-per-Elo and the score distribution are fit on TRAIN
 seasons only, so VALIDATE seasons are out-of-sample.
 """
 
@@ -12,11 +12,14 @@ from dataclasses import dataclass
 from tsi.backtest.ats import AtsRecord, ats_record
 from tsi.backtest.calibration import CalibrationBin, calibration_table
 from tsi.backtest.evaluate import ScoredGame, Summary, summarize
+from tsi.backtest.market_calibration import cover_calibration, over_calibration
 from tsi.backtest.splits import TRAIN, VALIDATE
 from tsi.backtest.stacking import stacked_picks
 from tsi.backtest.totals_eval import TotalsSummary, summarize_totals
 from tsi.backtest.walk_forward import Pick, walk_forward
 from tsi.model.config import ModelConfig
+from tsi.model.distribution import DistributionParams
+from tsi.model.distribution_fit import fit_distribution
 from tsi.model.ratings.probability import fit_sigma, win_prob
 from tsi.services.backtest_data import FIRST_DATA_SEASON, BacktestData
 from tsi.services.prior_setup import build_prior_setup
@@ -34,11 +37,13 @@ class ComparisonRow:
 @dataclass(frozen=True)
 class BacktestResult:
     config: ModelConfig
-    sigma: float  # predictive win-prob sigma (fit on train)
+    distribution: DistributionParams  # score distribution (fit on train)
     rows: list[ComparisonRow]
     calibration: list[CalibrationBin]  # predictive, validation seasons
     ats: list[AtsRecord]  # predictive vs. closing line, validation seasons
     totals: list[TotalsSummary]  # predictive total vs. closing total, by season + period
+    cover_calibration: list[CalibrationBin]  # P(cover closing spread), validation
+    over_calibration: list[CalibrationBin]  # P(over closing total), validation
     picks: list[Pick]
 
     @property
@@ -58,7 +63,10 @@ class BacktestResult:
             "validate_su": v.su_accuracy,
             "validate_brier": v.brier,
             "validate_ats": self.ats[0].win_rate,
-            "sigma": self.sigma,
+            "sigma": self.distribution.sigma_margin,
+            "sigma_total": self.distribution.sigma_total,
+            "sigma_total_slope": self.distribution.sigma_total_slope,
+            "rho_per_point": self.distribution.rho_per_point,
             "validate_total_mae": self.validation_totals.mae,
             "validate_total_market_mae": self.validation_totals.market_mae,
             "validate_ou": self.validation_totals.ou_accuracy,
@@ -141,7 +149,25 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
         summarize_totals(f"Train {TRAIN[0]}-{TRAIN[1]}", in_seasons(*TRAIN), data.closing_totals),
         summarize_totals(f"Validate {VALIDATE[0]}-{VALIDATE[1]}", validate, data.closing_totals),
     ]
-    return BacktestResult(config, sigmas["pred"], rows, calibration, ats, totals, picks)
+    train = in_seasons(*TRAIN)
+    distribution = fit_distribution(
+        sigmas["pred"],
+        [p.predictive_margin for p in train],
+        [p.game.margin for p in train],
+        [p.predictive_total for p in train],
+        [p.game.home_points + p.game.away_points for p in train],
+    )
+    return BacktestResult(
+        config,
+        distribution,
+        rows,
+        calibration,
+        ats,
+        totals,
+        cover_calibration(validate, distribution, data.closing),
+        over_calibration(validate, distribution, data.closing_totals),
+        picks,
+    )
 
 
 def _sigma(picks: Sequence[Pick], margin) -> float:

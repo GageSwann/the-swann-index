@@ -16,6 +16,7 @@ from tsi.db.queries.market import closing_spreads
 from tsi.db.queries.results import completed_games
 from tsi.model.artifact import ModelArtifact
 from tsi.model.config import MODEL_VERSION, ModelConfig
+from tsi.model.distribution_fit import fit_distribution
 from tsi.model.elo import EloParams
 from tsi.model.ratings.probability import fit_sigma
 from tsi.services.backtest_data import FIRST_DATA_SEASON, load_backtest_data
@@ -54,7 +55,9 @@ def fit_production_model(
         setup.final_components,
     )
     stack = fit_margin_stack(picks, config.stack_lam)
+    totals = fit_total_stack(picks, config.stack_lam)
     stacked = [stack.predict(p.bucket, p.features) for p in picks]
+    stacked_totals = [totals.predict(p.bucket, p.total_features) for p in picks]
     actual = [p.game.margin for p in picks]
     established = [p for p in picks if p.established]
     return ModelArtifact(
@@ -63,9 +66,15 @@ def fit_production_model(
         rating=config.rating,
         elo=elo_params,
         stack=stack,
-        totals=fit_total_stack(picks, config.stack_lam),
+        totals=totals,
         prior=setup.model,
-        sigma_predictive=fit_sigma(stacked, actual),
+        distribution=fit_distribution(
+            fit_sigma(stacked, actual),
+            stacked,
+            actual,
+            stacked_totals,
+            [p.game.home_points + p.game.away_points for p in picks],
+        ),
         sigma_season=fit_sigma(
             [p.season_margin for p in established], [p.game.margin for p in established]
         ),

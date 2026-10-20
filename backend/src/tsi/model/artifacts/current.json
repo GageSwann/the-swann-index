@@ -1805,6 +1805,11 @@
    -1.6302860432597608
   ]
  },
- "sigma_predictive": 15.198160599463268,
+ "distribution": {
+  "sigma_margin": 15.198160599463268,
+  "sigma_total": 16.371908210900486,
+  "sigma_total_slope": 0.12,
+  "rho_per_point": 0.007467382729774045
+ },
  "sigma_season": 15.636691117445743
 }

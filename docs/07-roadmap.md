@@ -61,7 +61,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 
 ## Phase 3: Prediction engine & book core
 - [x] Score projection with pace (totals stack, v1.2: val total MAE 12.87 vs. Vegas 12.68)
-- [ ] Bivariate-normal distribution; fit σ/ρ from backtest
+- [x] Bivariate-normal distribution; fit σ/ρ from backtest (σ total grows with total; ρ ∝ margin; cover/over calibration at the close fails, see doc 05 §8)
 - [ ] Market pricing: fair + vigged spread, total, ML, team totals, alt ladders
 - [ ] Consensus market lines + no-vig implied probabilities + edges
 - [ ] Pick rules, ★ tiers, flat + ¼ Kelly staking

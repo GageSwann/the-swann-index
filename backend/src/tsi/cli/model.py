@@ -118,6 +118,6 @@ def fit(
     typer.echo(
         f"Saved {artifact.version} fitted on {artifact.fitted_seasons[0]}-"
         f"{artifact.fitted_seasons[1]} to {ARTIFACT_PATH}\n"
-        f"sigma predictive {artifact.sigma_predictive:.1f}, "
-        f"season {artifact.sigma_season:.1f} | {artifact.elo.elo_per_point:.1f} Elo per point"
+        f"{artifact.distribution.describe()}\n"
+        f"sigma season {artifact.sigma_season:.1f} | {artifact.elo.elo_per_point:.1f} Elo per point"
     )

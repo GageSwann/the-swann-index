@@ -1,9 +1,9 @@
 """The fitted production model, saved as a versioned JSON file in the repo.
 
 `tsi model fit` learns everything that is estimated from history (prior model,
-margin and totals stack weights, Elo points scale, win-probability sigmas) on all completed seasons
-and writes it here; the daily `tsi rate` job only loads it. Committing the file
-makes every live rating reproducible from a git SHA.
+margin and totals stack weights, Elo points scale, score distribution, rankings
+sigma) on all completed seasons and writes it here; the daily `tsi rate` job only
+loads it. Committing the file makes every live rating reproducible from a git SHA.
 """
 
 import json
@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 
+from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
 from tsi.model.prior import PriorModel
 from tsi.model.ratings.fit import RatingParams
@@ -30,7 +31,7 @@ class ModelArtifact:
     stack: StackModel  # predictive margin
     totals: StackModel  # predictive game total (model/totals.py)
     prior: PriorModel
-    sigma_predictive: float
+    distribution: DistributionParams  # predictive score distribution (sigmas, rho)
     sigma_season: float
 
     def to_json(self) -> dict[str, Any]:
@@ -45,7 +46,7 @@ class ModelArtifact:
                 f"{side}|{','.join(feats)}": c.tolist()
                 for (side, feats), c in sorted(self.prior.coefs.items())
             },
-            "sigma_predictive": self.sigma_predictive,
+            "distribution": asdict(self.distribution),
             "sigma_season": self.sigma_season,
         }
 
@@ -63,7 +64,7 @@ class ModelArtifact:
             stack=_stack_model(data["stack"]),
             totals=_stack_model(data["totals"]),
             prior=PriorModel(prior),
-            sigma_predictive=data["sigma_predictive"],
+            distribution=DistributionParams(**data["distribution"]),
             sigma_season=data["sigma_season"],
         )
 

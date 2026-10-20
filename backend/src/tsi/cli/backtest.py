@@ -6,7 +6,7 @@ from pathlib import Path
 import typer
 
 from tsi.backtest.ats import BREAK_EVEN
-from tsi.backtest.calibration import TOLERANCE
+from tsi.backtest.calibration import TOLERANCE, CalibrationBin
 from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import load_artifact
@@ -42,6 +42,8 @@ def run(
     _print_calibration(result)
     _print_ats(result)
     _print_totals(result)
+    _print_bins("Cover probability at the closing spread, validation", result.cover_calibration)
+    _print_bins("Over probability at the closing total, validation", result.over_calibration)
     if run_id is not None:
         typer.echo(f"\nSaved as model_runs.id={run_id} (kind=backtest)")
 
@@ -51,7 +53,7 @@ def _print_summary(result: BacktestResult) -> None:
     typer.echo(
         f"TSI {c.to_dict()['version']}: lam={c.rating.lam:g} | season blend PPD "
         f"{c.rating.ppd_weight:g} + success {c.rating.success_weight:g}, HFA {c.rating.hfa:g} | "
-        f"stack lam {c.stack_lam:g} | sigma {result.sigma:.1f}\n"
+        f"stack lam {c.stack_lam:g}\n{result.distribution.describe()}\n"
         "MAE: Season = this season only (rankings), Pred = stacked prediction\n"
     )
     typer.echo(
@@ -80,10 +82,12 @@ def _print_totals(result: BacktestResult) -> None:
 
 
 def _print_calibration(result: BacktestResult) -> None:
-    typer.echo(
-        f"\nCalibration, validation (favorite's win prob; target ±{100 * TOLERANCE:.0f} pts)"
-    )
-    for b in result.calibration:
+    _print_bins("Calibration, validation (favorite's win prob)", result.calibration)
+
+
+def _print_bins(title: str, bins: list[CalibrationBin]) -> None:
+    typer.echo(f"\n{title}; target ±{100 * TOLERANCE:.0f} pts")
+    for b in bins:
         typer.secho(
             f"  {100 * b.low:3.0f}-{100 * b.high:3.0f}%  games {b.games:>4}  "
             f"predicted {100 * b.predicted:5.1f}%  observed {100 * b.observed:5.1f}%  "
