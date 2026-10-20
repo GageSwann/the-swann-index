@@ -1,4 +1,5 @@
-# Nightly: refresh the in-progress season from CFBD, then refit ratings + rankings.
+# Nightly: refresh the in-progress season from CFBD, refit ratings + rankings,
+# grade finished picks, and publish prediction snapshots + picks (`tsi run`).
 # Secrets: CFBD_API_KEY, DATABASE_URL (repo Settings -> Secrets and variables -> Actions).
 name: Daily refresh
 
@@ -29,14 +30,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --no-dev
 
-      - name: Refresh current season from CFBD
-        run: uv run tsi ingest daily
-        env:
-          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Refit ratings + rankings (saved as a live model run)
-        run: uv run tsi rate
+      # ingest (CFBD) -> rate -> grade finished games -> publish snapshots for the next 8 days.
+      # If ingest fails, the rest still runs on stored data and the step exits 1.
+      - name: Run the live pipeline
+        run: uv run tsi run
         env:
           CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

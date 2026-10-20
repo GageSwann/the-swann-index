@@ -21,10 +21,11 @@ from tsi.db.queries.schedule import upcoming_games
 from tsi.db.queries.teams import team_names
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
-from tsi.services.live_inputs import load_live_inputs
+from tsi.services.live_inputs import LiveInputs, load_live_inputs
 from tsi.services.predict import GameForecast, forecast_games
 
 DEFAULT_DAYS = 8  # a full week of games ahead
+SEASON_DAYS = 200  # window when a specific week is asked for
 
 
 @dataclass(frozen=True)
@@ -49,13 +50,20 @@ def build_board(
     days: int = DEFAULT_DAYS,
     book: BookConfig | None = None,
     rules: PickRules | None = None,
+    week: tuple[str, int] | None = None,  # (season_type, week): only that week's games
+    live: LiveInputs | None = None,  # reuse inputs already loaded for the same moment
 ) -> Board:
     season = current_season(now)
-    upcoming = upcoming_games(session, now, now + timedelta(days=days))
-    games = [g for g in upcoming if g.season == season]
+    window = SEASON_DAYS if week else days
+    upcoming = upcoming_games(session, now, now + timedelta(days=window))
+    games = [
+        g
+        for g in upcoming
+        if g.season == season and (week is None or (g.season_type, g.week) == week)
+    ]
     if not games:
         return Board([], {})
-    live = load_live_inputs(session, season, now, artifact)
+    live = live or load_live_inputs(session, season, now, artifact)
     snaps = defaultdict(list)
     for snap in line_snapshots(session, [g.id for g in games], now):
         snaps[snap.game_id].append(snap)

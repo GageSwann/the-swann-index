@@ -67,7 +67,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Pick rules, ★ tiers, flat + ¼ Kelly staking (`book/picks.py`; #54)
 - [x] Snapshot publishing, locking, grading, CLV (`tsi book publish` / `tsi book grade`; #55)
 - [x] Backtest the book: historical ATS/O-U/ROI/CLV by tier (`tsi backtest book`; #56)
-- [ ] `tsi run --season --week` does ingest → rate → predict → publish end to end
+- [x] `tsi run` does ingest → rate → grade → publish end to end, live only (`--week` limits publishing; no past-week replays, #57); runs nightly
 
 **Done when:** one command produces a full, graded week, and calibration checks (doc 05 §8) pass.
 

@@ -4,7 +4,7 @@ Personal college football rating model + prediction engine + public read-only da
 
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`; nightly GitHub Action refreshes the current season.
-- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and distribution, market pricing, consensus + edges (`book/`) done. Edges are shrunk toward the market (#52): k_spread 0.07, k_total 0.32, so spreads rarely qualify and totals can. Picks: ★ at 1.5/3/5 pts of edge, flat 1u + ¼ Kelly (cap 3u). Publishing + grading done (`tsi book`), not yet in the nightly job. Book backtest: totals at the opener, validation 107-76 (+11.5% ROI, CLV +0.9). Next: `tsi run` end to end.
+- **Phase 2 nearly done:** model v1.1 + richer prior: rankings = learned PPD+success blend (val 13.37); predictions = stacked model (**val 12.40 vs. Vegas 12.00**). Résumé/SOS done. **Nightly job now ingests and runs `tsi rate`**, so rankings update every morning (`model_runs` kind `live` + `team_ratings`). Phase 2 report card published; round 2 done (FCS/lower pools split; no option-team bias; single σ kept). **Phase 3 in progress:** score projection (totals stack, v1.2) and distribution, market pricing, consensus + edges (`book/`) done. Edges are shrunk toward the market (#52): k_spread 0.07, k_total 0.32, so spreads rarely qualify and totals can. Picks: ★ at 1.5/3/5 pts of edge, flat 1u + ¼ Kelly (cap 3u). Book backtest: totals at the opener, validation 107-76 (+11.5% ROI, CLV +0.9). **Nightly job = `tsi run`** (ingest → rate → grade → publish). Phase 3 items all built; "done when" = first fully graded live week (week 8, games Oct 21–25).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -36,7 +36,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 ## Model decisions (doc 04)
 - **Two rating sets (#23, #37, #38):** `season` = this season's games only (learned 0.726·PPD + 0.635·success rate, HFA 3.24) and drives **Power + Résumé rankings**. `predictive` = **stacked** margin (site, PPD, success, prior, Elo; per-stage weights) and drives **predictions/Book**. Fewer than 4 games = *provisional* rank.
 - **Résumé (#24):** strength of record vs. a typical **#12** team, recomputed daily with opponents' **current** ratings (dynamic SOS: a win loses value if that opponent collapses).
-- **Daily (#25):** the nightly job refits ratings, so midweek games show up the next morning.
+- **Daily (#25, #57):** the nightly job (`tsi run`) refits ratings, grades finished picks and publishes snapshots, so midweek games show up the next morning.
 - **2020** treated normally (#26). **v1 = baseline as specified** in doc 04; refine later (#28).
 - **Totals (#50, v1.2):** stacked game total (league level, PPD/success sums, pace in drives + tempo in plays, prior, last season's pace); scores = (total ± margin) / 2. Val total MAE 12.87 vs. Vegas 12.68.
 - Tune on 2015–2022, validate on 2023–2025. Adopt an idea only if train improves and validation doesn't get worse (doc 04 §12). **Never use market lines as model inputs.**
@@ -79,7 +79,8 @@ uv run tsi model elo            # Elo baseline vs. closing line, by season (trai
 uv run tsi model rankings        # current Power + Résumé rankings (--season, --top, --by resume)
 uv run tsi model compare-sp      # sanity check: TSI final ratings vs. SP+ final (correlation)
 uv run tsi model fit            # refit production artifact on all completed seasons (commit model/artifacts/current.json)
-uv run tsi rate                 # today's ratings + rankings -> live model_run (--dry-run); nightly job runs it
+uv run tsi run                  # nightly pipeline: ingest -> rate -> grade -> publish (--dry-run, --no-ingest, --week N)
+uv run tsi rate                 # today's ratings + rankings -> live model_run (--dry-run)
 uv run tsi book publish        # forecast + price + edges + picks for the next 8 days -> new snapshots (--dry-run, --days)
 uv run tsi book grade          # grade locked-snapshot picks of finished games, record closing lines
 uv run tsi backtest export --out-dir DIR   # report tables as CSV (backtest, calibration, ATS, SP+, stack weights)
