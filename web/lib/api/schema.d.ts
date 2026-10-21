@@ -426,18 +426,24 @@ export interface components {
         };
         /** RankedTeam */
         RankedTeam: {
+            /** Def Rank */
+            def_rank: number;
             /** Def Rating */
             def_rating: number;
             /** Games Played */
             games_played: number;
             /** Losses */
             losses: number;
+            /** Off Rank */
+            off_rank: number;
             /** Off Rating */
             off_rating: number;
             /** Predictive Rank */
             predictive_rank: number | null;
             /** Predictive Rating */
             predictive_rating: number | null;
+            /** Previous Rank */
+            previous_rank: number | null;
             /** Provisional */
             provisional: boolean;
             /** Rank */

@@ -841,6 +841,10 @@
       },
       "RankedTeam": {
         "properties": {
+          "def_rank": {
+            "title": "Def Rank",
+            "type": "integer"
+          },
           "def_rating": {
             "title": "Def Rating",
             "type": "number"
@@ -851,6 +855,10 @@
           },
           "losses": {
             "title": "Losses",
+            "type": "integer"
+          },
+          "off_rank": {
+            "title": "Off Rank",
             "type": "integer"
           },
           "off_rating": {
@@ -878,6 +886,17 @@
               }
             ],
             "title": "Predictive Rating"
+          },
+          "previous_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Rank"
           },
           "provisional": {
             "title": "Provisional",
@@ -949,6 +968,7 @@
         },
         "required": [
           "rank",
+          "previous_rank",
           "team",
           "wins",
           "losses",
@@ -962,6 +982,8 @@
           "rank_resume",
           "sor",
           "sos",
+          "off_rank",
+          "def_rank",
           "predictive_rating",
           "predictive_rank"
         ],

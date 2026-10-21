@@ -20,9 +20,16 @@ class RunInfo:
 
 
 def latest_rating_run(
-    session: Session, season: int, week: int | None = None, season_type: str | None = None
+    session: Session,
+    season: int,
+    week: int | None = None,
+    season_type: str | None = None,
+    before: datetime | None = None,
 ) -> RunInfo | None:
-    """The newest live run with stored team ratings (daily `tsi rate`), optionally for a week."""
+    """The newest live run with stored team ratings (daily `tsi rate`).
+
+    Optionally within a week, or strictly before a time (the previous day's run).
+    """
     query = (
         select(
             ModelRun.id,
@@ -44,6 +51,8 @@ def latest_rating_run(
         query = query.where(ModelRun.week == week)
     if season_type is not None:
         query = query.where(ModelRun.season_type == season_type)
+    if before is not None:
+        query = query.where(ModelRun.run_at < before)
     row = session.execute(query).first()
     return RunInfo(*row) if row else None
 

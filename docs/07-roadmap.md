@@ -84,7 +84,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Scaffold `web/` (Next.js 16.4, TS, Tailwind 4, shadcn/ui, Recharts, TanStack Table, ESLint + Prettier; #67)
 - [x] Generate TS types from OpenAPI; typed API client (`web/lib/api/`: openapi-typescript + openapi-fetch, cached + tagged reads; #68)
 - [x] Layout, nav, theme, `UpdatedFooter` (design tokens in doc 06; #69)
-- [ ] Rankings page
+- [x] Rankings page (Power/Résumé, Top 25/all, conference filter, sortable table, Δ vs. yesterday, off/def ranks; #70)
 - [ ] Matchup board
 - [ ] Game center
 - [ ] Team page

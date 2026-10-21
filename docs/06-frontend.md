@@ -34,11 +34,12 @@
 - Toggle: Power | Résumé. Filters: conference, Top 25 / all.
 - Columns: Rank, Δ (movement arrow), Team (logo + name), Record, TSI rating, Off (rank), Def (rank), SOS, SOR, Proj. wins (later), CFP % (later).
 - Sortable (TanStack Table). Sticky header. Clicking a row opens the team page.
-- Side widget: biggest risers/fallers since yesterday and since last week.
+- Side widget: biggest risers/fallers since yesterday and since last week. *(Not built yet: needs a week-ago comparison from the API.)*
 - **This season only:** both rankings use the `season` ratings (no preseason prior). A one-line note under the toggle says so.
 - **Provisional:** teams with fewer than 4 games show a *provisional* tag next to their rank.
 - **Updated daily:** the header shows "Updated {date}". Δ arrows compare to the previous day's run and to a week ago.
-- **Résumé tab:** a short explainer: "How hard would it be for a typical #12 team to match this record against this schedule? Re-evaluated daily as opponents' seasons play out." Clicking a team's SOR shows its wins/losses with each opponent's *current* rating.
+- **Résumé tab:** a short explainer: "How hard would it be for a typical #12 team to match this record against this schedule? Re-evaluated daily as opponents' seasons play out." Clicking a team's SOR shows its wins/losses with each opponent's *current* rating. *(Not built yet: needs a per-team résumé endpoint.)*
+- **Built (decision #70):** Power/Résumé toggle, Top 25 / all, conference filter (client-side over both rankings, rendered once on the server); TanStack Table v9 sorting with a sticky header inside the table's own scroll area; Δ vs. the previous daily run (`previous_rank`), offense/defense ranks (`off_rank`/`def_rank`) from the API; row click and team-name links go to the team page; logos on a light chip so dark marks stay visible.
 
 ### Matchup board `/week/[season]/[week]`
 - Week selector + filters: Top 25 only, conference, "TSI plays only", sort by kickoff / edge / win prob.

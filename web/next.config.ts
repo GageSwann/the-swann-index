@@ -12,6 +12,12 @@ const nextConfig: NextConfig = {
       expire: 172800, // never serve data older than 2 days
     },
   },
+  images: {
+    // Team logos come from CFBD's CDN (TeamRef.logo_url).
+    remotePatterns: [
+      { protocol: "https", hostname: "cdn.collegefootballdata.com", pathname: "/logos/**" },
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {
