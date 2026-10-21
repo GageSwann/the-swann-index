@@ -5,7 +5,7 @@ Personal college football rating model + prediction engine + public read-only da
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`.
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
-- **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run. **Phase 4 in progress:** all v1 endpoints built (`api/`, read models in `services/read/`, `tsi serve`). Next: CORS + caching headers. Week 8 review once graded (Oct 26).
+- **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run. **Phase 4 in progress:** all v1 endpoints built (`api/`, read models in `services/read/`, `tsi serve`). CORS, cache headers, ETag/304 and gzip done. Next: API tests against a seeded test DB. Week 8 review once graded (Oct 26).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building

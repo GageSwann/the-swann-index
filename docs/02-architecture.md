@@ -131,6 +131,7 @@ Rankings therefore move the morning after any game, including midweek games.
 **Lock:** the locked prediction is the latest snapshot published before kickoff (a query, not a scheduled job); picks are graded against it and the closing line.
 
 ## Caching & revalidation
+- **API** (`api/caching.py`, decision #61): successful GETs send `Cache-Control: public, max-age=300, stale-while-revalidate=86400` (`/matchup`: `max-age=3600`, its in-process cache TTL); errors are `no-store`. Every JSON body carries a strong `ETag`; `If-None-Match` → empty 304. Responses over 1 KB are gzipped (rankings 74 KB → 16 KB). CORS allows only `TSI_CORS_ORIGINS`, GET only, no credentials, `ETag` exposed.
 - Next.js pages use ISR with tags (`rankings`, `week-{n}`, `team-{slug}`, `game-{id}`).
 - After a model run, the workflow calls a protected `/api/revalidate` route on Vercel with a secret token.
 - Result: nearly every page view is served from Vercel's cache, and the API is only hit on revalidation and for the matchup tool.

@@ -30,7 +30,7 @@ class Matchup:
     home: TeamRef
     away: TeamRef
     neutral: bool
-    as_of: datetime
+    as_of: datetime  # data as of (live inputs load time)
     proj_home: float
     proj_away: float
     spread: float  # home view, negative = home favored
@@ -64,12 +64,13 @@ def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime
         away_div=a.division or "unknown",
         neutral=neutral,
     )
-    dist = forecast_game(game, _live_inputs(session, season, now, artifact), artifact).distribution
+    live = _live_inputs(session, season, now, artifact)
+    dist = forecast_game(game, live, artifact).distribution
     return Matchup(
         home=h,
         away=a,
         neutral=neutral,
-        as_of=now,
+        as_of=live.as_of,  # when the inputs were loaded: stable while cached (ETag)
         proj_home=dist.home_points,
         proj_away=dist.away_points,
         spread=-dist.margin,
