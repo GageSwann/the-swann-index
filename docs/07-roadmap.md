@@ -81,7 +81,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 
 ## Phase 5: Frontend MVP
 - [x] Review + install Phase 5 skills (`frontend-design`, `webapp-testing`, `react-best-practices` in place of `nextjs`; `.claude/skills/SOURCES.md`; #66)
-- [ ] Scaffold `web/` (Next.js, TS, Tailwind, shadcn/ui, Recharts, TanStack Table)
+- [x] Scaffold `web/` (Next.js 16.4, TS, Tailwind 4, shadcn/ui, Recharts, TanStack Table, ESLint + Prettier; #67)
 - [ ] Generate TS types from OpenAPI; typed API client
 - [ ] Layout, nav, theme, `UpdatedFooter`
 - [ ] Rankings page

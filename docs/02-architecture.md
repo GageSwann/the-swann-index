@@ -63,8 +63,8 @@ Module size and layering rules are in [09-conventions.md](09-conventions.md) §2
 | DB access | SQLAlchemy 2.x + Alembic + psycopg | Migrations from day one |
 | API | FastAPI + Pydantic | OpenAPI schema → generate TS types |
 | Lint/test (py) | ruff, pytest | |
-| Frontend | Next.js (latest stable, App Router), TypeScript | Server Components fetch API |
-| Styling | Tailwind CSS + shadcn/ui | |
+| Frontend | Next.js 16.4 (App Router, Turbopack, Cache Components on by default), TypeScript strict, npm | Server Components fetch API; version-matched docs in `web/node_modules/next/dist/docs/` |
+| Styling | Tailwind CSS 4 + shadcn/ui (`base-nova`, Base UI primitives, lucide icons, `cn` helper) | |
 | Charts | Recharts | visx if something needs more control |
 | Tables | TanStack Table | Sortable/filterable rankings |
 | Lint (web) | ESLint + Prettier | |

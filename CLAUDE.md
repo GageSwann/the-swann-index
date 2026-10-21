@@ -7,7 +7,7 @@ Personal college football rating model + prediction engine + public read-only da
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
 - **Phase 4 complete** (2026-10-21): read-only API with all v1 endpoints (`api/`, read models in `services/read/`), CORS + cache headers + ETag/304 + gzip, seeded-DB tests, spec at `docs/api/openapi.json`.
-- **Phase 5 in progress:** skills installed (`.claude/skills/`: `frontend-design`, `webapp-testing`, `react-best-practices`). Next: scaffold `web/`. Week 8 review once graded (Oct 26).
+- **Phase 5 in progress:** skills installed (`.claude/skills/`: `frontend-design`, `webapp-testing`, `react-best-practices`). `web/` scaffolded (Next.js 16.4). Next: TS types from the OpenAPI spec + typed API client. Week 8 review once graded (Oct 26).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -81,6 +81,8 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
   - Commit messages: bash heredoc + `git commit -F` (PowerShell `Set-Content` adds a BOM). `sed` replacements containing `#` need another delimiter.
   - The console is cp1252: set `PYTHONIOENCODING=utf-8` (or write to a file) to print ★/–; use `%#I`, not `%-I`, in `strftime`.
   - The artifact tools reject the short `GAGESW~1` temp path as `out_dir`; use the full `C:\Users\Gage Swann\...` path.
+- **Next.js 16 is newer than training data:** read the relevant guide in `web/node_modules/next/dist/docs/` before writing Next.js code (`web/AGENTS.md`; `next dev` rewrites that file, commit it as is). Cache Components are on (`"use cache"` + cache tags, not the old `revalidate` exports).
+- **Web dependencies:** `npm audit --omit=dev` must stay at 0 (dev-only lint tooling has known `braces` advisories; don't `audit fix --force`). `shadcn` is a devDependency (only its CSS is imported, at build time). npm 11 blocks `unrs-resolver`'s postinstall; ESLint works without it. `web/.gitignore` ignores `.env*` except `.env.example`.
 - **GitHub Actions:** `astral-sh/setup-uv` has no floating major tag; pin the exact version (e.g. `v10.3.0`). The nightly job writes to the Neon **dev** branch until Phase 6 (#19).
 
 ## Commands
@@ -125,4 +127,11 @@ uv run alembic check            # models and DB in sync?
 ```
 Migrations target the Neon **dev** branch locally. Ask before applying to any database.
 GitHub: `gh workflow run daily-refresh.yml` triggers the nightly job manually; `gh run list --workflow daily-refresh.yml` shows recent runs.
-_Web commands are added when `web/` is scaffolded (Phase 5)._
+Web (run from `web/`; Node 24, npm):
+```powershell
+npm install                     # once, and after pulling dependency changes
+npm run dev                     # site on http://localhost:3000 (needs `tsi serve` running)
+npm run check                   # typecheck + lint + Prettier check (run before committing web changes)
+npm run format                  # format with Prettier
+npm run build                   # production build
+```
