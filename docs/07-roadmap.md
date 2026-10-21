@@ -72,7 +72,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 **Done when:** one command produces a full, graded week, and calibration checks (doc 05 §8) pass.
 
 ## Phase 4: API
-- [ ] FastAPI app, routers, Pydantic schemas for all v1 endpoints (doc 02)
+- [x] FastAPI app, routers, schemas for all v1 endpoints (doc 02; read models in `services/read/`, `tsi serve`; #60)
 - [ ] CORS for the web origin; response caching headers
 - [ ] API tests against a seeded test DB
 - [ ] Export OpenAPI spec

@@ -108,7 +108,16 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | GET | `/model/report?season` | accuracy, calibration, comparison data |
 | GET | `/matchup?home&away&neutral` | on-demand hypothetical prediction |
 
-Responses are Pydantic models; the OpenAPI spec generates TypeScript types for `web/lib/api.ts`.
+Responses are Pydantic-validated **frozen dataclasses** defined once in `services/read/` (one module per resource); FastAPI builds the OpenAPI schema from them, and the spec generates TypeScript types for `web/lib/api.ts`. Routers (`api/routers/`) are thin. Run locally with `tsi serve` (docs at `/docs`).
+
+Behavior (decision #60):
+- **Snapshot shown:** the latest one before kickoff; once a game has kicked off, the **locked** one (latest `published_at` < kickoff), flagged `locked: true`.
+- **Market shown:** books' consensus as of now; once kicked off, the closing consensus (falls back to the last pre-kickoff lines until closing lines are ingested the next morning).
+- **Game center** re-prices team totals and alt ladders from the snapshot's stored distribution (`book/pricing.py`), so they always match it.
+- **Week board** lists games with at least one FBS team. **Rankings** read the latest live rating run (optionally within a week); records come from completed games before that run.
+- **Ledger** = picks on locked snapshots (`pending`/`graded`) plus `open` picks on not-yet-started games (may still change).
+- **Matchup** reuses the live prediction path; live inputs are cached in-process for an hour.
+- `season` defaults to the current season everywhere; unknown team/game → 404.
 
 ## Data flow per week (in season)
 

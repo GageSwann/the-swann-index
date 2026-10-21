@@ -12,6 +12,7 @@ from tsi.cli.check import check
 from tsi.cli.rate import rate
 from tsi.cli.run import run
 from tsi.cli.runtime import configure_logging
+from tsi.cli.serve import serve
 
 app = typer.Typer(
     name="tsi",
@@ -26,6 +27,7 @@ app.add_typer(book.app, name="book")
 app.command(name="check")(check)
 app.command(name="rate")(rate)
 app.command(name="run")(run)
+app.command(name="serve")(serve)
 
 
 def _print_version(value: bool) -> None:
