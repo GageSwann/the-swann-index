@@ -1,4 +1,6 @@
-"""Power and Résumé rankings for one season as of a moment in time (FBS teams).
+"""Compute Power and Résumé rankings for one season as of a moment (FBS teams).
+
+(Stored rankings are read for the API by `services/read/rankings.py`.)
 
 Power  = `season` rating (this season's games only; decision #23/#38).
 Résumé = strength of record vs. a typical #12 team, with opponents' current ratings.
@@ -15,6 +17,7 @@ from tsi.db.models import Team
 from tsi.db.queries.priors import fbs_teams
 from tsi.db.queries.results import completed_games
 from tsi.db.queries.stats import offense_rows
+from tsi.divisions import RATED_DIVISION
 from tsi.model.config import ESTABLISHED_GAMES
 from tsi.model.ratings.design import rated_id
 from tsi.model.ratings.fit import RatingParams, RatingSet, fit_ratings
@@ -88,7 +91,7 @@ def build_rankings(
             rating=rated[t].rating,
             off=rated[t].off,
             defense=rated[t].defense,
-            games=ratings.games.get(rated_id(t, "fbs"), 0),
+            games=ratings.games.get(rated_id(t, RATED_DIVISION), 0),
             provisional=ratings.games.get(t, 0) < ESTABLISHED_GAMES,
             rank_power=i + 1,
             resume=resumes[t],

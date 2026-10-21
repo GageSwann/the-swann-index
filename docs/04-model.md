@@ -134,7 +134,7 @@ For each team: the probability that a **benchmark team** would have a record at 
 
 Strength of schedule is also shown: the average current `season` rating of opponents, plus the benchmark team's expected win % against the schedule.
 
-**Implementation** (`model/resume.py`, `services/rankings.py`): benchmark = the 12th-best current FBS `season` rating. Each game's probability comes from the benchmark's rating minus the opponent's, plus home field from the benchmark's seat, via a normal with σ = 15.7 (log-loss fit of `season` margins on 2015–22 games where both teams had 4+ games). Wins follow a Poisson-binomial distribution; SOR = P(≥ actual wins). Résumé order: SOR ascending, then wins, then rating. Non-FBS opponents use the pooled rating.
+**Implementation** (`model/resume.py`, `services/compute_rankings.py`): benchmark = the 12th-best current FBS `season` rating. Each game's probability comes from the benchmark's rating minus the opponent's, plus home field from the benchmark's seat, via a normal with σ = 15.7 (log-loss fit of `season` margins on 2015–22 games where both teams had 4+ games). Wins follow a Poisson-binomial distribution; SOR = P(≥ actual wins). Résumé order: SOR ascending, then wins, then rating. Non-FBS opponents use the pooled rating.
 
 ## 8. Baseline: Elo
 A simple margin-aware Elo (`model/elo.py`) is the baseline. If the main model doesn't clearly beat Elo in backtest, something is wrong.

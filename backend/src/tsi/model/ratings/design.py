@@ -17,9 +17,10 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
+from tsi.divisions import RATED_DIVISION
+
 FCS_POOL_ID = -1  # stands in for every FCS team
 LOWER_POOL_ID = -2  # D-II, D-III, NAIA and unclassified teams
-RATED_DIVISION = "fbs"
 
 
 class RatingRow(Protocol):

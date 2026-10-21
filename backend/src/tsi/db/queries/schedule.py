@@ -7,8 +7,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, aliased
 
 from tsi.db.models import Game, TeamSeason
-
-RATED_DIVISION = "fbs"
+from tsi.divisions import RATED_DIVISION
 
 
 @dataclass(frozen=True)

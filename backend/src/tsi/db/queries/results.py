@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, aliased
 
 from tsi.db.models import Game, TeamSeason
+from tsi.divisions import RATED_DIVISION
 
 
 @dataclass(frozen=True)
@@ -28,7 +29,7 @@ class GameResult:
 
     @property
     def fbs_vs_fbs(self) -> bool:
-        return self.home_div == "fbs" and self.away_div == "fbs"
+        return self.home_div == RATED_DIVISION and self.away_div == RATED_DIVISION
 
 
 def completed_games(session: Session, through_season: int) -> list[GameResult]:

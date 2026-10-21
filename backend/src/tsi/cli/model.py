@@ -9,9 +9,9 @@ from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ARTIFACT_PATH, save_artifact
 from tsi.model.elo import EloParams
+from tsi.services.compute_rankings import build_rankings
 from tsi.services.elo_report import run_elo_report
 from tsi.services.model_fit import fit_production_model
-from tsi.services.rankings import build_rankings
 from tsi.services.sp_check import compare_with_sp
 
 app = typer.Typer(help="Run and evaluate rating models.", no_args_is_help=True)

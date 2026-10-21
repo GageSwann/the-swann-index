@@ -56,7 +56,7 @@ class SnapshotView:
 
 
 @dataclass(frozen=True)
-class GameResult:
+class Score:
     home_points: int
     away_points: int
     final: bool
@@ -95,10 +95,10 @@ def pick_view(p: PickRow) -> PickView:
     )
 
 
-def result_of(g: GameRow) -> GameResult | None:
+def result_of(g: GameRow) -> Score | None:
     if g.home_points is None or g.away_points is None:
         return None
-    return GameResult(g.home_points, g.away_points, g.completed)
+    return Score(g.home_points, g.away_points, g.completed)
 
 
 def market_lines(

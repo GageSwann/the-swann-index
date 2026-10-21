@@ -33,7 +33,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 2. **Published predictions are immutable.** Never update a snapshot; insert a new one. The **locked** snapshot is derived: the latest `raw` prediction with `published_at < kickoff`; only its picks are graded. A DB trigger rejects updates. **Never back-date `published_at`** and never "replay" past weeks as live snapshots (#57).
 3. **No secrets in code.** Passwords, API keys, tokens and connection strings come from environment variables only: `backend/.env` (loaded by `tsi/config.py`) and `web/.env.local`, both gitignored. Never hard-code, log, print, or commit them; never prefix a secret with `NEXT_PUBLIC_`. Keep each `.env.example` current (names only). When checking `.env`, print booleans/lengths only.
 4. **Cache API data.** Free tier ≈ 1,000 calls/month (guard: 980). Finished seasons are cached forever; the in-progress season expires after 6h. Nightly job ≈ 4 calls/day.
-5. **Division-agnostic schema.** FBS-only today, FCS later; never hard-code "FBS" into table design. Conference and division are **per season** (`team_seasons`).
+5. **Division-agnostic schema.** FBS-only today, FCS later; never hard-code "FBS" into table design. Conference and division are **per season** (`team_seasons`). The rated division is named once, in `tsi/divisions.py`.
 6. Raw model output and manual adjustments are stored separately; the UI must be able to show both.
 7. **Market lines are never model inputs.** They are evaluation points, and in the Book they only size edges (#52).
 

@@ -198,29 +198,6 @@
         "title": "GameMarkets",
         "type": "object"
       },
-      "GameResult": {
-        "properties": {
-          "away_points": {
-            "title": "Away Points",
-            "type": "integer"
-          },
-          "final": {
-            "title": "Final",
-            "type": "boolean"
-          },
-          "home_points": {
-            "title": "Home Points",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "home_points",
-          "away_points",
-          "final"
-        ],
-        "title": "GameResult",
-        "type": "object"
-      },
       "GameSummary": {
         "properties": {
           "away": {
@@ -291,7 +268,7 @@
           "result": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/GameResult"
+                "$ref": "#/components/schemas/Score"
               },
               {
                 "type": "null"
@@ -1170,7 +1147,7 @@
           "result": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/GameResult"
+                "$ref": "#/components/schemas/Score"
               },
               {
                 "type": "null"
@@ -1240,6 +1217,29 @@
           "spread"
         ],
         "title": "ScheduleGame",
+        "type": "object"
+      },
+      "Score": {
+        "properties": {
+          "away_points": {
+            "title": "Away Points",
+            "type": "integer"
+          },
+          "final": {
+            "title": "Final",
+            "type": "boolean"
+          },
+          "home_points": {
+            "title": "Home Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "home_points",
+          "away_points",
+          "final"
+        ],
+        "title": "Score",
         "type": "object"
       },
       "SnapshotPoint": {

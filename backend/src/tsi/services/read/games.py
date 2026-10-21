@@ -16,10 +16,10 @@ from tsi.book.pricing import GameMarkets, price_game
 from tsi.db.queries.games import GameRow, game_by_id, week_games
 from tsi.db.queries.snapshots import SnapshotRow, picks_for_snapshots, snapshots_for_games
 from tsi.db.queries.team_info import TeamRef, team_refs
+from tsi.divisions import RATED_DIVISION
 from tsi.model.distribution import ScoreDistribution
-from tsi.model.ratings.design import RATED_DIVISION as RATED
 from tsi.services.read.common import (
-    GameResult,
+    Score,
     SnapshotView,
     current_snapshot,
     market_lines,
@@ -41,7 +41,7 @@ class GameSummary:
     notes: str | None
     home: TeamRef
     away: TeamRef
-    result: GameResult | None
+    result: Score | None
     prediction: SnapshotView | None
     market: ConsensusLine | None
 
@@ -74,9 +74,8 @@ def week_board(
 ) -> WeekBoard:
     """Games with at least one FBS team (the rated division); FCS-only games are left out."""
     games = week_games(session, season, week, season_type)
-    rated = [
-        s for s in _summaries(session, games, now) if RATED in (s.home.division, s.away.division)
-    ]
+    summaries = _summaries(session, games, now)
+    rated = [s for s in summaries if RATED_DIVISION in (s.home.division, s.away.division)]
     return WeekBoard(season, season_type, week, rated)
 
 
@@ -84,19 +83,26 @@ def game_center(session: Session, game_id: int, now: datetime) -> GameCenter | N
     game = game_by_id(session, game_id)
     if game is None:
         return None
-    summary = _summaries(session, [game], now)[0]
-    snaps = snapshots_for_games(session, [game.id]).get(game.id, [])
+    all_snaps = snapshots_for_games(session, [game.id])
+    summary = _summaries(session, [game], now, all_snaps)[0]
+    snaps = all_snaps.get(game.id, [])
     p = summary.prediction
     markets = None if p is None else price_game(_distribution(p))
     history = [SnapshotPoint(s.published_at, s.spread, s.total, s.home_win_prob) for s in snaps]
     return GameCenter(summary, markets, history)
 
 
-def _summaries(session: Session, games: list[GameRow], now: datetime) -> list[GameSummary]:
+def _summaries(
+    session: Session,
+    games: list[GameRow],
+    now: datetime,
+    snaps: dict[int, list[SnapshotRow]] | None = None,  # preloaded, to skip the query
+) -> list[GameSummary]:
     if not games:
         return []
     refs = team_refs(session, games[0].season, {t for g in games for t in (g.home_id, g.away_id)})
-    snaps = snapshots_for_games(session, [g.id for g in games])
+    if snaps is None:
+        snaps = snapshots_for_games(session, [g.id for g in games])
     shown: dict[int, tuple[SnapshotRow, bool]] = {}
     for g in games:
         snap, locked = current_snapshot(snaps.get(g.id, []), g.start_time, now)

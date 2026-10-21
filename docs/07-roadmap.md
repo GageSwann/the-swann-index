@@ -53,7 +53,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Production model: `tsi model fit` fits the prior model, stack, Elo scale and σ on all completed seasons (2015–25) → `model/artifacts/current.json` (committed, versioned)
 - [x] Walk-forward backtest harness + metrics + saved runs: `tsi backtest run` (season/predictive/Elo/Vegas tables, calibration bins, ATS by edge size), saved to `model_runs` (kind `backtest`, config + metrics + git SHA). σ fit by log loss (#34) → calibration within ±3 in 4 of 5 bins. ATS vs. closing 50.8%; no edge yet
 - [x] Tune on 2015–2022, validate on 2023–2025 (λ, rankings blend weights, stack weights and penalty, σ; the prior fade is now learned by the stack)
-- [x] Résumé (SOR) vs. a #12 benchmark using opponents' **current** ratings, plus SOS (`model/resume.py`, `services/rankings.py`, `tsi model rankings`). σ 15.7 (log-loss fit of `season` margins, 4+ games). Stored daily with the nightly ratings (next item)
+- [x] Résumé (SOR) vs. a #12 benchmark using opponents' **current** ratings, plus SOS (`model/resume.py`, `services/compute_rankings.py`, `tsi model rankings`). σ 15.7 (log-loss fit of `season` margins, 4+ games). Stored daily with the nightly ratings (next item)
 - [x] Daily job: `tsi rate` after ingest → a `live` model_run + `team_ratings` (`season` with Power/Résumé ranks, `predictive` per team); ~2 s. CFBD client now retries transient failures (an Oct 18 timeout failed one nightly run)
 - [x] Report summarizing results vs. closing line / SP+ / Elo: **TSI model report card** (claude.ai artifact https://claude.ai/artifact/AEndkhJAt49YQNJcWC2i7v, private until shared), data from `tsi backtest export`
 

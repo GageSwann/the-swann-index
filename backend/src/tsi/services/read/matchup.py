@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from tsi.book.pricing import GameMarkets, price_game
 from tsi.db.queries.schedule import UpcomingGame
-from tsi.db.queries.team_info import TeamRef, team_id_by_slug, team_refs
+from tsi.db.queries.team_info import TeamRef, team_ids_by_slug, team_refs
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact, load_artifact
 from tsi.services.live_inputs import LiveInputs, load_live_inputs
@@ -45,8 +45,8 @@ class UnknownTeamError(LookupError):
 
 def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime) -> Matchup:
     season = current_season(now)
-    ids = {slug: team_id_by_slug(session, slug) for slug in (home, away)}
-    missing = [slug for slug, tid in ids.items() if tid is None]
+    ids = team_ids_by_slug(session, (home, away))
+    missing = [slug for slug in (home, away) if slug not in ids]
     if missing:
         raise UnknownTeamError(", ".join(missing))
     refs = team_refs(session, season, ids.values())

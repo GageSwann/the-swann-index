@@ -74,7 +74,12 @@ def team_refs(
 
 
 def team_id_by_slug(session: Session, slug: str) -> int | None:
-    return session.scalar(select(Team.id).where(Team.slug == slug))
+    return team_ids_by_slug(session, [slug]).get(slug)
+
+
+def team_ids_by_slug(session: Session, slugs: Iterable[str]) -> dict[str, int]:
+    query = select(Team.slug, Team.id).where(Team.slug.in_(list(slugs)))
+    return {slug: tid for slug, tid in session.execute(query)}
 
 
 def stored_ratings(

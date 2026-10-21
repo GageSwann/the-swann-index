@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from tsi.db.queries.games import GameRow, team_games
-from tsi.db.queries.runs import latest_rating_run, rating_runs
+from tsi.db.queries.runs import rating_runs
 from tsi.db.queries.snapshots import snapshots_for_games
 from tsi.db.queries.team_info import (
     Record,
@@ -17,9 +17,8 @@ from tsi.db.queries.team_info import (
     team_id_by_slug,
     team_refs,
 )
-from tsi.services.read.common import GameResult, current_snapshot, result_of
-
-RATED_DIVISION = "fbs"
+from tsi.divisions import RATED_DIVISION
+from tsi.services.read.common import Score, current_snapshot, result_of
 
 
 @dataclass(frozen=True)
@@ -55,7 +54,7 @@ class ScheduleGame:
     season_type: str
     opponent: TeamRef
     site: str  # 'home' | 'away' | 'neutral'
-    result: GameResult | None  # home/away points as played
+    result: Score | None  # home/away points as played
     team_points: int | None
     opponent_points: int | None
     outcome: str | None  # 'W' | 'L' | 'T' once final
@@ -92,7 +91,7 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     )
     runs = rating_runs(session, season)
     history_rows = stored_ratings(session, [r.id for r in runs], team_id)
-    latest = latest_rating_run(session, season)
+    latest = runs[-1] if runs else None
     rec = records(session, season, now).get(team_id, Record())
     snaps = snapshots_for_games(session, [g.id for g in games])
     return TeamProfile(

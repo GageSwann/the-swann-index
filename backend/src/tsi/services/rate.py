@@ -1,6 +1,6 @@
 """Compute today's live ratings for the current season (what the nightly job stores).
 
-- `season` set + Power/Résumé ranks: services/rankings.py (this season only)
+- `season` set + Power/Résumé ranks: services/compute_rankings.py (this season only)
 - `predictive` set: the stack, expressed per team (model/stack_team.py), using the
   production artifact (prior model, stack weights, Elo scale)
 Only data from games that kicked off before `now` is used.
@@ -17,8 +17,8 @@ from tsi.model.config import ESTABLISHED_GAMES
 from tsi.model.ratings.types import AVERAGE_TEAM, TeamRating
 from tsi.model.stack import stage_bucket
 from tsi.model.stack_team import TeamSignals, predictive_hfa, predictive_rating
+from tsi.services.compute_rankings import Rankings, build_rankings
 from tsi.services.live_inputs import LiveInputs, load_live_inputs
-from tsi.services.rankings import Rankings, build_rankings
 
 
 @dataclass(frozen=True)

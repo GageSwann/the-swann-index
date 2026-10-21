@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Prior, TeamSeason
+from tsi.divisions import RATED_DIVISION
 
 PriorKey = tuple[int, int]  # (season, team_id)
 
@@ -37,7 +38,8 @@ def prior_inputs(session: Session, first_season: int, last_season: int) -> dict[
 def fbs_teams(session: Session, first_season: int, last_season: int) -> dict[int, set[int]]:
     """season -> FBS team ids that season."""
     query = select(TeamSeason.season, TeamSeason.team_id).where(
-        TeamSeason.division == "fbs", TeamSeason.season.between(first_season, last_season)
+        TeamSeason.division == RATED_DIVISION,
+        TeamSeason.season.between(first_season, last_season),
     )
     teams: dict[int, set[int]] = {}
     for season, team_id in session.execute(query):
