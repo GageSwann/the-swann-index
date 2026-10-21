@@ -56,6 +56,7 @@
 - **Tale of the tape:** mirrored bar chart of off/def ratings, EPA/play, success rate, explosiveness, pace (ranks shown).
 - **Rating trends:** both teams' TSI rating by week on one chart.
 - **Post-game:** final score, how each market graded, snapshot history ("line moved from X to Y").
+- **Built (decision #72):** this week's games are prerendered and others render on first visit (inside `<Suspense>`; an unknown id streams the not-found page with `noindex`). Sections: score-bug header (final score once over), ★ play badges (✔/✘ once graded), odds board (TSI fair / TSI Book / Vegas, with the play's cell outlined; team totals have no market data yet), margin density with Tie and Vegas lines (whole-point hover; cover chance from the API's alt-spread ladder, never computed in the browser), alt spread and total ladders with the Vegas rung highlighted, tale of the tape (ranks, rating, off/def, SOS, record; the better side bold), rating trends (home solid, away dashed, direct end labels, neutral away color when the team colors look alike) and prediction history. EPA, success rate, explosiveness and pace in the tape wait for an API addition. Games without a snapshot say why (before Oct 20, 2026, or not yet within eight days).
 
 ### Team page `/teams/[slug]`
 - Header gradient in team colors, logo, record, Power rank, Résumé rank, rating.

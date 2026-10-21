@@ -86,7 +86,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Layout, nav, theme, `UpdatedFooter` (design tokens in doc 06; #69)
 - [x] Rankings page (Power/Résumé, Top 25/all, conference filter, sortable table, Δ vs. yesterday, off/def ranks; #70)
 - [x] Matchup board (`/week` → current week; cards, filters, sort, TSI vs. Vegas, plays, finals; #71)
-- [ ] Game center
+- [x] Game center (header, plays, odds board, margin chart, alt ladders, tale of the tape, rating trends, prediction history; #72)
 - [ ] Team page
 - [ ] Responsive pass on phone widths
 
