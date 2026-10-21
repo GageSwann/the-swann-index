@@ -1,14 +1,9 @@
-import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 
-import { PageHeading } from "@/components/layout/page-heading"
+import { getMeta } from "@/lib/api/queries"
 
-export const metadata: Metadata = { title: "This week" }
-
-export default function WeekPage() {
-  return (
-    <PageHeading title="This week">
-      Every game this week with TSI&apos;s projected score, win probability and the market line. The
-      matchup board is being built.
-    </PageHeading>
-  )
+/** `/week` always means the current week. */
+export default async function CurrentWeekPage() {
+  const meta = await getMeta()
+  redirect(`/week/${meta.season}/${Math.max(1, meta.week)}`)
 }

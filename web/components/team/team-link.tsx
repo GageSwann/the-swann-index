@@ -2,10 +2,11 @@ import Image from "next/image"
 import Link from "next/link"
 
 import type { TeamRef } from "@/lib/api/types"
+import { teamColorVars } from "@/lib/format/color"
 
 /**
- * Logo + school name, linking to the team page. A thin tick in the team's color sits
- * before the logo: team colors are accents only, never text color (contrast).
+ * Logo + school name, linking to the team page. A thin tick in the team's color
+ * (contrast-checked per theme) sits before the logo: team colors are accents, never text.
  */
 export function TeamLink({ team }: { team: TeamRef }) {
   return (
@@ -15,8 +16,8 @@ export function TeamLink({ team }: { team: TeamRef }) {
     >
       <span
         aria-hidden
-        className="h-5 w-0.75 shrink-0 rounded-full border border-border"
-        style={{ backgroundColor: team.color ?? "transparent" }}
+        className="h-5 w-0.75 shrink-0 rounded-full bg-[var(--team-light)] dark:bg-[var(--team-dark)]"
+        style={teamColorVars(team)}
       />
       {/* Logos sit on a light chip so dark marks (navy, black, purple) stay visible at night. */}
       <span className="flex size-6.5 shrink-0 items-center justify-center rounded-sm bg-white">
