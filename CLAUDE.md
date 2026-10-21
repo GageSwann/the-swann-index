@@ -7,7 +7,7 @@ Personal college football rating model + prediction engine + public read-only da
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
 - **Phase 4 complete** (2026-10-21): read-only API with all v1 endpoints (`api/`, read models in `services/read/`), CORS + cache headers + ETag/304 + gzip, seeded-DB tests, spec at `docs/api/openapi.json`.
-- **Phase 5 in progress:** skills installed (`.claude/skills/`: `frontend-design`, `webapp-testing`, `react-best-practices`). `web/` scaffolded (Next.js 16.4). Next: TS types from the OpenAPI spec + typed API client. Week 8 review once graded (Oct 26).
+- **Phase 5 in progress:** skills installed (`.claude/skills/`: `frontend-design`, `webapp-testing`, `react-best-practices`). `web/` scaffolded (Next.js 16.4); typed, cached API client in `web/lib/api/`. Next: layout, nav, theme, `UpdatedFooter`. Week 8 review once graded (Oct 26).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -72,7 +72,8 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **DB tests** build the schema from the ORM, so the immutability trigger is loaded from the initial migration file (`tests/db_integration/conftest.py`). Shared test builders live in `tests/factories.py`. **API tests** seed a tiny 2026 season (`tests/db_integration/api_seed.py`) and override `get_session` + `get_now` (clock pinned) on `create_app(...)`; the test client needs the `httpx2` dev dependency (Starlette 1.9).
 - **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
 - **Alembic** autogenerate misses primary-key changes; hand-write those. Pass the short constraint name (e.g. `"basis"`), never the full `ck_table_name`.
-- **API changes:** run `tsi openapi` and commit `docs/api/openapi.json`, or `tests/api/test_openapi.py` fails. Response shapes are the dataclasses in `services/read/`.
+- **API changes:** run `tsi openapi` and commit `docs/api/openapi.json` (else `tests/api/test_openapi.py` fails), then `npm run api:types` in `web/` and commit `lib/api/schema.d.ts` (else `npm run check` fails). Response shapes are the dataclasses in `services/read/`; the web imports them via `lib/api/types.ts`.
+- **Web data access:** only through `web/lib/api/queries.ts` (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).
 - **Model changes:** rerun `tsi backtest run` (+ `tsi backtest book` for Book changes), then `tsi model fit`, and commit the new artifact. The artifact is written with LF, so an unchanged refit leaves git clean.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
 - **Windows shell:**
@@ -131,7 +132,8 @@ Web (run from `web/`; Node 24, npm):
 ```powershell
 npm install                     # once, and after pulling dependency changes
 npm run dev                     # site on http://localhost:3000 (needs `tsi serve` running)
-npm run check                   # typecheck + lint + Prettier check (run before committing web changes)
+npm run check                   # API types in sync + typecheck + lint + Prettier check (run before committing web changes)
+npm run api:types               # regenerate lib/api/schema.d.ts from docs/api/openapi.json
 npm run format                  # format with Prettier
 npm run build                   # production build
 ```
