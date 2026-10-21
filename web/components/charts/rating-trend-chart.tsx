@@ -15,7 +15,9 @@ import { type ChartTheme, useChartTheme } from "@/lib/chart-theme"
 import { separation, teamColor } from "@/lib/format/color"
 import { signed } from "@/lib/format/numbers"
 
-type Series = { team: TeamRef; history: RatingPoint[] }
+export type TrendSeries = { team: TeamRef; history: RatingPoint[] }
+
+type Row = { day: string } & Record<string, number | string>
 
 const dateLabel = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/New_York",
@@ -24,38 +26,43 @@ const dateLabel = new Intl.DateTimeFormat("en-US", {
 })
 
 /**
- * Both teams' TSI rating after each daily run. Home is solid, away dashed (identity is
- * never color alone); if the two team colors look alike, away falls back to neutral.
+ * TSI rating after each daily run for one or two teams. The first series is solid, the
+ * second dashed (identity is never color alone); if the two team colors look alike, the
+ * second falls back to neutral. The last run of each day stands for that day.
  */
-export function RatingTrendChart({ home, away }: { home: Series; away: Series }) {
+export function RatingTrendChart({ series }: { series: TrendSeries[] }) {
   const theme = useChartTheme()
-  const byDay = new Map<string, { day: string; home?: number; away?: number }>()
-  for (const [key, s] of [
-    ["home", home],
-    ["away", away],
-  ] as const) {
+  const byDay = new Map<string, Row>()
+  series.forEach((s, i) => {
     for (const p of s.history) {
       const day = dateLabel.format(new Date(p.as_of))
-      byDay.set(day, { ...(byDay.get(day) ?? { day }), [key]: p.rating })
+      byDay.set(day, { ...(byDay.get(day) ?? { day }), [`s${i}`]: p.rating })
     }
-  }
+  })
   const data = [...byDay.values()]
   if (data.length === 0) return null
 
-  const colors = theme && seriesColors(home.team, away.team, theme)
-  const name = (t: TeamRef) => t.abbreviation ?? t.school
+  const axis = ratingAxis(series.flatMap((s) => s.history.map((p) => p.rating)))
+  const colors = theme && seriesColors(series, theme)
+  const short = (t: TeamRef) => t.abbreviation ?? t.school
 
   return (
     <figure className="space-y-2">
       <figcaption className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-muted-foreground">
         <span>TSI rating after each daily update (points vs. an average FBS team).</span>
-        {colors && (
+        {colors && series.length > 1 && (
           <span className="flex gap-4" aria-hidden>
-            <Key color={colors.away} dashed label={away.team.school} />
-            <Key color={colors.home} label={home.team.school} />
+            {series.map((s, i) => (
+              <Key key={s.team.slug} color={colors[i]} dashed={i > 0} label={s.team.school} />
+            ))}
           </span>
         )}
       </figcaption>
+      {data.length === 1 && (
+        <p className="text-sm text-muted-foreground">
+          One daily update so far; the line fills in as the nightly runs add points.
+        </p>
+      )}
       <div className="h-56 w-full">
         {theme && colors && (
           <ResponsiveContainer width="100%" height="100%">
@@ -67,26 +74,22 @@ export function RatingTrendChart({ home, away }: { home: Series; away: Series })
                 tick={{ fill: theme.muted, fontSize: 12 }}
                 stroke={theme.grid}
                 tickFormatter={(v: number) => signed(v, 0)}
-                domain={["auto", "auto"]}
+                domain={[axis.ticks[0], axis.ticks[axis.ticks.length - 1]]}
+                ticks={axis.ticks}
               />
-              {(["away", "home"] as const).map((key) => (
+              {series.map((s, i) => (
                 <Line
-                  key={key}
-                  dataKey={key}
-                  name={key === "home" ? home.team.school : away.team.school}
-                  stroke={colors[key]}
+                  key={s.team.slug}
+                  dataKey={`s${i}`}
+                  name={s.team.school}
+                  stroke={colors[i]}
                   strokeWidth={2}
-                  strokeDasharray={key === "away" ? "6 4" : undefined}
-                  dot={false}
-                  activeDot={{ r: 4, stroke: theme.surface, strokeWidth: 2, fill: colors[key] }}
+                  strokeDasharray={i > 0 ? "6 4" : undefined}
+                  dot={data.length === 1}
+                  activeDot={{ r: 4, stroke: theme.surface, strokeWidth: 2, fill: colors[i] }}
                   isAnimationActive={false}
                   connectNulls
-                  label={endLabel(
-                    data.length,
-                    key === "home" ? name(home.team) : name(away.team),
-                    theme,
-                    colors[key],
-                  )}
+                  label={endLabel(data.length, short(s.team), theme, colors[i])}
                 />
               ))}
               <Tooltip
@@ -118,10 +121,23 @@ export function RatingTrendChart({ home, away }: { home: Series; away: Series })
   )
 }
 
-function seriesColors(home: TeamRef, away: TeamRef, theme: ChartTheme) {
-  const h = teamColor(home, theme.mode)
-  const a = teamColor(away, theme.mode)
-  return { home: h, away: separation(h, a) < 15 ? theme.muted : a }
+/**
+ * Even y ticks (every 2, 5 or 10 points) with at least 2 points of padding, so
+ * day-to-day noise doesn't fill the chart.
+ */
+function ratingAxis(values: number[]): { ticks: number[] } {
+  const lo = Math.min(...values) - 2
+  const hi = Math.max(...values) + 2
+  const step = hi - lo <= 10 ? 2 : hi - lo <= 25 ? 5 : 10
+  const ticks: number[] = []
+  for (let t = step * Math.floor(lo / step); t < hi + step; t += step) ticks.push(t)
+  return { ticks }
+}
+
+function seriesColors(series: TrendSeries[], theme: ChartTheme): string[] {
+  const colors = series.map((s) => teamColor(s.team, theme.mode))
+  if (colors.length > 1 && separation(colors[0], colors[1]) < 15) colors[1] = theme.muted
+  return colors
 }
 
 /** Direct label at the last point: a dot plus the team's short name in text color. */

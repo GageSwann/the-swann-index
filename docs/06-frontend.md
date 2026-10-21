@@ -65,6 +65,7 @@
 - **Schedule table:** each game with opponent, TSI win prob (pre-game for played games, current for upcoming), result, spread result.
 - **Projected record** (later): win distribution histogram, conference title %, CFP %.
 - If manually adjusted (later): badge + reason.
+- **Built (decision #73):** the current Top 25 is prerendered and every other team renders on first visit (`<Suspense>`; unknown slug → not found). Header: a solid team-color band (flat per #69, instead of a gradient), logo, mascot, conference, record, Power/Résumé rank, rating, predictive rating (rank), SOS. Profile: power/résumé/offense/defense rank bars among rated FBS teams (ranks from `/rankings`). Rating trend: the shared `components/charts/rating-trend-chart.tsx` (one or two teams; y ticks every 2/5/10 points with ≥ 2 points of padding). Schedule: date, opponent (with Top-25 rank and site), result or projected score (links to the game center), TSI line and win chance from the team's side: the published snapshot when there is one, else the API's `/matchup` with today's ratings, marked * "if played today". Non-FBS teams show their schedule with "no rating". Not yet: preseason prior as the trend's starting point (live history starts Oct 19, 2026), percentiles for EPA/success/explosiveness, spread result per game (needs market lines in the team endpoint), projected record.
 
 ### TSI Book `/book`
 - KPI tiles: record (ATS / O/U / ML), units, ROI, avg CLV.

@@ -7,7 +7,7 @@ import { GameHeader } from "@/components/game/game-header"
 import { MarginChart } from "@/components/game/margin-chart"
 import { OddsBoard } from "@/components/game/odds-board"
 import { PredictionHistory } from "@/components/game/prediction-history"
-import { RatingTrendChart } from "@/components/game/rating-trend-chart"
+import { RatingTrendChart } from "@/components/charts/rating-trend-chart"
 import { TaleOfTape } from "@/components/game/tale-of-tape"
 import { PickBadge } from "@/components/board/pick-badge"
 import { PageHeading } from "@/components/layout/page-heading"
@@ -95,8 +95,10 @@ async function GameCenterView({ params }: Props) {
               Rating trends
             </h2>
             <RatingTrendChart
-              home={{ team: game.home, history: home.history }}
-              away={{ team: game.away, history: away.history }}
+              series={[
+                { team: game.home, history: home.history },
+                { team: game.away, history: away.history },
+              ]}
             />
           </section>
         </>

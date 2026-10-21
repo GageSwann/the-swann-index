@@ -87,7 +87,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Rankings page (Power/Résumé, Top 25/all, conference filter, sortable table, Δ vs. yesterday, off/def ranks; #70)
 - [x] Matchup board (`/week` → current week; cards, filters, sort, TSI vs. Vegas, plays, finals; #71)
 - [x] Game center (header, plays, odds board, margin chart, alt ladders, tale of the tape, rating trends, prediction history; #72)
-- [ ] Team page
+- [x] Team page (header, rank profile, rating trend, schedule with published or "if played today" odds; #73)
 - [ ] Responsive pass on phone widths
 
 **Done when:** all four core pages work against the local API with real 2026 data.

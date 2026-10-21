@@ -38,3 +38,15 @@ export function formatKickoff(iso: string | null, tbd: boolean): string {
   if (iso === null || tbd) return "Time TBA"
   return `${kickoffFormat.format(new Date(iso))} ET`
 }
+
+const shortDayFormat = new Intl.DateTimeFormat("en-US", {
+  timeZone: ZONE,
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+})
+
+/** "Sat, Sep 5" (schedule rows). */
+export function formatShortDay(iso: string): string {
+  return shortDayFormat.format(new Date(iso))
+}
