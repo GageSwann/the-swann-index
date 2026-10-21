@@ -3,3 +3,4 @@ node_modules
 package-lock.json
 next-env.d.ts
 AGENTS.md
+lib/api/schema.d.ts

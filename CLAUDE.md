@@ -73,6 +73,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
 - **Alembic** autogenerate misses primary-key changes; hand-write those. Pass the short constraint name (e.g. `"basis"`), never the full `ck_table_name`.
 - **API changes:** run `tsi openapi` and commit `docs/api/openapi.json` (else `tests/api/test_openapi.py` fails), then `npm run api:types` in `web/` and commit `lib/api/schema.d.ts` (else `npm run check` fails). Response shapes are the dataclasses in `services/read/`; the web imports them via `lib/api/types.ts`.
+- **Web checks:** run `npm run check` on its own and confirm exit 0 before committing (don't pipe it). Generated `lib/api/schema.d.ts` is Prettier-ignored (formatting it breaks `api:check`). After deleting a route, clear `web/.next` (stale `.next/dev/types` break `tsc`).
 - **Web data access:** only through `web/lib/api/queries.ts` (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).
 - **Model changes:** rerun `tsi backtest run` (+ `tsi backtest book` for Book changes), then `tsi model fit`, and commit the new artifact. The artifact is written with LF, so an unchanged refit leaves git clean.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
