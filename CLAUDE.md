@@ -5,7 +5,7 @@ Personal college football rating model + prediction engine + public read-only da
 ## Status
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`.
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
-- **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run. **Phase 4 in progress:** all v1 endpoints built (`api/`, read models in `services/read/`, `tsi serve`). CORS, cache headers, ETag/304 and gzip done. Next: API tests against a seeded test DB. Week 8 review once graded (Oct 26).
+- **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run. **Phase 4 in progress:** all v1 endpoints built (`api/`, read models in `services/read/`, `tsi serve`). CORS, cache headers, ETag/304, gzip and seeded-DB API tests done. Next: export the OpenAPI spec. Week 8 review once graded (Oct 26).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -67,7 +67,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Upserts:** always go through `db/upsert.py`. Never send the same primary key twice in one batch; de-duplicate first.
 - **Neon latency** is ~43ms per round trip. Performance means fewer round trips, not faster Python. The nightly `tsi run` takes ~35 s in Actions; backtests ~5 s.
 - **numpy threads:** `tsi/__init__.py` caps BLAS at 1 thread (multithreading made our small solves ~40× slower). Scratch scripts must `import tsi` before numpy.
-- **DB tests** build the schema from the ORM, so the immutability trigger is loaded from the initial migration file (`tests/db_integration/conftest.py`). Shared test builders live in `tests/factories.py`.
+- **DB tests** build the schema from the ORM, so the immutability trigger is loaded from the initial migration file (`tests/db_integration/conftest.py`). Shared test builders live in `tests/factories.py`. **API tests** seed a tiny 2026 season (`tests/db_integration/api_seed.py`) and override `get_session` + `get_now` (clock pinned) on `create_app(...)`; the test client needs the `httpx2` dev dependency (Starlette 1.9).
 - **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
 - **Alembic** autogenerate misses primary-key changes; hand-write those. Pass the short constraint name (e.g. `"basis"`), never the full `ck_table_name`.
 - **Model changes:** rerun `tsi backtest run` (+ `tsi backtest book` for Book changes), then `tsi model fit`, and commit the new artifact. The artifact is written with LF, so an unchanged refit leaves git clean.

@@ -74,7 +74,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 ## Phase 4: API
 - [x] FastAPI app, routers, schemas for all v1 endpoints (doc 02; read models in `services/read/`, `tsi serve`; #60)
 - [x] CORS for the web origin; response caching headers (+ ETag/304, gzip; `api/caching.py`; #61)
-- [ ] API tests against a seeded test DB
+- [x] API tests against a seeded test DB (`tests/db_integration/test_api.py` + `api_seed.py`; #62)
 - [ ] Export OpenAPI spec
 
 **Done when:** every endpoint returns real data locally and tests pass.
