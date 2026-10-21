@@ -8,6 +8,12 @@
 - Every number links to where it came from (e.g. a rating links to the team page, a line to the game center).
 - Footer on every page: "Model updated {time} · TSI {version}".
 
+### Design system (decision #69)
+- **Palette, a stadium at night** (`web/app/globals.css`): Night `#0E1923` background, Sideline `#162532` panels, Hashmark `#2A3C4B` lines, Chalk `#E6EDF2` text, **Scoreboard amber `#F2B33D`** as the single brand accent (header rule, active nav, key numbers). Up `#3CC2A9` / Down `#F07A6A` for movement and edges. Light "press box" theme: `#F2F5F7` / ink `#13212C`, amber deepened to `#9A6400` for contrast. Team colors are the other source of color.
+- **Type:** one family, Archivo (variable, width axis): condensed widths (`font-stretch-condensed`) for page titles, team names and big numerals; normal width for reading; tabular figures everywhere. No monospace data labels, no all-caps eyebrows.
+- **Layout:** the "score bug" header (amber TSI block, wordmark, week context, nav, theme toggle, 2 px amber rule) is the one bold element; content left-aligned, max ~1150 px; flat panels with 1 px rules and a 4 px radius, no shadows or gradient washes. On phones the nav becomes its own scrollable row (no hamburger).
+- **Shell:** `components/layout/` (`SiteHeader`, `MainNav`, `ThemeToggle`, `ThemeProvider`, `PageHeading`, `UpdatedFooter`); times in US Eastern, formatted on the server (`lib/format/time.ts`); skip link, visible focus rings, reduced motion respected. Header/footer degrade to a plain message if the API is down.
+
 ## Routes
 
 | Route | Page |
