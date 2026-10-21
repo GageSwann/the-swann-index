@@ -31,12 +31,13 @@ export async function SiteHeader() {
             The Swann Index
           </span>
         </Link>
+        {/* Hidden on phones so the theme toggle shares the first row; every page states the week. */}
         {context && (
-          <span className="text-sm text-muted-foreground font-stretch-semi-condensed">
+          <span className="hidden text-sm text-muted-foreground font-stretch-semi-condensed sm:inline">
             {context}
           </span>
         )}
-        <div className="order-last flex w-full items-center sm:order-none sm:ml-auto sm:w-auto">
+        <div className="order-last flex w-full items-center sm:order-0 sm:ml-auto sm:w-auto">
           <MainNav />
         </div>
         <div className="ml-auto sm:ml-0">

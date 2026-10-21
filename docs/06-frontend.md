@@ -5,6 +5,7 @@
 - **Team colors** are used as accents (card edges, chart lines, header gradients) and are always checked for contrast against the background.
 - **Data-dense but readable:** tabular numbers (`font-variant-numeric: tabular-nums`), clear hierarchy, no clutter.
 - **Mobile-first:** board and rankings must work on a phone (cards collapse, tables scroll horizontally inside their container only).
+- **Phone pass (decision #74):** checked at 360 and 390 px. The page itself never scrolls sideways. Wide tables either get a phone layout (odds board: one block per market; team schedule: two-line rows) or pin their identity columns while the stats scroll (rankings: Rank + Team pinned below `sm`, Δ moved next to Team). Tap targets are at least 24 px (sort headers, filter labels and game-center links are 32 px tall). The header drops the week label on phones so the theme toggle shares the first row.
 - Every number links to where it came from (e.g. a rating links to the team page, a line to the game center).
 - Footer on every page: "Model updated {time} · TSI {version}".
 

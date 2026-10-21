@@ -34,8 +34,16 @@ const columns = col.columns([
     header: "Rank",
     ...numeric,
     cell: ({ row }) => (
-      <span className="flex items-baseline gap-1.5">
-        <span className="text-lg font-bold font-stretch-condensed">{row.original.rank}</span>
+      <span className="text-lg font-bold font-stretch-condensed">{row.original.rank}</span>
+    ),
+  }),
+  col.accessor((t) => t.team.school, {
+    id: "team",
+    header: "Team",
+    sortFn: "alphanumeric",
+    cell: ({ row }) => (
+      <span className="flex min-w-0 items-baseline gap-1.5">
+        <TeamLink team={row.original.team} />
         {row.original.provisional && (
           <span className="text-xs text-muted-foreground" title="Fewer than 4 games played">
             provisional
@@ -52,12 +60,6 @@ const columns = col.columns([
     cell: ({ row }) => (
       <RankChange rank={row.original.rank} previous={row.original.previous_rank} />
     ),
-  }),
-  col.accessor((t) => t.team.school, {
-    id: "team",
-    header: "Team",
-    sortFn: "alphanumeric",
-    cell: ({ row }) => <TeamLink team={row.original.team} />,
   }),
   col.accessor((t) => (t.wins + t.ties / 2) / Math.max(1, t.wins + t.losses + t.ties), {
     id: "record",
@@ -114,6 +116,12 @@ const HEADER_HELP: Record<string, string> = {
   sor: "Chance a typical #12 team would match this record against this schedule (lower is more impressive)",
 }
 
+// Rank and team stay put while the stat columns scroll under them on narrow screens.
+const PINNED: Record<string, string> = {
+  rank: "max-sm:sticky max-sm:left-0 w-19 min-w-19",
+  team: "max-sm:sticky max-sm:left-19 max-sm:max-w-44 max-sm:shadow-[inset_-1px_0_0_var(--border)]",
+}
+
 export function RankingsTable({ teams }: { teams: RankedTeam[] }) {
   const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([{ id: "rank", desc: false }])
@@ -127,7 +135,7 @@ export function RankingsTable({ teams }: { teams: RankedTeam[] }) {
 
   return (
     <div className="max-h-[75vh] overflow-auto rounded-md border border-border">
-      <table className="w-full min-w-[720px] border-collapse text-sm">
+      <table className="w-full min-w-180 border-collapse text-sm">
         <thead className="sticky top-0 z-10 bg-card">
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id} className="border-b border-border">
@@ -142,14 +150,19 @@ export function RankingsTable({ teams }: { teams: RankedTeam[] }) {
                       sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : undefined
                     }
                     className={cn(
-                      "px-3 py-2.5 text-left font-medium text-muted-foreground",
+                      "bg-card px-3 py-1.5 text-left font-medium text-muted-foreground",
                       header.id === "team" ? "w-full" : "whitespace-nowrap",
+                      PINNED[header.id],
+                      PINNED[header.id] && "max-sm:z-20",
                     )}
                   >
                     <button
                       type="button"
                       onClick={header.column.getToggleSortingHandler()}
-                      className={cn("inline-flex items-center gap-1", sorted && "text-foreground")}
+                      className={cn(
+                        "inline-flex min-h-8 min-w-6 items-center gap-1",
+                        sorted && "text-foreground",
+                      )}
                     >
                       <table.FlexRender header={header} />
                       <span aria-hidden className="text-xs">
@@ -171,10 +184,18 @@ export function RankingsTable({ teams }: { teams: RankedTeam[] }) {
                   router.push(`/teams/${row.original.team.slug}`)
                 }
               }}
-              className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/60"
+              className="group cursor-pointer border-b border-border last:border-0"
             >
               {row.getAllCells().map((cell) => (
-                <td key={cell.id} className="px-3 py-2 whitespace-nowrap">
+                <td
+                  key={cell.id}
+                  className={cn(
+                    // Opaque backgrounds so pinned cells cover the columns scrolling under them.
+                    "bg-background px-3 py-2 whitespace-nowrap group-hover:bg-muted",
+                    PINNED[cell.column.id],
+                    PINNED[cell.column.id] && "max-sm:z-1",
+                  )}
+                >
                   <table.FlexRender cell={cell} />
                 </td>
               ))}

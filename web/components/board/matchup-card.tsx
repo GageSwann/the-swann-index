@@ -100,7 +100,7 @@ export function MatchupCard({ game, ranks }: Props) {
 
       <Link
         href={`/games/${game.id}`}
-        className="mt-auto self-start text-sm text-primary underline-offset-4 hover:underline"
+        className="mt-auto inline-flex min-h-8 items-center self-start text-sm text-primary underline-offset-4 hover:underline"
       >
         Game center
       </Link>
