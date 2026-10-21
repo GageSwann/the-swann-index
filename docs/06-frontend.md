@@ -72,6 +72,7 @@
 - KPI tiles: record (ATS / O/U / ML), units, ROI, avg CLV.
 - Cumulative units line chart; record by ★ tier.
 - Pick history table with filters (season, market, tier, result).
+- **Built (decision #75):** season record panel (W-L-P, units flat + ¼ Kelly, ROI, CLV with beat-the-close share, one line per market), units-over-time chart (flat solid amber, ¼ Kelly dashed), record by market then ★ tier, pick history (market / tier / result filters; table from `sm`, stacked rows on phones; open → locked → graded status), and a short "how the Book picks" list. Before any pick is graded it shows "No graded picks yet" and the open picks. No season filter yet (2026 is the only live season); the backtest Book record belongs on the Model page.
 
 ### Model `/model`
 - Plain-English methodology (based on docs 04/05), with formulas.

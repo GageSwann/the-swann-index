@@ -88,15 +88,17 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Matchup board (`/week` → current week; cards, filters, sort, TSI vs. Vegas, plays, finals; #71)
 - [x] Game center (header, plays, odds board, margin chart, alt ladders, tale of the tape, rating trends, prediction history; #72)
 - [x] Team page (header, rank profile, rating trend, schedule with published or "if played today" odds; #73)
+- [x] TSI Book page (season record, units chart, record by market + tier, filterable pick history, how it works; #75)
+- [ ] Model page
 - [x] Responsive pass on phone widths (360/390 px audit: no page overflow, phone layouts for odds board + schedule, pinned rankings columns, ≥ 24 px targets; #74)
 
-**Done when:** all four core pages work against the local API with real 2026 data.
+**Done when:** all core pages (rankings, board, game, team, Book, Model) work against the local API with real 2026 data.
 
 ## Phase 6: Deploy & automation (go live)
 - [ ] Deploy API (Render/Fly) against Neon `production`
 - [ ] Deploy web to Vercel; env vars set
 - [ ] `/api/revalidate` route with secret token
-- [ ] GitHub Actions: Sunday ratings run, Tue/Thu lines + predictions, CI (ruff, pytest, lint, typecheck, build)
+- [ ] GitHub Actions: keep the nightly `tsi run` (10:00 UTC) and revalidate the site after each run; CI (ruff, pytest, lint, typecheck, build) (#75)
 - [ ] Failure alerting (workflow failure email is fine)
 - [ ] `security-review` pass; confirm no secrets in repo history; all secrets set in GH/Vercel/API host
 - [ ] Project skill `tsi-weekly-run` (via `skill-creator`) documenting the operator runbook
