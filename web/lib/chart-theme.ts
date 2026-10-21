@@ -38,3 +38,8 @@ export function useChartTheme(): ChartTheme | null {
   const mode = resolvedTheme === "light" ? "light" : "dark"
   return { ...TOKENS[mode], mode }
 }
+
+/** Axis styling shared by every chart: muted 12 px ticks on a grid-colored axis line. */
+export function axisStyle(theme: ChartTheme) {
+  return { tick: { fill: theme.muted, fontSize: 12 }, stroke: theme.grid }
+}

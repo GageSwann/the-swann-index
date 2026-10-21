@@ -12,7 +12,8 @@ import {
 } from "recharts"
 
 import type { TeamRef, TwoWay } from "@/lib/api/types"
-import { useChartTheme } from "@/lib/chart-theme"
+import { TooltipBox } from "@/components/charts/chart-parts"
+import { axisStyle, useChartTheme } from "@/lib/chart-theme"
 import { percent } from "@/lib/format/numbers"
 import { teamSpread } from "@/lib/format/odds"
 
@@ -63,8 +64,7 @@ export function MarginChart({ home, away, margin, sigma, marketSpread, ladder }:
                 ticks={ticks}
                 interval="equidistantPreserveStart"
                 minTickGap={12}
-                tick={{ fill: theme.muted, fontSize: 12 }}
-                stroke={theme.grid}
+                {...axisStyle(theme)}
                 tickFormatter={(v: number) =>
                   v === 0 ? "0" : v > 0 ? `${homeName} +${v}` : `${awayName} +${-v}`
                 }
@@ -125,7 +125,7 @@ function MarginTip({
   const rung = ladder.find((r) => r.line === -x)
   const outcome = x === 0 ? "Tie" : x > 0 ? `${homeName} by ${x}` : `${awayName} by ${-x}`
   return (
-    <div className="rounded-md border border-border bg-popover px-3 py-2 text-sm shadow-sm">
+    <TooltipBox>
       <p className="text-muted-foreground">{outcome}</p>
       {rung && (
         <p>
@@ -135,6 +135,6 @@ function MarginTip({
           </span>
         </p>
       )}
-    </div>
+    </TooltipBox>
   )
 }

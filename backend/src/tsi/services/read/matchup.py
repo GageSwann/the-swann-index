@@ -2,12 +2,14 @@
 
 Same path as the published board (services/predict.py) with today's live inputs.
 Loading those takes ~1 s of queries, and the data changes once a day, so they are
-cached in-process for an hour (one entry per season).
+cached in-process for an hour (one entry per season). Loads are single-flight: on a cold
+cache one request loads while concurrent ones wait, before touching the database, so a
+burst of requests (e.g. a site build) can't exhaust the connection pool.
 """
 
 import threading
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from functools import lru_cache
 
 from sqlalchemy.orm import Session
@@ -22,7 +24,8 @@ from tsi.services.predict import forecast_game
 
 CACHE_TTL = timedelta(hours=1)
 _cache: dict[int, tuple[datetime, LiveInputs]] = {}
-_lock = threading.Lock()
+_lock = threading.Lock()  # guards _cache
+_load_lock = threading.Lock()  # one loader at a time
 
 
 @dataclass(frozen=True)
@@ -45,13 +48,14 @@ class UnknownTeamError(LookupError):
 
 def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime) -> Matchup:
     season = current_season(now)
+    artifact = _artifact()
+    live = _live_inputs(session, season, now, artifact)  # first: waiters hold no connection
     ids = team_ids_by_slug(session, (home, away))
     missing = [slug for slug in (home, away) if slug not in ids]
     if missing:
         raise UnknownTeamError(", ".join(missing))
     refs = team_refs(session, season, ids.values())
     h, a = refs[ids[home]], refs[ids[away]]
-    artifact = _artifact()
     game = UpcomingGame(
         id=0,
         season=season,
@@ -64,7 +68,6 @@ def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime
         away_div=a.division or "unknown",
         neutral=neutral,
     )
-    live = _live_inputs(session, season, now, artifact)
     dist = forecast_game(game, live, artifact).distribution
     return Matchup(
         home=h,
@@ -88,11 +91,18 @@ def _artifact() -> ModelArtifact:
 def _live_inputs(
     session: Session, season: int, now: datetime, artifact: ModelArtifact
 ) -> LiveInputs:
+    if (hit := _cached(season, now)) is not None:
+        return hit
+    with _load_lock:
+        if (hit := _cached(season, now)) is not None:  # loaded while this request waited
+            return hit
+        live = load_live_inputs(session, season, now, artifact)
+        with _lock:
+            _cache[season] = (now, live)  # same clock as the freshness check
+        return live
+
+
+def _cached(season: int, now: datetime) -> LiveInputs | None:
     with _lock:
         hit = _cache.get(season)
-        if hit and now - hit[0] < CACHE_TTL:
-            return hit[1]
-    live = load_live_inputs(session, season, now, artifact)
-    with _lock:
-        _cache[season] = (datetime.now(UTC), live)
-    return live
+    return hit[1] if hit and now - hit[0] < CACHE_TTL else None

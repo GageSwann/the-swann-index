@@ -3,7 +3,6 @@
 export const ALL = "tsi"
 export const META = "meta"
 export const RANKINGS = "rankings"
-export const TEAMS = "teams"
 export const LEDGER = "ledger"
 export const REPORT = "report"
 

@@ -6,7 +6,7 @@ from typing import Literal
 
 from sqlalchemy.orm import Session
 
-from tsi.db.queries.runs import latest_rating_run
+from tsi.db.queries.runs import run_and_previous
 from tsi.db.queries.team_info import (
     Record,
     StoredRating,
@@ -60,10 +60,9 @@ def rankings(
     week: int | None = None,
     season_type: str | None = None,
 ) -> Rankings | None:
-    run = latest_rating_run(session, season, week, season_type)
+    run, previous = run_and_previous(session, season, week, season_type)
     if run is None:
         return None
-    previous = latest_rating_run(session, season, before=run.run_at)
     stored = stored_ratings(session, [run.id] + ([previous.id] if previous else []))
     rows = stored.get(run.id, [])
     season_rows = [r for r in rows if r.basis == "season"]

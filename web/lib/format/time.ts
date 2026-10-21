@@ -50,3 +50,26 @@ const shortDayFormat = new Intl.DateTimeFormat("en-US", {
 export function formatShortDay(iso: string): string {
   return shortDayFormat.format(new Date(iso))
 }
+
+const monthDayFormat = new Intl.DateTimeFormat("en-US", {
+  timeZone: ZONE,
+  month: "short",
+  day: "numeric",
+})
+
+/** "Oct 20" (chart axes), in US Eastern like every other time on the site. */
+export function formatMonthDay(iso: string): string {
+  return monthDayFormat.format(new Date(iso))
+}
+
+const calendarDateFormat = new Intl.DateTimeFormat("en-US", {
+  timeZone: "UTC",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+})
+
+/** "Oct 11, 2026" for a calendar date ("2026-10-11"); no time zone shift. */
+export function formatCalendarDate(isoDate: string): string {
+  return calendarDateFormat.format(new Date(isoDate))
+}

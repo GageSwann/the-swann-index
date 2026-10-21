@@ -12,8 +12,8 @@ from tsi.db.queries.team_info import (
     Record,
     StoredRating,
     TeamRef,
-    records,
     stored_ratings,
+    tally_records,
     team_id_by_slug,
     team_refs,
 )
@@ -92,7 +92,13 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     runs = rating_runs(session, season)
     history_rows = stored_ratings(session, [r.id for r in runs], team_id)
     latest = runs[-1] if runs else None
-    rec = records(session, season, now).get(team_id, Record())
+    # Same rule as `records()`: completed, scored and kicked off before now.
+    finished = [
+        (g.home_id, g.away_id, g.home_points, g.away_points)
+        for g in games
+        if g.completed and g.home_points is not None and g.start_time and g.start_time < now
+    ]
+    rec = tally_records(finished).get(team_id, Record())
     snaps = snapshots_for_games(session, [g.id for g in games])
     return TeamProfile(
         team=refs[team_id],

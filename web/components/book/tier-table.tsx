@@ -4,6 +4,7 @@ import type { LedgerRecord } from "@/lib/api/types"
 import { percent, record, signed } from "@/lib/format/numbers"
 import { MARKET_LABEL, units } from "@/lib/format/picks"
 import { cn } from "@/lib/utils"
+import { HeadCell } from "@/components/ui/head-cell"
 
 /** Graded record per market, then per ★ tier within it (bigger edges should do better). */
 export function TierTable({ records }: { records: LedgerRecord[] }) {
@@ -15,28 +16,23 @@ export function TierTable({ records }: { records: LedgerRecord[] }) {
       <table className="w-full text-sm">
         <thead className="bg-card text-muted-foreground">
           <tr className="border-b border-border">
-            <th scope="col" className="px-2 py-2 text-left font-medium sm:px-3">
-              Market
-            </th>
-            <th scope="col" className="px-2 py-2 text-right font-medium sm:px-3">
+            <HeadCell className="px-2 sm:px-3">Market</HeadCell>
+            <HeadCell align="right" className="px-2 sm:px-3">
               Record
-            </th>
-            <th scope="col" className="px-2 py-2 text-right font-medium sm:px-3">
+            </HeadCell>
+            <HeadCell align="right" className="px-2 sm:px-3">
               Units
-            </th>
-            <th
-              scope="col"
-              className="hidden px-2 py-2 text-right font-medium sm:table-cell sm:px-3"
-            >
+            </HeadCell>
+            <HeadCell align="right" className="hidden px-2 sm:table-cell sm:px-3">
               ROI
-            </th>
-            <th
-              scope="col"
-              className="px-2 py-2 text-right font-medium sm:px-3"
+            </HeadCell>
+            <HeadCell
+              align="right"
               title="Average closing-line value; share that beat the close"
+              className="px-2 sm:px-3"
             >
               CLV
-            </th>
+            </HeadCell>
           </tr>
         </thead>
         <tbody>

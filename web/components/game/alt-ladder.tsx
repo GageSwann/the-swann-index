@@ -2,6 +2,7 @@ import type { GameCenter, TwoWay } from "@/lib/api/types"
 import { percent } from "@/lib/format/numbers"
 import { american, teamSpread, totalLine } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
+import { HeadCell } from "@/components/ui/head-cell"
 
 /** TSI's chance at every number around the line: spreads (home view) and totals. */
 export function AltLadder({ center }: { center: GameCenter }) {
@@ -64,18 +65,10 @@ function Ladder({
         <caption className="sr-only">{caption}</caption>
         <thead className="sticky top-0 bg-card text-muted-foreground">
           <tr className="border-b border-border">
-            <th scope="col" className="px-3 py-2 text-left font-medium">
-              {caption}
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              {probLabel}
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              Fair
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              TSI Book
-            </th>
+            <HeadCell>{caption}</HeadCell>
+            <HeadCell align="right">{probLabel}</HeadCell>
+            <HeadCell align="right">Fair</HeadCell>
+            <HeadCell align="right">TSI Book</HeadCell>
           </tr>
         </thead>
         <tbody>

@@ -14,6 +14,7 @@ from typing import Any
 from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import ModelRun, Pick, Prediction
+from tsi.db.queries.calendar import calendar_week
 from tsi.db.queries.predictions import (
     FINGERPRINT,
     PickKey,
@@ -24,7 +25,6 @@ from tsi.db.queries.predictions import (
 from tsi.model.artifact import ModelArtifact
 from tsi.services.backtest_store import current_git_sha
 from tsi.services.board import BoardGame
-from tsi.services.rate_store import calendar_week
 
 
 @dataclass(frozen=True)

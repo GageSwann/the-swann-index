@@ -11,19 +11,18 @@ import {
 } from "recharts"
 
 import type { RatingPoint, TeamRef } from "@/lib/api/types"
-import { type ChartTheme, useChartTheme } from "@/lib/chart-theme"
+import { axisStyle, type ChartTheme, useChartTheme } from "@/lib/chart-theme"
 import { separation, teamColor } from "@/lib/format/color"
 import { signed } from "@/lib/format/numbers"
+import { formatMonthDay } from "@/lib/format/time"
 
-export type TrendSeries = { team: TeamRef; history: RatingPoint[] }
+import { ChartCaption, seriesTooltip } from "./chart-parts"
 
+type TrendSeries = { team: TeamRef; history: RatingPoint[] }
 type Row = { day: string } & Record<string, number | string>
 
-const dateLabel = new Intl.DateTimeFormat("en-US", {
-  timeZone: "America/New_York",
-  month: "short",
-  day: "numeric",
-})
+const DASHES = [undefined, "6 4"]
+const tooltip = seriesTooltip((v) => signed(v))
 
 /**
  * TSI rating after each daily run for one or two teams. The first series is solid, the
@@ -35,29 +34,27 @@ export function RatingTrendChart({ series }: { series: TrendSeries[] }) {
   const byDay = new Map<string, Row>()
   series.forEach((s, i) => {
     for (const p of s.history) {
-      const day = dateLabel.format(new Date(p.as_of))
+      const day = formatMonthDay(p.as_of)
       byDay.set(day, { ...(byDay.get(day) ?? { day }), [`s${i}`]: p.rating })
     }
   })
   const data = [...byDay.values()]
   if (data.length === 0) return null
 
-  const axis = ratingAxis(series.flatMap((s) => s.history.map((p) => p.rating)))
+  const ticks = ratingTicks(series.flatMap((s) => s.history.map((p) => p.rating)))
   const colors = theme && seriesColors(series, theme)
-  const short = (t: TeamRef) => t.abbreviation ?? t.school
 
   return (
     <figure className="space-y-2">
-      <figcaption className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-muted-foreground">
-        <span>TSI rating after each daily update (points vs. an average FBS team).</span>
-        {colors && series.length > 1 && (
-          <span className="flex gap-4" aria-hidden>
-            {series.map((s, i) => (
-              <Key key={s.team.slug} color={colors[i]} dashed={i > 0} label={s.team.school} />
-            ))}
-          </span>
-        )}
-      </figcaption>
+      <ChartCaption
+        legend={colors?.map((color, i) => ({
+          label: series[i].team.school,
+          color,
+          dash: DASHES[i],
+        }))}
+      >
+        TSI rating after each daily update (points vs. an average FBS team).
+      </ChartCaption>
       {data.length === 1 && (
         <p className="text-sm text-muted-foreground">
           One daily update so far; the line fills in as the nightly runs add points.
@@ -68,14 +65,13 @@ export function RatingTrendChart({ series }: { series: TrendSeries[] }) {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 56, bottom: 4, left: 0 }}>
               <CartesianGrid vertical={false} stroke={theme.grid} strokeWidth={1} />
-              <XAxis dataKey="day" tick={{ fill: theme.muted, fontSize: 12 }} stroke={theme.grid} />
+              <XAxis dataKey="day" {...axisStyle(theme)} />
               <YAxis
                 width={44}
-                tick={{ fill: theme.muted, fontSize: 12 }}
-                stroke={theme.grid}
+                {...axisStyle(theme)}
                 tickFormatter={(v: number) => signed(v, 0)}
-                domain={[axis.ticks[0], axis.ticks[axis.ticks.length - 1]]}
-                ticks={axis.ticks}
+                domain={[ticks[0], ticks[ticks.length - 1]]}
+                ticks={ticks}
               />
               {series.map((s, i) => (
                 <Line
@@ -84,35 +80,20 @@ export function RatingTrendChart({ series }: { series: TrendSeries[] }) {
                   name={s.team.school}
                   stroke={colors[i]}
                   strokeWidth={2}
-                  strokeDasharray={i > 0 ? "6 4" : undefined}
+                  strokeDasharray={DASHES[i]}
                   dot={data.length === 1}
                   activeDot={{ r: 4, stroke: theme.surface, strokeWidth: 2, fill: colors[i] }}
                   isAnimationActive={false}
                   connectNulls
-                  label={endLabel(data.length, short(s.team), theme, colors[i])}
+                  label={endLabel(
+                    data.length,
+                    s.team.abbreviation ?? s.team.school,
+                    theme,
+                    colors[i],
+                  )}
                 />
               ))}
-              <Tooltip
-                cursor={{ stroke: theme.muted, strokeWidth: 1 }}
-                content={({ active, label, payload }) =>
-                  active ? (
-                    <div className="rounded-md border border-border bg-popover px-3 py-2 text-sm shadow-sm">
-                      <p className="text-muted-foreground">{label}</p>
-                      {payload?.map((row) => (
-                        <p key={String(row.dataKey)} className="flex items-center gap-2">
-                          <span
-                            aria-hidden
-                            className="inline-block h-0.5 w-3"
-                            style={{ backgroundColor: String(row.color) }}
-                          />
-                          <span className="font-semibold">{signed(Number(row.value))}</span>
-                          <span className="text-muted-foreground">{row.name}</span>
-                        </p>
-                      ))}
-                    </div>
-                  ) : null
-                }
-              />
+              <Tooltip cursor={{ stroke: theme.muted, strokeWidth: 1 }} content={tooltip} />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -125,13 +106,13 @@ export function RatingTrendChart({ series }: { series: TrendSeries[] }) {
  * Even y ticks (every 2, 5 or 10 points) with at least 2 points of padding, so
  * day-to-day noise doesn't fill the chart.
  */
-function ratingAxis(values: number[]): { ticks: number[] } {
+function ratingTicks(values: number[]): number[] {
   const lo = Math.min(...values) - 2
   const hi = Math.max(...values) + 2
   const step = hi - lo <= 10 ? 2 : hi - lo <= 25 ? 5 : 10
   const ticks: number[] = []
   for (let t = step * Math.floor(lo / step); t < hi + step; t += step) ticks.push(t)
-  return { ticks }
+  return ticks
 }
 
 function seriesColors(series: TrendSeries[], theme: ChartTheme): string[] {
@@ -156,23 +137,4 @@ function endLabel(length: number, text: string, theme: ChartTheme, color: string
     )
   }
   return EndLabel
-}
-
-function Key({ color, label, dashed = false }: { color: string; label: string; dashed?: boolean }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <svg width="18" height="4" aria-hidden>
-        <line
-          x1="0"
-          y1="2"
-          x2="18"
-          y2="2"
-          stroke={color}
-          strokeWidth="2"
-          strokeDasharray={dashed ? "5 3" : undefined}
-        />
-      </svg>
-      {label}
-    </span>
-  )
 }

@@ -7,6 +7,7 @@ import { percent } from "@/lib/format/numbers"
 import { teamSpread } from "@/lib/format/odds"
 import { formatShortDay } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
+import { HeadCell } from "@/components/ui/head-cell"
 
 type Props = {
   schedule: ScheduleGame[]
@@ -30,21 +31,11 @@ export function ScheduleTable({ schedule, odds, ranks }: Props) {
         <table className="w-full text-sm">
           <thead className="bg-card text-muted-foreground">
             <tr className="border-b border-border">
-              <th scope="col" className="px-3 py-2 text-left font-medium">
-                Date
-              </th>
-              <th scope="col" className="px-3 py-2 text-left font-medium">
-                Opponent
-              </th>
-              <th scope="col" className="px-3 py-2 text-left font-medium">
-                Result
-              </th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">
-                TSI line
-              </th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">
-                Win chance
-              </th>
+              <HeadCell>Date</HeadCell>
+              <HeadCell>Opponent</HeadCell>
+              <HeadCell>Result</HeadCell>
+              <HeadCell align="right">TSI line</HeadCell>
+              <HeadCell align="right">Win chance</HeadCell>
             </tr>
           </thead>
           <tbody>

@@ -13,7 +13,8 @@ import {
 } from "recharts"
 
 import type { CalibrationBin } from "@/lib/api/types"
-import { useChartTheme } from "@/lib/chart-theme"
+import { TooltipBox } from "@/components/charts/chart-parts"
+import { axisStyle, useChartTheme } from "@/lib/chart-theme"
 import { percent } from "@/lib/format/numbers"
 
 const pct = (v: number) => `${Math.round(v * 100)}%`
@@ -41,8 +42,7 @@ export function CalibrationChart({ bins }: { bins: CalibrationBin[] }) {
                 domain={[0.5, 1]}
                 ticks={[0.5, 0.6, 0.7, 0.8, 0.9, 1]}
                 tickFormatter={pct}
-                tick={{ fill: theme.muted, fontSize: 12 }}
-                stroke={theme.grid}
+                {...axisStyle(theme)}
                 label={{
                   value: "Predicted",
                   position: "bottom",
@@ -57,8 +57,7 @@ export function CalibrationChart({ bins }: { bins: CalibrationBin[] }) {
                 domain={[0.5, 1]}
                 ticks={[0.5, 0.6, 0.7, 0.8, 0.9, 1]}
                 tickFormatter={pct}
-                tick={{ fill: theme.muted, fontSize: 12 }}
-                stroke={theme.grid}
+                {...axisStyle(theme)}
                 width={44}
               />
               <ZAxis type="number" dataKey="games" range={[60, 260]} />
@@ -82,7 +81,7 @@ export function CalibrationChart({ bins }: { bins: CalibrationBin[] }) {
                 content={({ active, payload }) => {
                   const b = payload?.[0]?.payload as CalibrationBin | undefined
                   return active && b ? (
-                    <div className="rounded-md border border-border bg-popover px-3 py-2 text-sm shadow-sm">
+                    <TooltipBox>
                       <p className="text-muted-foreground">
                         Favorite at {b.bin} ({b.games} games)
                       </p>
@@ -90,7 +89,7 @@ export function CalibrationChart({ bins }: { bins: CalibrationBin[] }) {
                         Predicted <span className="font-semibold">{percent(b.predicted)}</span>, won{" "}
                         <span className="font-semibold">{percent(b.observed)}</span>
                       </p>
-                    </div>
+                    </TooltipBox>
                   ) : null
                 }}
               />

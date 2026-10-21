@@ -1,6 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 /* Dark is the default theme (doc 06); next-themes puts `.dark` on <html>. */
 @custom-variant dark (&:is(.dark *));
@@ -13,26 +11,13 @@
   --color-up: var(--up);
   --color-down: var(--down);
   --color-ring: var(--ring);
-  --color-input: var(--input);
   --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --radius-sm: calc(var(--radius) * 0.5);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) * 1.5);
@@ -51,28 +36,15 @@
   --background: #f2f5f7;
   --foreground: #13212c;
   --card: #ffffff;
-  --card-foreground: #13212c;
   --popover: #ffffff;
-  --popover-foreground: #13212c;
   --primary: #9a6400;
   --primary-foreground: #ffffff;
-  --secondary: #e3e9ee;
-  --secondary-foreground: #13212c;
   --muted: #e3e9ee;
   --muted-foreground: #4e6170;
-  --accent: #e3e9ee;
-  --accent-foreground: #13212c;
-  --destructive: #c2412f;
   --border: #cfd9e1;
-  --input: #cfd9e1;
   --ring: #9a6400;
   --up: #11806b;
   --down: #c2412f;
-  --chart-1: #9a6400;
-  --chart-2: #11806b;
-  --chart-3: #2f6fa8;
-  --chart-4: #c2412f;
-  --chart-5: #4e6170;
 }
 
 /* Dark ("night game", default) */
@@ -80,28 +52,15 @@
   --background: #0e1923;
   --foreground: #e6edf2;
   --card: #162532;
-  --card-foreground: #e6edf2;
   --popover: #162532;
-  --popover-foreground: #e6edf2;
   --primary: #f2b33d;
   --primary-foreground: #0e1923;
-  --secondary: #1d2f3d;
-  --secondary-foreground: #e6edf2;
   --muted: #1d2f3d;
   --muted-foreground: #93a6b5;
-  --accent: #1d2f3d;
-  --accent-foreground: #e6edf2;
-  --destructive: #f07a6a;
   --border: #2a3c4b;
-  --input: #2a3c4b;
   --ring: #f2b33d;
   --up: #3cc2a9;
   --down: #f07a6a;
-  --chart-1: #f2b33d;
-  --chart-2: #3cc2a9;
-  --chart-3: #7fb3e0;
-  --chart-4: #f07a6a;
-  --chart-5: #93a6b5;
 }
 
 @layer base {

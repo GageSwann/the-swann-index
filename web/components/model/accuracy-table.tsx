@@ -1,6 +1,7 @@
 import type { AccuracyRow, LiveAccuracy } from "@/lib/api/types"
 import { percent } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
+import { HeadCell } from "@/components/ui/head-cell"
 
 // Secondary columns (games, Elo, Vegas winners) are hidden on phones so the comparison
 // that matters (TSI vs. the closing line) fits without scrolling.
@@ -17,35 +18,23 @@ export function AccuracyTable({ rows, live }: { rows: AccuracyRow[]; live: LiveA
       <table className="w-full text-sm">
         <thead className="bg-card text-muted-foreground">
           <tr className="border-b border-border">
-            <th scope="col" className="px-3 py-2 text-left font-medium">
-              Period
-            </th>
-            <th scope="col" className={cn(CELL, WIDE, "font-medium")}>
+            <HeadCell>Period</HeadCell>
+            <HeadCell align="right" className={WIDE}>
               Games
-            </th>
-            <th
-              scope="col"
-              className={cn(CELL, "font-medium")}
-              title="Average miss on the final margin, in points"
-            >
+            </HeadCell>
+            <HeadCell align="right" title="Average miss on the final margin, in points">
               TSI error
-            </th>
-            <th scope="col" className={cn(CELL, WIDE, "font-medium")}>
+            </HeadCell>
+            <HeadCell align="right" className={WIDE}>
               Elo error
-            </th>
-            <th scope="col" className={cn(CELL, "font-medium")}>
-              Vegas error
-            </th>
-            <th
-              scope="col"
-              className={cn(CELL, "font-medium")}
-              title="Predicted winner won (straight up)"
-            >
+            </HeadCell>
+            <HeadCell align="right">Vegas error</HeadCell>
+            <HeadCell align="right" title="Predicted winner won (straight up)">
               TSI winners
-            </th>
-            <th scope="col" className={cn(CELL, WIDE, "font-medium")}>
+            </HeadCell>
+            <HeadCell align="right" className={WIDE}>
               Vegas winners
-            </th>
+            </HeadCell>
           </tr>
         </thead>
         <tbody>

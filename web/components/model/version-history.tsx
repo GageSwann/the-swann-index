@@ -1,6 +1,7 @@
 import type { ModelVersion } from "@/lib/api/types"
 import { percent } from "@/lib/format/numbers"
 import { formatUpdated } from "@/lib/format/time"
+import { HeadCell } from "@/components/ui/head-cell"
 
 /** Each model version's latest backtest on the validation seasons, newest first. */
 export function VersionHistory({ versions }: { versions: ModelVersion[] }) {
@@ -10,21 +11,11 @@ export function VersionHistory({ versions }: { versions: ModelVersion[] }) {
       <table className="w-full text-sm">
         <thead className="bg-card text-muted-foreground">
           <tr className="border-b border-border">
-            <th scope="col" className="px-3 py-2 text-left font-medium">
-              Version
-            </th>
-            <th scope="col" className="hidden px-3 py-2 text-left font-medium sm:table-cell">
-              Backtested
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              TSI error
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              Vegas error
-            </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
-              Winners
-            </th>
+            <HeadCell>Version</HeadCell>
+            <HeadCell className="hidden sm:table-cell">Backtested</HeadCell>
+            <HeadCell align="right">TSI error</HeadCell>
+            <HeadCell align="right">Vegas error</HeadCell>
+            <HeadCell align="right">Winners</HeadCell>
           </tr>
         </thead>
         <tbody>

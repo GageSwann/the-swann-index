@@ -116,8 +116,13 @@ def records(session: Session, season: int, before: datetime) -> dict[int, Record
         Game.home_points.is_not(None),
         Game.start_time < before,
     )
+    return tally_records(tuple(row) for row in session.execute(query))
+
+
+def tally_records(results: Iterable[tuple[int, int, int, int]]) -> dict[int, Record]:
+    """Records from (home_id, away_id, home_points, away_points) of finished games."""
     tally: dict[int, list[int]] = defaultdict(lambda: [0, 0, 0])
-    for home, away, hp, ap in session.execute(query):
+    for home, away, hp, ap in results:
         if hp == ap:
             tally[home][2] += 1
             tally[away][2] += 1

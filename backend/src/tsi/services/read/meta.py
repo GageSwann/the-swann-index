@@ -5,10 +5,9 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from tsi.db.queries.runs import last_published_at, latest_rating_run
+from tsi.db.queries.calendar import freshness
 from tsi.ingest.freshness import current_season
 from tsi.model.config import MODEL_VERSION
-from tsi.services.rate_store import calendar_week
 
 
 @dataclass(frozen=True)
@@ -23,13 +22,12 @@ class Meta:
 
 def current_meta(session: Session, now: datetime) -> Meta:
     season = current_season(now)
-    season_type, week = calendar_week(session, season, now)
-    run = latest_rating_run(session, season)
+    f = freshness(session, season, now)
     return Meta(
         season=season,
-        season_type=season_type,
-        week=week,
-        ratings_updated_at=run.run_at if run else None,
-        predictions_published_at=last_published_at(session),
-        model_version=run.model_version if run else MODEL_VERSION,
+        season_type=f.season_type,
+        week=f.week,
+        ratings_updated_at=f.ratings_at,
+        predictions_published_at=f.published_at,
+        model_version=f.model_version or MODEL_VERSION,
     )

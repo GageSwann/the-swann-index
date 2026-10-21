@@ -18,7 +18,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#76 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#77 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -67,13 +67,14 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 ## Gotchas
 - **SQLAlchemy 2.1:** don't `dict(session.execute(...))`; unpack rows in a comprehension. Use `.ext(postgresql.distinct_on(...))`, not `.distinct(cols)`.
 - **Upserts:** always go through `db/upsert.py`. Never send the same primary key twice in one batch; de-duplicate first.
-- **Neon latency** is ~43ms per round trip. Performance means fewer round trips, not faster Python. The nightly `tsi run` takes ~35 s in Actions; backtests ~5 s.
+- **Neon latency** is ~30–45 ms per round trip. Performance means fewer round trips, not faster Python. Profile API endpoints in-process with `TestClient(create_app())` used as a context manager (the lifespan creates the sessions) plus a SQLAlchemy `before_cursor_execute` counter. In-process caches that load from the DB must be single-flight (see `services/read/matchup.py`): a cold-cache burst (a site build) otherwise exhausts the pool. `tsi serve --reload` on Windows can stop reloading after the first change: restart the server when results look stale. The nightly `tsi run` takes ~35 s in Actions; backtests ~5 s.
 - **numpy threads:** `tsi/__init__.py` caps BLAS at 1 thread (multithreading made our small solves ~40× slower). Scratch scripts must `import tsi` before numpy.
 - **DB tests** build the schema from the ORM, so the immutability trigger is loaded from the initial migration file (`tests/db_integration/conftest.py`). Shared test builders live in `tests/factories.py`. **API tests** seed a tiny 2026 season (`tests/db_integration/api_seed.py`) and override `get_session` + `get_now` (clock pinned) on `create_app(...)`; the test client needs the `httpx2` dev dependency (Starlette 1.9).
 - **Deploy order:** when a migration drops or renames a column, apply it **before** pushing code. The nightly job runs whatever is on `main`.
 - **Alembic** autogenerate misses primary-key changes; hand-write those. Pass the short constraint name (e.g. `"basis"`), never the full `ck_table_name`.
 - **API changes:** run `tsi openapi` and commit `docs/api/openapi.json` (else `tests/api/test_openapi.py` fails), then `npm run api:types` in `web/` and commit `lib/api/schema.d.ts` (else `npm run check` fails). Response shapes are the dataclasses in `services/read/`; the web imports them via `lib/api/types.ts`.
 - **Web checks:** run `npm run check` on its own and confirm exit 0 before committing (don't pipe it). Generated `lib/api/schema.d.ts` is Prettier-ignored (formatting it breaks `api:check`). After deleting a route, clear `web/.next` (stale `.next/dev/types` break `tsc`).
+- **Web building blocks:** table headers use `components/ui/head-cell.tsx`; charts take colors from `lib/chart-theme.ts` (`axisStyle`) and share `components/charts/chart-parts.tsx` (caption + legend, tooltip box) and `line-series-chart.tsx`; dates go through `lib/format/time.ts`. `cn` (the `cn` package) merges conflicting Tailwind classes, so `className` overrides win. No shadcn components remain (#77).
 - **Web data access:** only through `web/lib/api/queries.ts` (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).
 - **Model changes:** rerun `tsi backtest run` (+ `tsi backtest book` for Book changes), then `tsi model fit`, and commit the new artifact. The saved backtest run (with its report tables) is what `/model/report` and the Model page show, so save one after every model change (#76). The artifact is written with LF, so an unchanged refit leaves git clean.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
@@ -84,7 +85,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
   - The console is cp1252: set `PYTHONIOENCODING=utf-8` (or write to a file) to print ★/–; use `%#I`, not `%-I`, in `strftime`.
   - The artifact tools reject the short `GAGESW~1` temp path as `out_dir`; use the full `C:\Users\Gage Swann\...` path.
 - **Next.js 16 is newer than training data:** read the relevant guide in `web/node_modules/next/dist/docs/` before writing Next.js code (`web/AGENTS.md`; `next dev` rewrites that file, commit it as is). Cache Components are on (`"use cache"` + cache tags, not the old `revalidate` exports).
-- **Web dependencies:** `npm audit --omit=dev` must stay at 0 (dev-only lint tooling has known `braces` advisories; don't `audit fix --force`). `shadcn` is a devDependency (only its CSS is imported, at build time). npm 11 blocks `unrs-resolver`'s postinstall; ESLint works without it. `web/.gitignore` ignores `.env*` except `.env.example`.
+- **Web dependencies:** `npm audit --omit=dev` must stay at 0 (dev-only lint tooling has known `braces` advisories; don't `audit fix --force`). npm 11 blocks `unrs-resolver`'s postinstall; ESLint works without it. `web/.gitignore` ignores `.env*` except `.env.example`.
 - **GitHub Actions:** `astral-sh/setup-uv` has no floating major tag; pin the exact version (e.g. `v10.3.0`). The nightly job writes to the Neon **dev** branch until Phase 6 (#19).
 
 ## Commands

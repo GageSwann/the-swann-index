@@ -3,6 +3,7 @@ import type { BookBacktestRow, BookUnitsPoint } from "@/lib/api/types"
 import { percent, record, signed } from "@/lib/format/numbers"
 import { MARKET_LABEL, units } from "@/lib/format/picks"
 import { cn } from "@/lib/utils"
+import { HeadCell } from "@/components/ui/head-cell"
 
 /**
  * The Book replayed on past seasons at the median opening line (openers exist from 2021),
@@ -29,25 +30,15 @@ export function BookBacktest({
         <table className="w-full text-sm">
           <thead className="bg-card text-muted-foreground">
             <tr className="border-b border-border">
-              <th scope="col" className="px-3 py-2 text-left font-medium">
-                Period
-              </th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">
-                Record
-              </th>
-              <th scope="col" className="px-3 py-2 text-right font-medium">
-                Units
-              </th>
-              <th scope="col" className="hidden px-3 py-2 text-right font-medium sm:table-cell">
+              <HeadCell>Period</HeadCell>
+              <HeadCell align="right">Record</HeadCell>
+              <HeadCell align="right">Units</HeadCell>
+              <HeadCell align="right" className="hidden sm:table-cell">
                 ROI
-              </th>
-              <th
-                scope="col"
-                className="px-3 py-2 text-right font-medium"
-                title="Average closing-line value; share that beat the close"
-              >
+              </HeadCell>
+              <HeadCell align="right" title="Average closing-line value; share that beat the close">
                 CLV
-              </th>
+              </HeadCell>
             </tr>
           </thead>
           <tbody>

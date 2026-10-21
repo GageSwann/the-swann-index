@@ -4,28 +4,16 @@ Each daily run is a new model_run; earlier runs are never modified, so the site 
 show movement and history (rule 2 spirit).
 """
 
-from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
-from tsi.db.models import CalendarWeek, ModelRun, TeamRating
+from tsi.db.models import ModelRun, TeamRating
+from tsi.db.queries.calendar import calendar_week
 from tsi.db.upsert import upsert_rows
 from tsi.model.artifact import ModelArtifact
 from tsi.services.backtest_store import current_git_sha
 from tsi.services.rate import LiveRatings
-
-
-def calendar_week(session: Session, season: int, now: datetime) -> tuple[str, int]:
-    """(season_type, week) of the latest calendar week that has started; ('regular', 0) before."""
-    row = session.execute(
-        select(CalendarWeek.season_type, CalendarWeek.week)
-        .where(CalendarWeek.season == season, CalendarWeek.start_date <= now)
-        .order_by(CalendarWeek.start_date.desc())
-        .limit(1)
-    ).first()
-    return (row[0], row[1]) if row else ("regular", 0)
 
 
 def save_live_ratings(
