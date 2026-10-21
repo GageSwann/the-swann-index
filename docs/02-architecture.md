@@ -108,7 +108,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | GET | `/model/report?season` | accuracy, calibration, comparison data |
 | GET | `/matchup?home&away&neutral` | on-demand hypothetical prediction |
 
-Responses are Pydantic-validated **frozen dataclasses** defined once in `services/read/` (one module per resource); FastAPI builds the OpenAPI schema from them, and the spec generates TypeScript types for `web/lib/api.ts`. Routers (`api/routers/`) are thin. Run locally with `tsi serve` (docs at `/docs`).
+Responses are Pydantic-validated **frozen dataclasses** defined once in `services/read/` (one module per resource); FastAPI builds the OpenAPI schema from them, and the spec generates TypeScript types for `web/lib/api.ts`. Routers (`api/routers/`) are thin. Run locally with `tsi serve` (docs at `/docs`). The spec is committed at `docs/api/openapi.json` (`tsi openapi`; a test fails if it's stale); operation ids are the router function names (`get_rankings`, `get_week_games`, ...).
 
 Behavior (decision #60):
 - **Snapshot shown:** the latest one before kickoff; once a game has kicked off, the **locked** one (latest `published_at` < kickoff), flagged `locked: true`.

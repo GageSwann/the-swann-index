@@ -1,0 +1,2269 @@
+{
+  "components": {
+    "schemas": {
+      "BacktestSummary": {
+        "properties": {
+          "git_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Sha"
+          },
+          "metrics": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Metrics",
+            "type": "object"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "run_at": {
+            "format": "date-time",
+            "title": "Run At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_at",
+          "model_version",
+          "git_sha",
+          "metrics"
+        ],
+        "title": "BacktestSummary",
+        "type": "object"
+      },
+      "ConsensusLine": {
+        "properties": {
+          "away_ml": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Away Ml"
+          },
+          "books": {
+            "title": "Books",
+            "type": "integer"
+          },
+          "home_ml": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Ml"
+          },
+          "home_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Prob"
+          },
+          "spread": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spread"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "spread",
+          "total",
+          "home_ml",
+          "away_ml",
+          "home_prob",
+          "books"
+        ],
+        "title": "ConsensusLine",
+        "type": "object"
+      },
+      "GameCenter": {
+        "properties": {
+          "game": {
+            "$ref": "#/components/schemas/GameSummary"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotPoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "markets": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameMarkets"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "game",
+          "markets",
+          "history"
+        ],
+        "title": "GameCenter",
+        "type": "object"
+      },
+      "GameMarkets": {
+        "properties": {
+          "alt_spreads": {
+            "items": {
+              "$ref": "#/components/schemas/TwoWay"
+            },
+            "title": "Alt Spreads",
+            "type": "array"
+          },
+          "alt_totals": {
+            "items": {
+              "$ref": "#/components/schemas/TwoWay"
+            },
+            "title": "Alt Totals",
+            "type": "array"
+          },
+          "away_total": {
+            "$ref": "#/components/schemas/TwoWay"
+          },
+          "fair_spread": {
+            "title": "Fair Spread",
+            "type": "number"
+          },
+          "fair_total": {
+            "title": "Fair Total",
+            "type": "number"
+          },
+          "home_total": {
+            "$ref": "#/components/schemas/TwoWay"
+          },
+          "moneyline": {
+            "$ref": "#/components/schemas/TwoWay"
+          },
+          "spread": {
+            "$ref": "#/components/schemas/TwoWay"
+          },
+          "total": {
+            "$ref": "#/components/schemas/TwoWay"
+          }
+        },
+        "required": [
+          "fair_spread",
+          "fair_total",
+          "moneyline",
+          "spread",
+          "total",
+          "home_total",
+          "away_total",
+          "alt_spreads",
+          "alt_totals"
+        ],
+        "title": "GameMarkets",
+        "type": "object"
+      },
+      "GameResult": {
+        "properties": {
+          "away_points": {
+            "title": "Away Points",
+            "type": "integer"
+          },
+          "final": {
+            "title": "Final",
+            "type": "boolean"
+          },
+          "home_points": {
+            "title": "Home Points",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "home_points",
+          "away_points",
+          "final"
+        ],
+        "title": "GameResult",
+        "type": "object"
+      },
+      "GameSummary": {
+        "properties": {
+          "away": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "conference_game": {
+            "title": "Conference Game",
+            "type": "boolean"
+          },
+          "home": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kickoff": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff"
+          },
+          "kickoff_tbd": {
+            "title": "Kickoff Tbd",
+            "type": "boolean"
+          },
+          "market": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsensusLine"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "neutral": {
+            "title": "Neutral",
+            "type": "boolean"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "prediction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "season_type": {
+            "title": "Season Type",
+            "type": "string"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "season",
+          "week",
+          "season_type",
+          "kickoff",
+          "kickoff_tbd",
+          "neutral",
+          "conference_game",
+          "notes",
+          "home",
+          "away",
+          "result",
+          "prediction",
+          "market"
+        ],
+        "title": "GameSummary",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Ledger": {
+        "properties": {
+          "cumulative": {
+            "items": {
+              "$ref": "#/components/schemas/UnitsPoint"
+            },
+            "title": "Cumulative",
+            "type": "array"
+          },
+          "picks": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerPick"
+            },
+            "title": "Picks",
+            "type": "array"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/LedgerRecord"
+            },
+            "title": "Records",
+            "type": "array"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "records",
+          "cumulative",
+          "picks"
+        ],
+        "title": "Ledger",
+        "type": "object"
+      },
+      "LedgerPick": {
+        "properties": {
+          "away": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "game_id": {
+            "title": "Game Id",
+            "type": "integer"
+          },
+          "home": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "kickoff": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff"
+          },
+          "pick": {
+            "$ref": "#/components/schemas/PickView"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "game_id",
+          "kickoff",
+          "home",
+          "away",
+          "published_at",
+          "status",
+          "pick"
+        ],
+        "title": "LedgerPick",
+        "type": "object"
+      },
+      "LedgerRecord": {
+        "properties": {
+          "beat_close": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beat Close"
+          },
+          "clv": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clv"
+          },
+          "kelly_units": {
+            "title": "Kelly Units",
+            "type": "number"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "market": {
+            "title": "Market",
+            "type": "string"
+          },
+          "pushes": {
+            "title": "Pushes",
+            "type": "integer"
+          },
+          "roi": {
+            "title": "Roi",
+            "type": "number"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "integer"
+          },
+          "units": {
+            "title": "Units",
+            "type": "number"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "market",
+          "tier",
+          "wins",
+          "losses",
+          "pushes",
+          "units",
+          "kelly_units",
+          "roi",
+          "clv",
+          "beat_close"
+        ],
+        "title": "LedgerRecord",
+        "type": "object"
+      },
+      "LiveAccuracy": {
+        "properties": {
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mae"
+          },
+          "market_games": {
+            "title": "Market Games",
+            "type": "integer"
+          },
+          "market_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Mae"
+          },
+          "market_total_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Total Mae"
+          },
+          "su_accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Su Accuracy"
+          },
+          "total_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Mae"
+          }
+        },
+        "required": [
+          "games",
+          "mae",
+          "market_mae",
+          "market_games",
+          "su_accuracy",
+          "total_mae",
+          "market_total_mae"
+        ],
+        "title": "LiveAccuracy",
+        "type": "object"
+      },
+      "Matchup": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "away": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "home": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "home_win_prob": {
+            "title": "Home Win Prob",
+            "type": "number"
+          },
+          "markets": {
+            "$ref": "#/components/schemas/GameMarkets"
+          },
+          "neutral": {
+            "title": "Neutral",
+            "type": "boolean"
+          },
+          "proj_away": {
+            "title": "Proj Away",
+            "type": "number"
+          },
+          "proj_home": {
+            "title": "Proj Home",
+            "type": "number"
+          },
+          "spread": {
+            "title": "Spread",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "home",
+          "away",
+          "neutral",
+          "as_of",
+          "proj_home",
+          "proj_away",
+          "spread",
+          "total",
+          "home_win_prob",
+          "markets"
+        ],
+        "title": "Matchup",
+        "type": "object"
+      },
+      "Meta": {
+        "properties": {
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "predictions_published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predictions Published At"
+          },
+          "ratings_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratings Updated At"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "season_type": {
+            "title": "Season Type",
+            "type": "string"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "season_type",
+          "week",
+          "ratings_updated_at",
+          "predictions_published_at",
+          "model_version"
+        ],
+        "title": "Meta",
+        "type": "object"
+      },
+      "ModelReport": {
+        "properties": {
+          "backtest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BacktestSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "live": {
+            "$ref": "#/components/schemas/LiveAccuracy"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "backtest",
+          "live"
+        ],
+        "title": "ModelReport",
+        "type": "object"
+      },
+      "PickView": {
+        "properties": {
+          "closing_line": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closing Line"
+          },
+          "closing_odds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closing Odds"
+          },
+          "clv": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clv"
+          },
+          "edge": {
+            "title": "Edge",
+            "type": "number"
+          },
+          "kelly_units": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kelly Units"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "market": {
+            "title": "Market",
+            "type": "string"
+          },
+          "odds": {
+            "title": "Odds",
+            "type": "integer"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "side": {
+            "title": "Side",
+            "type": "string"
+          },
+          "stake_units": {
+            "title": "Stake Units",
+            "type": "number"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "integer"
+          },
+          "units_won": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units Won"
+          }
+        },
+        "required": [
+          "market",
+          "side",
+          "line",
+          "odds",
+          "tier",
+          "edge",
+          "stake_units",
+          "kelly_units",
+          "result",
+          "units_won",
+          "closing_line",
+          "closing_odds",
+          "clv"
+        ],
+        "title": "PickView",
+        "type": "object"
+      },
+      "Price": {
+        "properties": {
+          "book": {
+            "title": "Book",
+            "type": "integer"
+          },
+          "fair": {
+            "title": "Fair",
+            "type": "integer"
+          },
+          "prob": {
+            "title": "Prob",
+            "type": "number"
+          }
+        },
+        "required": [
+          "prob",
+          "fair",
+          "book"
+        ],
+        "title": "Price",
+        "type": "object"
+      },
+      "RankedTeam": {
+        "properties": {
+          "def_rating": {
+            "title": "Def Rating",
+            "type": "number"
+          },
+          "games_played": {
+            "title": "Games Played",
+            "type": "integer"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "off_rating": {
+            "title": "Off Rating",
+            "type": "number"
+          },
+          "predictive_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predictive Rank"
+          },
+          "predictive_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predictive Rating"
+          },
+          "provisional": {
+            "title": "Provisional",
+            "type": "boolean"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "rank_power": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Power"
+          },
+          "rank_resume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Resume"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "number"
+          },
+          "sor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sor"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rank",
+          "team",
+          "wins",
+          "losses",
+          "ties",
+          "rating",
+          "off_rating",
+          "def_rating",
+          "games_played",
+          "provisional",
+          "rank_power",
+          "rank_resume",
+          "sor",
+          "predictive_rating",
+          "predictive_rank"
+        ],
+        "title": "RankedTeam",
+        "type": "object"
+      },
+      "Rankings": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "season_type": {
+            "title": "Season Type",
+            "type": "string"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/RankedTeam"
+            },
+            "title": "Teams",
+            "type": "array"
+          },
+          "type": {
+            "enum": [
+              "power",
+              "resume"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "season_type",
+          "week",
+          "as_of",
+          "model_version",
+          "type",
+          "teams"
+        ],
+        "title": "Rankings",
+        "type": "object"
+      },
+      "RatingPoint": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "predictive_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predictive Rating"
+          },
+          "rank_power": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Power"
+          },
+          "rank_resume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Resume"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "number"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "as_of",
+          "week",
+          "rating",
+          "rank_power",
+          "rank_resume",
+          "predictive_rating"
+        ],
+        "title": "RatingPoint",
+        "type": "object"
+      },
+      "ScheduleGame": {
+        "properties": {
+          "game_id": {
+            "title": "Game Id",
+            "type": "integer"
+          },
+          "kickoff": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kickoff"
+          },
+          "opponent": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "opponent_points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opponent Points"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "projected_opponent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projected Opponent"
+          },
+          "projected_team": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projected Team"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "season_type": {
+            "title": "Season Type",
+            "type": "string"
+          },
+          "site": {
+            "title": "Site",
+            "type": "string"
+          },
+          "spread": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spread"
+          },
+          "team_points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Team Points"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          },
+          "win_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Prob"
+          }
+        },
+        "required": [
+          "game_id",
+          "kickoff",
+          "week",
+          "season_type",
+          "opponent",
+          "site",
+          "result",
+          "team_points",
+          "opponent_points",
+          "outcome",
+          "projected_team",
+          "projected_opponent",
+          "win_prob",
+          "spread"
+        ],
+        "title": "ScheduleGame",
+        "type": "object"
+      },
+      "SnapshotPoint": {
+        "properties": {
+          "home_win_prob": {
+            "title": "Home Win Prob",
+            "type": "number"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "spread": {
+            "title": "Spread",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "published_at",
+          "spread",
+          "total",
+          "home_win_prob"
+        ],
+        "title": "SnapshotPoint",
+        "type": "object"
+      },
+      "SnapshotView": {
+        "properties": {
+          "book_away_ml": {
+            "title": "Book Away Ml",
+            "type": "integer"
+          },
+          "book_home_ml": {
+            "title": "Book Home Ml",
+            "type": "integer"
+          },
+          "book_over_odds": {
+            "title": "Book Over Odds",
+            "type": "integer"
+          },
+          "book_spread_away_odds": {
+            "title": "Book Spread Away Odds",
+            "type": "integer"
+          },
+          "book_spread_home_odds": {
+            "title": "Book Spread Home Odds",
+            "type": "integer"
+          },
+          "book_under_odds": {
+            "title": "Book Under Odds",
+            "type": "integer"
+          },
+          "fair_away_ml": {
+            "title": "Fair Away Ml",
+            "type": "integer"
+          },
+          "fair_home_ml": {
+            "title": "Fair Home Ml",
+            "type": "integer"
+          },
+          "home_win_prob": {
+            "title": "Home Win Prob",
+            "type": "number"
+          },
+          "locked": {
+            "title": "Locked",
+            "type": "boolean"
+          },
+          "picks": {
+            "items": {
+              "$ref": "#/components/schemas/PickView"
+            },
+            "title": "Picks",
+            "type": "array"
+          },
+          "proj_away": {
+            "title": "Proj Away",
+            "type": "number"
+          },
+          "proj_home": {
+            "title": "Proj Home",
+            "type": "number"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "rho": {
+            "title": "Rho",
+            "type": "number"
+          },
+          "sigma_margin": {
+            "title": "Sigma Margin",
+            "type": "number"
+          },
+          "sigma_total": {
+            "title": "Sigma Total",
+            "type": "number"
+          },
+          "spread": {
+            "title": "Spread",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "published_at",
+          "locked",
+          "proj_home",
+          "proj_away",
+          "spread",
+          "total",
+          "home_win_prob",
+          "sigma_margin",
+          "sigma_total",
+          "rho",
+          "fair_home_ml",
+          "fair_away_ml",
+          "book_home_ml",
+          "book_away_ml",
+          "book_spread_home_odds",
+          "book_spread_away_odds",
+          "book_over_odds",
+          "book_under_odds",
+          "picks"
+        ],
+        "title": "SnapshotView",
+        "type": "object"
+      },
+      "TeamProfile": {
+        "properties": {
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RatingPoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "ratings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamRatings"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schedule": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleGame"
+            },
+            "title": "Schedule",
+            "type": "array"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "team",
+          "season",
+          "wins",
+          "losses",
+          "ties",
+          "ratings",
+          "history",
+          "schedule"
+        ],
+        "title": "TeamProfile",
+        "type": "object"
+      },
+      "TeamRatings": {
+        "properties": {
+          "def_rating": {
+            "title": "Def Rating",
+            "type": "number"
+          },
+          "games_played": {
+            "title": "Games Played",
+            "type": "integer"
+          },
+          "off_rating": {
+            "title": "Off Rating",
+            "type": "number"
+          },
+          "predictive_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predictive Rank"
+          },
+          "predictive_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predictive Rating"
+          },
+          "provisional": {
+            "title": "Provisional",
+            "type": "boolean"
+          },
+          "rank_power": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Power"
+          },
+          "rank_resume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Resume"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "number"
+          },
+          "sor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sor"
+          }
+        },
+        "required": [
+          "rating",
+          "off_rating",
+          "def_rating",
+          "rank_power",
+          "rank_resume",
+          "sor",
+          "games_played",
+          "provisional",
+          "predictive_rating",
+          "predictive_rank"
+        ],
+        "title": "TeamRatings",
+        "type": "object"
+      },
+      "TeamRef": {
+        "properties": {
+          "abbreviation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abbreviation"
+          },
+          "alt_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alt Color"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          },
+          "conference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conference"
+          },
+          "division": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Division"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "mascot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mascot"
+          },
+          "school": {
+            "title": "School",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "school",
+          "abbreviation",
+          "mascot",
+          "color",
+          "alt_color",
+          "logo_url",
+          "conference",
+          "division"
+        ],
+        "title": "TeamRef",
+        "type": "object"
+      },
+      "TwoWay": {
+        "properties": {
+          "first": {
+            "$ref": "#/components/schemas/Price"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "second": {
+            "$ref": "#/components/schemas/Price"
+          }
+        },
+        "required": [
+          "line",
+          "first",
+          "second"
+        ],
+        "title": "TwoWay",
+        "type": "object"
+      },
+      "UnitsPoint": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "kelly_units": {
+            "title": "Kelly Units",
+            "type": "number"
+          },
+          "units": {
+            "title": "Units",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "units",
+          "kelly_units"
+        ],
+        "title": "UnitsPoint",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "WeekBoard": {
+        "properties": {
+          "games": {
+            "items": {
+              "$ref": "#/components/schemas/GameSummary"
+            },
+            "title": "Games",
+            "type": "array"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "season_type": {
+            "title": "Season Type",
+            "type": "string"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "season_type",
+          "week",
+          "games"
+        ],
+        "title": "WeekBoard",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Read-only college football ratings, predictions and TSI Book data.",
+    "title": "The Swann Index API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/book/ledger": {
+      "get": {
+        "description": "TSI Book picks for a season with record, units, ROI and closing line value.",
+        "operationId": "get_ledger",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ledger"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Ledger",
+        "tags": [
+          "book"
+        ]
+      }
+    },
+    "/games/{game_id}": {
+      "get": {
+        "description": "Game center: prediction, full odds board, market comparison, snapshot history, result.",
+        "operationId": "get_game",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "title": "Game Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameCenter"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Game",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/matchup": {
+      "get": {
+        "description": "Hypothetical game between any two teams (slugs), predicted as of now.",
+        "operationId": "get_matchup",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "home",
+            "required": true,
+            "schema": {
+              "title": "Home",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "away",
+            "required": true,
+            "schema": {
+              "title": "Away",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "neutral",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Neutral",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Matchup"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Matchup",
+        "tags": [
+          "matchup"
+        ]
+      }
+    },
+    "/meta/current": {
+      "get": {
+        "description": "Current season and week, and when ratings and predictions were last updated.",
+        "operationId": "get_meta",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meta"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Meta",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/model/report": {
+      "get": {
+        "description": "Backtest headline metrics plus this season's live accuracy of published predictions.",
+        "operationId": "get_model_report",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Model Report",
+        "tags": [
+          "model"
+        ]
+      }
+    },
+    "/rankings": {
+      "get": {
+        "description": "Power (how good now) or Résumé (what they've accomplished) rankings.",
+        "operationId": "get_rankings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          },
+          {
+            "description": "Latest run within this week (default: latest).",
+            "in": "query",
+            "name": "week",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Latest run within this week (default: latest).",
+              "title": "Week"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "default": "power",
+              "enum": [
+                "power",
+                "resume"
+              ],
+              "title": "Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "regular",
+                    "postseason"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rankings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Rankings",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/teams": {
+      "get": {
+        "description": "FBS teams of a season (slug, name, colors, logo, conference).",
+        "operationId": "get_teams",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamRef"
+                  },
+                  "title": "Response Get Teams",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Teams",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/teams/{slug}": {
+      "get": {
+        "description": "Team profile: ratings and ranks, rating history, schedule with results and TSI odds.",
+        "operationId": "get_team",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamProfile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Team",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/weeks/{season}/{week}/games": {
+      "get": {
+        "description": "Matchup board: every game with an FBS team, TSI's prediction and the market.",
+        "operationId": "get_week_games",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "season",
+            "required": true,
+            "schema": {
+              "title": "Season",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week",
+            "required": true,
+            "schema": {
+              "title": "Week",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season_type",
+            "required": false,
+            "schema": {
+              "default": "regular",
+              "enum": [
+                "regular",
+                "postseason"
+              ],
+              "title": "Season Type",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeekBoard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Week Games",
+        "tags": [
+          "games"
+        ]
+      }
+    }
+  }
+}

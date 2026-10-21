@@ -11,7 +11,7 @@ router = APIRouter(tags=["meta"])
 
 
 @router.get("/meta/current", response_model=Meta)
-def meta_current(
+def get_meta(
     session: Annotated[Session, Depends(get_session)],
     now: Annotated[datetime, Depends(get_now)],
 ) -> Meta:
