@@ -72,7 +72,7 @@ Use proven skills from others instead of reinventing patterns. **Rules for third
 | any | `code-review`, `security-review`, `simplify` | built into Claude Code | review each item before committing; `security-review` before go-live |
 | 2, 5, 7 | `dataviz` | built into Claude Code | backtest charts, calibration plots, all dashboard charts |
 | 5 | `frontend-design` | [anthropics/skills](https://github.com/anthropics/skills) | distinctive, non-generic UI for the dashboard |
-| 5 | `nextjs` | [vercel-labs/vercel-plugin](https://github.com/vercel-labs/vercel-plugin) | App Router / current Next.js conventions |
+| 5 | `react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | React / Next.js performance rules from Vercel (replaces the planned `nextjs` skill, which no longer exists; #66). Current Next.js API docs ship inside the `next` package |
 | 5–7 | `webapp-testing` | [anthropics/skills](https://github.com/anthropics/skills) | Playwright checks, screenshots, phone-width tests |
 | 3+ | `skill-creator` | [anthropics/skills](https://github.com/anthropics/skills) | write **our own** project skills, e.g. `tsi-weekly-run` (run, check, publish) and `tsi-backtest` |
 | 6 | Vercel / Neon vendor skills or MCP servers | vendor repos | evaluate at Phase 6; adopt only if vendor-published |

@@ -1,5 +1,9 @@
 # Install once per clone: pre-commit install
 # Run on everything:      pre-commit run --all-files
+#
+# Vendored third-party skills (.claude/skills/<name>/) stay byte-identical to the
+# reviewed upstream commit (see .claude/skills/SOURCES.md), so the formatting and
+# linting hooks skip them. Secret and private-key scanning still cover them.
 repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.0
@@ -10,8 +14,10 @@ repos:
     rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
+        exclude: ^\.claude/skills/(?!SOURCES\.md)
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
+        exclude: ^\.claude/skills/(?!SOURCES\.md)
       - id: check-yaml
       - id: check-added-large-files
         args: [--maxkb=1024]
@@ -22,4 +28,6 @@ repos:
     hooks:
       - id: ruff-check
         args: [--fix]
+        exclude: ^\.claude/skills/
       - id: ruff-format
+        exclude: ^\.claude/skills/

@@ -80,7 +80,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 **Done when:** every endpoint returns real data locally and tests pass.
 
 ## Phase 5: Frontend MVP
-- [ ] Review + install Phase 5 skills (`frontend-design`, `nextjs`, `webapp-testing`; doc 09 §5)
+- [x] Review + install Phase 5 skills (`frontend-design`, `webapp-testing`, `react-best-practices` in place of `nextjs`; `.claude/skills/SOURCES.md`; #66)
 - [ ] Scaffold `web/` (Next.js, TS, Tailwind, shadcn/ui, Recharts, TanStack Table)
 - [ ] Generate TS types from OpenAPI; typed API client
 - [ ] Layout, nav, theme, `UpdatedFooter`
