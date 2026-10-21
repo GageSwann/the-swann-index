@@ -73,4 +73,5 @@ class TeamRating(CreatedAtMixin, Base):
     pace: Mapped[float | None]
     rank_power: Mapped[int | None]
     sor: Mapped[float | None]
+    sos: Mapped[float | None]  # mean current rating of opponents played (season basis)
     rank_resume: Mapped[int | None]

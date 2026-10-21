@@ -70,6 +70,7 @@ def _season_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:
             "provisional": t.provisional,
             "rank_power": t.rank_power,
             "sor": t.resume.sor,
+            "sos": t.resume.sos,
             "rank_resume": t.rank_resume,
         }
         for t in live.rankings.teams

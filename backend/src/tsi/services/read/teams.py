@@ -30,6 +30,7 @@ class TeamRatings:
     rank_power: int | None
     rank_resume: int | None
     sor: float | None
+    sos: float | None
     games_played: int
     provisional: bool
     predictive_rating: float | None
@@ -122,6 +123,7 @@ def _ratings(rows: list[StoredRating]) -> TeamRatings | None:
         rank_power=season.rank_power,
         rank_resume=season.rank_resume,
         sor=season.sor,
+        sos=season.sos,
         games_played=season.games_played,
         provisional=season.provisional,
         predictive_rating=pred.rating if pred else None,

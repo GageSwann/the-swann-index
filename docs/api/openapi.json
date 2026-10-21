@@ -947,6 +947,17 @@
             ],
             "title": "Sor"
           },
+          "sos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sos"
+          },
           "team": {
             "$ref": "#/components/schemas/TeamRef"
           },
@@ -973,6 +984,7 @@
           "rank_power",
           "rank_resume",
           "sor",
+          "sos",
           "predictive_rating",
           "predictive_rank"
         ],
@@ -1501,6 +1513,17 @@
               }
             ],
             "title": "Sor"
+          },
+          "sos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sos"
           }
         },
         "required": [
@@ -1510,6 +1533,7 @@
           "rank_power",
           "rank_resume",
           "sor",
+          "sos",
           "games_played",
           "provisional",
           "predictive_rating",

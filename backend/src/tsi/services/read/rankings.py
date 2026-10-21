@@ -34,6 +34,7 @@ class RankedTeam:
     rank_power: int | None
     rank_resume: int | None
     sor: float | None  # strength of record: chance a #12 team matches this record
+    sos: float | None  # strength of schedule: mean current rating of opponents played
     predictive_rating: float | None  # the prediction model's rating (prior + Elo blended in)
     predictive_rank: int | None
 
@@ -102,6 +103,7 @@ def _ranked(
         rank_power=r.rank_power,
         rank_resume=r.rank_resume,
         sor=r.sor,
+        sos=r.sos,
         predictive_rating=p.rating if p else None,
         predictive_rank=p.rank_power if p else None,
     )

@@ -197,6 +197,7 @@ def _rating(run_id, team, basis, rating, off, de, games, rp, rr, sor) -> TeamRat
         rank_power=rp,
         rank_resume=rr,
         sor=sor,
+        sos=None if sor is None else 1.5,
     )
 
 

@@ -49,6 +49,7 @@ def test_power_and_resume_rankings(api: TestClient) -> None:
     alpha = power["teams"][0]
     assert (alpha["wins"], alpha["losses"], alpha["rating"]) == (1, 0, 12.0)
     assert alpha["predictive_rating"] == 14.0 and alpha["team"]["conference"] == "Test"
+    assert alpha["sos"] == 1.5
     assert power["as_of"].startswith(WEEK2_RUN_AT.isoformat()[:16])
 
 

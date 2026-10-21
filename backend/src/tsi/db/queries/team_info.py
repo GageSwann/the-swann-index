@@ -37,6 +37,7 @@ class StoredRating:
     rank_power: int | None
     rank_resume: int | None
     sor: float | None
+    sos: float | None
 
 
 @dataclass(frozen=True)
@@ -92,6 +93,7 @@ def stored_ratings(
         TeamRating.rank_power,
         TeamRating.rank_resume,
         TeamRating.sor,
+        TeamRating.sos,
     ).where(TeamRating.run_id.in_(list(run_ids)), TeamRating.variant == "raw")
     if team_id is not None:
         query = query.where(TeamRating.team_id == team_id)
