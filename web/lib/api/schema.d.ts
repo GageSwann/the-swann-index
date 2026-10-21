@@ -188,6 +188,63 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccuracyRow */
+        AccuracyRow: {
+            /** Elo Mae */
+            elo_mae: number;
+            /** Elo Su */
+            elo_su: number;
+            /** Games */
+            games: number;
+            /** Label */
+            label: string;
+            /** Predictive Brier */
+            predictive_brier: number;
+            /** Predictive Mae */
+            predictive_mae: number;
+            /** Predictive Su */
+            predictive_su: number;
+            /** Season Mae */
+            season_mae: number;
+            /** Vegas Mae */
+            vegas_mae: number;
+            /** Vegas Su */
+            vegas_su: number;
+        };
+        /** AtsRow */
+        AtsRow: {
+            /** Bets */
+            bets: number;
+            /** Losses */
+            losses: number;
+            /** Min Edge */
+            min_edge: number;
+            /** Pushes */
+            pushes: number;
+            /** Win Rate */
+            win_rate: number;
+            /** Wins */
+            wins: number;
+        };
+        /** BacktestReport */
+        BacktestReport: {
+            /** Ats */
+            ats: components["schemas"]["AtsRow"][];
+            /** Book */
+            book: components["schemas"]["BookBacktestRow"][];
+            /** Book Calibration */
+            book_calibration: components["schemas"]["BookCalibrationBin"][];
+            /** Book Units */
+            book_units: components["schemas"]["BookUnitsPoint"][];
+            /** By Season */
+            by_season: components["schemas"]["AccuracyRow"][];
+            /** Calibration */
+            calibration: components["schemas"]["CalibrationBin"][];
+            /** Periods */
+            periods: components["schemas"]["AccuracyRow"][];
+            /** Totals */
+            totals: components["schemas"]["TotalsRow"][];
+        };
         /** BacktestSummary */
         BacktestSummary: {
             /** Git Sha */
@@ -198,11 +255,79 @@ export interface components {
             };
             /** Model Version */
             model_version: string;
+            report: components["schemas"]["BacktestReport"] | null;
             /**
              * Run At
              * Format: date-time
              */
             run_at: string;
+        };
+        /** BookBacktestRow */
+        BookBacktestRow: {
+            /** Beat Close */
+            beat_close: number | null;
+            /** Bets */
+            bets: number;
+            /** Clv */
+            clv: number | null;
+            /** Kelly Units */
+            kelly_units: number;
+            /** Losses */
+            losses: number;
+            /** Market */
+            market: string;
+            /** Period */
+            period: string;
+            /** Pushes */
+            pushes: number;
+            /** Roi */
+            roi: number;
+            /** Tier */
+            tier: number;
+            /** Units */
+            units: number;
+            /** Win Rate */
+            win_rate: number;
+            /** Wins */
+            wins: number;
+        };
+        /** BookCalibrationBin */
+        BookCalibrationBin: {
+            /** Bin */
+            bin: string;
+            /** Games */
+            games: number;
+            /** Market */
+            market: string;
+            /** Observed */
+            observed: number;
+            /** Predicted */
+            predicted: number;
+        };
+        /** BookUnitsPoint */
+        BookUnitsPoint: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Kelly Units */
+            kelly_units: number;
+            /** Season */
+            season: number;
+            /** Units */
+            units: number;
+        };
+        /** CalibrationBin */
+        CalibrationBin: {
+            /** Bin */
+            bin: string;
+            /** Games */
+            games: number;
+            /** Observed */
+            observed: number;
+            /** Predicted */
+            predicted: number;
         };
         /** ConsensusLine */
         ConsensusLine: {
@@ -385,6 +510,26 @@ export interface components {
             live: components["schemas"]["LiveAccuracy"];
             /** Season */
             season: number;
+            /** Versions */
+            versions: components["schemas"]["ModelVersion"][];
+        };
+        /** ModelVersion */
+        ModelVersion: {
+            /** Git Sha */
+            git_sha: string | null;
+            /** Model Version */
+            model_version: string;
+            /**
+             * Run At
+             * Format: date-time
+             */
+            run_at: string;
+            /** Validate Mae */
+            validate_mae: number | null;
+            /** Validate Market Mae */
+            validate_market_mae: number | null;
+            /** Validate Su */
+            validate_su: number | null;
         };
         /** PickView */
         PickView: {
@@ -665,6 +810,21 @@ export interface components {
             school: string;
             /** Slug */
             slug: string;
+        };
+        /** TotalsRow */
+        TotalsRow: {
+            /** Bias */
+            bias: number;
+            /** Games */
+            games: number;
+            /** Ou Vs Close */
+            ou_vs_close: number;
+            /** Period */
+            period: string;
+            /** Tsi Mae */
+            tsi_mae: number;
+            /** Vegas Mae */
+            vegas_mae: number;
         };
         /** TwoWay */
         TwoWay: {

@@ -15,9 +15,12 @@ import type { UnitsPoint } from "@/lib/api/types"
 import { useChartTheme } from "@/lib/chart-theme"
 import { units } from "@/lib/format/picks"
 
-const dayLabel = new Intl.DateTimeFormat("en-US", {
+// Dates are calendar days (UTC dates from the API). Within one season the axis shows days;
+// across seasons it shows one tick per year. The tooltip always shows the full date.
+const fullLabel = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
+  year: "numeric",
   timeZone: "UTC",
 })
 
@@ -36,7 +39,11 @@ export function UnitsChart({ points }: { points: UnitsPoint[] }) {
       </p>
     )
   }
-  const data = points.map((p) => ({ ...p, day: dayLabel.format(new Date(p.date)) }))
+  const data = points.map((p) => ({ ...p, day: fullLabel.format(new Date(p.date)) }))
+  const multiYear = points[0].date.slice(0, 4) !== points[points.length - 1].date.slice(0, 4)
+  const yearTicks = multiYear
+    ? data.filter((d, i) => i === 0 || d.date.slice(0, 4) !== data[i - 1].date.slice(0, 4))
+    : null
   const color = (dashed: boolean) => (theme ? (dashed ? theme.muted : theme.accent) : "")
 
   return (
@@ -69,7 +76,13 @@ export function UnitsChart({ points }: { points: UnitsPoint[] }) {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 16, bottom: 4, left: 0 }}>
               <CartesianGrid vertical={false} stroke={theme.grid} strokeWidth={1} />
-              <XAxis dataKey="day" tick={{ fill: theme.muted, fontSize: 12 }} stroke={theme.grid} />
+              <XAxis
+                dataKey="day"
+                tick={{ fill: theme.muted, fontSize: 12 }}
+                stroke={theme.grid}
+                ticks={yearTicks?.map((d) => d.day)}
+                tickFormatter={(v: string) => (yearTicks ? v.slice(-4) : v.replace(/, \d{4}$/, ""))}
+              />
               <YAxis
                 width={52}
                 tick={{ fill: theme.muted, fontSize: 12 }}

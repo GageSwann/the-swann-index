@@ -123,6 +123,13 @@ def test_model_report(api: TestClient) -> None:
     report = ok(api, "/model/report")
 
     assert report["backtest"]["metrics"]["validate_mae"] == 12.4
+    tables = report["backtest"]["report"]
+    assert tables["by_season"][0]["label"] == "2024"
+    assert tables["periods"][0]["predictive_mae"] == 12.4
+    assert tables["book"][0]["wins"] == 104
+    assert tables["book_units"][0]["date"] == "2023-09-02"
+    assert [v["model_version"] for v in report["versions"]] == ["tsi-old", "tsi-test"]
+    assert report["versions"][0]["validate_mae"] == 12.9
     live = report["live"]
     assert live["games"] == 1  # game 101: finished with a locked snapshot
     assert live["mae"] == pytest.approx(abs(6.0 - 10))

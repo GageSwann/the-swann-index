@@ -16,11 +16,11 @@ from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
 from tsi.services import report_book as book_report
 from tsi.services import report_export as report
-from tsi.services.backtest import run_backtest
 from tsi.services.backtest_data import load_backtest_data
 from tsi.services.backtest_result import BacktestResult
 from tsi.services.backtest_store import save_backtest_run
 from tsi.services.book_backtest import run_book_backtest
+from tsi.services.report_tables import report_tables
 
 app = typer.Typer(help="Walk-forward backtests.", no_args_is_help=True)
 OUT_DIR = typer.Option(..., "--out-dir", help="Folder for the report CSVs.")
@@ -40,8 +40,10 @@ def run(
     with db_runtime() as sessions:
         with sessions() as session:
             data = load_backtest_data(session, last)
-        result = run_backtest(data, config)
-        run_id = save_backtest_run(sessions, result, last) if save else None
+        book_result = run_book_backtest(data, config)  # model backtest + Book on top
+        result = book_result.model
+        tables = report_tables(book_result)
+        run_id = save_backtest_run(sessions, result, last, tables) if save else None
 
     _print_summary(result)
     _print_calibration(result)
@@ -128,19 +130,12 @@ def export(
     last = through or current_season(datetime.now(UTC))
     with ingest_runtime() as (client, sessions), sessions() as session:
         book = run_book_backtest(load_backtest_data(session, last))
-        result = book.model
         sp = report.sp_agreement(client, session, 2015, last - 1)
     tables = {
-        "by_season": report.by_season(result),
-        "periods": report.periods(result),
-        "calibration": report.calibration(result),
-        "ats": report.ats(result),
+        **report_tables(book),
         "sp_agreement": sp,
         "stack_weights": report.stack_weights(load_artifact()),
-        "totals_accuracy": book_report.totals_accuracy(result),
-        "book_record": book_report.book_record(book),
         "book_bets": book_report.book_bets(book),
-        "book_calibration": book_report.book_calibration(result),
     }
     for name, rows in tables.items():
         report.write_csv(rows, out_dir / f"{name}.csv")

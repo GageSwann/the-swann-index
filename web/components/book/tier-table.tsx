@@ -75,7 +75,10 @@ function Row({
     <tr
       className={cn("border-b border-border last:border-0", strong && "bg-card/60 font-semibold")}
     >
-      <th scope="row" className="px-2 py-2 text-left font-[inherit] sm:px-3">
+      <th
+        scope="row"
+        className={cn("px-2 py-2 text-left sm:px-3", strong ? "font-semibold" : "font-normal")}
+      >
         {label}
       </th>
       <td className="px-2 py-2 text-right whitespace-nowrap tabular-nums sm:px-3">

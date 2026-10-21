@@ -105,7 +105,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | GET | `/weeks/{season}/{week}/games` | matchup board with TSI vs. market |
 | GET | `/games/{id}` | full game center payload (odds board, distribution, comparison, result/grade) |
 | GET | `/book/ledger?season` | picks + running record, ROI, CLV |
-| GET | `/model/report?season` | accuracy, calibration, comparison data |
+| GET | `/model/report?season` | latest saved backtest (headline metrics + report tables: accuracy by season/period, calibration, ATS, totals, Book record/calibration/units), model version history, live accuracy (#76) |
 | GET | `/matchup?home&away&neutral` | on-demand hypothetical prediction |
 
 Responses are Pydantic-validated **frozen dataclasses** defined once in `services/read/` (one module per resource); FastAPI builds the OpenAPI schema from them, and the spec generates TypeScript types for `web/lib/api.ts`. Routers (`api/routers/`) are thin. Run locally with `tsi serve` (docs at `/docs`). The spec is committed at `docs/api/openapi.json` (`tsi openapi`; a test fails if it's stale); operation ids are the router function names (`get_rankings`, `get_week_games`, ...).

@@ -7,7 +7,7 @@ Personal college football rating model + prediction engine + public read-only da
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
 - **Phase 4 complete** (2026-10-21): read-only API with all v1 endpoints (`api/`, read models in `services/read/`), CORS + cache headers + ETag/304 + gzip, seeded-DB tests, spec at `docs/api/openapi.json`.
-- **Phase 5 nearly complete** (2026-10-21): `web/` (Next.js 16.4, Cache Components) with a typed, cached API client (`web/lib/api/`); layout + theme (design system in doc 06); rankings, matchup board, game center and team pages, checked at desktop and 360/390 px. Owner added the Book and Model pages to Phase 5 (#75): Book page done; next: Model page. Then Phase 6 (deploy; not going public yet, week 8 review first). Week 8 review once graded (Oct 26).
+- **Phase 5 complete** (2026-10-21): `web/` (Next.js 16.4, Cache Components) with a typed, cached API client (`web/lib/api/`); layout + theme (design system in doc 06); rankings, matchup board, game center and team pages, checked at desktop and 360/390 px. Book and Model pages added and built (#75, #76). Next: Phase 6 (deploy; not going public yet, week 8 review first). Week 8 review once graded (Oct 26).
 - No launch deadline: quality over speed (decision #27).
 
 ## Read before building
@@ -18,7 +18,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#75 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#76 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -75,7 +75,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **API changes:** run `tsi openapi` and commit `docs/api/openapi.json` (else `tests/api/test_openapi.py` fails), then `npm run api:types` in `web/` and commit `lib/api/schema.d.ts` (else `npm run check` fails). Response shapes are the dataclasses in `services/read/`; the web imports them via `lib/api/types.ts`.
 - **Web checks:** run `npm run check` on its own and confirm exit 0 before committing (don't pipe it). Generated `lib/api/schema.d.ts` is Prettier-ignored (formatting it breaks `api:check`). After deleting a route, clear `web/.next` (stale `.next/dev/types` break `tsc`).
 - **Web data access:** only through `web/lib/api/queries.ts` (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).
-- **Model changes:** rerun `tsi backtest run` (+ `tsi backtest book` for Book changes), then `tsi model fit`, and commit the new artifact. The artifact is written with LF, so an unchanged refit leaves git clean.
+- **Model changes:** rerun `tsi backtest run` (+ `tsi backtest book` for Book changes), then `tsi model fit`, and commit the new artifact. The saved backtest run (with its report tables) is what `/model/report` and the Model page show, so save one after every model change (#76). The artifact is written with LF, so an unchanged refit leaves git clean.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
 - **Windows shell:**
   - PowerShell here-strings mangle inline Python: write scripts to the scratchpad and run them with `python -I` from a neutral directory (a local `types.py` once shadowed the stdlib).

@@ -89,7 +89,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Game center (header, plays, odds board, margin chart, alt ladders, tale of the tape, rating trends, prediction history; #72)
 - [x] Team page (header, rank profile, rating trend, schedule with published or "if played today" odds; #73)
 - [x] TSI Book page (season record, units chart, record by market + tier, filterable pick history, how it works; #75)
-- [ ] Model page
+- [x] Model page (backtest report served by the API; report card, by-season chart, calibration, market checks, Book replayed, method, versions; #76)
 - [x] Responsive pass on phone widths (360/390 px audit: no page overflow, phone layouts for odds board + schedule, pinned rankings columns, ≥ 24 px targets; #74)
 
 **Done when:** all core pages (rankings, board, game, team, Book, Model) work against the local API with real 2026 data.

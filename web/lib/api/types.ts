@@ -32,3 +32,13 @@ export type Matchup = Schemas["Matchup"]
 
 export type RankingType = "power" | "resume"
 export type SeasonType = "regular" | "postseason"
+export type BacktestSummary = Schemas["BacktestSummary"]
+export type BacktestReport = Schemas["BacktestReport"]
+export type AccuracyRow = Schemas["AccuracyRow"]
+export type CalibrationBin = Schemas["CalibrationBin"]
+export type AtsRow = Schemas["AtsRow"]
+export type TotalsRow = Schemas["TotalsRow"]
+export type BookBacktestRow = Schemas["BookBacktestRow"]
+export type BookUnitsPoint = Schemas["BookUnitsPoint"]
+export type LiveAccuracy = Schemas["LiveAccuracy"]
+export type ModelVersion = Schemas["ModelVersion"]

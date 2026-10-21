@@ -1,4 +1,5 @@
-"""`/model/report`: backtest headline metrics plus how the published predictions are doing.
+"""`/model/report`: the latest backtest (headline metrics + report tables), the model
+version history, and how the published predictions are doing.
 
 Backtest = the latest saved `tsi backtest run` (model_runs kind 'backtest').
 Live = this season's finished games scored from their locked snapshots: TSI vs.
@@ -15,6 +16,12 @@ from sqlalchemy.orm import Session
 from tsi.db.models import ModelRun
 from tsi.db.queries.games import season_games
 from tsi.db.queries.snapshots import snapshots_for_season
+from tsi.services.read.backtest_report import (
+    BacktestReport,
+    ModelVersion,
+    model_versions,
+    parse_report,
+)
 from tsi.services.read.common import current_snapshot, market_lines
 
 
@@ -24,6 +31,7 @@ class BacktestSummary:
     model_version: str
     git_sha: str | None
     metrics: dict[str, float]  # e.g. validate_mae, validate_market_mae, validate_su, sigma, k_total
+    report: BacktestReport | None  # None for runs saved before report tables were stored
 
 
 @dataclass(frozen=True)
@@ -42,10 +50,13 @@ class ModelReport:
     season: int
     backtest: BacktestSummary | None
     live: LiveAccuracy
+    versions: list[ModelVersion]
 
 
 def model_report(session: Session, season: int, now: datetime) -> ModelReport:
-    return ModelReport(season, _latest_backtest(session), _live(session, season, now))
+    return ModelReport(
+        season, _latest_backtest(session), _live(session, season, now), model_versions(session)
+    )
 
 
 def _latest_backtest(session: Session) -> BacktestSummary | None:
@@ -59,7 +70,7 @@ def _latest_backtest(session: Session) -> BacktestSummary | None:
         return None
     params: dict[str, Any] = row[3] or {}
     metrics = {k: float(v) for k, v in params.get("metrics", {}).items() if v is not None}
-    return BacktestSummary(row[0], row[1], row[2], metrics)
+    return BacktestSummary(row[0], row[1], row[2], metrics, parse_report(params.get("report", {})))
 
 
 def _live(session: Session, season: int, now: datetime) -> LiveAccuracy:

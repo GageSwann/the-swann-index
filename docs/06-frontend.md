@@ -79,6 +79,7 @@
 - **Report card:** this season + backtest: MAE, straight-up %, ATS %, Brier; vs. closing line, SP+, Elo.
 - Calibration chart (reliability diagram).
 - Model version history.
+- **Built (decision #76):** validation headline (TSI vs. Vegas vs. Elo error, winners), report card by period (live row once games are graded; Games/Elo/Vegas-winners columns hidden on phones), error by season chart (TSI, Vegas, Elo; validation marker; current season marked partial), reliability diagram (dot size = games), spreads vs. the close (ATS by disagreement) and totals accuracy, the Book replayed (record by period and season, cumulative units with one tick per year), plain-English method with the key formulas, and version history. All numbers come from the latest saved `tsi backtest run`. SP+ agreement stays in the CSV export (needs a refit per season plus CFBD data).
 
 ## Shared components
 `TeamBadge`, `WinProbBar`, `OddsCell` (American odds formatting), `EdgeBadge`, `RatingDelta`, `StatBar` (mirrored), `TrendChart`, `DistributionChart`, `KpiTile`, `SeasonWeekPicker`, `UpdatedFooter`.
