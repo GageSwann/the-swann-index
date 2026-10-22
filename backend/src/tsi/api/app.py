@@ -9,7 +9,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 
 from tsi import __version__
 from tsi.api.caching import CachingMiddleware
-from tsi.api.routers import book, games, matchup, meta, model, rankings, teams
+from tsi.api.routers import book, games, health, matchup, meta, model, rankings, teams
 from tsi.config import Settings, get_settings
 from tsi.db.engine import make_engine, make_session_factory
 
@@ -43,7 +43,7 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
         # Operation ids = the router function names (get_rankings, ...): clean TS client names.
         generate_unique_id_function=lambda route: route.name,
     )
-    for router in (meta, rankings, teams, games, book, model, matchup):
+    for router in (health, meta, rankings, teams, games, book, model, matchup):
         app.include_router(router.router)
     # Added innermost first: caching sees the uncompressed JSON (ETag), gzip compresses
     # it, and CORS (outermost) answers preflight requests before anything else runs.

@@ -56,14 +56,25 @@ def test_secrets_are_masked_in_repr(required_env: pytest.MonkeyPatch) -> None:
 def test_missing_variable_names_it_without_leaking_values(
     clean_env: pytest.MonkeyPatch,
 ) -> None:
-    clean_env.setenv("DATABASE_URL", SECRET_URL)
+    clean_env.setenv("CFBD_API_KEY", SECRET_KEY)
 
     with pytest.raises(ConfigError) as exc_info:
         load_settings(env_file=None)
 
     message = str(exc_info.value)
-    assert "CFBD_API_KEY: missing" in message
-    assert "hunter2" not in message
+    assert "DATABASE_URL: missing" in message
+    assert SECRET_KEY not in message
+
+
+def test_cfbd_key_is_only_required_to_call_cfbd(clean_env: pytest.MonkeyPatch) -> None:
+    clean_env.setenv("DATABASE_URL", SECRET_URL)  # the API host's settings
+
+    settings = load_settings(env_file=None)
+
+    assert settings.cfbd_api_key is None
+    with pytest.raises(ConfigError, match="CFBD_API_KEY: missing") as exc_info:
+        settings.require_cfbd_key()
+    assert "hunter2" not in str(exc_info.value)
 
 
 def test_blank_secret_is_rejected(required_env: pytest.MonkeyPatch) -> None:

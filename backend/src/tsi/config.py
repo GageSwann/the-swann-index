@@ -29,7 +29,8 @@ class Settings(BaseSettings):
         env_ignore_empty=True,  # `NAME=` with no value counts as unset
     )
 
-    cfbd_api_key: SecretStr
+    # Only ingest needs the CFBD key; the API host runs without it (least privilege).
+    cfbd_api_key: SecretStr | None = None
     database_url: SecretStr
     # Direct (non-pooled) connection for Alembic migrations; falls back to database_url.
     database_url_direct: SecretStr | None = None
@@ -40,8 +41,9 @@ class Settings(BaseSettings):
 
     @field_validator("cfbd_api_key", "database_url")
     @classmethod
-    def _not_blank(cls, value: SecretStr) -> SecretStr:
-        if not value.get_secret_value().strip():
+    def _not_blank(cls, value: SecretStr | None) -> SecretStr | None:
+        # Settings validate defaults too, so an unset optional key arrives as None.
+        if value is not None and not value.get_secret_value().strip():
             raise ValueError("is empty")
         return value
 
@@ -51,6 +53,15 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    def require_cfbd_key(self) -> SecretStr:
+        """The CFBD key, for code that calls CFBD (ingest); a clear error when unset."""
+        if self.cfbd_api_key is None:
+            raise ConfigError(
+                "Invalid TSI configuration (set these in backend/.env or the environment):\n"
+                "  CFBD_API_KEY: missing (needed to call CollegeFootballData)"
+            )
+        return self.cfbd_api_key
 
     @property
     def migration_database_url(self) -> SecretStr:

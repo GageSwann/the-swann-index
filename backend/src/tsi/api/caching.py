@@ -13,12 +13,13 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 DEFAULT_POLICY = "public, max-age=300, stale-while-revalidate=86400"
+NO_STORE = "no-store"
 POLICIES = {
+    "/health": NO_STORE,  # liveness must never come from a cache
     "/matchup": "public, max-age=3600",  # same TTL as the in-process live-inputs cache
     "/docs": "no-cache",
     "/redoc": "no-cache",
 }
-NO_STORE = "no-store"
 
 
 def cache_policy(path: str, status: int) -> str:

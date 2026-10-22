@@ -12,8 +12,7 @@ WEB = "https://tsi.example"
 
 @pytest.fixture
 def client() -> TestClient:
-    settings = Settings(
-        cfbd_api_key="fakekey",
+    settings = Settings(  # like the API host: no CFBD key
         database_url="postgresql+psycopg://user:fakekey@localhost:5432/none",
         tsi_cors_origins=[WEB],
     )
@@ -26,6 +25,14 @@ def test_cache_policy_by_path_and_status() -> None:
     assert cache_policy("/matchup", 200) == "public, max-age=3600"
     assert cache_policy("/teams/nope", 404) == NO_STORE
     assert cache_policy("/matchupx", 200) == DEFAULT_POLICY  # prefix match is per path segment
+
+
+def test_health_needs_no_database_and_is_never_cached(client: TestClient) -> None:
+    response = client.get("/health")  # the fixture's database doesn't exist
+
+    assert response.status_code == 200 and response.json() == {"status": "ok"}
+    assert response.headers["cache-control"] == NO_STORE
+    assert "/health" not in client.get("/openapi.json").json()["paths"]
 
 
 def test_json_gets_cache_control_and_etag_then_304(client: TestClient) -> None:

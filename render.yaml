@@ -1,0 +1,20 @@
+# Render Blueprint: the read-only TSI API (Phase 6, decision #78).
+# Secrets are never in this file: Render asks for every `sync: false` value when the
+# Blueprint is first applied (Dashboard -> Blueprints), and they live only in Render.
+services:
+  - type: web
+    name: tsi-api
+    runtime: docker
+    rootDir: backend # only backend/ changes trigger a deploy
+    dockerfilePath: ./backend/Dockerfile # relative to the repo root, not rootDir
+    dockerContext: ./backend
+    plan: free # sleeps after ~15 idle minutes; the site's cached pages hide the wake-up
+    region: ohio # AWS us-east-2, same region as the Neon database
+    branch: main
+    autoDeployTrigger: commit # becomes checksPass once CI exists (Phase 6, CI item)
+    healthCheckPath: /health # no database call
+    envVars:
+      - key: DATABASE_URL # Neon `production` branch, pooled connection string
+        sync: false
+      - key: TSI_CORS_ORIGINS # the site's origin(s), comma-separated
+        sync: false

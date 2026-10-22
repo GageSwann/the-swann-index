@@ -70,7 +70,7 @@ Module size and layering rules are in [09-conventions.md](09-conventions.md) §2
 | Lint (web) | ESLint + Prettier | |
 | DB host | Neon Postgres (free tier) | `production` (Neon's default) and `dev` branches, no local Docker needed |
 | Web host | Vercel | |
-| API host | Render or Fly.io | Cold starts are hidden by ISR caching |
+| API host | Render, free web service, Ohio (= Neon's AWS us-east-2), Docker image from `backend/Dockerfile`, Blueprint `render.yaml` (#78) | Sleeps after ~15 idle min; cold starts are hidden by the site's cached pages. Health check `/health` (no DB). Needs only `DATABASE_URL` + `TSI_CORS_ORIGINS` |
 | Scheduling | GitHub Actions cron | |
 
 ## Database schema (initial)
@@ -141,7 +141,7 @@ All secrets come from environment variables; none are in code. See [09-conventio
 
 | Var | Secret? | Where |
 |---|---|---|
-| `CFBD_API_KEY` | yes | `backend/.env`, GitHub Actions secret |
+| `CFBD_API_KEY` | yes | `backend/.env`, GitHub Actions secret (ingest only; not on the API host) |
 | `DATABASE_URL` | yes | `backend/.env` (Neon dev branch), GH secret + API host (production branch) |
 | `CFBD_MONTHLY_CALL_BUDGET` | no | `backend/.env` (default 980: ~1,000 free tier minus a margin); ingest refuses to exceed it |
 | `TSI_CORS_ORIGINS` | no | API host (the Vercel URL); `http://localhost:3000` locally |
