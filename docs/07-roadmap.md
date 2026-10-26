@@ -84,7 +84,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Scaffold `web/` (Next.js 16.4, TS, Tailwind 4, shadcn/ui, Recharts, TanStack Table, ESLint + Prettier; #67)
 - [x] Generate TS types from OpenAPI; typed API client (`web/lib/api/`: openapi-typescript + openapi-fetch, cached + tagged reads; #68)
 - [x] Layout, nav, theme, `UpdatedFooter` (design tokens in doc 06; #69)
-- [x] Rankings page (Power/Résumé, Top 25/all, conference filter, sortable table, Δ vs. yesterday, off/def ranks; #70)
+- [x] Rankings page (Power/Résumé, Top 25/all, conference filter, sortable table, weekly Δ arrows, off/def ranks; #70, #79)
 - [x] Matchup board (`/week` → current week; cards, filters, sort, TSI vs. Vegas, plays, finals; #71)
 - [x] Game center (header, plays, odds board, margin chart, alt ladders, tale of the tape, rating trends, prediction history; #72)
 - [x] Team page (header, rank profile, rating trend, schedule with published or "if played today" odds; #73)

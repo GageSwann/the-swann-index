@@ -6,7 +6,7 @@ from typing import Literal
 
 from sqlalchemy.orm import Session
 
-from tsi.db.queries.runs import run_and_previous
+from tsi.db.queries.runs import run_and_week_ago
 from tsi.db.queries.team_info import (
     Record,
     StoredRating,
@@ -22,7 +22,7 @@ RankingType = Literal["power", "resume"]
 @dataclass(frozen=True)
 class RankedTeam:
     rank: int  # in the requested ranking
-    previous_rank: int | None  # same ranking in the previous daily run (None: unranked)
+    previous_rank: int | None  # same ranking ~a week earlier (`previous_as_of`); None: unranked
     team: TeamRef
     wins: int
     losses: int
@@ -48,6 +48,7 @@ class Rankings:
     season_type: str
     week: int
     as_of: datetime
+    previous_as_of: datetime | None  # the run movement compares with (~a week earlier)
     model_version: str
     type: RankingType
     teams: list[RankedTeam]
@@ -60,7 +61,7 @@ def rankings(
     week: int | None = None,
     season_type: str | None = None,
 ) -> Rankings | None:
-    run, previous = run_and_previous(session, season, week, season_type)
+    run, previous = run_and_week_ago(session, season, week, season_type)
     if run is None:
         return None
     stored = stored_ratings(session, [run.id] + ([previous.id] if previous else []))
@@ -85,6 +86,7 @@ def rankings(
         season_type=run.season_type,
         week=run.week,
         as_of=run.run_at,
+        previous_as_of=previous.run_at if previous else None,
         model_version=run.model_version,
         type=ranking,
         teams=[

@@ -18,7 +18,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#78 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#79 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.

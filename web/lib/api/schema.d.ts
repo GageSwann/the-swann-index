@@ -618,6 +618,8 @@ export interface components {
             as_of: string;
             /** Model Version */
             model_version: string;
+            /** Previous As Of */
+            previous_as_of: string | null;
             /** Season */
             season: number;
             /** Season Type */

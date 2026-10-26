@@ -103,7 +103,7 @@ export const columns = col.columns([
 ])
 
 export const HEADER_HELP: Record<string, string> = {
-  change: "Rank change since yesterday's ratings",
+  change: "Rank change over the past week",
   rating: "Points better than an average FBS team on a neutral field",
   off_rating: "Offense in points per game vs. average (rank among FBS)",
   def_rating: "Defense in points per game vs. average; higher is better (rank)",

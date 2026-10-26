@@ -1432,6 +1432,18 @@
             "title": "Model Version",
             "type": "string"
           },
+          "previous_as_of": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous As Of"
+          },
           "season": {
             "title": "Season",
             "type": "integer"
@@ -1465,6 +1477,7 @@
           "season_type",
           "week",
           "as_of",
+          "previous_as_of",
           "model_version",
           "type",
           "teams"

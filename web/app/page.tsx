@@ -1,7 +1,7 @@
 import { PageHeading } from "@/components/layout/page-heading"
 import { RankingsView } from "@/components/rankings/rankings-view"
 import { getRankings } from "@/lib/api/queries"
-import { formatUpdated } from "@/lib/format/time"
+import { formatMonthDay, formatUpdated } from "@/lib/format/time"
 
 export default async function RankingsPage() {
   const [power, resume] = await Promise.all([
@@ -18,12 +18,16 @@ export default async function RankingsPage() {
     )
   }
 
+  // Weekly movement compares with ratings from about a week earlier (decision #79).
+  const since = power.previous_as_of ? formatMonthDay(power.previous_as_of) : null
+
   return (
     <>
       <PageHeading title="Rankings">
         Week {power.week}, {power.season}. Updated {formatUpdated(power.as_of)}.
+        {since && ` Arrows show each team's move since ${since}.`}
       </PageHeading>
-      <RankingsView power={power.teams} resume={resume.teams} />
+      <RankingsView power={power.teams} resume={resume.teams} since={since} />
     </>
   )
 }

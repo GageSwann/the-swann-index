@@ -2,7 +2,7 @@
 
 import { type SortingState, useTable } from "@tanstack/react-table"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import type { RankedTeam } from "@/lib/api/types"
 import { cn } from "@/lib/utils"
@@ -15,12 +15,14 @@ const PINNED: Record<string, string> = {
   team: "max-sm:sticky max-sm:left-19 max-sm:max-w-44 max-sm:shadow-[inset_-1px_0_0_var(--border)]",
 }
 
-export function RankingsTable({ teams }: { teams: RankedTeam[] }) {
+/** `since`: date of the ratings the Δ column compares with; no Δ column without one. */
+export function RankingsTable({ teams, since }: { teams: RankedTeam[]; since: string | null }) {
   const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([{ id: "rank", desc: false }])
+  const shown = useMemo(() => (since ? columns : columns.filter((c) => c.id !== "change")), [since])
   const table = useTable({
     features,
-    columns,
+    columns: shown,
     data: teams,
     state: { sorting },
     onSortingChange: setSorting,
@@ -38,7 +40,11 @@ export function RankingsTable({ teams }: { teams: RankedTeam[] }) {
                   <th
                     key={header.id}
                     scope="col"
-                    title={HEADER_HELP[header.id]}
+                    title={
+                      header.id === "change"
+                        ? `${HEADER_HELP.change} (since ${since})`
+                        : HEADER_HELP[header.id]
+                    }
                     aria-sort={
                       sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : undefined
                     }

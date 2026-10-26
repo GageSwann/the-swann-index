@@ -14,9 +14,9 @@ const EXPLAINER: Record<RankingType, string> = {
     "How hard would it be for a typical #12 team to match this record against this schedule? Re-evaluated daily as opponents' seasons play out.",
 }
 
-type Props = { power: RankedTeam[]; resume: RankedTeam[] }
+type Props = { power: RankedTeam[]; resume: RankedTeam[]; since: string | null }
 
-export function RankingsView({ power, resume }: Props) {
+export function RankingsView({ power, resume, since }: Props) {
   const [type, setType] = useState<RankingType>("power")
   const [scope, setScope] = useState<"top25" | "all">("top25")
   const [conference, setConference] = useState("")
@@ -73,7 +73,7 @@ export function RankingsView({ power, resume }: Props) {
       </div>
       <p className="max-w-[75ch] text-sm text-muted-foreground">{EXPLAINER[type]}</p>
       {teams.length > 0 ? (
-        <RankingsTable key={type} teams={teams} />
+        <RankingsTable key={type} teams={teams} since={since} />
       ) : (
         <p className="text-muted-foreground">No ranked teams match these filters.</p>
       )}
