@@ -12,6 +12,7 @@ import { TaleOfTape } from "@/components/game/tale-of-tape"
 import { PickBadge } from "@/components/board/pick-badge"
 import { PageHeading } from "@/components/layout/page-heading"
 import { getGame, getMeta, getTeam, getWeekGames } from "@/lib/api/queries"
+import { pageMeta } from "@/lib/metadata"
 
 type Props = PageProps<"/games/[id]">
 
@@ -26,7 +27,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const center = await getGame(Number((await params).id)).catch(() => null)
   if (!center) return { title: "Game" }
   const g = center.game
-  return { title: `${g.away.school} ${g.neutral ? "vs" : "at"} ${g.home.school}` }
+  const p = g.prediction
+  const title = `${g.away.school} ${g.neutral ? "vs" : "at"} ${g.home.school}`
+  const fav = p && (p.home_win_prob >= 0.5 ? g.home : g.away)
+  const chance = p && Math.round(Math.max(p.home_win_prob, 1 - p.home_win_prob) * 100)
+  const description = g.result?.final
+    ? `Final: ${g.away.school} ${g.result.away_points}, ${g.home.school} ${g.result.home_points}.${p ? ` TSI projected ${Math.round(p.proj_away)}-${Math.round(p.proj_home)}.` : ""}`
+    : p && fav
+      ? `TSI projects ${g.away.school} ${Math.round(p.proj_away)}, ${g.home.school} ${Math.round(p.proj_home)}; ${fav.school} wins ${chance}% of the time. Odds board, margin distribution and alternate lines.`
+      : `${title}: TSI's prediction, odds board and team comparison.`
+  return pageMeta({ title, description, ownImage: true })
 }
 
 export default function GamePage(props: Props) {

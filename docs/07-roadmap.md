@@ -109,7 +109,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] TSI Book page (built in Phase 5 at the owner's request; #75)
 - [x] Model/methodology + report card page (calibration chart) (built in Phase 5; #76)
 - [x] Hypothetical matchup tool (`/matchup`: shareable GET form, scoreboard, TSI's line, margin chart, alt lines, tale of the tape; #85)
-- [ ] Dynamic OG images; SEO metadata
+- [x] Dynamic OG images; SEO metadata (link previews for the site, teams, games and matchups; titles + descriptions; robots/sitemap with indexing off until `ALLOW_INDEXING=1`; #86)
 - [ ] README screenshots/GIF, architecture diagram, live link
 - [ ] Lighthouse ≥ 90
 - [ ] Rankings side widget: biggest risers/fallers over the past week (deferred from Phase 5; the API has the week-ago ranks, #79)

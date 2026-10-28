@@ -14,10 +14,10 @@ repos:
     rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
-        exclude: ^\.claude/skills/(?!SOURCES\.md)
+        exclude: ^(\.claude/skills/(?!SOURCES\.md)|web/assets/fonts/)
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
-        exclude: ^\.claude/skills/(?!SOURCES\.md)
+        exclude: ^(\.claude/skills/(?!SOURCES\.md)|web/assets/fonts/)
       - id: check-yaml
       - id: check-added-large-files
         args: [--maxkb=1024]

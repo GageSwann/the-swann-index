@@ -11,13 +11,34 @@ import { MatchupForm } from "@/components/matchup/matchup-form"
 import { MatchupOdds } from "@/components/matchup/matchup-odds"
 import { getMatchup, getRankings, getTeam, getTeams } from "@/lib/api/queries"
 import type { RankedTeam } from "@/lib/api/types"
-
-export const metadata: Metadata = {
-  title: "Matchup",
-  description: "How TSI would price any two FBS teams if they played today.",
-}
+import { pageMeta } from "@/lib/metadata"
 
 type Props = PageProps<"/matchup">
+
+const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined
+
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const q = await searchParams
+  const away = one(q.away)
+  const home = one(q.home)
+  const neutral = one(q.neutral) === "1"
+  const m =
+    away && home && away !== home ? await getMatchup(home, away, neutral).catch(() => null) : null
+  if (!away || !home || !m) {
+    return pageMeta({
+      title: "Matchup",
+      description: "How TSI would price any two FBS teams if they played today.",
+      image: "/api/og/matchup",
+    })
+  }
+  const query = new URLSearchParams({ away, home })
+  if (neutral) query.set("neutral", "1")
+  return pageMeta({
+    title: `${m.away.school} ${neutral ? "vs" : "at"} ${m.home.school} (hypothetical)`,
+    description: `If they played today, TSI projects ${m.away.school} ${Math.round(m.proj_away)}, ${m.home.school} ${Math.round(m.proj_home)} (${m.home.school} ${Math.round(m.home_win_prob * 100)}% to win).`,
+    image: `/api/og/matchup?${query}`,
+  })
+}
 
 export default function MatchupPage(props: Props) {
   return (
@@ -31,8 +52,6 @@ export default function MatchupPage(props: Props) {
     </div>
   )
 }
-
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined
 
 async function MatchupView({ searchParams }: Props) {
   const q = await searchParams

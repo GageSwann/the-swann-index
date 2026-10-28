@@ -12,8 +12,13 @@ import { VersionHistory } from "@/components/model/version-history"
 import { getModelReport } from "@/lib/api/queries"
 import { percent } from "@/lib/format/numbers"
 import { formatUpdated } from "@/lib/format/time"
+import { pageMeta } from "@/lib/metadata"
 
-export const metadata: Metadata = { title: "Model" }
+export const metadata: Metadata = pageMeta({
+  title: "Model",
+  description:
+    "How TSI rates teams and predicts games, and how accurate it has been against the closing line and Elo, with calibration and the Book replayed.",
+})
 
 export default async function ModelPage() {
   const report = await getModelReport()

@@ -6,6 +6,7 @@ import { BoardView } from "@/components/board/board-view"
 import { WeekNav } from "@/components/board/week-nav"
 import { PageHeading } from "@/components/layout/page-heading"
 import { getMeta, getRankings, getWeekGames } from "@/lib/api/queries"
+import { pageMeta } from "@/lib/metadata"
 
 type Props = PageProps<"/week/[season]/[week]">
 
@@ -17,7 +18,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { season, week } = await params
-  return { title: `Week ${week}, ${season}` }
+  return pageMeta({
+    title: `Week ${week}, ${season}`,
+    description: `TSI's projected scores and win probabilities for every week ${week} game, next to the betting market, with this week's TSI plays.`,
+  })
 }
 
 export default function WeekPage(props: Props) {

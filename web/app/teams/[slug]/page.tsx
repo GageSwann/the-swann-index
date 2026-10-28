@@ -9,6 +9,8 @@ import { ScheduleTable } from "@/components/team/schedule-table"
 import { TeamHeader } from "@/components/team/team-header"
 import { getRankings, getTeam } from "@/lib/api/queries"
 import { scheduleOdds } from "@/lib/api/schedule-odds"
+import { pageMeta } from "@/lib/metadata"
+import { record, signed } from "@/lib/format/numbers"
 
 type Props = PageProps<"/teams/[slug]">
 
@@ -20,7 +22,16 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const profile = await getTeam((await params).slug).catch(() => null)
-  return { title: profile ? profile.team.school : "Team" }
+  if (!profile) return { title: "Team" }
+  const { team, ratings: r } = profile
+  const rec = record(profile.wins, profile.losses, profile.ties)
+  return pageMeta({
+    ownImage: true,
+    title: team.school,
+    description: r?.rank_power
+      ? `${team.school} (${rec}) is #${r.rank_power} in the TSI Power rankings and #${r.rank_resume ?? "—"} in Résumé, rating ${signed(r.rating)}. Schedule, win chances and rating trend.`
+      : `${team.school} (${rec}): schedule and TSI win chances.`,
+  })
 }
 
 export default function TeamPage(props: Props) {

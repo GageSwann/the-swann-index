@@ -4,6 +4,7 @@ import { Archivo } from "next/font/google"
 import { SiteHeader } from "@/components/layout/site-header"
 import { ThemeProvider } from "@/components/layout/theme-provider"
 import { UpdatedFooter } from "@/components/layout/updated-footer"
+import { ALLOW_INDEXING, SITE_NAME, SITE_URL } from "@/lib/site"
 
 import "./globals.css"
 
@@ -15,10 +16,23 @@ const archivo = Archivo({
   axes: ["wdth"],
 })
 
+const DESCRIPTION =
+  "College football power rankings, game predictions and betting lines from the TSI model."
+
 export const metadata: Metadata = {
-  title: { default: "The Swann Index", template: "%s | The Swann Index" },
-  description:
-    "College football power rankings, game predictions and betting lines from the TSI model.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+  description: DESCRIPTION,
+  openGraph: {
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: DESCRIPTION,
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image", title: SITE_NAME, description: DESCRIPTION },
+  // Search engines stay out until ALLOW_INDEXING=1 (decision #86); link previews still work.
+  robots: ALLOW_INDEXING ? undefined : { index: false, follow: false },
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

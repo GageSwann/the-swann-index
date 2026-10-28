@@ -6,8 +6,13 @@ import { TierTable } from "@/components/book/tier-table"
 import { UnitsChart } from "@/components/book/units-chart"
 import { PageHeading } from "@/components/layout/page-heading"
 import { getLedger, getMeta } from "@/lib/api/queries"
+import { pageMeta } from "@/lib/metadata"
 
-export const metadata: Metadata = { title: "TSI Book" }
+export const metadata: Metadata = pageMeta({
+  title: "TSI Book",
+  description:
+    "Paper picks where TSI disagrees with the betting market: record, units, closing-line value and every pick, graded after each game.",
+})
 
 export default async function BookPage() {
   const meta = await getMeta()

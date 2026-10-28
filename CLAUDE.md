@@ -19,7 +19,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#85 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#86 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -76,6 +76,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **API changes:** run `tsi openapi` and commit `docs/api/openapi.json` (else `tests/api/test_openapi.py` fails), then `npm run api:types` in `web/` and commit `lib/api/schema.d.ts` (else `npm run check` fails). Response shapes are the dataclasses in `services/read/`; the web imports them via `lib/api/types.ts`.
 - **Web checks:** run `npm run check` on its own and confirm exit 0 before committing (don't pipe it). Generated `lib/api/schema.d.ts` is Prettier-ignored (formatting it breaks `api:check`). After deleting a route, clear `web/.next` (stale `.next/dev/types` break `tsc`).
 - **Web building blocks:** table headers use `components/ui/head-cell.tsx`; charts take colors from `lib/chart-theme.ts` (`axisStyle`) and share `components/charts/chart-parts.tsx` (caption + legend, tooltip box) and `line-series-chart.tsx`; dates go through `lib/format/time.ts`. `cn` (the `cn` package) merges conflicting Tailwind classes, so `className` overrides win. No shadcn components remain (#77).
+- **Page metadata:** use `pageMeta()` from `lib/metadata.ts`; pass `ownImage: true` on routes with an `opengraph-image` file (any `openGraph.images` overrides it). Indexing is off until `ALLOW_INDEXING=1` (#86).
 - **Web data access:** only through `web/lib/api/queries.ts` (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).
 - **Model changes:** rerun `tsi backtest run` (+ `tsi backtest book` for Book changes), then `tsi model fit`, and commit the new artifact. The saved backtest run (with its report tables) is what `/model/report` and the Model page show, so save one after every model change (#76). The artifact is written with LF, so an unchanged refit leaves git clean.
 - **gitleaks** flags realistic-looking fake keys in tests: use low-entropy values like `"fakekey"`.
