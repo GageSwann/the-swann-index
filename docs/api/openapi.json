@@ -944,6 +944,14 @@
             "title": "Proj Home",
             "type": "number"
           },
+          "sigma_margin": {
+            "title": "Sigma Margin",
+            "type": "number"
+          },
+          "sigma_total": {
+            "title": "Sigma Total",
+            "type": "number"
+          },
           "spread": {
             "title": "Spread",
             "type": "number"
@@ -963,6 +971,8 @@
           "spread",
           "total",
           "home_win_prob",
+          "sigma_margin",
+          "sigma_total",
           "markets"
         ],
         "title": "Matchup",

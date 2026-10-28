@@ -484,6 +484,10 @@ export interface components {
             proj_away: number;
             /** Proj Home */
             proj_home: number;
+            /** Sigma Margin */
+            sigma_margin: number;
+            /** Sigma Total */
+            sigma_total: number;
             /** Spread */
             spread: number;
             /** Total */

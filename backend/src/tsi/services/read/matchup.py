@@ -39,6 +39,8 @@ class Matchup:
     spread: float  # home view, negative = home favored
     total: float
     home_win_prob: float
+    sigma_margin: float  # spread of the score distribution (for the margin chart)
+    sigma_total: float
     markets: GameMarkets
 
 
@@ -79,6 +81,8 @@ def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime
         spread=-dist.margin,
         total=dist.total,
         home_win_prob=dist.home_win_prob,
+        sigma_margin=dist.sigma_margin,
+        sigma_total=dist.sigma_total,
         markets=price_game(dist),
     )
 

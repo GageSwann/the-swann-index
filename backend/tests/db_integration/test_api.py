@@ -142,5 +142,6 @@ def test_matchup(api: TestClient) -> None:
 
     assert m["proj_home"] + m["proj_away"] == pytest.approx(m["total"])
     assert 0 < m["home_win_prob"] < 1 and m["neutral"] is True
+    assert m["sigma_margin"] > 0 and m["sigma_total"] > 0  # the margin chart needs them
     assert api.get("/matchup?home=alpha&away=nope").status_code == 404
     assert api.get("/matchup?home=alpha&away=alpha").status_code == 400
