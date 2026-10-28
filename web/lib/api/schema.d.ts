@@ -656,15 +656,34 @@ export interface components {
             /** Week */
             week: number;
         };
+        /** ResumeSummary */
+        ResumeSummary: {
+            /** Benchmark Expected Wins */
+            benchmark_expected_wins: number;
+            /** Benchmark Rating */
+            benchmark_rating: number;
+            /** Games */
+            games: number;
+            /** Sor */
+            sor: number;
+        };
         /** ScheduleGame */
         ScheduleGame: {
+            /** Benchmark Win Prob */
+            benchmark_win_prob: number | null;
             /** Game Id */
             game_id: number;
+            /** In Resume */
+            in_resume: boolean;
             /** Kickoff */
             kickoff: string | null;
             opponent: components["schemas"]["TeamRef"];
             /** Opponent Points */
             opponent_points: number | null;
+            /** Opponent Rank */
+            opponent_rank: number | null;
+            /** Opponent Rating */
+            opponent_rating: number | null;
             /** Outcome */
             outcome: string | null;
             /** Projected Opponent */
@@ -759,6 +778,7 @@ export interface components {
             /** Losses */
             losses: number;
             ratings: components["schemas"]["TeamRatings"] | null;
+            resume: components["schemas"]["ResumeSummary"] | null;
             /** Schedule */
             schedule: components["schemas"]["ScheduleGame"][];
             /** Season */

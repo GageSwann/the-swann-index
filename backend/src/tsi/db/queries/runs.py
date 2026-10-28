@@ -79,3 +79,8 @@ def rating_runs(session: Session, season: int) -> list[RunInfo]:
     """Every live rating run of a season, oldest first (rating history)."""
     query = rating_runs_query(season).order_by(ModelRun.run_at, ModelRun.id)
     return [RunInfo(*row) for row in session.execute(query)]
+
+
+def run_params(session: Session, run_id: int) -> dict:
+    """A run's saved parameters (e.g. `season_hfa`, `resume_benchmark`)."""
+    return session.scalar(select(ModelRun.params).where(ModelRun.id == run_id)) or {}

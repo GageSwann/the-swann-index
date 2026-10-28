@@ -1555,11 +1555,54 @@
         "title": "RatingPoint",
         "type": "object"
       },
+      "ResumeSummary": {
+        "properties": {
+          "benchmark_expected_wins": {
+            "title": "Benchmark Expected Wins",
+            "type": "number"
+          },
+          "benchmark_rating": {
+            "title": "Benchmark Rating",
+            "type": "number"
+          },
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "sor": {
+            "title": "Sor",
+            "type": "number"
+          }
+        },
+        "required": [
+          "benchmark_rating",
+          "games",
+          "benchmark_expected_wins",
+          "sor"
+        ],
+        "title": "ResumeSummary",
+        "type": "object"
+      },
       "ScheduleGame": {
         "properties": {
+          "benchmark_win_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Win Prob"
+          },
           "game_id": {
             "title": "Game Id",
             "type": "integer"
+          },
+          "in_resume": {
+            "title": "In Resume",
+            "type": "boolean"
           },
           "kickoff": {
             "anyOf": [
@@ -1586,6 +1629,28 @@
               }
             ],
             "title": "Opponent Points"
+          },
+          "opponent_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opponent Rank"
+          },
+          "opponent_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opponent Rating"
           },
           "outcome": {
             "anyOf": [
@@ -1690,7 +1755,11 @@
           "projected_team",
           "projected_opponent",
           "win_prob",
-          "spread"
+          "spread",
+          "opponent_rating",
+          "opponent_rank",
+          "benchmark_win_prob",
+          "in_resume"
         ],
         "title": "ScheduleGame",
         "type": "object"
@@ -1877,6 +1946,16 @@
               }
             ]
           },
+          "resume": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResumeSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "schedule": {
             "items": {
               "$ref": "#/components/schemas/ScheduleGame"
@@ -1908,7 +1987,8 @@
           "ties",
           "ratings",
           "history",
-          "schedule"
+          "schedule",
+          "resume"
         ],
         "title": "TeamProfile",
         "type": "object"

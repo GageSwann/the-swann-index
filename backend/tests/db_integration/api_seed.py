@@ -35,6 +35,14 @@ WEEK2_RUN_AT = datetime(2026, 10, 21, 10, 0, tzinfo=UTC)
 LIVE_KICKOFF = datetime(2026, 10, 21, 0, 0, tzinfo=UTC)  # Alpha-Charlie, in progress
 UPCOMING_KICKOFF = datetime(2026, 10, 24, 19, 0, tzinfo=UTC)  # Bravo-Delta
 # (team, rating, off, def, rank_power, rank_resume, sor, predictive rating)
+# What a nightly rating run saves (rate_store): home field, the Résumé benchmark and its
+# spread, and the pooled non-FBS ratings (decision #89).
+WEEK2_PARAMS = {
+    "season_hfa": 3.0,
+    "resume_benchmark": 6.0,
+    "resume_sigma": 15.0,
+    "pooled_season_ratings": {"fcs": -20.0, "lower": -30.0},
+}
 WEEK2_RATINGS = [
     (1, 12.0, 7.0, 5.0, 1, 1, 0.20, 14.0),
     (4, 6.0, 3.0, 3.0, 2, 2, 0.35, 5.0),
@@ -139,7 +147,7 @@ def _runs(session) -> None:
         season_type="regular",
         run_at=WEEK2_RUN_AT,
         model_version="tsi-test",
-        params={},
+        params=WEEK2_PARAMS,
     )
     publish = ModelRun(
         kind="live",

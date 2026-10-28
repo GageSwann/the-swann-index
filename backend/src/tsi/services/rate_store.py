@@ -34,6 +34,13 @@ def save_live_ratings(
                 "season_hfa": live.rankings.ratings.hfa,
                 "predictive_hfa": live.predictive_hfa,
                 "resume_benchmark": live.rankings.benchmark,
+                "resume_sigma": artifact.sigma_season,  # SOR win-probability spread
+                # Non-FBS opponents' pooled `season` ratings, for the team page's Résumé
+                # breakdown (decision #89).
+                "pooled_season_ratings": {
+                    "fcs": live.rankings.ratings.get(0, "fcs").rating,
+                    "lower": live.rankings.ratings.get(0, "ii").rating,
+                },
             },
             git_sha=current_git_sha(),
         )

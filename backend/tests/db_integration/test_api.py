@@ -7,6 +7,7 @@ from tests.db_integration.api_seed import NOW, WEEK1_RUN_AT, WEEK2_RUN_AT, seed
 from tsi.api.app import create_app
 from tsi.api.deps import get_now, get_session
 from tsi.config import Settings
+from tsi.model.ratings.probability import win_prob
 
 
 @pytest.fixture
@@ -76,6 +77,22 @@ def test_team_list_and_profile(api: TestClient) -> None:
     # In progress: the locked pre-kickoff snapshot (Alpha -4), never the post-kickoff one (-9).
     assert live["spread"] == -4.0 and live["site"] == "home"
     assert api.get("/teams/nope").status_code == 404
+
+
+def test_team_resume_breakdown(api: TestClient) -> None:
+    alpha = ok(api, "/teams/alpha")
+    first, live = alpha["schedule"]
+    site = {"home": 1, "away": -1, "neutral": 0}[first["site"]]
+    # Bravo's current rating (-8, #4) vs. the benchmark 6.0, home field 3.0, spread 15.0.
+    p = win_prob(6.0 - (-8.0) + site * 3.0, 15.0)
+
+    assert (first["opponent_rating"], first["opponent_rank"]) == (-8.0, 4)
+    assert first["benchmark_win_prob"] == pytest.approx(p)
+    assert first["in_resume"] is True and live["in_resume"] is False  # live: not decided
+    res = alpha["resume"]
+    assert (res["games"], res["benchmark_rating"]) == (1, 6.0)
+    # One win: SOR = P(the benchmark wins at least one) = p.
+    assert res["sor"] == pytest.approx(p) and res["benchmark_expected_wins"] == pytest.approx(p)
 
 
 def test_week_board(api: TestClient) -> None:

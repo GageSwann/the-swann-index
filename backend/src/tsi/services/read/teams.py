@@ -19,6 +19,13 @@ from tsi.db.queries.team_info import (
 )
 from tsi.divisions import RATED_DIVISION
 from tsi.services.read.common import Score, current_snapshot, result_of
+from tsi.services.read.resume_view import (
+    ResumeContext,
+    ResumeSummary,
+    game_difficulty,
+    resume_context,
+    resume_summary,
+)
 
 
 @dataclass(frozen=True)
@@ -62,6 +69,11 @@ class ScheduleGame:
     projected_opponent: float | None
     win_prob: float | None  # TSI win probability for this team
     spread: float | None  # TSI spread from this team's view (negative = favored)
+    # Résumé breakdown (decision #89), from the shown rating run:
+    opponent_rating: float | None  # opponent's current `season` rating
+    opponent_rank: int | None  # opponent's current Power rank (FBS)
+    benchmark_win_prob: float | None  # chance a typical #12 team wins this game
+    in_resume: bool  # counts toward the Résumé (decided before the run)
 
 
 @dataclass(frozen=True)
@@ -74,6 +86,7 @@ class TeamProfile:
     ratings: TeamRatings | None
     history: list[RatingPoint]
     schedule: list[ScheduleGame]
+    resume: ResumeSummary | None  # None for non-FBS teams or before ratings exist
 
 
 def team_list(session: Session, season: int) -> list[TeamRef]:
@@ -100,6 +113,8 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     ]
     rec = tally_records(finished).get(team_id, Record())
     snaps = snapshots_for_games(session, [g.id for g in games])
+    ctx = resume_context(session, latest) if latest else None
+    rated = refs[team_id].division == RATED_DIVISION
     return TeamProfile(
         team=refs[team_id],
         season=season,
@@ -112,7 +127,8 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
             for run in runs
             if (point := _point(run.run_at, run.week, history_rows.get(run.id, []))) is not None
         ],
-        schedule=[_schedule_game(g, team_id, refs, snaps.get(g.id, []), now) for g in games],
+        schedule=[_schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
+        resume=resume_summary(ctx, games, team_id, refs) if ctx and rated else None,
     )
 
 
@@ -144,7 +160,12 @@ def _point(as_of: datetime, week: int, rows: list[StoredRating]) -> RatingPoint 
 
 
 def _schedule_game(
-    g: GameRow, team_id: int, refs: dict[int, TeamRef], snaps, now: datetime
+    g: GameRow,
+    team_id: int,
+    refs: dict[int, TeamRef],
+    snaps,
+    now: datetime,
+    ctx: ResumeContext | None,
 ) -> ScheduleGame:
     home = g.home_id == team_id
     sign = 1 if home else -1
@@ -160,6 +181,7 @@ def _schedule_game(
         if result.final:
             outcome = "W" if team_pts > opp_pts else "L" if team_pts < opp_pts else "T"
     snap, _ = current_snapshot(snaps, g.start_time, now)
+    diff = game_difficulty(ctx, g, team_id, opponent) if ctx else None
     return ScheduleGame(
         game_id=g.id,
         kickoff=g.start_time,
@@ -175,4 +197,8 @@ def _schedule_game(
         projected_opponent=None if snap is None else (snap.proj_away if home else snap.proj_home),
         win_prob=None if snap is None else (snap.home_win_prob if home else 1 - snap.home_win_prob),
         spread=None if snap is None else sign * snap.spread,
+        opponent_rating=diff.opponent_rating if diff else None,
+        opponent_rank=diff.opponent_rank if diff else None,
+        benchmark_win_prob=diff.benchmark_win_prob if diff else None,
+        in_resume=diff.in_resume if diff else False,
     )
