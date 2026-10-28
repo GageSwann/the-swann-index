@@ -1,4 +1,4 @@
-import { UnitsChart } from "@/components/book/units-chart"
+import { UnitsChart } from "@/components/charts/lazy"
 import type { BookBacktestRow, BookUnitsPoint } from "@/lib/api/types"
 import { percent, record, signed } from "@/lib/format/numbers"
 import { MARKET_LABEL, units } from "@/lib/format/picks"

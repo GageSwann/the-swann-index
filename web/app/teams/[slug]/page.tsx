@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
-import { RatingTrendChart } from "@/components/charts/rating-trend-chart"
+import { RatingTrendChart } from "@/components/charts/lazy"
 import { PageHeading } from "@/components/layout/page-heading"
 import { RankProfile } from "@/components/team/rank-profile"
 import { ScheduleTable } from "@/components/team/schedule-table"

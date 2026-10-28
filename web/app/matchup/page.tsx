@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
 
-import { MarginChart } from "@/components/game/margin-chart"
+import { MarginChart } from "@/components/charts/lazy"
 import { AltLadder } from "@/components/game/alt-ladder"
 import { ScoreBoard } from "@/components/game/score-board"
 import { TaleOfTape } from "@/components/game/tale-of-tape"
