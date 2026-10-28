@@ -6,8 +6,8 @@ services:
     name: tsi-api
     runtime: docker
     rootDir: backend # only backend/ changes trigger a deploy
-    dockerfilePath: ./backend/Dockerfile # relative to the repo root, not rootDir
-    dockerContext: ./backend
+    dockerfilePath: ./Dockerfile # relative to rootDir (Render monorepo docs)
+    dockerContext: .
     plan: free # sleeps after ~15 idle minutes; the site's cached pages hide the wake-up
     region: ohio # AWS us-east-2, same region as the Neon database
     branch: main
