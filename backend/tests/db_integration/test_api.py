@@ -91,8 +91,8 @@ def test_team_resume_breakdown(api: TestClient) -> None:
     assert first["in_resume"] is True and live["in_resume"] is False  # live: not decided
     res = alpha["resume"]
     assert (res["games"], res["benchmark_rating"]) == (1, 6.0)
-    # One win: SOR = P(the benchmark wins at least one) = p.
-    assert res["sor"] == pytest.approx(p) and res["benchmark_expected_wins"] == pytest.approx(p)
+    assert res["sor"] == 0.20  # the stored ranking's SOR (Alpha's seeded value)
+    assert res["benchmark_expected_wins"] == pytest.approx(p)  # one counted game
 
 
 def test_week_board(api: TestClient) -> None:

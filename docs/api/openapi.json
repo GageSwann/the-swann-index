@@ -1558,8 +1558,15 @@
       "ResumeSummary": {
         "properties": {
           "benchmark_expected_wins": {
-            "title": "Benchmark Expected Wins",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Expected Wins"
           },
           "benchmark_rating": {
             "title": "Benchmark Rating",
@@ -1570,15 +1577,22 @@
             "type": "integer"
           },
           "sor": {
-            "title": "Sor",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sor"
           }
         },
         "required": [
           "benchmark_rating",
           "games",
-          "benchmark_expected_wins",
-          "sor"
+          "sor",
+          "benchmark_expected_wins"
         ],
         "title": "ResumeSummary",
         "type": "object"

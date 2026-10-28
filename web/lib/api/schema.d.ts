@@ -659,13 +659,13 @@ export interface components {
         /** ResumeSummary */
         ResumeSummary: {
             /** Benchmark Expected Wins */
-            benchmark_expected_wins: number;
+            benchmark_expected_wins: number | null;
             /** Benchmark Rating */
             benchmark_rating: number;
             /** Games */
             games: number;
             /** Sor */
-            sor: number;
+            sor: number | null;
         };
         /** ScheduleGame */
         ScheduleGame: {

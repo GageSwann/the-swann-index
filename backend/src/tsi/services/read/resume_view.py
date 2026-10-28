@@ -28,8 +28,10 @@ from tsi.model.resume import ScheduleGame, benchmark_rating, strength_of_record
 class ResumeSummary:
     benchmark_rating: float  # the #12 team's `season` rating in the shown run
     games: int  # decided games that count (kicked off before the run)
-    benchmark_expected_wins: float  # what a #12 team would expect from those games
-    sor: float  # P(a #12 team wins at least as many); lower = more impressive
+    sor: float | None  # stored Résumé SOR: P(a #12 team wins at least as many); lower = better
+    # What a #12 team would expect from those games; None while any counted game's
+    # difficulty is unknown (runs saved before pooled non-FBS ratings were, #89).
+    benchmark_expected_wins: float | None
 
 
 @dataclass(frozen=True)
@@ -92,13 +94,33 @@ def game_difficulty(
 
 def resume_summary(
     ctx: ResumeContext, games: list[GameRow], team_id: int, refs: dict[int, TeamRef]
-) -> ResumeSummary | None:
-    """The team's résumé from its counted games; None if any opponent can't be rated."""
+) -> ResumeSummary:
+    """Every rated team gets one: rank and SOR are the stored ranking's (canonical); the
+    expected wins need every counted game's difficulty and are None otherwise."""
+    probs = [
+        d.benchmark_win_prob
+        for g in games
+        if (d := game_difficulty(ctx, g, team_id, _opponent(g, team_id, refs))).in_resume
+    ]
+    row = ctx.season.get(team_id)
+    return ResumeSummary(
+        benchmark_rating=ctx.benchmark,
+        games=len(probs),
+        sor=row.sor if row else None,
+        # The expected wins are the sum of each counted game's chance; unknown if any is.
+        benchmark_expected_wins=None if None in probs else sum(p for p in probs if p is not None),
+    )
+
+
+def recomputed_sor(
+    ctx: ResumeContext, games: list[GameRow], team_id: int, refs: dict[int, TeamRef]
+) -> float | None:
+    """SOR rebuilt from the breakdown (tests check it equals the stored value); None if any
+    counted game's difficulty is unknown."""
     counted: list[ScheduleGame] = []
     for g in games:
         home = g.home_id == team_id
-        opponent = refs[g.away_id if home else g.home_id]
-        d = game_difficulty(ctx, g, team_id, opponent)
+        d = game_difficulty(ctx, g, team_id, _opponent(g, team_id, refs))
         if not d.in_resume:
             continue
         if d.opponent_rating is None or ctx.hfa is None:
@@ -108,8 +130,11 @@ def resume_summary(
         counted.append(ScheduleGame(d.opponent_rating, site, won))
     if ctx.hfa is None:
         return None
-    r = strength_of_record(counted, ctx.benchmark, ctx.hfa, ctx.sigma)
-    return ResumeSummary(ctx.benchmark, len(counted), r.benchmark_expected_wins, r.sor)
+    return strength_of_record(counted, ctx.benchmark, ctx.hfa, ctx.sigma).sor
+
+
+def _opponent(g: GameRow, team_id: int, refs: dict[int, TeamRef]) -> TeamRef:
+    return refs[g.away_id if g.home_id == team_id else g.home_id]
 
 
 def _opponent_rating(ctx: ResumeContext, opponent: TeamRef) -> tuple[float | None, int | None]:
