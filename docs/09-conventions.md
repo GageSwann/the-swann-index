@@ -75,7 +75,7 @@ Use proven skills from others instead of reinventing patterns. **Rules for third
 | 5 | `react-best-practices` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | React / Next.js performance rules from Vercel (replaces the planned `nextjs` skill, which no longer exists; #66). Current Next.js API docs ship inside the `next` package |
 | 5–7 | `webapp-testing` | [anthropics/skills](https://github.com/anthropics/skills) | Playwright checks, screenshots, phone-width tests |
 | 3+ | `skill-creator` | [anthropics/skills](https://github.com/anthropics/skills) | write **our own** project skills, e.g. `tsi-weekly-run` (run, check, publish) and `tsi-backtest` |
-| 6 | Vercel / Neon vendor skills or MCP servers | vendor repos | evaluate at Phase 6; adopt only if vendor-published |
+| 6 | Vercel / Neon vendor skills or MCP servers | vendor repos | evaluated at Phase 6: not adopted, the dashboards + `gh` CLI were enough and the runbook skill covers operations (#84) |
 
 Install command (for the [skills CLI](https://github.com/vercel-labs/skills)), run from the repo root:
 ```powershell

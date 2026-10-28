@@ -101,7 +101,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] GitHub Actions: keep the nightly `tsi run` (10:00 UTC) and revalidate the site after each run; CI (ruff, pytest, lint, typecheck, build) (#75, #80; end-to-end run verified 2026-10-28, #83)
 - [x] Failure alerting (GitHub email on failed workflows, enabled by the owner; #83)
 - [x] `security-review` pass; confirm no secrets in repo history; all secrets set in GH/Vercel/API host (#81; GH: CFBD_API_KEY, DATABASE_URL, REVALIDATE_TOKEN; Render: DATABASE_URL; Vercel: REVALIDATE_TOKEN)
-- [ ] Project skill `tsi-weekly-run` (via `skill-creator`) documenting the operator runbook
+- [x] Project skill `tsi-weekly-run` (via `skill-creator`) documenting the operator runbook (`.claude/skills/tsi-weekly-run/`: daily check, re-run/refresh, weekly review script, deploys/rollbacks, Neon branches + migrations, secret rotation, troubleshooting; #84)
 
 **Done when:** the public URL updates on its own for a full week without manual intervention.
 
