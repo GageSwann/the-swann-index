@@ -133,7 +133,7 @@ Rankings therefore move the morning after any game, including midweek games.
 ## Caching & revalidation
 - **API** (`api/caching.py`, decision #61): successful GETs send `Cache-Control: public, max-age=300, stale-while-revalidate=86400` (`/matchup`: `max-age=3600`, its in-process cache TTL); errors are `no-store`. Every JSON body carries a strong `ETag`; `If-None-Match` → empty 304. Responses over 1 KB are gzipped (rankings 74 KB → 16 KB). CORS allows only `TSI_CORS_ORIGINS`, GET only, no credentials, `ETag` exposed.
 - **Web** (Cache Components, decision #68): every API read in `web/lib/api/queries.ts` is a `"use cache"` function with the custom `tsi` profile (stale 5 min, revalidate hourly, expire 2 days; `next.config.ts`) and tags `tsi` + one of `meta`, `rankings`, `teams`, `ledger`, `report`, `week-{season}-{n}`, `team-{slug}`, `game-{id}` (`lib/api/tags.ts`). Phase 6 calls `revalidateTag` from `/api/revalidate` after each nightly run.
-- After a model run, the workflow calls a protected `/api/revalidate` route on Vercel with a secret token.
+- After each nightly run, the workflow wakes the API (`/health`), calls `POST /api/revalidate` with `Authorization: Bearer $REVALIDATE_TOKEN` (constant-time check; 401 wrong token, 503 unset), which runs `revalidateTag("tsi", "max")`, then visits the main pages so the first reader gets fresh ones (#80).
 - Result: nearly every page view is served from Vercel's cache, and the API is only hit on revalidation and for the matchup tool.
 
 ## Environments & secrets
@@ -142,8 +142,9 @@ All secrets come from environment variables; none are in code. See [09-conventio
 | Var | Secret? | Where |
 |---|---|---|
 | `CFBD_API_KEY` | yes | `backend/.env`, GitHub Actions secret (ingest only; not on the API host) |
-| `DATABASE_URL` | yes | `backend/.env` (Neon dev branch), GH secret + API host (production branch) |
+| `DATABASE_URL` | yes | `backend/.env` (Neon `dev` branch); GH secret + Render: Neon `prod` branch (copied from `dev` on 2026-10-27, #80) |
 | `CFBD_MONTHLY_CALL_BUDGET` | no | `backend/.env` (default 980: ~1,000 free tier minus a margin); ingest refuses to exceed it |
 | `TSI_CORS_ORIGINS` | no | API host (the Vercel URL); `http://localhost:3000` locally |
-| `TSI_API_URL` | no | `web/.env.local`, Vercel env |
+| `TSI_API_URL` | no | `web/.env.local`, Vercel env, GH Actions **variable** (CI build + nightly wake-up) |
+| `SITE_URL` | no | GH Actions variable: the Vercel URL the nightly job refreshes |
 | `REVALIDATE_TOKEN` | yes | `web/.env.local`, Vercel env + GH secret (server-only; never `NEXT_PUBLIC_`) |

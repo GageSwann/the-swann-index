@@ -97,7 +97,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 ## Phase 6: Deploy & automation (go live)
 - [ ] Deploy API (Render/Fly) against Neon `production`
 - [ ] Deploy web to Vercel; env vars set
-- [ ] `/api/revalidate` route with secret token
+- [x] `/api/revalidate` route with secret token (POST, bearer token, `revalidateTag("tsi", "max")`; #80)
 - [ ] GitHub Actions: keep the nightly `tsi run` (10:00 UTC) and revalidate the site after each run; CI (ruff, pytest, lint, typecheck, build) (#75)
 - [ ] Failure alerting (workflow failure email is fine)
 - [ ] `security-review` pass; confirm no secrets in repo history; all secrets set in GH/Vercel/API host

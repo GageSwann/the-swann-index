@@ -11,7 +11,7 @@ services:
     plan: free # sleeps after ~15 idle minutes; the site's cached pages hide the wake-up
     region: ohio # AWS us-east-2, same region as the Neon database
     branch: main
-    autoDeployTrigger: commit # becomes checksPass once CI exists (Phase 6, CI item)
+    autoDeployTrigger: checksPass # deploy only after CI (.github/workflows/ci.yml) passes
     healthCheckPath: /health # no database call
     envVars:
       - key: DATABASE_URL # Neon `production` branch, pooled connection string

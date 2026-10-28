@@ -1,6 +1,8 @@
 # Nightly: refresh the in-progress season from CFBD, refit ratings + rankings,
 # grade finished picks, and publish prediction snapshots + picks (`tsi run`).
-# Secrets: CFBD_API_KEY, DATABASE_URL (repo Settings -> Secrets and variables -> Actions).
+# Then refreshes the deployed site's cached pages.
+# Secrets: CFBD_API_KEY, DATABASE_URL (Neon `prod`), REVALIDATE_TOKEN.
+# Variables: TSI_API_URL (Render), SITE_URL (Vercel). Repo Settings -> Secrets and variables -> Actions.
 name: Daily refresh
 
 on:
@@ -37,3 +39,28 @@ jobs:
         env:
           CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # Refresh the site so it shows tonight's ratings and picks (doc 02, decision #80).
+      # Runs even if ingest failed (the rest of `tsi run` still published); skipped until
+      # the TSI_API_URL and SITE_URL repository variables are set.
+      - name: Refresh the site
+        if: ${{ !cancelled() && vars.SITE_URL != '' && vars.TSI_API_URL != '' }}
+        working-directory: .
+        env:
+          API_URL: ${{ vars.TSI_API_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          REVALIDATE_TOKEN: ${{ secrets.REVALIDATE_TOKEN }}
+        run: |
+          # Wake the API first: Render's free tier sleeps when idle.
+          curl -fsS --retry 6 --retry-delay 15 --retry-all-errors --max-time 90 "$API_URL/health" > /dev/null
+          curl -fsS -X POST -H "Authorization: Bearer $REVALIDATE_TOKEN" "$SITE_URL/api/revalidate"
+          echo
+          # The first visit after a refresh gets the cached page while the new one builds;
+          # visit the main pages now so readers get fresh ones.
+          for page in / /week /book /model; do
+            curl -fsS -L -o /dev/null --max-time 120 "$SITE_URL$page"
+          done
+          sleep 20
+          for page in / /week /book /model; do
+            curl -fsS -L -o /dev/null -w "%{http_code} $page\n" --max-time 120 "$SITE_URL$page"
+          done

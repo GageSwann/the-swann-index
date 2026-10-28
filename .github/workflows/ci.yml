@@ -1,0 +1,70 @@
+# CI: lint, tests and type checks on every push to main and every pull request.
+# Render deploys the API only after these checks pass (render.yaml: autoDeployTrigger).
+# DB-backed tests are skipped here (-m "not db"); they run locally against a throwaway schema.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0 # exact tag: setup-uv has no floating major tag
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Formatting
+        run: uv run ruff format --check .
+
+      - name: Tests (no database)
+        run: uv run pytest -q -m "not db"
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # API types in sync with docs/api/openapi.json, typecheck, lint, Prettier.
+      - name: Checks
+        run: npm run check
+
+      # Prerendering reads the live API, so the build runs once TSI_API_URL is set
+      # (repo Settings -> Secrets and variables -> Actions -> Variables).
+      - name: Production build
+        if: ${{ vars.TSI_API_URL != '' }}
+        run: npm run build
+        env:
+          TSI_API_URL: ${{ vars.TSI_API_URL }}

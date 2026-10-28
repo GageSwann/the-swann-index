@@ -2,10 +2,13 @@ import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // The free Render API sleeps when idle and takes up to ~1 minute to wake; give build-time
+  // prerendering room for that instead of the 60 s default (decision #80).
+  staticPageGenerationTimeout: 180,
   partialPrefetching: true,
   cacheLife: {
-    // TSI data changes once a day (the 10:00 UTC nightly run). Pages re-check hourly;
-    // Phase 6 adds on-demand `revalidateTag` after each run so updates land right away.
+    // TSI data changes once a day (the 10:00 UTC nightly run). Pages re-check hourly, and
+    // the nightly job calls /api/revalidate so updates land right away.
     tsi: {
       stale: 300, // client may reuse for 5 minutes without asking
       revalidate: 3600, // background refresh at most hourly
