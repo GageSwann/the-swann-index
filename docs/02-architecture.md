@@ -142,7 +142,7 @@ All secrets come from environment variables; none are in code. See [09-conventio
 | Var | Secret? | Where |
 |---|---|---|
 | `CFBD_API_KEY` | yes | `backend/.env`, GitHub Actions secret (ingest only; not on the API host) |
-| `DATABASE_URL` | yes | `backend/.env` (Neon `dev` branch); GH secret + Render: Neon `prod` branch (copied from `dev` on 2026-10-27, #80) |
+| `DATABASE_URL` | yes | `backend/.env`: Neon `dev` branch (copy of production, #82); GH secret + Render: Neon `production` branch |
 | `CFBD_MONTHLY_CALL_BUDGET` | no | `backend/.env` (default 980: ~1,000 free tier minus a margin); ingest refuses to exceed it |
 | `TSI_CORS_ORIGINS` | no | API host (the Vercel URL); `http://localhost:3000` locally |
 | `TSI_API_URL` | no | `web/.env.local`, Vercel env, GH Actions **variable** (CI build + nightly wake-up) |

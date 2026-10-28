@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon `dev`.
+- **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
 - **Phase 4 complete** (2026-10-21): read-only API with all v1 endpoints (`api/`, read models in `services/read/`), CORS + cache headers + ETag/304 + gzip, seeded-DB tests, spec at `docs/api/openapi.json`.
@@ -18,7 +18,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#81 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#82 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -86,7 +86,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
   - The artifact tools reject the short `GAGESW~1` temp path as `out_dir`; use the full `C:\Users\Gage Swann\...` path.
 - **Next.js 16 is newer than training data:** read the relevant guide in `web/node_modules/next/dist/docs/` before writing Next.js code (`web/AGENTS.md`; `next dev` rewrites that file, commit it as is). Cache Components are on (`"use cache"` + cache tags, not the old `revalidate` exports).
 - **Web dependencies:** `npm audit --omit=dev` must stay at 0 (dev-only lint tooling has known `braces` advisories; don't `audit fix --force`). npm 11 blocks `unrs-resolver`'s postinstall; ESLint works without it. `web/.gitignore` ignores `.env*` except `.env.example`.
-- **GitHub Actions:** `astral-sh/setup-uv` has no floating major tag; pin the exact version (e.g. `v10.3.0`). `ci.yml` runs on every push/PR and gates Render deploys; DB tests are skipped there. The nightly job writes to the Neon **`prod`** branch (`DATABASE_URL` secret) and then refreshes the site; local `backend/.env` stays on `dev` (#80).
+- **GitHub Actions:** `astral-sh/setup-uv` has no floating major tag; pin the exact version (e.g. `v10.3.0`). `ci.yml` runs on every push/PR and gates Render deploys; DB tests are skipped there. The nightly job writes to the Neon **`production`** branch (`DATABASE_URL` secret, same as Render) and then refreshes the site; local `backend/.env` points at **`dev`**, a copy of production reset on 2026-10-28 (#82).
 
 ## Commands
 ```powershell
@@ -128,7 +128,7 @@ uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)
 uv run alembic revision --autogenerate -m "msg"   # after changing models; review before applying
 uv run alembic check            # models and DB in sync?
 ```
-Migrations target the Neon **dev** branch locally. Ask before applying to any database.
+Local `backend/.env` targets the Neon **`dev`** branch (a copy of `production`; refresh it with Neon's "Reset from parent"). Production = the `production` branch: never point local tools at it. Ask before applying migrations to any database; production migrations go through the direct `production` string, applied deliberately.
 GitHub: `gh workflow run daily-refresh.yml` triggers the nightly job manually; `gh run list --workflow daily-refresh.yml` shows recent runs.
 Web (run from `web/`; Node 24, npm):
 ```powershell

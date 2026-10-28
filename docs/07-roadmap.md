@@ -95,7 +95,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 **Done when:** all core pages (rankings, board, game, team, Book, Model) work against the local API with real 2026 data.
 
 ## Phase 6: Deploy & automation (go live)
-- [ ] Deploy API (Render/Fly) against Neon `production`
+- [x] Deploy API (Render/Fly) against Neon `production` (Render free web service `tsi-api`, Ohio, Docker; live data verified identical to a fresh copy; #78, #82)
 - [ ] Deploy web to Vercel; env vars set
 - [x] `/api/revalidate` route with secret token (POST, bearer token, `revalidateTag("tsi", "max")`; #80)
 - [ ] GitHub Actions: keep the nightly `tsi run` (10:00 UTC) and revalidate the site after each run; CI (ruff, pytest, lint, typecheck, build) (#75)

@@ -1,7 +1,7 @@
 # Nightly: refresh the in-progress season from CFBD, refit ratings + rankings,
 # grade finished picks, and publish prediction snapshots + picks (`tsi run`).
 # Then refreshes the deployed site's cached pages.
-# Secrets: CFBD_API_KEY, DATABASE_URL (Neon `prod`), REVALIDATE_TOKEN.
+# Secrets: CFBD_API_KEY, DATABASE_URL (Neon `production` branch), REVALIDATE_TOKEN.
 # Variables: TSI_API_URL (Render), SITE_URL (Vercel). Repo Settings -> Secrets and variables -> Actions.
 name: Daily refresh
 
