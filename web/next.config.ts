@@ -15,6 +15,22 @@ const nextConfig: NextConfig = {
       expire: 172800, // never serve data older than 2 days
     },
   },
+  poweredByHeader: false,
+  // Baseline browser protections on every page (Phase 6 security pass, decision #81).
+  // A full Content-Security-Policy needs per-request nonces for Next's inline scripts.
+  headers() {
+    return Promise.resolve([
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ])
+  },
   images: {
     // Team logos come from CFBD's CDN (TeamRef.logo_url).
     remotePatterns: [
