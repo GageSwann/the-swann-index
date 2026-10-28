@@ -5,6 +5,7 @@ import { useMemo, useState } from "react"
 import { Segmented } from "@/components/ui/segmented"
 import type { RankedTeam, RankingType } from "@/lib/api/types"
 
+import { Movers } from "./movers"
 import { RankingsTable } from "./rankings-table"
 
 const EXPLAINER: Record<RankingType, string> = {
@@ -25,14 +26,19 @@ export function RankingsView({ power, resume, since }: Props) {
     () => [...new Set(power.map((t) => t.team.conference).filter((c): c is string => !!c))].sort(),
     [power],
   )
-  const teams = useMemo(() => {
-    const source = type === "power" ? power : resume
-    return source.filter(
-      (t) =>
-        (conference ? t.team.conference === conference : true) &&
-        (scope === "all" || conference !== "" || t.rank <= 25),
-    )
-  }, [type, scope, conference, power, resume])
+  // The table follows every filter; the movers panel ignores Top 25 (moves inside the
+  // Top 25 are usually small) but follows the ranking and conference.
+  const pool = useMemo(
+    () =>
+      (type === "power" ? power : resume).filter((t) =>
+        conference ? t.team.conference === conference : true,
+      ),
+    [type, conference, power, resume],
+  )
+  const teams = useMemo(
+    () => pool.filter((t) => scope === "all" || conference !== "" || t.rank <= 25),
+    [pool, scope, conference],
+  )
 
   return (
     <div className="space-y-4">
@@ -72,11 +78,15 @@ export function RankingsView({ power, resume, since }: Props) {
         </label>
       </div>
       <p className="max-w-[75ch] text-sm text-muted-foreground">{EXPLAINER[type]}</p>
-      {teams.length > 0 ? (
-        <RankingsTable key={type} teams={teams} since={since} />
-      ) : (
-        <p className="text-muted-foreground">No ranked teams match these filters.</p>
-      )}
+      {/* Wide screens: the movers panel beside the table; below it otherwise. */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-start">
+        {teams.length > 0 ? (
+          <RankingsTable key={type} teams={teams} since={since} />
+        ) : (
+          <p className="text-muted-foreground">No ranked teams match these filters.</p>
+        )}
+        {since && <Movers teams={pool} since={since} />}
+      </div>
     </div>
   )
 }

@@ -35,7 +35,7 @@
 - Toggle: Power | Résumé. Filters: conference, Top 25 / all.
 - Columns: Rank, Δ (movement arrow), Team (logo + name), Record, TSI rating, Off (rank), Def (rank), SOS, SOR, Proj. wins (later), CFP % (later).
 - Sortable (TanStack Table). Sticky header. Clicking a row opens the team page.
-- Side widget: biggest risers/fallers over the past week. *(Not built yet; the API now has the week-ago ranks, #79.)*
+- Side widget: biggest risers/fallers over the past week. **Built (#88):** "Biggest movers", top 5 each way for the active ranking and conference (ignores Top 25/All), "#52 → #37" with the Δ arrow; beside the table from `xl`, below it otherwise; hidden without a week-ago run.
 - **This season only:** both rankings use the `season` ratings (no preseason prior). A one-line note under the toggle says so.
 - **Provisional:** teams with fewer than 4 games show a *provisional* tag next to their rank.
 - **Updated daily:** the header shows "Updated {date}". Δ arrows compare to the previous day's run and to a week ago.

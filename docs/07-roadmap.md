@@ -112,7 +112,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Dynamic OG images; SEO metadata (link previews for the site, teams, games and matchups; titles + descriptions; robots/sitemap with indexing off until `ALLOW_INDEXING=1`; #86)
 - [ ] README screenshots/GIF, architecture diagram, live link
 - [x] Lighthouse ≥ 90 (performance: desktop 100 everywhere, mobile medians 88–97 with 98–99 on every page in runs without the local harness stall; accessibility + best practices 100; SEO capped by the deliberate noindex; #87)
-- [ ] Rankings side widget: biggest risers/fallers over the past week (deferred from Phase 5; the API has the week-ago ranks, #79)
+- [x] Rankings side widget: biggest risers/fallers over the past week (#88)
 - [ ] Résumé drill-down: a team's wins/losses with each opponent's current rating (deferred from Phase 5; needs a per-team résumé endpoint)
 
 ## Phase 8: Season simulation & playoff
