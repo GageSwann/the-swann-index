@@ -130,7 +130,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [ ] Backfill FCS games/stats
 - [ ] Individual FCS ratings (replace pooled FCS team), cross-division linking
 - [ ] FCS rankings view + division filter across the site
-- [ ] Résumé breakdown (#89, #90) for the expansion: opponents use their own stored rating whenever one exists (pooled rating only as a fallback, `services/read/resume_view.py`); FCS teams get the Résumé card; decide and backtest the FCS benchmark (#12 FCS team vs. the FBS #12); the "SOR rebuilt = stored SOR" check must still hold for every rated team
+- [ ] Résumé breakdown (#89, #90) for the expansion: opponents use their own stored rating whenever one exists (pooled rating only as a fallback, `services/read/resume_view.py`); FCS teams get the Résumé card; FCS résumés are measured against a typical **#10 FCS team** (owner, #91); the "SOR rebuilt = stored SOR" check must still hold for every rated team
 
 ## Phase 11: Stretch
 - [ ] Monte Carlo score sim with key numbers & push probabilities
