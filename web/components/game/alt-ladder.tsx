@@ -1,16 +1,24 @@
-import type { GameCenter, TwoWay } from "@/lib/api/types"
+import type { GameMarkets, TeamRef, TwoWay } from "@/lib/api/types"
 import { percent } from "@/lib/format/numbers"
 import { american, teamSpread, totalLine } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
 
+type Props = {
+  markets: GameMarkets
+  home: TeamRef
+  marketSpread?: number | null // Vegas lines to highlight; none for hypothetical games
+  marketTotal?: number | null
+}
+
 /** TSI's chance at every number around the line: spreads (home view) and totals. */
-export function AltLadder({ center }: { center: GameCenter }) {
-  const { game, markets } = center
-  if (!markets) return null
-  const home = game.home.abbreviation ?? game.home.school
-  const marketSpread = game.market?.spread ?? null
-  const marketTotal = game.market?.total ?? null
+export function AltLadder({
+  markets,
+  home: homeTeam,
+  marketSpread = null,
+  marketTotal = null,
+}: Props) {
+  const home = homeTeam.abbreviation ?? homeTeam.school
 
   return (
     <section aria-labelledby="ladder-heading" className="space-y-3">
@@ -19,7 +27,7 @@ export function AltLadder({ center }: { center: GameCenter }) {
       </h2>
       <div className="grid gap-4 md:grid-cols-2">
         <Ladder
-          caption={`${game.home.school} spread`}
+          caption={`${homeTeam.school} spread`}
           rungs={markets.alt_spreads}
           label={(line) => `${home} ${teamSpread(line)}`}
           probLabel="Covers"
@@ -34,7 +42,10 @@ export function AltLadder({ center }: { center: GameCenter }) {
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        Chance from TSI&apos;s score distribution; the Vegas line is highlighted (nearest rung).
+        Chance from TSI&apos;s score distribution
+        {marketSpread !== null || marketTotal !== null
+          ? "; the Vegas line is highlighted (nearest rung)."
+          : "."}
       </p>
     </section>
   )

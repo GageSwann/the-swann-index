@@ -106,12 +106,14 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 **Done when:** the public URL updates on its own for a full week without manual intervention.
 
 ## Phase 7: Polish & secondary pages
-- [ ] TSI Book page
-- [ ] Model/methodology + report card page (calibration chart)
-- [ ] Hypothetical matchup tool
+- [x] TSI Book page (built in Phase 5 at the owner's request; #75)
+- [x] Model/methodology + report card page (calibration chart) (built in Phase 5; #76)
+- [x] Hypothetical matchup tool (`/matchup`: shareable GET form, scoreboard, TSI's line, margin chart, alt lines, tale of the tape; #85)
 - [ ] Dynamic OG images; SEO metadata
 - [ ] README screenshots/GIF, architecture diagram, live link
 - [ ] Lighthouse ≥ 90
+- [ ] Rankings side widget: biggest risers/fallers over the past week (deferred from Phase 5; the API has the week-ago ranks, #79)
+- [ ] Résumé drill-down: a team's wins/losses with each opponent's current rating (deferred from Phase 5; needs a per-team résumé endpoint)
 
 ## Phase 8: Season simulation & playoff
 - [ ] Monte Carlo season sim with rating uncertainty

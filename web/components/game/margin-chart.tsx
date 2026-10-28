@@ -121,8 +121,9 @@ function MarginTip({
   awayName: string
   ladder: TwoWay[]
 }) {
-  // Home covers spread s when margin > -s, so margin x lines up with the rung s = -x.
-  const rung = ladder.find((r) => r.line === -x)
+  // Home covers spread s when margin > -s, so margin x lines up with the rung s = -x; with
+  // half-point lines (e.g. -17.5) it's the tightest rung that margin covers, s = -x + 0.5.
+  const rung = ladder.find((r) => r.line === -x) ?? ladder.find((r) => r.line === -x + 0.5)
   const outcome = x === 0 ? "Tie" : x > 0 ? `${homeName} by ${x}` : `${awayName} by ${-x}`
   return (
     <TooltipBox>

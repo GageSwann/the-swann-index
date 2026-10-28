@@ -78,7 +78,12 @@ async function GameCenterView({ params }: Props) {
               ladder={center.markets.alt_spreads}
             />
           </section>
-          <AltLadder center={center} />
+          <AltLadder
+            markets={center.markets}
+            home={game.home}
+            marketSpread={game.market?.spread ?? null}
+            marketTotal={game.market?.total ?? null}
+          />
         </>
       ) : (
         <p className="text-muted-foreground">

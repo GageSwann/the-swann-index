@@ -14,6 +14,7 @@ import type {
   Rankings,
   SeasonType,
   TeamProfile,
+  TeamRef,
   WeekBoard,
 } from "./types"
 
@@ -38,6 +39,14 @@ export async function getRankings(
     params: { query: { season, week, type } },
   })
   return orNull("/rankings", result)
+}
+
+/** Rated (FBS) teams of a season, alphabetical: the matchup tool's picker. */
+export async function getTeams(season?: number): Promise<TeamRef[]> {
+  "use cache"
+  cacheLife("tsi")
+  cacheTag(tags.ALL)
+  return required("/teams", await apiClient().GET("/teams", { params: { query: { season } } }))
 }
 
 export async function getTeam(slug: string, season?: number): Promise<TeamProfile | null> {

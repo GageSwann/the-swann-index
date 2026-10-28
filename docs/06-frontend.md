@@ -25,7 +25,7 @@
 | `/teams/[slug]` | **Team page** |
 | `/book` | **TSI Book** ledger |
 | `/model` | **Methodology + report card** |
-| `/matchup` | **Hypothetical matchup tool** (later) |
+| `/matchup` | **Hypothetical matchup tool** (#85) |
 | `/playoff` | **CFP projections + bracket** (later) |
 | `/conferences/[slug]` | Standings + title odds (later) |
 
@@ -67,6 +67,9 @@
 - **Projected record** (later): win distribution histogram, conference title %, CFP %.
 - If manually adjusted (later): badge + reason.
 - **Built (decision #73):** the current Top 25 is prerendered and every other team renders on first visit (`<Suspense>`; unknown slug → not found). Header: a solid team-color band (flat per #69, instead of a gradient), logo, mascot, conference, record, Power/Résumé rank, rating, predictive rating (rank), SOS. Profile: power/résumé/offense/defense rank bars among rated FBS teams (ranks from `/rankings`). Rating trend: the shared `components/charts/rating-trend-chart.tsx` (one or two teams; y ticks every 2/5/10 points with ≥ 2 points of padding). Schedule: date, opponent (with Top-25 rank and site), result or projected score (links to the game center), TSI line and win chance from the team's side: the published snapshot when there is one, else the API's `/matchup` with today's ratings, marked * "if played today". Non-FBS teams show their schedule with "no rating". Not yet: preseason prior as the trend's starting point (live history starts Oct 19, 2026), percentiles for EPA/success/explosiveness, spread result per game (needs market lines in the team endpoint), projected record.
+
+### Matchup `/matchup`
+- **Built (decision #85):** pick any two FBS teams (away/home, neutral-site checkbox) in a plain GET form grouped by conference: works without JavaScript, and results are shareable URLs (`/matchup?away=auburn&home=alabama&neutral=1`); "Swap home and away" is a link. Result: the shared `ScoreBoard` (projected score, win probability), TSI's fair and Book prices (no Vegas column: books only post scheduled games), the margin chart (from `sigma_margin`), alternate spread/total ladders and the tale of the tape. Labeled hypothetical: not saved, graded or in the Book. Empty state suggests three top-6 pairings on neutral fields; same team twice or an unknown slug get a plain message.
 
 ### TSI Book `/book`
 - KPI tiles: record (ATS / O/U / ML), units, ROI, avg CLV.
