@@ -7,6 +7,8 @@ import {
   tableFeatures,
 } from "@tanstack/react-table"
 
+import Link from "next/link"
+
 import { TeamLink } from "@/components/team/team-link"
 import type { RankedTeam } from "@/lib/api/types"
 import { percent, record, signed } from "@/lib/format/numbers"
@@ -95,9 +97,18 @@ export const columns = col.columns([
     id: "sor",
     header: "SOR",
     ...numeric,
-    cell: ({ getValue }) => {
+    cell: ({ getValue, row }) => {
       const v = getValue()
-      return v === undefined ? "—" : percent(v)
+      if (v === undefined) return "—"
+      return (
+        <Link
+          href={`/teams/${row.original.team.slug}#resume`}
+          className="underline-offset-4 hover:underline"
+          title="See how this résumé was built"
+        >
+          {percent(v)}
+        </Link>
+      )
     },
   }),
 ])

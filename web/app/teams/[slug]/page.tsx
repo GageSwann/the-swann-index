@@ -5,6 +5,7 @@ import { Suspense } from "react"
 import { RatingTrendChart } from "@/components/charts/lazy"
 import { PageHeading } from "@/components/layout/page-heading"
 import { RankProfile } from "@/components/team/rank-profile"
+import { ResumeCard } from "@/components/team/resume-card"
 import { ScheduleTable } from "@/components/team/schedule-table"
 import { TeamHeader } from "@/components/team/team-header"
 import { getRankings, getTeam } from "@/lib/api/queries"
@@ -49,7 +50,6 @@ async function TeamView({ params }: Props) {
   const odds = await scheduleOdds(profile.team, profile.schedule)
   const ranked = rankings?.teams ?? []
   const row = ranked.find((t) => t.team.slug === slug)
-  const ranks = new Map(ranked.map((t) => [t.team.slug, t.rank]))
 
   return (
     <div className="space-y-10">
@@ -63,7 +63,8 @@ async function TeamView({ params }: Props) {
           <RatingTrendChart series={[{ team: profile.team, history: profile.history }]} />
         </section>
       )}
-      <ScheduleTable schedule={profile.schedule} odds={odds} ranks={ranks} />
+      <ResumeCard profile={profile} />
+      <ScheduleTable schedule={profile.schedule} odds={odds} />
     </div>
   )
 }

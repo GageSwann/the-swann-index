@@ -39,7 +39,7 @@
 - **This season only:** both rankings use the `season` ratings (no preseason prior). A one-line note under the toggle says so.
 - **Provisional:** teams with fewer than 4 games show a *provisional* tag next to their rank.
 - **Updated daily:** the header shows "Updated {date}". Δ arrows compare to the previous day's run and to a week ago.
-- **Résumé tab:** a short explainer: "How hard would it be for a typical #12 team to match this record against this schedule? Re-evaluated daily as opponents' seasons play out." Clicking a team's SOR shows its wins/losses with each opponent's *current* rating. *(Not built yet: needs a per-team résumé endpoint.)*
+- **Résumé tab:** a short explainer: "How hard would it be for a typical #12 team to match this record against this schedule? Re-evaluated daily as opponents' seasons play out." Clicking a team's SOR opens its team page at the **Résumé** section (#89): the rank, record, what a typical #12 team would expect from the same games, and how often it would match the record; the schedule's "#12 team wins" column shows each game's difficulty against the opponent's current rating (muted until the game counts).
 - **Built (decision #70):** Power/Résumé toggle, Top 25 / all, conference filter (client-side over both rankings, rendered once on the server); TanStack Table v9 sorting with a sticky header inside the table's own scroll area; Δ = movement over the past week (`previous_rank` from the newest run at least 6 days older, `previous_as_of`; the intro names its date; no Δ column without one; #79), offense/defense ranks (`off_rank`/`def_rank`) from the API; row click and team-name links go to the team page; logos on a light chip so dark marks stay visible.
 
 ### Matchup board `/week/[season]/[week]`

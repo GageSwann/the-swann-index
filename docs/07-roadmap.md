@@ -113,7 +113,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [ ] README screenshots/GIF, architecture diagram, live link
 - [x] Lighthouse ≥ 90 (performance: desktop 100 everywhere, mobile medians 88–97 with 98–99 on every page in runs without the local harness stall; accessibility + best practices 100; SEO capped by the deliberate noindex; #87)
 - [x] Rankings side widget: biggest risers/fallers over the past week (#88)
-- [ ] Résumé drill-down: a team's wins/losses with each opponent's current rating (deferred from Phase 5; needs a per-team résumé endpoint)
+- [x] Résumé drill-down: on the team page (Résumé card + "#12 team wins" schedule column, linked from the rankings' SOR), not a separate page (#89)
 
 ## Phase 8: Season simulation & playoff
 - [ ] Monte Carlo season sim with rating uncertainty

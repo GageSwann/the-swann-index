@@ -16,3 +16,10 @@ export function record(wins: number, losses: number, ties = 0): string {
 export function percent(value: number, digits = 1): string {
   return `${(value * 100).toFixed(digits)}%`
 }
+
+/** A probability as a whole percent that never claims certainty: "<1%", "37%", ">99%". */
+export function chance(value: number): string {
+  if (value < 0.005) return "<1%"
+  if (value > 0.995) return ">99%"
+  return percent(value, 0)
+}

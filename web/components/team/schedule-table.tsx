@@ -3,23 +3,20 @@ import Link from "next/link"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameOdds } from "@/lib/api/schedule-odds"
 import type { ScheduleGame } from "@/lib/api/types"
-import { percent } from "@/lib/format/numbers"
+import { chance, percent } from "@/lib/format/numbers"
 import { teamSpread } from "@/lib/format/odds"
 import { formatShortDay } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
 
-type Props = {
-  schedule: ScheduleGame[]
-  odds: Map<number, GameOdds>
-  ranks: Map<string, number> // opponent slug → current power rank
-}
+type Props = { schedule: ScheduleGame[]; odds: Map<number, GameOdds> }
 
 /**
- * Every game of the season with the result and TSI's pre-game (or current) view. A table
- * from `sm` up; on phones each game is a two-line row so nothing scrolls sideways.
+ * Every game of the season with the result, TSI's pre-game (or current) view, and how hard
+ * the game is for a typical #12 team (the Résumé breakdown, #89). A table from `sm` up; on
+ * phones each game is a two-line row so nothing scrolls sideways.
  */
-export function ScheduleTable({ schedule, odds, ranks }: Props) {
+export function ScheduleTable({ schedule, odds }: Props) {
   const anyToday = [...odds.values()].some((o) => o.source === "today")
   const date = (g: ScheduleGame) => (g.kickoff ? formatShortDay(g.kickoff) : `Week ${g.week}`)
   return (
@@ -36,6 +33,12 @@ export function ScheduleTable({ schedule, odds, ranks }: Props) {
               <HeadCell>Result</HeadCell>
               <HeadCell align="right">TSI line</HeadCell>
               <HeadCell align="right">Win chance</HeadCell>
+              <HeadCell
+                align="right"
+                title="How often a typical #12 team would win this game, against the opponent's current rating. Lower = harder. Counts toward the Résumé once played."
+              >
+                #12 team wins
+              </HeadCell>
             </tr>
           </thead>
           <tbody>
@@ -45,7 +48,7 @@ export function ScheduleTable({ schedule, odds, ranks }: Props) {
                 <tr key={g.game_id} className="border-b border-border last:border-0">
                   <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">{date(g)}</td>
                   <td className="px-3 py-2">
-                    <Opponent game={g} rank={ranks.get(g.opponent.slug)} />
+                    <Opponent game={g} />
                   </td>
                   <td className="px-3 py-1 whitespace-nowrap">
                     <Result game={g} odds={o} />
@@ -55,6 +58,9 @@ export function ScheduleTable({ schedule, odds, ranks }: Props) {
                   </td>
                   <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
                     <WinChance odds={o} />
+                  </td>
+                  <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
+                    <Difficulty game={g} />
                   </td>
                 </tr>
               )
@@ -68,7 +74,7 @@ export function ScheduleTable({ schedule, odds, ranks }: Props) {
           return (
             <li key={g.game_id} className="space-y-1 px-3 py-2">
               <div className="flex items-center justify-between gap-3">
-                <Opponent game={g} rank={ranks.get(g.opponent.slug)} />
+                <Opponent game={g} />
                 <Result game={g} odds={o} />
               </div>
               <p className="flex justify-between gap-3 text-muted-foreground tabular-nums">
@@ -79,6 +85,11 @@ export function ScheduleTable({ schedule, odds, ranks }: Props) {
                   </span>
                 )}
               </p>
+              {g.benchmark_win_prob != null && (
+                <p className="text-muted-foreground">
+                  A #12 team wins <Difficulty game={g} />
+                </p>
+              )}
             </li>
           )
         })}
@@ -86,13 +97,21 @@ export function ScheduleTable({ schedule, odds, ranks }: Props) {
       <p className="text-xs text-muted-foreground">
         TSI line and win chance are from the team&apos;s side, as published before kickoff
         (predictions began Oct 20, 2026).
-        {anyToday && " * Not yet published: if the game were played today, with current ratings."}
+        {anyToday &&
+          " * Not yet published: if the game were played today, with current ratings."}{" "}
+        &ldquo;#12 team wins&rdquo;: how often a typical #12 team would win the game, against the
+        opponent&apos;s current rating (lower = harder); played games make up the{" "}
+        <a href="#resume" className="underline underline-offset-2">
+          Résumé
+        </a>
+        .
       </p>
     </section>
   )
 }
 
-function Opponent({ game, rank }: { game: ScheduleGame; rank: number | undefined }) {
+function Opponent({ game }: { game: ScheduleGame }) {
+  const rank = game.opponent_rank
   return (
     <span className="flex min-w-0 items-center gap-2">
       <span className="w-5 shrink-0 text-muted-foreground">
@@ -148,5 +167,15 @@ function WinChance({ odds }: { odds: GameOdds | undefined }) {
         </span>
       )}
     </>
+  )
+}
+
+/** The game's difficulty for a typical #12 team; muted until it counts for the Résumé. */
+function Difficulty({ game }: { game: ScheduleGame }) {
+  if (game.benchmark_win_prob == null) return <span className="text-muted-foreground">—</span>
+  return (
+    <span className={game.in_resume ? "text-foreground" : "text-muted-foreground"}>
+      {chance(game.benchmark_win_prob)}
+    </span>
   )
 }
