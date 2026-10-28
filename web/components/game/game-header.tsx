@@ -5,6 +5,7 @@ import { WinProbBar } from "@/components/board/win-prob-bar"
 import type { GameSummary, TeamProfile, TeamRef } from "@/lib/api/types"
 import { record } from "@/lib/format/numbers"
 import { formatDay, formatKickoff } from "@/lib/format/time"
+import { cn } from "@/lib/utils"
 
 type Props = { game: GameSummary; home: TeamProfile | null; away: TeamProfile | null }
 
@@ -24,7 +25,7 @@ export function GameHeader({ game, home, away }: Props) {
         {game.notes && `. ${game.notes}`}
         {final ? ". Final" : p?.locked ? ". In progress" : ""}
       </p>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 sm:gap-6">
         <Side
           team={game.away}
           profile={away}
@@ -70,10 +71,15 @@ function Side({
         .join(", ")
     : ""
   return (
-    <div className={alignEnd ? "flex flex-col items-end text-right" : "flex flex-col"}>
+    <div className={cn("flex min-w-0 flex-col", alignEnd && "items-end text-right")}>
       <Link
         href={`/teams/${team.slug}`}
-        className={`flex items-center gap-3 ${alignEnd ? "flex-row-reverse" : ""}`}
+        // Phones: logo above the name, so long names ("Florida International") get the
+        // column's full width; from `sm` up they sit side by side.
+        className={cn(
+          "flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3",
+          alignEnd ? "items-end sm:flex-row-reverse" : "items-start",
+        )}
       >
         <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-white">
           {team.logo_url && (
@@ -86,7 +92,7 @@ function Side({
             />
           )}
         </span>
-        <span className="text-2xl leading-tight font-bold font-stretch-condensed hover:underline sm:text-3xl">
+        <span className="max-w-full text-xl leading-tight font-bold [overflow-wrap:anywhere] font-stretch-condensed hover:underline sm:text-3xl">
           {team.school}
         </span>
       </Link>
