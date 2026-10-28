@@ -47,7 +47,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             Skip to content
           </a>
           <SiteHeader />
-          <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+          {/* At least a screen tall: content that streams in (Suspense) can't push a visible
+              footer around, which Lighthouse counts as layout shift (decision #87). */}
+          <main id="main" className="mx-auto min-h-svh w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
             {children}
           </main>
           <UpdatedFooter />
