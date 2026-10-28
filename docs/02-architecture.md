@@ -69,7 +69,7 @@ Module size and layering rules are in [09-conventions.md](09-conventions.md) §2
 | Tables | TanStack Table | Sortable/filterable rankings |
 | Lint (web) | ESLint + Prettier | |
 | DB host | Neon Postgres (free tier) | `production` (Neon's default) and `dev` branches, no local Docker needed |
-| Web host | Vercel | |
+| Web host | Vercel (Hobby), project `the-swann-index`, root directory `web`, auto-deploys every push to `main` | https://the-swann-index.vercel.app (#83) |
 | API host | Render, free web service, Ohio (= Neon's AWS us-east-2), Docker image from `backend/Dockerfile`, Blueprint `render.yaml` (#78) | Sleeps after ~15 idle min; cold starts are hidden by the site's cached pages. Health check `/health` (no DB). Needs only `DATABASE_URL` + `TSI_CORS_ORIGINS` |
 | Scheduling | GitHub Actions cron | |
 

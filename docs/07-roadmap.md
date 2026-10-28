@@ -96,11 +96,11 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 
 ## Phase 6: Deploy & automation (go live)
 - [x] Deploy API (Render/Fly) against Neon `production` (Render free web service `tsi-api`, Ohio, Docker; live data verified identical to a fresh copy; #78, #82)
-- [ ] Deploy web to Vercel; env vars set
+- [x] Deploy web to Vercel; env vars set (https://the-swann-index.vercel.app, root `web`, `TSI_API_URL` + `REVALIDATE_TOKEN`; #83)
 - [x] `/api/revalidate` route with secret token (POST, bearer token, `revalidateTag("tsi", "max")`; #80)
-- [ ] GitHub Actions: keep the nightly `tsi run` (10:00 UTC) and revalidate the site after each run; CI (ruff, pytest, lint, typecheck, build) (#75)
-- [ ] Failure alerting (workflow failure email is fine)
-- [ ] `security-review` pass; confirm no secrets in repo history; all secrets set in GH/Vercel/API host
+- [x] GitHub Actions: keep the nightly `tsi run` (10:00 UTC) and revalidate the site after each run; CI (ruff, pytest, lint, typecheck, build) (#75, #80; end-to-end run verified 2026-10-28, #83)
+- [x] Failure alerting (GitHub email on failed workflows, enabled by the owner; #83)
+- [x] `security-review` pass; confirm no secrets in repo history; all secrets set in GH/Vercel/API host (#81; GH: CFBD_API_KEY, DATABASE_URL, REVALIDATE_TOKEN; Render: DATABASE_URL; Vercel: REVALIDATE_TOKEN)
 - [ ] Project skill `tsi-weekly-run` (via `skill-creator`) documenting the operator runbook
 
 **Done when:** the public URL updates on its own for a full week without manual intervention.
