@@ -1,0 +1,53 @@
+# Manual only: apply Alembic migrations to the production database (Neon `production`
+# branch, the DATABASE_URL secret), optionally reloading one season of CFBD teams after
+# (e.g. to fill a new team_seasons column). The connection string never leaves GitHub.
+# Run: Actions tab -> "Migrate production" -> Run workflow, or
+#   gh workflow run migrate.yml -f reload_teams_season=2026
+# Deploy order: run this BEFORE pushing code that needs the new schema (CLAUDE.md).
+name: Migrate production
+
+on:
+  workflow_dispatch:
+    inputs:
+      reload_teams_season:
+        description: "Also reload CFBD /teams for this season after migrating (blank = skip)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-refresh # never overlap the nightly job
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0 # exact tag: setup-uv has no floating major tag
+
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Apply migrations
+        run: |
+          uv run alembic current
+          uv run alembic upgrade head
+          uv run alembic current
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Reload teams
+        if: ${{ inputs.reload_teams_season != '' }}
+        run: uv run tsi ingest teams --season "$SEASON"
+        env:
+          SEASON: ${{ inputs.reload_teams_season }}
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
