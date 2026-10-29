@@ -49,3 +49,4 @@ class TeamSeason(CreatedAtMixin, Base):
     season: Mapped[int] = mapped_column(primary_key=True)
     conference: Mapped[str | None]
     division: Mapped[str]
+    conference_division: Mapped[str | None]  # e.g. Sun Belt "East"; None without divisions

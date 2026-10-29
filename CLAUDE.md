@@ -7,7 +7,7 @@ Personal college football rating model + prediction engine + public read-only da
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
 - **Phase 4 complete** (2026-10-21): read-only API with all v1 endpoints (`api/`, read models in `services/read/`), CORS + cache headers + ETag/304 + gzip, seeded-DB tests, spec at `docs/api/openapi.json`.
-- **Phase 8 started** (2026-10-29): season Monte Carlo built (`tsi sim season`, read-only; #94). CFP format for 2026–27 recorded (doc 05 §7.2, #95). Next: projected wins + conference title odds.
+- **Phase 8 started** (2026-10-29): season Monte Carlo (`tsi sim season`, read-only; #94) with projected wins and conference title odds (#96). CFP format for 2026–27 recorded (doc 05 §7.2, #95). Next: store the sim nightly + show it, then the CFP projector.
 - **Phase 7 complete** (2026-10-28): matchup tool (#85), link previews + SEO (#86), Lighthouse ≥ 90 (#87), biggest movers (#88), Résumé breakdown on team pages (#89), README with screenshots + architecture diagram (#92). Next: Phase 8 (season simulation & playoff).
 - **Phase 6 live** (2026-10-28): site https://the-swann-index.vercel.app (Vercel) → API https://tsi-api-44wx.onrender.com (Render, Docker) → Neon `production`; CI gates Render deploys; the nightly job refreshes the site. Operator runbook: the `tsi-weekly-run` skill (#84). Phase 6 is complete except its "done when": a week of unattended nightly updates (started 2026-10-28).
 - **Phase 5 complete** (2026-10-21): `web/` (Next.js 16.4, Cache Components) with a typed, cached API client (`web/lib/api/`); layout + theme (design system in doc 06); rankings, matchup board, game center and team pages, checked at desktop and 360/390 px. Book and Model pages added and built (#75, #76). Next: Phase 6 (deploy; not going public yet, week 8 review first). Week 8 review once graded (Oct 26).
@@ -21,7 +21,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#95 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#96 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -62,7 +62,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 ## Data conventions
 - **Spread sign:** home team's view, **negative = home favored** (CFBD and TSI agree; verified).
 - **`team_game_stats`** = one row per team per game = its **offense**; defense is the opponent's row. Efficiency stats are garbage-time filtered; plays/drives are full-game.
-- **Division values:** `fbs`, `fcs`, `ii`, `iii`, `unknown` (CFBD `classification`). Teams missing from CFBD `/teams` (mostly NAIA) get placeholder rows with slug `name-<id>`.
+- **Division values:** `fbs`, `fcs`, `ii`, `iii`, `unknown` (CFBD `classification`). Conference sub-divisions (Sun Belt East/West) are `team_seasons.conference_division` (CFBD's `division`). Conference title games are found by "championship" in `games.notes` (CFBD doesn't always flag them as conference games). Teams missing from CFBD `/teams` (mostly NAIA) get placeholder rows with slug `name-<id>`.
 - **Times** are UTC, timezone-aware; `parse_utc` rejects naive timestamps. `games.start_time_tbd` marks date-only kickoffs.
 - **Market lines** are change-only snapshots; `is_closing` = captured at/after kickoff. History has closing snapshots plus openers (`spread_open`/`total_open`, 2021+; some single-book openers are stale, hence medians). CFBD lines carry no spread/total prices: assume −110.
 - **Known gaps** (`tsi check` warns): 47 FBS games without advanced stats (mostly 2014–16), no talent before 2015, some new-FBS teams without returning production.
@@ -125,7 +125,7 @@ uv run tsi backtest export --out-dir DIR   # report CSVs (model + Book tables) f
 uv run tsi model fit            # refit production artifact on all completed seasons (commit model/artifacts/current.json)
 uv run tsi model elo            # Elo baseline vs. closing line, by season
 uv run tsi model compare-sp     # sanity check: TSI final ratings vs. SP+ final (correlation)
-uv run tsi sim season           # projected regular-season wins for every FBS team (--sims, --top)
+uv run tsi sim season           # projected wins, win out, conference title odds (--sims, --top)
 
 # Operations (production; see the tsi-weekly-run skill)
 python ../.claude/skills/tsi-weekly-run/scripts/weekly_review.py   # weekly review from the public API (--week N, --api URL)

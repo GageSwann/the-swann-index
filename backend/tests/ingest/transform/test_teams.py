@@ -58,9 +58,21 @@ def test_slug_collisions_get_id_suffix() -> None:
 def test_team_season_rows_use_classification_as_division(raw) -> None:
     rows = {r["team_id"]: r for r in team_season_rows(raw, 2024)}
 
-    assert rows[38] == {"team_id": 38, "season": 2024, "conference": "Big 12", "division": "fbs"}
+    assert rows[38] == {
+        "team_id": 38,
+        "season": 2024,
+        "conference": "Big 12",
+        "division": "fbs",
+        "conference_division": None,
+    }
     ndsu = next(t["id"] for t in raw if t["school"] == "North Dakota State")
     assert rows[ndsu]["division"] == "fcs"
+
+
+def test_team_season_rows_keep_the_conference_division() -> None:
+    raw = [{"id": 1, "conference": "Sun Belt", "division": "East", "classification": "fbs"}]
+
+    assert team_season_rows(raw, 2026)[0]["conference_division"] == "East"
 
 
 def test_team_venues_returns_embedded_locations(raw) -> None:

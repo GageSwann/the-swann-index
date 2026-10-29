@@ -1,7 +1,8 @@
 """CFBD /teams?year= -> `teams` and `team_seasons` rows.
 
 CFBD's `classification` (fbs/fcs/ii/iii) is our `division`. CFBD's own
-`division` field is a conference sub-division (e.g. "East") and is ignored.
+`division` field is a conference sub-division (e.g. Sun Belt "East"): our
+`conference_division`, used to pick conference title game finalists.
 """
 
 import re
@@ -50,6 +51,7 @@ def team_season_rows(raw: list[dict[str, Any]], season: int) -> list[dict[str, A
             "season": season,
             "conference": team.get("conference"),
             "division": team.get("classification") or UNKNOWN_DIVISION,
+            "conference_division": team.get("division"),
         }
         for team in raw
     ]

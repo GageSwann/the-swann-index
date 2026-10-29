@@ -25,6 +25,9 @@ class RemainingGame:
 @dataclass(frozen=True)
 class SimulatedGames:
     margins: np.ndarray  # (sims, games) home-view margins
+    shift: np.ndarray  # (sims, teams) each team's rating shift in that simulation
+    noise: float  # per-game noise, for games added later (title games)
+    rng: np.random.Generator  # continues the same stream for those games
 
     @property
     def home_wins(self) -> np.ndarray:
@@ -46,7 +49,7 @@ def simulate_games(
     away = np.array([g.away for g in games], dtype=int)
     mean = np.array([g.mean_margin for g in games], dtype=float)
     margins = mean + shift[:, home] - shift[:, away] + rng.normal(0.0, noise, (sims, len(games)))
-    return SimulatedGames(margins)
+    return SimulatedGames(margins, shift, noise, rng)
 
 
 def wins_added(sim: SimulatedGames, games: Sequence[RemainingGame], n_teams: int) -> np.ndarray:

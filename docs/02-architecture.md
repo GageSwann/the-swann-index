@@ -80,7 +80,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | Table | Key columns |
 |---|---|
 | `teams` | id (CFBD id), school, slug, mascot, abbreviation, color, alt_color, logo_url, venue_id (stable identity only) |
-| `team_seasons` | team_id, season, conference, **division** (fbs/fcs/…). Membership changes by year (realignment, FCS→FBS moves), so it never lives on `teams` |
+| `team_seasons` | team_id, season, conference, **division** (fbs/fcs/…), conference_division (e.g. Sun Belt East/West; #96). Membership changes by year (realignment, FCS→FBS moves), so it never lives on `teams` |
 | `venues` | id, name, city, state, latitude, longitude, elevation_m, dome |
 | `games` | id, season, week, season_type, start_time (UTC), home_id, away_id, venue_id, neutral_site, conference_game, home_points, away_points, completed |
 | `team_game_stats` | game_id, team_id, points, plays, drives (full game), epa_per_play, rush/pass epa_per_play, success_rate, explosiveness (garbage time excluded), garbage_time_filtered. **Offense only:** a team's defense for a game is its opponent's row |

@@ -117,7 +117,8 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 
 ## Phase 8: Season simulation & playoff
 - [x] Monte Carlo season sim with rating uncertainty (`tsi sim season`: published forecasts + a per-team shift τ(week) fit on 2015–22, better win-total log score than independent games on 2023–25; #94)
-- [ ] Projected wins, conference title odds
+- [x] Projected wins, conference title odds (`tsi sim season`: simulated standings with simplified tiebreakers, Sun Belt divisions, neutral-site title games that count as wins; #96)
+- [ ] Store the sim nightly (`sim_results`) and show projected wins, win out, title and CFP odds on the rankings and team pages
 - [ ] CFP selection approximation + bracket page (2026–27 format verified by the owner: doc 05 §7.2, #95)
 - [ ] Futures fair odds
 

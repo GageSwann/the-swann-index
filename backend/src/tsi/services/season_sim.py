@@ -3,7 +3,9 @@
 Every remaining regular-season game gets the published per-game forecast
 (services/predict.py, the same model and sigma as the board), and the season Monte
 Carlo (sim/season.py) adds rating uncertainty that holds for the whole season. Games
-already played count as they ended. Read-only: nothing is stored.
+already played count as they ended. Each conference's title game follows from the
+simulated standings (sim/conference.py) and counts as a win for its champion. Read-only:
+nothing is stored.
 """
 
 from dataclasses import dataclass
@@ -13,13 +15,17 @@ import numpy as np
 from sqlalchemy.orm import Session
 
 from tsi.db.queries.calendar import calendar_week
-from tsi.db.queries.schedule import upcoming_games
+from tsi.db.queries.conference import conference_games, conference_members
+from tsi.db.queries.schedule import UpcomingGame, upcoming_games
 from tsi.db.queries.team_info import Record, records
 from tsi.db.queries.teams import team_names
+from tsi.divisions import RATED_DIVISION
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
+from tsi.services.conference_setup import build_conferences
 from tsi.services.live_inputs import LiveInputs, load_live_inputs
 from tsi.services.predict import forecast_game
+from tsi.sim.conference import simulate_title, title_odds
 from tsi.sim.season import DEFAULT_SIMS, RemainingGame, simulate_games, wins_added
 from tsi.sim.uncertainty import LAST_WEEK, game_noise, rating_tau
 
@@ -29,10 +35,14 @@ SEASON_DAYS = 200  # far enough to reach the end of any regular season
 @dataclass(frozen=True)
 class TeamProjection:
     team_id: int
+    conference: str | None
     record: Record  # so far
-    remaining: int  # regular-season games left on the schedule
-    expected_wins: float  # final regular-season wins, on average
+    remaining: int  # regular-season games left on the schedule (title game not included)
+    expected_wins: float  # final wins incl. a simulated conference title game, on average
     win_dist: list[float]  # P(final wins = k) for k = 0, 1, ...
+    win_out_prob: float  # P(wins every remaining scheduled game)
+    title_game_prob: float | None  # P(plays in its conference title game); None: independent
+    conference_title_prob: float | None
 
 
 @dataclass(frozen=True)
@@ -78,14 +88,45 @@ def project_season(
     noise = game_noise(artifact.distribution.sigma_margin, tau)
     simulated = simulate_games(remaining, len(teams), tau, noise, sims)
     added = wins_added(simulated, remaining, len(teams))
-
-    so_far = records(session, season, now)
     left = np.zeros(len(teams), dtype=int)
     for g in remaining:
         left[g.home] += 1
         left[g.away] += 1
+    win_out = (added == left).mean(axis=0)  # before any simulated title game
+
+    def neutral(a: int, b: int) -> float:
+        game = UpcomingGame(0, season, week, "regular", now, a, b, RATED_DIVISION,
+                            RATED_DIVISION, True)  # fmt: skip
+        return forecast_game(game, live, artifact).distribution.margin
+
+    members = conference_members(session, season)
+    conferences = build_conferences(
+        members,
+        conference_games(session, season),
+        index,
+        {g.id: i for i, g in enumerate(upcoming)},
+        neutral,
+        now,
+    )
+    odds: dict[int, tuple[float, float]] = {}
+    for conf in conferences:
+        result = simulate_title(conf, simulated)
+        if result.added_game:
+            added[np.arange(sims), result.champion] += 1
+        odds |= title_odds(result, conf.teams)
+
+    so_far = records(session, season, now)
+    conference_of = {m.team_id: m.conference for m in members}
     projections = [
-        _projection(t, so_far.get(t, Record()), int(left[i]), added[:, i])
+        _projection(
+            t,
+            conference_of.get(t),
+            so_far.get(t, Record()),
+            int(left[i]),
+            added[:, i],
+            float(win_out[i]),
+            odds.get(i),
+        )
         for i, t in enumerate(fbs)
     ]
     projections.sort(key=lambda p: -p.expected_wins)
@@ -94,7 +135,26 @@ def project_season(
     )
 
 
-def _projection(team_id: int, record: Record, left: int, added: np.ndarray) -> TeamProjection:
+def _projection(
+    team_id: int,
+    conference: str | None,
+    record: Record,
+    left: int,
+    added: np.ndarray,
+    win_out: float,
+    odds: tuple[float, float] | None,
+) -> TeamProjection:
     final = record.wins + added
     dist = np.bincount(final, minlength=record.wins + left + 1) / len(final)
-    return TeamProjection(team_id, record, left, float(final.mean()), dist.tolist())
+    finalist, champion = odds if odds else (None, None)
+    return TeamProjection(
+        team_id,
+        conference,
+        record,
+        left,
+        float(final.mean()),
+        dist.tolist(),
+        win_out,
+        finalist,
+        champion,
+    )

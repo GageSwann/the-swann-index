@@ -95,7 +95,7 @@ CLV is positive in every season (+0.2 to +1.8 points): lines move toward TSI's t
 ## 7. Season simulation
 Using the same game distributions plus **rating uncertainty**:
 - Projected win distribution per team (built: `tsi sim season`, decision #94)
-- Conference title odds (standings + championship game; tiebreakers approximated)
+- Conference title odds (standings + championship game; tiebreakers approximated; built: #96, §7.3)
 - **CFP odds and projected bracket:** selection approximated with TSI Résumé as a committee proxy, using the 2026–27 format below (keep it configurable: the format has changed every year so far)
 - Futures-style fair odds (e.g. "TSI fair odds to win the national title: +450")
 
@@ -122,6 +122,12 @@ The forecasts use the production artifact, so the stack weights are in-sample fo
 - **Quarterfinals** (Fiesta Dec 30; Cotton, Rose, Peach Jan 1), **no re-seeding**: 1 v 8/9, 2 v 7/10, 3 v 6/11, 4 v 5/12. **Semifinals**: Orange (Jan 14) and Sugar (Jan 15). The 1 and 4 quarterfinals meet in one semifinal (the 1 seed picks which), the 2 and 3 quarterfinals in the other; for the projections only the pairing matters, not the bowl. **Title game**: Monday, Jan 25, 2027, Las Vegas.
 - Neutral sites from the quarterfinals on; the first round has home field.
 - Committee rankings: Nov 3, 10, 17, 24, Dec 1, selection Sunday Dec 6.
+
+### 7.3 Conference titles (#96)
+- **Standings** in each simulated season from conference games (finished results + simulated ones). **Simplified tiebreakers** (owner-approved): conference win %, then head-to-head among the teams tied on it (0.5 if they didn't meet), then the better rating in that simulation (`sim/standings.py`).
+- **Finalists:** the top two, or each division's winner when the conference has divisions (`team_seasons.conference_division`, from CFBD's `division`; in 2026 only the Sun Belt: East/West). FBS Independents have no title game.
+- **Title game:** neutral site; mean margin from the published model (antisymmetric: A vs B = −(B vs A), checked over 435 pairs), plus both teams' shifts and game noise from the same simulation. The champion gets the win, so projected wins include it. Once the real title game is on the schedule (CFBD marks it only in `notes`; 2025's weren't flagged as conference games), its finalists are fixed and it is simulated like any remaining game.
+- Checks on dev (week 9, 40k sims): per conference, P(in title game) sums to 2.0000 and P(champion) to 1.0000; expected wins = wins + Σ published win probabilities + P(champion) within 0.014.
 
 ## 8. Calibration checks (must pass before launch)
 - Spread: TSI-predicted cover probabilities vs. observed cover rate by bin
