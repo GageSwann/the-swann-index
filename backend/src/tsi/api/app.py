@@ -28,7 +28,7 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        engine = make_engine(settings or get_settings())
+        engine = make_engine(settings or get_settings(), read_only=True)
         app.state.sessions = make_session_factory(engine)
         try:
             yield

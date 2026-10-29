@@ -13,6 +13,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, MarketLine
+from tsi.db.queries.filters import one_of
 
 AGGREGATORS = ("consensus", "teamrankings")  # CFBD "providers" that are not sportsbooks
 
@@ -81,7 +82,7 @@ def line_snapshots(
             MarketLine.fetched_at,
         )
         .where(
-            MarketLine.game_id.in_(list(game_ids)),
+            one_of(MarketLine.game_id, game_ids),
             MarketLine.fetched_at <= as_of,
             MarketLine.provider.not_in(AGGREGATORS),
         )
@@ -104,7 +105,7 @@ def closing_snapshots(session: Session, game_ids: Iterable[int]) -> list[LineSna
             MarketLine.fetched_at,
         )
         .where(
-            MarketLine.game_id.in_(list(game_ids)),
+            one_of(MarketLine.game_id, game_ids),
             MarketLine.is_closing,
             MarketLine.provider.not_in(AGGREGATORS),
         )

@@ -31,6 +31,15 @@ def test_engine_picks_pooled_or_direct_url() -> None:
     assert make_engine(settings, direct=True).url.host == "ep-x.neon.tech"
 
 
+def test_read_only_engine_autocommits_and_recycles() -> None:
+    api = make_engine(_settings(), read_only=True)
+    jobs = make_engine(_settings())
+
+    assert api.dialect._on_connect_isolation_level == "AUTOCOMMIT"
+    assert api.pool._recycle == 240 and not api.pool._pre_ping
+    assert jobs.pool._pre_ping  # writers keep transactions and the checkout ping
+
+
 def test_engine_repr_masks_password() -> None:
     engine = make_engine(_settings())
 

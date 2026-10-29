@@ -13,6 +13,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, Pick, Prediction
+from tsi.db.queries.filters import one_of
 
 RAW = "raw"
 
@@ -65,7 +66,7 @@ def fingerprint(values: Iterable[float | int]) -> tuple[float | int, ...]:
 def latest_snapshots(session: Session, game_ids: Iterable[int]) -> dict[int, SnapshotKey]:
     latest = (
         select(Prediction.id, Prediction.game_id, *FINGERPRINT)
-        .where(Prediction.game_id.in_(list(game_ids)), Prediction.variant == RAW)
+        .where(one_of(Prediction.game_id, game_ids), Prediction.variant == RAW)
         .order_by(Prediction.game_id, Prediction.published_at.desc(), Prediction.id.desc())
         .ext(postgresql.distinct_on(Prediction.game_id))
     )
@@ -73,7 +74,7 @@ def latest_snapshots(session: Session, game_ids: Iterable[int]) -> dict[int, Sna
     picks: dict[int, set[PickKey]] = defaultdict(set)
     query = select(
         Pick.prediction_id, Pick.market, Pick.side, Pick.line_taken, Pick.odds_taken, Pick.tier
-    ).where(Pick.prediction_id.in_(list(rows)))
+    ).where(one_of(Pick.prediction_id, rows))
     for pid, market, side, line, odds, tier in session.execute(query):
         picks[pid].add(PickKey(market, side, line, odds, tier))
     return {gid: SnapshotKey(fp, frozenset(picks[pid])) for pid, (gid, fp) in rows.items()}

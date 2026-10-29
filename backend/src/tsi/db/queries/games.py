@@ -7,6 +7,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game
+from tsi.db.queries.filters import one_of
 
 
 @dataclass(frozen=True)
@@ -64,7 +65,7 @@ def team_games(session: Session, season: int, team_id: int) -> list[GameRow]:
 
 
 def season_games(session: Session, season: int, game_ids: list[int]) -> list[GameRow]:
-    query = select(*COLUMNS).where(Game.season == season, Game.id.in_(game_ids))
+    query = select(*COLUMNS).where(Game.season == season, one_of(Game.id, game_ids))
     return [GameRow(*row) for row in session.execute(query)]
 
 

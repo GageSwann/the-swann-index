@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, Team, TeamRating, TeamSeason
+from tsi.db.queries.filters import one_of
 
 
 @dataclass(frozen=True)
@@ -67,7 +68,7 @@ def team_refs(
         TeamSeason.division,
     ).outerjoin(TeamSeason, (TeamSeason.team_id == Team.id) & (TeamSeason.season == season))
     if team_ids is not None:
-        query = query.where(Team.id.in_(list(team_ids)))
+        query = query.where(one_of(Team.id, team_ids))
     if division is not None:
         query = query.where(TeamSeason.division == division)
     return {row[0]: TeamRef(*row) for row in session.execute(query)}
@@ -78,7 +79,7 @@ def team_id_by_slug(session: Session, slug: str) -> int | None:
 
 
 def team_ids_by_slug(session: Session, slugs: Iterable[str]) -> dict[str, int]:
-    query = select(Team.slug, Team.id).where(Team.slug.in_(list(slugs)))
+    query = select(Team.slug, Team.id).where(one_of(Team.slug, slugs))
     return {slug: tid for slug, tid in session.execute(query)}
 
 
@@ -99,7 +100,7 @@ def stored_ratings(
         TeamRating.rank_resume,
         TeamRating.sor,
         TeamRating.sos,
-    ).where(TeamRating.run_id.in_(list(run_ids)), TeamRating.variant == "raw")
+    ).where(one_of(TeamRating.run_id, run_ids), TeamRating.variant == "raw")
     if team_id is not None:
         query = query.where(TeamRating.team_id == team_id)
     out: dict[int, list[StoredRating]] = defaultdict(list)

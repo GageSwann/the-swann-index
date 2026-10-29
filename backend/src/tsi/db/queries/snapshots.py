@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, Pick, Prediction
+from tsi.db.queries.filters import one_of
 
 RAW = "raw"
 
@@ -85,7 +86,7 @@ def snapshots_for_games(session: Session, game_ids: Iterable[int]) -> dict[int, 
     """game id -> every raw snapshot, oldest first."""
     query = (
         select(*SNAPSHOT_COLUMNS)
-        .where(Prediction.game_id.in_(list(game_ids)), Prediction.variant == RAW)
+        .where(one_of(Prediction.game_id, game_ids), Prediction.variant == RAW)
         .order_by(Prediction.game_id, Prediction.published_at, Prediction.id)
     )
     out: dict[int, list[SnapshotRow]] = defaultdict(list)
@@ -129,7 +130,7 @@ def picks_for_snapshots(
         Pick.result,
         Pick.units_won,
         Pick.graded_at,
-    ).where(Pick.prediction_id.in_(list(prediction_ids)))
+    ).where(one_of(Pick.prediction_id, prediction_ids))
     out: dict[int, list[PickRow]] = defaultdict(list)
     for row in session.execute(query):
         pick = PickRow(*row)
