@@ -59,7 +59,7 @@ Every real CFBD request (including failed ones) is recorded in `ingest_log`; cac
 
 ## Data quality checks (`tsi check`, rules in `quality/checks.py`)
 **Fail** (correctness; exit code 1):
-- Look-ahead: completed game with a future kickoff, stats on an unplayed game, closing line captured before kickoff
+- Look-ahead: completed game with a future kickoff, stats on an unplayed game, a closing line that isn't the book's last snapshot or whose game hasn't started (a pre-kickoff capture is fine: change-only snapshots)
 - Integrity: a game's team without a `team_seasons` row, stats points ≠ game score
 - FBS data the model needs: FBS game with stats for only one side, or completed without a score
 

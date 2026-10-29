@@ -18,13 +18,21 @@ FAIL_RULES: tuple[Check, ...] = (
         f"""SELECT x.season, {MATCHUP} FROM ({GAMES}) x WHERE NOT completed
             AND EXISTS (SELECT 1 FROM team_game_stats s WHERE s.game_id = x.id)""",
     ),
+    # Lines are change-only snapshots: when a book's line doesn't move after its last
+    # snapshot, that (pre-kickoff) row is marked closing once the game starts, so the
+    # capture time alone proves nothing. A wrong close is one that isn't the book's last
+    # snapshot, or one marked before the game has kicked off.
     Check(
-        "closing_line_before_kickoff",
+        "closing_line_not_final",
         "fail",
-        "A line marked closing was captured before kickoff",
+        "A line marked closing isn't the book's last snapshot, or its game hasn't started",
         f"""SELECT x.season, {MATCHUP} || ' ' || m.provider FROM ({GAMES}) x
             JOIN market_lines m ON m.game_id = x.id
-            WHERE m.is_closing AND m.fetched_at < x.start_time""",
+            WHERE m.is_closing AND (
+                x.start_time > now()
+                OR EXISTS (SELECT 1 FROM market_lines later
+                           WHERE later.game_id = m.game_id AND later.provider = m.provider
+                             AND later.fetched_at > m.fetched_at))""",
     ),
     # --- Integrity ----------------------------------------------------------
     Check(
