@@ -573,8 +573,23 @@ export interface components {
             /** Prob */
             prob: number;
         };
+        /** Projection */
+        Projection: {
+            /** Conference Title Prob */
+            conference_title_prob: number | null;
+            /** Expected Wins */
+            expected_wins: number;
+            /** Title Game Prob */
+            title_game_prob: number | null;
+            /** Win Dist */
+            win_dist: number[];
+            /** Win Out Prob */
+            win_out_prob: number;
+        };
         /** RankedTeam */
         RankedTeam: {
+            /** Conference Title Prob */
+            conference_title_prob: number | null;
             /** Def Rank */
             def_rank: number;
             /** Def Rating */
@@ -593,6 +608,8 @@ export interface components {
             predictive_rating: number | null;
             /** Previous Rank */
             previous_rank: number | null;
+            /** Projected Wins */
+            projected_wins: number | null;
             /** Provisional */
             provisional: boolean;
             /** Rank */
@@ -777,6 +794,7 @@ export interface components {
             history: components["schemas"]["RatingPoint"][];
             /** Losses */
             losses: number;
+            projection: components["schemas"]["Projection"] | null;
             ratings: components["schemas"]["TeamRatings"] | null;
             resume: components["schemas"]["ResumeSummary"] | null;
             /** Schedule */
