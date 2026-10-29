@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from tests.db_integration.api_seed import NOW, WEEK1_RUN_AT, WEEK2_RUN_AT, seed
 
 from tsi.api.app import create_app
-from tsi.api.deps import get_now, get_session
+from tsi.api.deps import get_now, get_sessions
 from tsi.config import Settings
 from tsi.model.ratings.probability import win_prob
 
@@ -17,11 +17,7 @@ def api(sessions) -> TestClient:
     settings = Settings(cfbd_api_key="fakekey", database_url="postgresql+psycopg://u:fakekey@x/y")
     app = create_app(settings)
 
-    def session_override():
-        with sessions() as session:
-            yield session
-
-    app.dependency_overrides[get_session] = session_override
+    app.dependency_overrides[get_sessions] = lambda: sessions
     app.dependency_overrides[get_now] = lambda: NOW
     with TestClient(app) as client:
         yield client
@@ -86,6 +82,7 @@ def test_team_list_and_profile(api: TestClient) -> None:
         0.25,
     )
     assert (proj["title_game_prob"], proj["conference_title_prob"]) == (0.5, 0.25)
+    assert (proj["playoff_prob"], proj["champion_prob"]) == (0.9, pytest.approx(0.18))
     assert ok(api, "/teams/echo")["projection"] is None  # FCS: not simulated
 
 
@@ -172,3 +169,18 @@ def test_matchup(api: TestClient) -> None:
     assert m["sigma_margin"] > 0 and m["sigma_total"] > 0  # the margin chart needs them
     assert api.get("/matchup?home=alpha&away=nope").status_code == 404
     assert api.get("/matchup?home=alpha&away=alpha").status_code == 400
+
+
+def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
+    result = ok(api, "/playoff")
+
+    # Charlie (0%) is left off; the rest by playoff odds.
+    assert [t["team"]["school"] for t in result["teams"]] == ["Alpha", "Delta", "Bravo"]
+    alpha = result["teams"][0]
+    assert (alpha["playoff_prob"], alpha["bye_prob"], alpha["rank_resume"]) == (0.9, 0.45, 1)
+    assert alpha["fair_odds"] == {"playoff": -900, "conference": 300, "title": 456}
+    assert result["sims"] == 10_000 and result["format"]["first_round"][0] == [5, 12]
+    # Projected field: everyone with a chance, by average seed (Alpha ~1.5, the rest 5).
+    assert [t["team"]["school"] for t in result["projected"]][0] == "Alpha"
+    assert "Charlie" not in [t["team"]["school"] for t in result["projected"]]
+    assert api.get("/playoff?season=2015").status_code == 404

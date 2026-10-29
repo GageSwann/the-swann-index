@@ -12,6 +12,8 @@ class Projection:
     win_out_prob: float  # wins every remaining scheduled game
     title_game_prob: float | None  # None: no conference title game (independents)
     conference_title_prob: float | None
+    playoff_prob: float | None  # None outside the regular season
+    champion_prob: float | None  # national title
 
 
 def projection(sim: StoredSim | None) -> Projection | None:
@@ -23,4 +25,6 @@ def projection(sim: StoredSim | None) -> Projection | None:
         win_out_prob=sim.win_out_prob,
         title_game_prob=sim.title_game_prob,
         conference_title_prob=sim.conference_title_prob,
+        playoff_prob=sim.playoff_prob,
+        champion_prob=sim.champion_prob,
     )

@@ -1,35 +1,33 @@
-from datetime import datetime
-from typing import Annotated, Literal
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
 
-from tsi.api.deps import get_now, get_session
+from tsi.api.deps import NowDep, SessionsDep, read
 from tsi.services.read.games import GameCenter, WeekBoard, game_center, week_board
 
 router = APIRouter(tags=["games"])
 
 
 @router.get("/weeks/{season}/{week}/games", response_model=WeekBoard)
-def get_week_games(
+async def get_week_games(
     season: int,
     week: int,
-    session: Annotated[Session, Depends(get_session)],
-    now: Annotated[datetime, Depends(get_now)],
+    sessions: SessionsDep,
+    now: NowDep,
     season_type: Literal["regular", "postseason"] = "regular",
 ) -> WeekBoard:
     """Matchup board: every game with an FBS team, TSI's prediction and the market."""
-    return week_board(session, season, week, season_type, now)
+    return await read(sessions, lambda s: week_board(s, season, week, season_type, now))
 
 
 @router.get("/games/{game_id}", response_model=GameCenter)
-def get_game(
+async def get_game(
     game_id: int,
-    session: Annotated[Session, Depends(get_session)],
-    now: Annotated[datetime, Depends(get_now)],
+    sessions: SessionsDep,
+    now: NowDep,
 ) -> GameCenter:
     """Game center: prediction, full odds board, market comparison, snapshot history, result."""
-    center = game_center(session, game_id, now)
+    center = await read(sessions, lambda s: game_center(s, game_id, now))
     if center is None:
         raise HTTPException(404, f"Unknown game {game_id}.")
     return center

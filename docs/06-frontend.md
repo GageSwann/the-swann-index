@@ -26,7 +26,7 @@
 | `/book` | **TSI Book** ledger |
 | `/model` | **Methodology + report card** |
 | `/matchup` | **Hypothetical matchup tool** (#85) |
-| `/playoff` | **CFP projections + bracket** (later) |
+| `/playoff` | **CFP projections + bracket** (#101) |
 | `/conferences/[slug]` | Standings + title odds (later) |
 
 ## Page specs
@@ -67,6 +67,9 @@
 - **Projected record** (#98): record now, projected wins, chance to win out, conference title % and title-game %, and a bar chart of final win totals (plain server-rendered HTML bars with a screen-reader table, no chart library). Shown for every rated team; a value the API lacks is left out. CFP % later.
 - If manually adjusted (later): badge + reason.
 - **Built (decision #73):** the current Top 25 is prerendered and every other team renders on first visit (`<Suspense>`; unknown slug → not found). Header: a solid team-color band (flat per #69, instead of a gradient), logo, mascot, conference, record, Power/Résumé rank, rating, predictive rating (rank), SOS. Profile: power/résumé/offense/defense rank bars among rated FBS teams (ranks from `/rankings`). Rating trend: the shared `components/charts/rating-trend-chart.tsx` (one or two teams; y ticks every 2/5/10 points with ≥ 2 points of padding). Schedule: date, opponent (with Top-25 rank and site), result or projected score (links to the game center), TSI line and win chance from the team's side: the published snapshot when there is one, else the API's `/matchup` with today's ratings, marked * "if played today". Non-FBS teams show their schedule with "no rating". Not yet: preseason prior as the trend's starting point (live history starts Oct 19, 2026), percentiles for EPA/success/explosiveness, spread result per game (needs market lines in the team endpoint), projected record.
+
+### Playoff `/playoff`
+- **Built (decision #101):** from the latest nightly simulation (`GET /playoff`; regular season only, a plain message otherwise). **Projected bracket:** one representative valid field (each power conference's likeliest champion, the likeliest group-of-six team, Notre Dame if among the twelve likeliest, then at-large by playoff odds), seeded by average seed; first round → quarterfinals → semifinals → championship in four columns (stacked on phones), pairings from the API's format; in each game the team likelier to reach the next round advances, ending in a projected champion. **Playoff odds:** every team with a 1%+ chance: record, Résumé rank, playoff, bye, semifinal, final and title chances, and title odds (fair American odds). Team pages add "Makes the playoff" and "Wins the title" to the projected record.
 
 ### Matchup `/matchup`
 - **Built (decision #85):** pick any two FBS teams (away/home, neutral-site checkbox) in a plain GET form grouped by conference: works without JavaScript, and results are shareable URLs (`/matchup?away=auburn&home=alabama&neutral=1`); "Swap home and away" is a link. Result: the shared `ScoreBoard` (projected score, win probability), TSI's fair and Book prices (no Vegas column: books only post scheduled games), the margin chart (from `sigma_margin`), alternate spread/total ladders and the tale of the tape. Labeled hypothetical: not saved, graded or in the Book. Empty state suggests three top-6 pairings on neutral fields; same team twice or an unknown slug get a plain message.

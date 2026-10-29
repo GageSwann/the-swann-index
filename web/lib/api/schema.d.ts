@@ -104,6 +104,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/playoff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Playoff
+         * @description Playoff odds, fair futures odds and a projected bracket (regular season only).
+         */
+        get: operations["get_playoff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/rankings": {
         parameters: {
             query?: never;
@@ -318,6 +338,19 @@ export interface components {
             /** Units */
             units: number;
         };
+        /** BracketFormat */
+        BracketFormat: {
+            /** Byes */
+            byes: number;
+            /** Field Size */
+            field_size: number;
+            /** First Round */
+            first_round: number[][];
+            /** Quarterfinals */
+            quarterfinals: number[][];
+            /** Semifinals */
+            semifinals: number[][];
+        };
         /** CalibrationBin */
         CalibrationBin: {
             /** Bin */
@@ -343,6 +376,18 @@ export interface components {
             spread: number | null;
             /** Total */
             total: number | null;
+        };
+        /**
+         * FairOdds
+         * @description American odds without vig; None when the chance is too close to 0 or 1 to price.
+         */
+        FairOdds: {
+            /** Conference */
+            conference: number | null;
+            /** Playoff */
+            playoff: number | null;
+            /** Title */
+            title: number | null;
         };
         /** GameCenter */
         GameCenter: {
@@ -564,6 +609,52 @@ export interface components {
             /** Units Won */
             units_won: number | null;
         };
+        /** Playoff */
+        Playoff: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            format: components["schemas"]["BracketFormat"];
+            /** Projected */
+            projected: components["schemas"]["PlayoffTeam"][];
+            /** Season */
+            season: number;
+            /** Sims */
+            sims: number | null;
+            /** Teams */
+            teams: components["schemas"]["PlayoffTeam"][];
+            /** Week */
+            week: number;
+        };
+        /** PlayoffTeam */
+        PlayoffTeam: {
+            /** Bye Prob */
+            bye_prob: number;
+            /** Champion Prob */
+            champion_prob: number;
+            /** Conference Title Prob */
+            conference_title_prob: number | null;
+            fair_odds: components["schemas"]["FairOdds"];
+            /** Final Prob */
+            final_prob: number;
+            /** Losses */
+            losses: number;
+            /** Playoff Prob */
+            playoff_prob: number;
+            /** Quarterfinal Prob */
+            quarterfinal_prob: number;
+            /** Rank Resume */
+            rank_resume: number | null;
+            /** Seed Dist */
+            seed_dist: number[];
+            /** Semifinal Prob */
+            semifinal_prob: number;
+            team: components["schemas"]["TeamRef"];
+            /** Wins */
+            wins: number;
+        };
         /** Price */
         Price: {
             /** Book */
@@ -575,10 +666,14 @@ export interface components {
         };
         /** Projection */
         Projection: {
+            /** Champion Prob */
+            champion_prob: number | null;
             /** Conference Title Prob */
             conference_title_prob: number | null;
             /** Expected Wins */
             expected_wins: number;
+            /** Playoff Prob */
+            playoff_prob: number | null;
             /** Title Game Prob */
             title_game_prob: number | null;
             /** Win Dist */
@@ -1055,6 +1150,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_playoff: {
+        parameters: {
+            query?: {
+                season?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Playoff"];
                 };
             };
             /** @description Validation Error */

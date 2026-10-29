@@ -12,6 +12,7 @@ V1_PATHS = {
     "/book/ledger",
     "/model/report",
     "/matchup",
+    "/playoff",
 }
 
 

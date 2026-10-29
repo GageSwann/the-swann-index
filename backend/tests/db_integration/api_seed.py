@@ -53,6 +53,10 @@ WEEK2_RATINGS = [
 ]
 
 
+# Playoff odds per FBS team (the week-2 sim): Alpha is the favorite, Charlie never makes it.
+PLAYOFF_ODDS = {1: 0.9, 4: 0.5, 2: 0.2, 3: 0.0}
+
+
 def seed(session) -> None:
     session.add_all(
         [Team(id=t, school=n, slug=n.lower(), color="#123456") for t, n in (FBS | FCS).items()]
@@ -191,7 +195,9 @@ def _runs(session) -> None:
                 _rating(week1.id, t, "season", rating - 1, off, de, 0, rp, rr, sor),
             ]
         )
+    week2.params = {**WEEK2_PARAMS, "sim": {"sims": 10_000}}
     for t, rating, *_ in WEEK2_RATINGS:
+        make = PLAYOFF_ODDS[t]
         session.add(
             SimResult(
                 run_id=week2.id,
@@ -201,6 +207,15 @@ def _runs(session) -> None:
                 win_out_prob=0.25,
                 title_game_prob=0.5,
                 conference_title_prob=0.25,
+                playoff_prob=make,
+                bye_prob=make / 2,
+                seed_dist=[make / 2, make / 2] + [0.0] * 10
+                if t == 1
+                else [0.0] * 4 + [make] + [0.0] * 7,
+                quarterfinal_prob=make * 0.8,
+                semifinal_prob=make * 0.5,
+                final_prob=make * 0.3,
+                champion_prob=make * 0.2,
             )
         )
     snap_101 = _snapshot(publish.id, 101, datetime(2026, 10, 17, 10, tzinfo=UTC), -6.0, 52.0)

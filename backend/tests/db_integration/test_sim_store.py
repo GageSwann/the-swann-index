@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from tsi.db.models import ModelRun, Team
 from tsi.db.queries.sim import stored_sims
 from tsi.db.queries.team_info import Record
+from tsi.services.playoff_projection import TeamPlayoff
 from tsi.services.season_sim import SeasonProjection, TeamProjection
 from tsi.services.sim_store import save_season_sim
 
@@ -27,7 +28,18 @@ def test_saves_one_row_per_team_and_the_settings(sessions) -> None:
             )
         )
     teams = [
-        TeamProjection(1, "Test", Record(7, 0), 5, 11.8, [0.0] * 11 + [0.3, 0.7], 0.3, 0.99, 0.75),
+        TeamProjection(
+            1,
+            "Test",
+            Record(7, 0),
+            5,
+            11.8,
+            [0.0] * 11 + [0.3, 0.7],
+            0.3,
+            0.99,
+            0.75,
+            TeamPlayoff(0.95, 0.7, [0.4, 0.3] + [0.025] * 10, 0.9, 0.6, 0.35, 0.2),
+        ),
         TeamProjection(2, "FBS Independents", Record(6, 1), 5, 10.4, [0.5, 0.5], 0.5, None, None),
     ]
     projection = SeasonProjection(2026, NOW, 9, 6.1, 10_000, teams, {1: "Alpha", 2: "Bravo"})
@@ -39,5 +51,7 @@ def test_saves_one_row_per_team_and_the_settings(sessions) -> None:
         params = s.get_one(ModelRun, 7).params
     assert sims[1].expected_wins == 11.8 and sims[1].win_dist[-1] == 0.7
     assert (sims[2].title_game_prob, sims[2].conference_title_prob) == (None, None)
+    assert (sims[1].playoff_prob, sims[1].champion_prob, sims[1].seed_dist[0]) == (0.95, 0.2, 0.4)
+    assert sims[2].playoff_prob is None and sims[2].seed_dist is None  # no playoff odds
     assert params["season_hfa"] == 3.2  # rating params kept
     assert params["sim"] == {"sims": 10_000, "tau": 6.1, "week": 9, "seed": 2026}

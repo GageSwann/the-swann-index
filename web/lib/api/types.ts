@@ -24,6 +24,9 @@ export type LedgerRecord = Schemas["LedgerRecord"]
 export type UnitsPoint = Schemas["UnitsPoint"]
 export type ModelReport = Schemas["ModelReport"]
 export type Matchup = Schemas["Matchup"]
+export type Playoff = Schemas["Playoff"]
+export type PlayoffTeam = Schemas["PlayoffTeam"]
+export type BracketFormat = Schemas["BracketFormat"]
 
 export type RankingType = "power" | "resume"
 export type SeasonType = "regular" | "postseason"

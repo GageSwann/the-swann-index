@@ -16,6 +16,13 @@ class StoredSim:
     win_out_prob: float
     title_game_prob: float | None
     conference_title_prob: float | None
+    playoff_prob: float | None  # playoff odds: None outside the regular season
+    bye_prob: float | None
+    seed_dist: list[float] | None
+    quarterfinal_prob: float | None
+    semifinal_prob: float | None
+    final_prob: float | None
+    champion_prob: float | None
 
 
 def stored_sims(session: Session, run_id: int, team_id: int | None = None) -> dict[int, StoredSim]:
@@ -27,6 +34,13 @@ def stored_sims(session: Session, run_id: int, team_id: int | None = None) -> di
         SimResult.win_out_prob,
         SimResult.title_game_prob,
         SimResult.conference_title_prob,
+        SimResult.playoff_prob,
+        SimResult.bye_prob,
+        SimResult.seed_dist,
+        SimResult.quarterfinal_prob,
+        SimResult.semifinal_prob,
+        SimResult.final_prob,
+        SimResult.champion_prob,
     ).where(SimResult.run_id == run_id)
     if team_id is not None:
         query = query.where(SimResult.team_id == team_id)

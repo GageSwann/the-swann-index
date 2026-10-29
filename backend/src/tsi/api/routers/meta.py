@@ -1,19 +1,15 @@
-from datetime import datetime
-from typing import Annotated
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from tsi.api.deps import get_now, get_session
+from tsi.api.deps import NowDep, SessionsDep, read
 from tsi.services.read.meta import Meta, current_meta
 
 router = APIRouter(tags=["meta"])
 
 
 @router.get("/meta/current", response_model=Meta)
-def get_meta(
-    session: Annotated[Session, Depends(get_session)],
-    now: Annotated[datetime, Depends(get_now)],
+async def get_meta(
+    sessions: SessionsDep,
+    now: NowDep,
 ) -> Meta:
     """Current season and week, and when ratings and predictions were last updated."""
-    return current_meta(session, now)
+    return await read(sessions, lambda s: current_meta(s, now))

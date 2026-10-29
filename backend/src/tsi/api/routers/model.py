@@ -1,20 +1,16 @@
-from datetime import datetime
-from typing import Annotated
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from tsi.api.deps import get_now, get_session, season_or_current
+from tsi.api.deps import NowDep, SessionsDep, read, season_or_current
 from tsi.services.read.report import ModelReport, model_report
 
 router = APIRouter(tags=["model"])
 
 
 @router.get("/model/report", response_model=ModelReport)
-def get_model_report(
-    session: Annotated[Session, Depends(get_session)],
-    now: Annotated[datetime, Depends(get_now)],
+async def get_model_report(
+    sessions: SessionsDep,
+    now: NowDep,
     season: int | None = None,
 ) -> ModelReport:
     """Backtest headline metrics plus this season's live accuracy of published predictions."""
-    return model_report(session, season_or_current(season, now), now)
+    return await read(sessions, lambda s: model_report(s, season_or_current(season, now), now))

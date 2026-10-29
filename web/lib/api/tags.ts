@@ -5,6 +5,7 @@ export const META = "meta"
 export const RANKINGS = "rankings"
 export const LEDGER = "ledger"
 export const REPORT = "report"
+export const PLAYOFF = "playoff"
 
 export const week = (season: number, week: number) => `week-${season}-${week}`
 export const team = (slug: string) => `team-${slug}`

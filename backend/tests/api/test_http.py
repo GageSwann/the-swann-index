@@ -1,9 +1,10 @@
 """CORS, caching headers, ETag/304 and gzip, without a database (no route here touches it)."""
 
 import pytest
+from anyio import to_thread
 from fastapi.testclient import TestClient
 
-from tsi.api.app import create_app
+from tsi.api.app import CONCURRENT_REQUESTS, create_app
 from tsi.api.caching import DEFAULT_POLICY, NO_STORE, cache_policy
 from tsi.config import Settings
 
@@ -67,3 +68,10 @@ def test_large_responses_are_gzipped(client: TestClient) -> None:
     r = client.get("/openapi.json", headers={"Accept-Encoding": "gzip"})
 
     assert r.headers.get("content-encoding") == "gzip"
+
+
+def test_requests_in_flight_stay_below_the_connection_pool(client: TestClient) -> None:
+    # Checked on the app's own event loop, where the request threads are limited.
+    limit = client.portal.call(lambda: to_thread.current_default_thread_limiter().total_tokens)
+
+    assert limit == CONCURRENT_REQUESTS < 5 + 10  # SQLAlchemy's default pool + overflow

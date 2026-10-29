@@ -10,6 +10,7 @@ import type {
   Matchup,
   Meta,
   ModelReport,
+  Playoff,
   RankingType,
   Rankings,
   SeasonType,
@@ -112,4 +113,13 @@ export async function getMatchup(
     params: { query: { home, away, neutral } },
   })
   return orNull("/matchup", result)
+}
+
+/** Playoff odds and a projected bracket; null outside the regular season. */
+export async function getPlayoff(season?: number): Promise<Playoff | null> {
+  "use cache"
+  cacheLife("tsi")
+  cacheTag(tags.ALL, tags.PLAYOFF)
+  const result = await apiClient().GET("/playoff", { params: { query: { season } } })
+  return orNull("/playoff", result)
 }

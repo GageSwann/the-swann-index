@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import ModelRun, SimResult
 from tsi.db.upsert import upsert_rows
+from tsi.services.playoff_projection import TeamPlayoff
 from tsi.services.season_sim import SeasonProjection
 from tsi.sim.season import DEFAULT_SEED
 
@@ -24,6 +25,7 @@ def save_season_sim(
             "win_out_prob": t.win_out_prob,
             "title_game_prob": t.title_game_prob,
             "conference_title_prob": t.conference_title_prob,
+            **_playoff_columns(t.playoff),
         }
         for t in projection.teams
     ]
@@ -39,3 +41,16 @@ def save_season_sim(
             },
         }
         return upsert_rows(session, SimResult, rows)
+
+
+def _playoff_columns(p: TeamPlayoff | None) -> dict[str, float | list[float] | None]:
+    """The playoff odds, or all None outside the regular season."""
+    return {
+        "playoff_prob": p.make if p else None,
+        "bye_prob": p.bye if p else None,
+        "seed_dist": p.seed_dist if p else None,
+        "quarterfinal_prob": p.quarterfinal if p else None,
+        "semifinal_prob": p.semifinal if p else None,
+        "final_prob": p.final if p else None,
+        "champion_prob": p.champion if p else None,
+    }

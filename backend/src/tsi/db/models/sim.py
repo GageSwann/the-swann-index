@@ -22,3 +22,11 @@ class SimResult(CreatedAtMixin, Base):
     win_out_prob: Mapped[float]  # wins every remaining scheduled game
     title_game_prob: Mapped[float | None]  # None: no conference title game (independents)
     conference_title_prob: Mapped[float | None]
+    # Playoff odds (decision #100); None outside the regular season.
+    playoff_prob: Mapped[float | None]  # in the field
+    bye_prob: Mapped[float | None]  # a top-four seed
+    seed_dist: Mapped[list[float] | None] = mapped_column(ARRAY(Double))  # P(seed = 1..12)
+    quarterfinal_prob: Mapped[float | None]
+    semifinal_prob: Mapped[float | None]
+    final_prob: Mapped[float | None]
+    champion_prob: Mapped[float | None]

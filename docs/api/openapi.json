@@ -368,6 +368,57 @@
         "title": "BookUnitsPoint",
         "type": "object"
       },
+      "BracketFormat": {
+        "properties": {
+          "byes": {
+            "title": "Byes",
+            "type": "integer"
+          },
+          "field_size": {
+            "title": "Field Size",
+            "type": "integer"
+          },
+          "first_round": {
+            "items": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "title": "First Round",
+            "type": "array"
+          },
+          "quarterfinals": {
+            "items": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "title": "Quarterfinals",
+            "type": "array"
+          },
+          "semifinals": {
+            "items": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "title": "Semifinals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "field_size",
+          "byes",
+          "first_round",
+          "quarterfinals",
+          "semifinals"
+        ],
+        "title": "BracketFormat",
+        "type": "object"
+      },
       "CalibrationBin": {
         "properties": {
           "bin": {
@@ -467,6 +518,51 @@
           "books"
         ],
         "title": "ConsensusLine",
+        "type": "object"
+      },
+      "FairOdds": {
+        "description": "American odds without vig; None when the chance is too close to 0 or 1 to price.",
+        "properties": {
+          "conference": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conference"
+          },
+          "playoff": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playoff"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "playoff",
+          "conference",
+          "title"
+        ],
+        "title": "FairOdds",
         "type": "object"
       },
       "GameCenter": {
@@ -1257,6 +1353,150 @@
         "title": "PickView",
         "type": "object"
       },
+      "Playoff": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "format": {
+            "$ref": "#/components/schemas/BracketFormat"
+          },
+          "projected": {
+            "items": {
+              "$ref": "#/components/schemas/PlayoffTeam"
+            },
+            "title": "Projected",
+            "type": "array"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "sims": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sims"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/PlayoffTeam"
+            },
+            "title": "Teams",
+            "type": "array"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "week",
+          "as_of",
+          "sims",
+          "format",
+          "projected",
+          "teams"
+        ],
+        "title": "Playoff",
+        "type": "object"
+      },
+      "PlayoffTeam": {
+        "properties": {
+          "bye_prob": {
+            "title": "Bye Prob",
+            "type": "number"
+          },
+          "champion_prob": {
+            "title": "Champion Prob",
+            "type": "number"
+          },
+          "conference_title_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conference Title Prob"
+          },
+          "fair_odds": {
+            "$ref": "#/components/schemas/FairOdds"
+          },
+          "final_prob": {
+            "title": "Final Prob",
+            "type": "number"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "playoff_prob": {
+            "title": "Playoff Prob",
+            "type": "number"
+          },
+          "quarterfinal_prob": {
+            "title": "Quarterfinal Prob",
+            "type": "number"
+          },
+          "rank_resume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Resume"
+          },
+          "seed_dist": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Seed Dist",
+            "type": "array"
+          },
+          "semifinal_prob": {
+            "title": "Semifinal Prob",
+            "type": "number"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "team",
+          "wins",
+          "losses",
+          "rank_resume",
+          "playoff_prob",
+          "bye_prob",
+          "seed_dist",
+          "quarterfinal_prob",
+          "semifinal_prob",
+          "final_prob",
+          "champion_prob",
+          "conference_title_prob",
+          "fair_odds"
+        ],
+        "title": "PlayoffTeam",
+        "type": "object"
+      },
       "Price": {
         "properties": {
           "book": {
@@ -1282,6 +1522,17 @@
       },
       "Projection": {
         "properties": {
+          "champion_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Champion Prob"
+          },
           "conference_title_prob": {
             "anyOf": [
               {
@@ -1296,6 +1547,17 @@
           "expected_wins": {
             "title": "Expected Wins",
             "type": "number"
+          },
+          "playoff_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Playoff Prob"
           },
           "title_game_prob": {
             "anyOf": [
@@ -1325,7 +1587,9 @@
           "win_dist",
           "win_out_prob",
           "title_game_prob",
-          "conference_title_prob"
+          "conference_title_prob",
+          "playoff_prob",
+          "champion_prob"
         ],
         "title": "Projection",
         "type": "object"
@@ -2698,6 +2962,56 @@
         "summary": "Get Model Report",
         "tags": [
           "model"
+        ]
+      }
+    },
+    "/playoff": {
+      "get": {
+        "description": "Playoff odds, fair futures odds and a projected bracket (regular season only).",
+        "operationId": "get_playoff",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Playoff"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Playoff",
+        "tags": [
+          "playoff"
         ]
       }
     },
