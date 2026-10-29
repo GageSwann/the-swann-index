@@ -21,7 +21,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#96 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#97 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -139,7 +139,7 @@ uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)
 uv run alembic revision --autogenerate -m "msg"   # after changing models; review before applying
 uv run alembic check            # models and DB in sync?
 ```
-Local `backend/.env` targets the Neon **`dev`** branch (a copy of `production`; refresh it with Neon's "Reset from parent"). Production = the `production` branch: never point local tools at it. Ask before applying migrations to any database; production migrations go through the direct `production` string, applied deliberately.
+Local `backend/.env` targets the Neon **`dev`** branch (a copy of `production`; refresh it with Neon's "Reset from parent"). Production = the `production` branch: never point local tools at it. Ask before applying migrations to any database. Production migrations run through the manual **Migrate production** workflow (`gh workflow run migrate.yml`, optional `-f reload_teams_season=YYYY`; #97): the connection string stays in GitHub secrets.
 GitHub: `gh workflow run daily-refresh.yml` triggers the nightly job manually; `gh run list --workflow daily-refresh.yml` shows recent runs.
 Web (run from `web/`; Node 24, npm):
 ```powershell
