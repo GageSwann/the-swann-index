@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site"
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [meta, teams] = await Promise.all([getMeta(), getTeams()])
   const week = `/week/${meta.season}/${Math.max(1, meta.week)}`
-  const pages = ["", "/week", week, "/book", "/model", "/matchup"]
+  const pages = ["", "/week", week, "/playoff", "/book", "/model", "/matchup"]
   return [
     ...pages.map((path) => ({ url: `${SITE_URL}${path}`, changeFrequency: "daily" as const })),
     ...teams.map((t) => ({

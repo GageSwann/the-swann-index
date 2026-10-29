@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 const LINKS = [
   { href: "/", label: "Rankings", match: (p: string) => p === "/" },
   { href: "/week", label: "This week", match: (p: string) => p.startsWith("/week") },
+  { href: "/playoff", label: "Playoff", match: (p: string) => p.startsWith("/playoff") },
   { href: "/book", label: "TSI Book", match: (p: string) => p.startsWith("/book") },
   { href: "/matchup", label: "Matchup", match: (p: string) => p.startsWith("/matchup") },
   { href: "/model", label: "Model", match: (p: string) => p.startsWith("/model") },

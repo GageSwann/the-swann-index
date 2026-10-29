@@ -22,12 +22,18 @@ export function ProjectionCard({ profile }: { profile: TeamProfile }) {
         Projected record
       </h2>
       <div className="space-y-5 rounded-md border border-border bg-card p-5">
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="Record now" value={rec} />
           {proj && <Stat label="Projected wins" value={proj.expected_wins.toFixed(1)} />}
           {proj && <Stat label="Wins out" value={chance(proj.win_out_prob)} />}
           {proj?.conference_title_prob != null && (
             <Stat label={`Wins the ${conf}`} value={chance(proj.conference_title_prob)} />
+          )}
+          {proj?.playoff_prob != null && (
+            <Stat label="Makes the playoff" value={chance(proj.playoff_prob)} />
+          )}
+          {proj?.champion_prob != null && (
+            <Stat label="Wins the title" value={chance(proj.champion_prob)} />
           )}
         </dl>
         {proj?.title_game_prob != null && (
@@ -38,7 +44,7 @@ export function ProjectionCard({ profile }: { profile: TeamProfile }) {
         {proj && <WinHistogram dist={proj.win_dist} school={profile.team.school} />}
         <p className="max-w-[70ch] text-sm text-muted-foreground">
           {proj
-            ? "Each remaining game uses TSI's published prediction, and in every simulated season each team can be better or worse than its rating for the rest of the year. Conference title games follow the simulated standings (simplified tiebreakers) and count as a win."
+            ? "Each remaining game uses TSI's published prediction, and in every simulated season each team can be better or worse than its rating for the rest of the year. Conference title games follow the simulated standings (simplified tiebreakers) and count as a win; the playoff field follows the simulated Résumé rankings (see the Playoff page)."
             : "The season projection appears after the next nightly update."}
         </p>
       </div>
