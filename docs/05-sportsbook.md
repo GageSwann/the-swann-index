@@ -92,12 +92,36 @@ CLV is the best long-run skill signal. If TSI consistently beats the closing lin
 
 CLV is positive in every season (+0.2 to +1.8 points): lines move toward TSI's totals picks, the most reliable sign of signal. Win rates are noisy at these sample sizes (train 2★ went 15-19). Checked and rejected: an intercept in the shrink (base rate of overs) improved log loss but turned the Book into an under-only bettor (503 of 508 validation bets) with lower ROI (+2.6%).
 
-## 7. Season simulation (later phase)
-Using the same game distributions plus **rating uncertainty** (sample team ratings each sim):
-- Projected win distribution per team
+## 7. Season simulation
+Using the same game distributions plus **rating uncertainty**:
+- Projected win distribution per team (built: `tsi sim season`, decision #94)
 - Conference title odds (standings + championship game; tiebreakers approximated)
-- **CFP odds and projected bracket:** selection approximated with TSI Résumé as a committee proxy. *Check the current CFP format and seeding rules before building; keep them configurable since the format has been changing.*
+- **CFP odds and projected bracket:** selection approximated with TSI Résumé as a committee proxy, using the 2026–27 format below (keep it configurable: the format has changed every year so far)
 - Futures-style fair odds (e.g. "TSI fair odds to win the national title: +450")
+
+### 7.1 Rating uncertainty (#94)
+Every remaining regular-season game gets the published forecast (`services/predict.py`: same model, same mean margin, σ_margin 15.4). A simulated season (`sim/season.py`, 10,000 by default, fixed seed) draws one shift per team, d ~ N(0, τ), kept for all of its remaining games:
+
+    margin = forecast + d_home − d_away + e,   sd(e) = √(σ² − 2τ²)
+
+so each single game keeps the site's win probability, and a team that is better than its rating shows it in several games at once. **τ(week) = 7.15 − 0.114 × week** (regular-season week, held at week 15 for the postseason; `sim/uncertainty.py`).
+
+Fit: fixed-cutoff forecasts of every remaining regular-season game from weeks 1, 4, 7, 10 and 13 of 2015–2025 (conference title games excluded); τ² = mean product of a team's side-signed residuals over pairs of its remaining games. Train estimates by cutoff: 7.0, 6.8, 6.3, 5.8, 5.8 (validation: 7.3, 6.2, 5.6, 5.4, 3.3). Scored by the mean log probability of each FBS team's actual remaining wins (20,000 sims per cutoff):
+
+| τ multiplier | 0 (independent games) | 0.5 | 0.75 | **1.0** | 1.25 |
+|---|---|---|---|---|---|
+| Train 2015–22 | −1.584 | −1.544 | −1.523 | **−1.520** | −1.539 |
+| Validate 2023–25 | −1.670 | −1.620 | −1.590 | **−1.579** | −1.589 |
+
+The forecasts use the production artifact, so the stack weights are in-sample for these seasons; τ is a covariance across games and barely depends on them. Live check (dev, week 9 of 2026): each team's expected wins equal its wins so far plus the sum of its games' published win probabilities, within 0.014 wins at 40,000 sims.
+
+### 7.2 CFP format, 2026–27 (owner, #95)
+- **12 teams.** Automatic bids: the **ACC, Big Ten, Big 12 and SEC champions**; the **highest-ranked team from the American, Conference USA, MAC, Mountain West, Pac-12 or Sun Belt** (champion or not); **Notre Dame** if it ranks in the top 12. The rest are at-large by ranking.
+- **Seeds 1–4** (first-round byes) = the four highest-ranked teams, champions or not. Seeds 5–12 follow the ranking.
+- **First round** (Dec 18–19) at the higher seed's home: 5 v 12, 6 v 11, 7 v 10, 8 v 9.
+- **Quarterfinals** (Fiesta Dec 30; Cotton, Rose, Peach Jan 1), **no re-seeding**: 1 v 8/9, 2 v 7/10, 3 v 6/11, 4 v 5/12. **Semifinals**: Orange (Jan 14) and Sugar (Jan 15). The 1 and 4 quarterfinals meet in one semifinal (the 1 seed picks which), the 2 and 3 quarterfinals in the other; for the projections only the pairing matters, not the bowl. **Title game**: Monday, Jan 25, 2027, Las Vegas.
+- Neutral sites from the quarterfinals on; the first round has home field.
+- Committee rankings: Nov 3, 10, 17, 24, Dec 1, selection Sunday Dec 6.
 
 ## 8. Calibration checks (must pass before launch)
 - Spread: TSI-predicted cover probabilities vs. observed cover rate by bin

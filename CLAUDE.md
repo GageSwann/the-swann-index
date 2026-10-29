@@ -7,6 +7,7 @@ Personal college football rating model + prediction engine + public read-only da
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
 - **Phase 4 complete** (2026-10-21): read-only API with all v1 endpoints (`api/`, read models in `services/read/`), CORS + cache headers + ETag/304 + gzip, seeded-DB tests, spec at `docs/api/openapi.json`.
+- **Phase 8 started** (2026-10-29): season Monte Carlo built (`tsi sim season`, read-only; #94). CFP format for 2026–27 recorded (doc 05 §7.2, #95). Next: projected wins + conference title odds.
 - **Phase 7 complete** (2026-10-28): matchup tool (#85), link previews + SEO (#86), Lighthouse ≥ 90 (#87), biggest movers (#88), Résumé breakdown on team pages (#89), README with screenshots + architecture diagram (#92). Next: Phase 8 (season simulation & playoff).
 - **Phase 6 live** (2026-10-28): site https://the-swann-index.vercel.app (Vercel) → API https://tsi-api-44wx.onrender.com (Render, Docker) → Neon `production`; CI gates Render deploys; the nightly job refreshes the site. Operator runbook: the `tsi-weekly-run` skill (#84). Phase 6 is complete except its "done when": a week of unattended nightly updates (started 2026-10-28).
 - **Phase 5 complete** (2026-10-21): `web/` (Next.js 16.4, Cache Components) with a typed, cached API client (`web/lib/api/`); layout + theme (design system in doc 06); rankings, matchup board, game center and team pages, checked at desktop and 360/390 px. Book and Model pages added and built (#75, #76). Next: Phase 6 (deploy; not going public yet, week 8 review first). Week 8 review once graded (Oct 26).
@@ -20,7 +21,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#93 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#95 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -45,6 +46,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Components** (`model/ratings/components.py`): opponent-adjusted ridge fits of PPD, success rate, pace (drives) and tempo (plays), each with a `level`. Non-FBS opponents pool into FCS (−1) and lower (−2). EPA is not fitted (#49).
 - **Totals (#50):** stacked game total (league level shrunk to last season, PPD/success sums, pace + tempo, prior, last season's pace/tempo). Scores = (total ± margin) / 2.
 - **Distribution (#51):** bivariate normal. σ_margin 15.4, σ_total 16.4 + 0.12·(total − 55), ρ = 0.0074 × home margin. Production fits σ and the edge shrink on **leave-one-season-out** stack predictions (in-sample ones are too sharp, #53).
+- **Season sim (#94):** remaining games use the published forecasts; each sim draws a per-team shift N(0, τ), τ = 7.15 − 0.114 × week, held all season, game noise √(σ² − 2τ²) (single-game probabilities unchanged). Fixed seed.
 - **Résumé (#24):** strength of record vs. a typical **#12** team with opponents' current ratings (dynamic SOS).
 - Tune on 2015–2022, validate on 2023–2025 (`backtest/splits.py`). 2020 treated normally (#26).
 - **New FBS teams in 2026:** North Dakota State (Mountain West) and Sacramento State (MAC) are FBS this season and rated individually; don't mistake them for pooled FCS teams.
@@ -123,6 +125,7 @@ uv run tsi backtest export --out-dir DIR   # report CSVs (model + Book tables) f
 uv run tsi model fit            # refit production artifact on all completed seasons (commit model/artifacts/current.json)
 uv run tsi model elo            # Elo baseline vs. closing line, by season
 uv run tsi model compare-sp     # sanity check: TSI final ratings vs. SP+ final (correlation)
+uv run tsi sim season           # projected regular-season wins for every FBS team (--sims, --top)
 
 # Operations (production; see the tsi-weekly-run skill)
 python ../.claude/skills/tsi-weekly-run/scripts/weekly_review.py   # weekly review from the public API (--week N, --api URL)

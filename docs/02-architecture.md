@@ -34,7 +34,7 @@ the-swann-index/
 │   │   ├── ingest/             # CFBD client wrappers, loaders, cache
 │   │   ├── model/              # ratings components, prior, Elo, margin/totals stacks, score distribution, artifact
 │   │   ├── book/               # odds, pricing, consensus, shrunk edges, picks, grading (pure)
-│   │   ├── sim/                # season / playoff Monte Carlo (later)
+│   │   ├── sim/                # season / playoff Monte Carlo (rating uncertainty, game sims)
 │   │   ├── backtest/           # walk-forward picks, stacking, splits, calibration, Book simulation
 │   │   ├── api/                # FastAPI app + routers + schemas
 │   │   ├── services/           # orchestration: live inputs, board, publish, grade, `tsi run`, backtests, reports

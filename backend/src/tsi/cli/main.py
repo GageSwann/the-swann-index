@@ -7,7 +7,7 @@ attached here with `app.add_typer(...)` as they are built.
 import typer
 
 from tsi import __version__
-from tsi.cli import backtest, book, ingest, model
+from tsi.cli import backtest, book, ingest, model, sim
 from tsi.cli.check import check
 from tsi.cli.rate import rate
 from tsi.cli.run import run
@@ -24,6 +24,7 @@ app.add_typer(ingest.app, name="ingest")
 app.add_typer(model.app, name="model")
 app.add_typer(backtest.app, name="backtest")
 app.add_typer(book.app, name="book")
+app.add_typer(sim.app, name="sim")
 app.command(name="check")(check)
 app.command(name="rate")(rate)
 app.command(name="run")(run)

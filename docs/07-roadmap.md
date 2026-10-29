@@ -116,9 +116,9 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Résumé drill-down: on the team page (Résumé card + "#12 team wins" schedule column, linked from the rankings' SOR), not a separate page (#89)
 
 ## Phase 8: Season simulation & playoff
-- [ ] Monte Carlo season sim with rating uncertainty
+- [x] Monte Carlo season sim with rating uncertainty (`tsi sim season`: published forecasts + a per-team shift τ(week) fit on 2015–22, better win-total log score than independent games on 2023–25; #94)
 - [ ] Projected wins, conference title odds
-- [ ] CFP selection approximation + bracket page (verify current format first)
+- [ ] CFP selection approximation + bracket page (2026–27 format verified by the owner: doc 05 §7.2, #95)
 - [ ] Futures fair odds
 
 ## Phase 9: Manual adjustments
