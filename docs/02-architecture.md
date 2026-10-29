@@ -15,7 +15,7 @@ CollegeFootballData API ──► Ingest (Python) ──► PostgreSQL (Neon)
                                                    │
                                                Public viewers
 
-GitHub Actions (cron, 10:00 UTC) ── `tsi run`: ingest → rate → grade → publish ── (later) triggers Next.js revalidation
+GitHub Actions (cron, 10:00 UTC) ── `tsi run`: ingest → rate → grade → publish ── then POST /api/revalidate (bearer token) refreshes the site's cached pages
 ```
 
 The Python side owns **all** data and math. The frontend never calculates odds or ratings; it only renders what the API returns. The one exception is the hypothetical matchup tool, which calls an API endpoint that computes on demand.

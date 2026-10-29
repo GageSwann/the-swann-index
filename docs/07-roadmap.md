@@ -110,7 +110,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Model/methodology + report card page (calibration chart) (built in Phase 5; #76)
 - [x] Hypothetical matchup tool (`/matchup`: shareable GET form, scoreboard, TSI's line, margin chart, alt lines, tale of the tape; #85)
 - [x] Dynamic OG images; SEO metadata (link previews for the site, teams, games and matchups; titles + descriptions; robots/sitemap with indexing off until `ALLOW_INDEXING=1`; #86)
-- [ ] README screenshots/GIF, architecture diagram, live link
+- [x] README screenshots, architecture diagram (Mermaid), live link (#92)
 - [x] Lighthouse ≥ 90 (performance: desktop 100 everywhere, mobile medians 88–97 with 98–99 on every page in runs without the local harness stall; accessibility + best practices 100; SEO capped by the deliberate noindex; #87)
 - [x] Rankings side widget: biggest risers/fallers over the past week (#88)
 - [x] Résumé drill-down: on the team page (Résumé card + "#12 team wins" schedule column, linked from the rankings' SOR), not a separate page (#89)
