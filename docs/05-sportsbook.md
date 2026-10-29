@@ -96,7 +96,7 @@ CLV is positive in every season (+0.2 to +1.8 points): lines move toward TSI's t
 Using the same game distributions plus **rating uncertainty**:
 - Projected win distribution per team (built: `tsi sim season`, decision #94)
 - Conference title odds (standings + championship game; tiebreakers approximated; built: #96, §7.3)
-- **CFP odds and projected bracket:** selection approximated with TSI Résumé as a committee proxy, using the 2026–27 format below (keep it configurable: the format has changed every year so far)
+- **CFP odds and projected bracket:** selection approximated with TSI Résumé as a committee proxy, using the 2026–27 format below (keep it configurable: the format has changed every year so far). Odds built (#100, §7.4); stored + bracket page next
 - Futures-style fair odds (e.g. "TSI fair odds to win the national title: +450")
 
 ### 7.1 Rating uncertainty (#94)
@@ -128,6 +128,23 @@ The forecasts use the production artifact, so the stack weights are in-sample fo
 - **Finalists:** the top two, or each division's winner when the conference has divisions (`team_seasons.conference_division`, from CFBD's `division`; in 2026 only the Sun Belt: East/West). FBS Independents have no title game.
 - **Title game:** neutral site; mean margin from the published model (antisymmetric: A vs B = −(B vs A), checked over 435 pairs), plus both teams' shifts and game noise from the same simulation. The champion gets the win, so projected wins include it. Once the real title game is on the schedule (CFBD marks it only in `notes`; 2025's weren't flagged as conference games), its finalists are fixed and it is simulated like any remaining game.
 - Checks on dev (week 9, 40k sims): per conference, P(in title game) sums to 2.0000 and P(champion) to 1.0000; expected wins = wins + Σ published win probabilities + P(champion) within 0.014.
+
+### 7.4 Playoff odds (#100)
+In every simulated season (regular season only; once the real field is set, the projection stops):
+1. **Committee stand-in = the Résumé ranking** on each team's simulated final record: SOR from a per-team lookup table over its full regular schedule (opponents' current ratings), plus the simulated conference title game (`sim/resume_sim.py`); ties broken like the stored ranking (more wins, then rating).
+2. **Field and seeds** under the format config (`sim/cfp_format.py`, §7.2): the ACC/Big Ten/Big 12/SEC champions, the highest-ranked group-of-six team, Notre Dame if top 12, then at-large by rank; seeds by rank (`sim/cfp.py`).
+3. **Bracket**: first round at the higher seed's home, then neutral sites; means from the published model (cached per pairing), plus the simulation's rating shifts and game noise (`sim/bracket.py`).
+
+Why Résumé: as of the first bowl of 2014–2025, under each season's rules (top 4 through 2023; five conference champions + seven at-large in 2024–25), TSI's ranking selected these many of the real playoff teams:
+
+| Stand-in | 4-team era (40) | 12-team era (24) |
+|---|---|---|
+| **Résumé** | **33** | **22** |
+| Résumé + Power blend | 31 | 21 |
+| Résumé ×2 + Power | 31 | 21 |
+| Power | 26 | 18 |
+
+Checks on dev (week 9): the field averages 12.0000 teams, byes 4.0000, quarterfinalists 8, semifinalists 4, finalists 2, champions 1; every seed is filled once per simulation; at least one group-of-six team is always in (1.13 on average).
 
 ## 8. Calibration checks (must pass before launch)
 - Spread: TSI-predicted cover probabilities vs. observed cover rate by bin

@@ -64,7 +64,8 @@ def run_pipeline(
         live = load_live_inputs(session, current_season(now), now, artifact)
         ratings = compute_live_ratings(session, now, artifact, live)
         sim, sim_error = _guarded(
-            "season sim", lambda: project_season(session, now, artifact, live=live)
+            "season sim",
+            lambda: project_season(session, now, artifact, live=live, rankings=ratings.rankings),
         )
         board = build_board(session, now, artifact, week=week, live=live)
     if dry_run:
