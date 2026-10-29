@@ -4,8 +4,8 @@ Every remaining regular-season game gets the published per-game forecast
 (services/predict.py, the same model and sigma as the board), and the season Monte
 Carlo (sim/season.py) adds rating uncertainty that holds for the whole season. Games
 already played count as they ended. Each conference's title game follows from the
-simulated standings (sim/conference.py) and counts as a win for its champion. Read-only:
-nothing is stored.
+simulated standings (sim/conference.py) and counts as a win for its champion. Nothing is
+stored here: the nightly `tsi run` saves the result (services/sim_store.py).
 """
 
 from dataclasses import dataclass
