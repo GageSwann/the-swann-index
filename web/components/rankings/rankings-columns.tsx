@@ -11,7 +11,7 @@ import Link from "next/link"
 
 import { TeamLink } from "@/components/team/team-link"
 import type { RankedTeam } from "@/lib/api/types"
-import { percent, record, signed } from "@/lib/format/numbers"
+import { chance, percent, record, signed } from "@/lib/format/numbers"
 
 import { RankChange } from "./rank-change"
 
@@ -111,6 +111,35 @@ export const columns = col.columns([
       )
     },
   }),
+  col.accessor((t) => t.projected_wins ?? undefined, {
+    id: "projected_wins",
+    header: "Proj. W",
+    ...numeric,
+    sortDescFirst: true,
+    cell: ({ getValue, row }) => {
+      const v = getValue()
+      if (v === undefined) return "—"
+      return (
+        <Link
+          href={`/teams/${row.original.team.slug}#projection`}
+          className="underline-offset-4 hover:underline"
+          title="See the projected record"
+        >
+          {v.toFixed(1)}
+        </Link>
+      )
+    },
+  }),
+  col.accessor((t) => t.conference_title_prob ?? undefined, {
+    id: "conference_title",
+    header: "Conf",
+    ...numeric,
+    sortDescFirst: true,
+    cell: ({ getValue }) => {
+      const v = getValue()
+      return v === undefined ? "—" : chance(v)
+    },
+  }),
 ])
 
 export const HEADER_HELP: Record<string, string> = {
@@ -120,6 +149,9 @@ export const HEADER_HELP: Record<string, string> = {
   def_rating: "Defense in points per game vs. average; higher is better (rank)",
   sos: "Average current rating of opponents played",
   sor: "Chance a typical #12 team would match this record against this schedule (lower is more impressive)",
+  projected_wins:
+    "Average final wins in 10,000 simulated seasons, including a conference title game",
+  conference_title: "Chance of winning the conference title (simulated)",
 }
 
 function SideRating({ value, rank }: { value: number; rank: number }) {

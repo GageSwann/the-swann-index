@@ -4,6 +4,7 @@ import { Suspense } from "react"
 
 import { RatingTrendChart } from "@/components/charts/lazy"
 import { PageHeading } from "@/components/layout/page-heading"
+import { ProjectionCard } from "@/components/team/projection-card"
 import { RankProfile } from "@/components/team/rank-profile"
 import { ResumeCard } from "@/components/team/resume-card"
 import { ScheduleTable } from "@/components/team/schedule-table"
@@ -55,6 +56,7 @@ async function TeamView({ params }: Props) {
     <div className="space-y-10">
       <TeamHeader profile={profile} />
       {row && <RankProfile row={row} count={ranked.length} />}
+      <ProjectionCard profile={profile} />
       {profile.history.length > 0 && (
         <section aria-labelledby="trend-heading" className="space-y-3">
           <h2 id="trend-heading" className="text-2xl font-semibold font-stretch-condensed">

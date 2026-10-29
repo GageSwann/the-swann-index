@@ -8,7 +8,7 @@ export async function UpdatedFooter() {
 
   return (
     <footer className="border-t border-border text-muted-foreground">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-2 px-4 py-5 text-sm sm:px-6">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-baseline justify-between gap-2 px-4 py-5 text-sm sm:px-6">
         <p>
           {meta === null
             ? "Model status unavailable: the TSI API didn't respond."

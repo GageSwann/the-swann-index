@@ -22,7 +22,7 @@ export async function SiteHeader() {
 
   return (
     <header className="border-b-2 border-primary bg-card">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5" aria-label="The Swann Index, home">
           <span className="rounded-sm bg-primary px-1.5 py-0.5 text-xl leading-none font-extrabold text-primary-foreground font-stretch-condensed">
             TSI
