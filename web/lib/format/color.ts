@@ -32,7 +32,7 @@ function isHex(color: string): boolean {
 }
 
 /** WCAG contrast ratio between two #rrggbb colors. */
-export function contrast(a: string, b: string): number {
+function contrast(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
   return (hi + 0.05) / (lo + 0.05)
 }

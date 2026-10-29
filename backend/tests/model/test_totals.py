@@ -1,13 +1,6 @@
 import pytest
 
-from tsi.model.totals import LEVEL_SHRINK, project_scores, scoring_level
-
-
-def test_scores_reproduce_margin_and_total() -> None:
-    home, away = project_scores(margin=-3.5, total=51.0)
-
-    assert home - away == pytest.approx(-3.5)
-    assert home + away == pytest.approx(51.0)
+from tsi.model.totals import LEVEL_SHRINK, scoring_level
 
 
 def test_scoring_level_moves_from_last_season_to_this_one() -> None:

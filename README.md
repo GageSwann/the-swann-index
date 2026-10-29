@@ -63,7 +63,7 @@ More detail: [docs/02-architecture.md](docs/02-architecture.md) (repo layout, sc
 
 | Layer | Tech |
 |---|---|
-| Model and data pipeline | Python 3.12 (uv), pandas, NumPy, SciPy, scikit-learn, Typer CLI (`tsi`) |
+| Model and data pipeline | Python 3.12 (uv), NumPy, Typer CLI (`tsi`) |
 | API | FastAPI, served from Docker on Render |
 | Database | PostgreSQL on Neon, SQLAlchemy 2 + Alembic |
 | Website | Next.js 16 (App Router, Cache Components), React, TypeScript, Tailwind CSS 4, Recharts, TanStack Table |

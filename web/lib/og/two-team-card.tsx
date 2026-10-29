@@ -3,7 +3,7 @@ import "server-only"
 import type { TeamRef } from "@/lib/api/types"
 import { separation, teamColor } from "@/lib/format/color"
 
-import { OG, OgLogo } from "./frame"
+import { Display, OG, OgLogo } from "./frame"
 
 type Props = {
   context: string // "Saturday, Oct 31 | TSI projection", "Final", "Hypothetical | neutral site"
@@ -108,22 +108,15 @@ function Side({
           flex: 1,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            fontFamily: "Archivo Condensed",
-            fontSize: team.school.length > 16 ? 46 : 58,
-            lineHeight: 1.05,
-            textAlign: alignEnd ? "right" : "left",
-          }}
+        <Display
+          size={team.school.length > 16 ? 46 : 58}
+          style={{ lineHeight: 1.05, textAlign: alignEnd ? "right" : "left" }}
         >
           {team.school}
-        </div>
-        <div
-          style={{ display: "flex", fontFamily: "Archivo Condensed", fontSize: 96, lineHeight: 1 }}
-        >
+        </Display>
+        <Display size={96} style={{ lineHeight: 1 }}>
           {score == null ? "–" : String(Math.round(score))}
-        </div>
+        </Display>
       </div>
     </div>
   )

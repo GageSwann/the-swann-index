@@ -13,7 +13,7 @@ export function apiClient() {
   return createClient<paths>({ baseUrl })
 }
 
-export class ApiError extends Error {
+class ApiError extends Error {
   constructor(
     readonly path: string,
     readonly status: number,

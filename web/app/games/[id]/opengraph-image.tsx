@@ -1,6 +1,6 @@
 import { getGame } from "@/lib/api/queries"
 import { formatDay } from "@/lib/format/time"
-import { OG_SIZE, ogImage } from "@/lib/og/frame"
+import { OG_SIZE, ogImage, ogMessage } from "@/lib/og/frame"
 import { TwoTeamCard } from "@/lib/og/two-team-card"
 
 export const alt = "TSI's projected score and win probability for this game"
@@ -10,9 +10,7 @@ export const contentType = "image/png"
 /** Game link preview: the final score once it's over, else TSI's projection. */
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const center = await getGame(Number((await params).id)).catch(() => null)
-  if (!center) {
-    return ogImage(<div style={{ display: "flex", fontSize: 80 }}>Game not found</div>)
-  }
+  if (!center) return ogMessage("Game not found")
   const { game } = center
   const p = game.prediction
   const final = game.result?.final === true

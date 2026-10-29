@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import type { TooltipContentProps } from "recharts"
 
 /** One legend entry: a short line in the series' color and dash pattern. */
-export type LegendItem = { label: string; color: string; dash?: string }
+type LegendItem = { label: string; color: string; dash?: string }
 
 /**
  * A chart's caption: what it shows, then a legend whenever there are two or more series

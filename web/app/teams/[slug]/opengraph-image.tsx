@@ -1,7 +1,7 @@
 import { getTeam } from "@/lib/api/queries"
 import { teamColor } from "@/lib/format/color"
 import { record, signed } from "@/lib/format/numbers"
-import { OG, OG_SIZE, OgLogo, ogImage } from "@/lib/og/frame"
+import { Display, OG, OG_SIZE, OgLogo, ogImage, ogMessage } from "@/lib/og/frame"
 
 export const alt = "A team's TSI ratings and ranks"
 export const size = OG_SIZE
@@ -10,7 +10,7 @@ export const contentType = "image/png"
 /** Team link preview: logo, team-color band, record, Power and Résumé ranks, rating. */
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const profile = await getTeam((await params).slug).catch(() => null)
-  if (!profile) return ogImage(<Headline text="Team not found" />)
+  if (!profile) return ogMessage("Team not found")
   const { team, ratings: r } = profile
   const stats = r
     ? [
@@ -33,11 +33,9 @@ export default async function Image({ params }: { params: Promise<{ slug: string
       />
       <OgLogo src={team.logo_url} size={240} />
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-        <div
-          style={{ display: "flex", fontFamily: "Archivo Condensed", fontSize: 92, lineHeight: 1 }}
-        >
+        <Display size={92} style={{ lineHeight: 1 }}>
           {team.school}
-        </div>
+        </Display>
         <div style={{ display: "flex", fontSize: 32, color: OG.muted, marginTop: 10 }}>
           {[
             team.conference,
@@ -50,26 +48,13 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           {stats.map(([label, value]) => (
             <div key={label} style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", fontSize: 26, color: OG.muted }}>{label}</div>
-              <div
-                style={{
-                  display: "flex",
-                  fontFamily: "Archivo Condensed",
-                  fontSize: 72,
-                  color: label === "Power" ? OG.amber : OG.chalk,
-                }}
-              >
+              <Display size={72} style={{ color: label === "Power" ? OG.amber : OG.chalk }}>
                 {value}
-              </div>
+              </Display>
             </div>
           ))}
         </div>
       </div>
     </div>,
-  )
-}
-
-function Headline({ text }: { text: string }) {
-  return (
-    <div style={{ display: "flex", fontFamily: "Archivo Condensed", fontSize: 80 }}>{text}</div>
   )
 }

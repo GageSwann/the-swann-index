@@ -1,22 +1,23 @@
 import Link from "next/link"
 
 import type { TeamRef } from "@/lib/api/types"
+import { type MatchupPick, matchupQuery } from "@/lib/matchup"
 
-type Props = { teams: TeamRef[]; away?: string; home?: string; neutral: boolean }
+type Props = { teams: TeamRef[]; pick: MatchupPick }
 
 /**
  * Pick two teams. A plain GET form: it works without JavaScript and the result's URL is
  * shareable (`/matchup?away=…&home=…&neutral=1`).
  */
-export function MatchupForm({ teams, away, home, neutral }: Props) {
+export function MatchupForm({ teams, pick }: Props) {
+  const { away, home, neutral } = pick
   const byConference = new Map<string, TeamRef[]>()
   for (const t of teams) {
     const key = t.conference ?? "Other"
     byConference.set(key, [...(byConference.get(key) ?? []), t])
   }
   const groups = [...byConference.entries()].sort(([a], [b]) => a.localeCompare(b))
-  const swap =
-    away && home ? `/matchup?away=${home}&home=${away}${neutral ? "&neutral=1" : ""}` : null
+  const swap = away && home ? `/matchup?${matchupQuery({ away: home, home: away, neutral })}` : null
 
   return (
     <form

@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 
 import { ImageResponse } from "next/og"
-import type { ReactNode } from "react"
+import type { CSSProperties, ReactNode } from "react"
 
 // Link-preview images (Open Graph): one branded frame for every page (decision #86).
 // Colors mirror the "stadium at night" tokens in app/globals.css (dark theme).
@@ -79,6 +79,28 @@ export async function ogImage(content: ReactNode, footer?: string): Promise<Imag
       </div>
     </div>,
     { ...OG_SIZE, fonts: await fonts },
+  )
+}
+
+/** A one-line image for missing or unpicked content ("Team not found"). */
+export function ogMessage(text: string): Promise<ImageResponse> {
+  return ogImage(<Display size={84}>{text}</Display>)
+}
+
+/** Display text in the condensed face. (Satori needs `display: flex` on every div.) */
+export function Display({
+  size,
+  style,
+  children,
+}: {
+  size: number
+  style?: CSSProperties
+  children: ReactNode
+}) {
+  return (
+    <div style={{ display: "flex", fontFamily: "Archivo Condensed", fontSize: size, ...style }}>
+      {children}
+    </div>
   )
 }
 

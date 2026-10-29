@@ -36,9 +36,3 @@ def scoring_level(now: float | None, last: float, team_games: int) -> float:
     if now is None:
         return last
     return (team_games * now + LEVEL_SHRINK * last) / (team_games + LEVEL_SHRINK)
-
-
-def project_scores(margin: float, total: float) -> tuple[float, float]:
-    """(home points, away points) whose difference and sum match the two models."""
-    home = (total + margin) / 2
-    return home, total - home
