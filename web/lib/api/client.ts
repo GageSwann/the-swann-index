@@ -2,6 +2,7 @@ import "server-only"
 
 import createClient from "openapi-fetch"
 
+import { fetchWithRetry } from "./retry"
 import type { paths } from "./schema"
 
 /** The TSI API is read on the server only; its URL is never shipped to the browser. */
@@ -10,7 +11,7 @@ export function apiClient() {
   if (!baseUrl) {
     throw new Error("TSI_API_URL is not set (copy web/.env.example to web/.env.local).")
   }
-  return createClient<paths>({ baseUrl })
+  return createClient<paths>({ baseUrl, fetch: fetchWithRetry })
 }
 
 class ApiError extends Error {
