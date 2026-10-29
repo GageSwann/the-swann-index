@@ -19,6 +19,7 @@ def test_all_schema_tables_registered() -> None:
         "team_ratings",
         "predictions",
         "picks",
+        "sim_results",
     }
 
 

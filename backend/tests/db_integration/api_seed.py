@@ -5,7 +5,8 @@ Week 1 (final): Alpha 30-20 Bravo; Charlie 21-24 Delta.
 Week 2: Alpha-Charlie kicked off last night (in progress: a pre-kickoff snapshot plus
 one published after kickoff that must never count); Bravo-Delta is upcoming with two
 books' lines and an open pick; Echo-Foxtrot is FCS-only (left off the board).
-Ratings: a week-1 run and a week-2 run. Two saved backtests: an old version without
+Ratings: a week-1 run and a week-2 run; the week-2 run has a season sim for the FBS
+teams (decision #98), the week-1 run predates the sim. Two saved backtests: an old version without
 report tables, and the current one with them.
 """
 
@@ -20,6 +21,7 @@ from tsi.db.models import (
     ModelRun,
     Pick,
     Prediction,
+    SimResult,
     Team,
     TeamRating,
     TeamSeason,
@@ -188,6 +190,18 @@ def _runs(session) -> None:
                 _rating(week2.id, t, "predictive", pred, pred / 2, pred / 2, 1, None, None, None),
                 _rating(week1.id, t, "season", rating - 1, off, de, 0, rp, rr, sor),
             ]
+        )
+    for t, rating, *_ in WEEK2_RATINGS:
+        session.add(
+            SimResult(
+                run_id=week2.id,
+                team_id=t,
+                expected_wins=2.5 + rating / 10,
+                win_dist=[0.0, 0.25, 0.5, 0.25],
+                win_out_prob=0.25,
+                title_game_prob=0.5,
+                conference_title_prob=0.25,
+            )
         )
     snap_101 = _snapshot(publish.id, 101, datetime(2026, 10, 17, 10, tzinfo=UTC), -6.0, 52.0)
     snap_201_pre = _snapshot(publish.id, 201, datetime(2026, 10, 20, 10, tzinfo=UTC), -4.0, 50.0)

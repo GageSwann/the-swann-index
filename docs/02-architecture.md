@@ -92,7 +92,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | `predictions` | id, run_id, game_id, **variant** (`raw`/`adjusted`), published_at, proj_home, proj_away, spread, total, home_win_prob, sigma_margin, sigma_total, rho, fair/book ML, book spread/total odds. **Insert-only, enforced by a DB trigger** (no UPDATE; DELETE only for backtest runs). The "locked" snapshot is derived (latest `published_at` < `start_time`) |
 | `picks` | prediction_id, market (spread/total/ml), side, line_taken, odds_taken, edge, tier (1–3), stake_units, kelly_units, closing_line, closing_odds, result, units_won, graded_at |
 | `adjustments` (later) | team_id, points, reason, start_week, end_week, active |
-| `sim_results` (later) | run_id, team_id, exp_wins, win_dist (jsonb), conf_title_prob, cfp_prob |
+| `sim_results` | run_id (the nightly rating run whose inputs it used), team_id, expected_wins, win_dist (double[]), win_out_prob, title_game_prob, conference_title_prob (null for independents). Settings in that run's `params.sim` (#98). CFP columns come with the playoff projector |
 
 ## API (read-only, v1)
 

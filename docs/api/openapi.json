@@ -1280,8 +1280,69 @@
         "title": "Price",
         "type": "object"
       },
+      "Projection": {
+        "properties": {
+          "conference_title_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conference Title Prob"
+          },
+          "expected_wins": {
+            "title": "Expected Wins",
+            "type": "number"
+          },
+          "title_game_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title Game Prob"
+          },
+          "win_dist": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Win Dist",
+            "type": "array"
+          },
+          "win_out_prob": {
+            "title": "Win Out Prob",
+            "type": "number"
+          }
+        },
+        "required": [
+          "expected_wins",
+          "win_dist",
+          "win_out_prob",
+          "title_game_prob",
+          "conference_title_prob"
+        ],
+        "title": "Projection",
+        "type": "object"
+      },
       "RankedTeam": {
         "properties": {
+          "conference_title_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conference Title Prob"
+          },
           "def_rank": {
             "title": "Def Rank",
             "type": "integer"
@@ -1338,6 +1399,17 @@
               }
             ],
             "title": "Previous Rank"
+          },
+          "projected_wins": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projected Wins"
           },
           "provisional": {
             "title": "Provisional",
@@ -1426,7 +1498,9 @@
           "off_rank",
           "def_rank",
           "predictive_rating",
-          "predictive_rank"
+          "predictive_rank",
+          "projected_wins",
+          "conference_title_prob"
         ],
         "title": "RankedTeam",
         "type": "object"
@@ -1950,6 +2024,16 @@
             "title": "Losses",
             "type": "integer"
           },
+          "projection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Projection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "ratings": {
             "anyOf": [
               {
@@ -2002,7 +2086,8 @@
           "ratings",
           "history",
           "schedule",
-          "resume"
+          "resume",
+          "projection"
         ],
         "title": "TeamProfile",
         "type": "object"

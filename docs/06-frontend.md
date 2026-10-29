@@ -33,7 +33,7 @@
 
 ### Rankings `/`
 - Toggle: Power | Résumé. Filters: conference, Top 25 / all.
-- Columns: Rank, Δ (movement arrow), Team (logo + name), Record, TSI rating, Off (rank), Def (rank), SOS, SOR, Proj. wins (later), CFP % (later).
+- Columns: Rank, Δ (movement arrow), Team (logo + name), Record, TSI rating, Off (rank), Def (rank), SOS, SOR, Proj. W (season sim, links to the team's projected record), Conf (conference title %), CFP % (later).
 - Sortable (TanStack Table). Sticky header. Clicking a row opens the team page.
 - Side widget: biggest risers/fallers over the past week. **Built (#88):** "Biggest movers", top 5 each way for the active ranking and conference (ignores Top 25/All), "#52 → #37" with the Δ arrow; beside the table from `xl`, below it otherwise; hidden without a week-ago run.
 - **This season only:** both rankings use the `season` ratings (no preseason prior). A one-line note under the toggle says so.
@@ -64,7 +64,7 @@
 - **Rating trend** line chart (season, with the preseason prior shown as the starting point).
 - **Efficiency profile:** off/def percentile bars (or radar) vs. FBS.
 - **Schedule table:** each game with opponent, TSI win prob (pre-game for played games, current for upcoming), result, spread result.
-- **Projected record** (later): win distribution histogram, conference title %, CFP %.
+- **Projected record** (#98): record now, projected wins, chance to win out, conference title % and title-game %, and a bar chart of final win totals (plain server-rendered HTML bars with a screen-reader table, no chart library). Shown for every rated team; a value the API lacks is left out. CFP % later.
 - If manually adjusted (later): badge + reason.
 - **Built (decision #73):** the current Top 25 is prerendered and every other team renders on first visit (`<Suspense>`; unknown slug → not found). Header: a solid team-color band (flat per #69, instead of a gradient), logo, mascot, conference, record, Power/Résumé rank, rating, predictive rating (rank), SOS. Profile: power/résumé/offense/defense rank bars among rated FBS teams (ranks from `/rankings`). Rating trend: the shared `components/charts/rating-trend-chart.tsx` (one or two teams; y ticks every 2/5/10 points with ≥ 2 points of padding). Schedule: date, opponent (with Top-25 rank and site), result or projected score (links to the game center), TSI line and win chance from the team's side: the published snapshot when there is one, else the API's `/matchup` with today's ratings, marked * "if played today". Non-FBS teams show their schedule with "no rating". Not yet: preseason prior as the trend's starting point (live history starts Oct 19, 2026), percentiles for EPA/success/explosiveness, spread result per game (needs market lines in the team endpoint), projected record.
 

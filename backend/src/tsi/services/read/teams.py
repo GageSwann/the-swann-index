@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from tsi.db.queries.games import GameRow, team_games
 from tsi.db.queries.runs import rating_runs
+from tsi.db.queries.sim import stored_sims
 from tsi.db.queries.snapshots import snapshots_for_games
 from tsi.db.queries.team_info import (
     Record,
@@ -19,6 +20,7 @@ from tsi.db.queries.team_info import (
 )
 from tsi.divisions import RATED_DIVISION
 from tsi.services.read.common import Score, current_snapshot, result_of
+from tsi.services.read.projection import Projection, projection
 from tsi.services.read.resume_view import (
     ResumeContext,
     ResumeSummary,
@@ -87,6 +89,7 @@ class TeamProfile:
     history: list[RatingPoint]
     schedule: list[ScheduleGame]
     resume: ResumeSummary | None  # None for non-FBS teams or before ratings exist
+    projection: Projection | None  # season sim of the shown run (#98); None for non-FBS
 
 
 def team_list(session: Session, season: int) -> list[TeamRef]:
@@ -115,6 +118,7 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     snaps = snapshots_for_games(session, [g.id for g in games])
     ctx = resume_context(session, latest) if latest else None
     rated = refs[team_id].division == RATED_DIVISION
+    sim = stored_sims(session, latest.id, team_id).get(team_id) if latest and rated else None
     return TeamProfile(
         team=refs[team_id],
         season=season,
@@ -129,6 +133,7 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
         ],
         schedule=[_schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
         resume=resume_summary(ctx, games, team_id, refs) if ctx and rated else None,
+        projection=projection(sim),
     )
 
 

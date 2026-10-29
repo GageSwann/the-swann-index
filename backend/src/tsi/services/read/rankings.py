@@ -7,6 +7,7 @@ from typing import Literal
 from sqlalchemy.orm import Session
 
 from tsi.db.queries.runs import run_and_week_ago
+from tsi.db.queries.sim import StoredSim, stored_sims
 from tsi.db.queries.team_info import (
     Record,
     StoredRating,
@@ -40,6 +41,8 @@ class RankedTeam:
     def_rank: int  # defense rating (positive = better defense)
     predictive_rating: float | None  # the prediction model's rating (prior + Elo blended in)
     predictive_rank: int | None
+    projected_wins: float | None  # season sim (decision #98); None for runs before it
+    conference_title_prob: float | None  # None: independents, or no sim
 
 
 @dataclass(frozen=True)
@@ -70,6 +73,7 @@ def rankings(
     predictive = {r.team_id: r for r in rows if r.basis == "predictive"}
     teams = team_refs(session, season, [r.team_id for r in season_rows])
     record = records(session, season, run.run_at)
+    sims = stored_sims(session, run.id)
     key = "rank_power" if ranking == "power" else "rank_resume"
     ranked = sorted(
         (r for r in season_rows if getattr(r, key) is not None), key=lambda r: getattr(r, key)
@@ -98,6 +102,7 @@ def rankings(
                 teams[r.team_id],
                 record.get(r.team_id, Record()),
                 predictive,
+                sims.get(r.team_id),
             )
             for r in ranked
         ],
@@ -118,6 +123,7 @@ def _ranked(
     team: TeamRef,
     rec: Record,
     predictive: dict[int, StoredRating],
+    sim: StoredSim | None,
 ) -> RankedTeam:
     p = predictive.get(r.team_id)
     return RankedTeam(
@@ -140,4 +146,6 @@ def _ranked(
         def_rank=side_ranks[1],
         predictive_rating=p.rating if p else None,
         predictive_rank=p.rank_power if p else None,
+        projected_wins=sim.expected_wins if sim else None,
+        conference_title_prob=sim.conference_title_prob if sim else None,
     )

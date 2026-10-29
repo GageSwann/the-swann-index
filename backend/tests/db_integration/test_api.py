@@ -55,6 +55,7 @@ def test_power_and_resume_rankings(api: TestClient) -> None:
     assert (alpha["off_rank"], alpha["def_rank"]) == (1, 1)  # off 7.0, def 5.0: both best
     assert power["as_of"].startswith(WEEK2_RUN_AT.isoformat()[:16])
     assert power["previous_as_of"].startswith(WEEK1_RUN_AT.isoformat()[:16])  # 7 days earlier
+    assert (alpha["projected_wins"], alpha["conference_title_prob"]) == (3.7, 0.25)  # sim
 
 
 def test_rankings_for_an_earlier_week_and_missing_season(api: TestClient) -> None:
@@ -62,6 +63,7 @@ def test_rankings_for_an_earlier_week_and_missing_season(api: TestClient) -> Non
 
     assert week1["as_of"].startswith(WEEK1_RUN_AT.isoformat()[:16])
     assert week1["teams"][0]["rating"] == 11.0
+    assert week1["teams"][0]["projected_wins"] is None  # that run predates the season sim
     assert api.get("/rankings?season=2015").status_code == 404
 
 
@@ -77,6 +79,14 @@ def test_team_list_and_profile(api: TestClient) -> None:
     # In progress: the locked pre-kickoff snapshot (Alpha -4), never the post-kickoff one (-9).
     assert live["spread"] == -4.0 and live["site"] == "home"
     assert api.get("/teams/nope").status_code == 404
+    proj = alpha["projection"]
+    assert (proj["expected_wins"], proj["win_dist"], proj["win_out_prob"]) == (
+        3.7,
+        [0.0, 0.25, 0.5, 0.25],
+        0.25,
+    )
+    assert (proj["title_game_prob"], proj["conference_title_prob"]) == (0.5, 0.25)
+    assert ok(api, "/teams/echo")["projection"] is None  # FCS: not simulated
 
 
 def test_team_resume_breakdown(api: TestClient) -> None:

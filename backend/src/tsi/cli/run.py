@@ -44,6 +44,14 @@ def _report(r: RunResult, now: datetime, version: str) -> None:
     leader = r.ratings.rankings.names[top.team_id] if top else "-"
     saved = f" -> model_runs.id={r.ratings_run_id}" if r.ratings_run_id else ""
     typer.echo(f"  rate    {len(r.ratings.predictive)} FBS teams, #1 {leader}{saved}")
+    most = r.sim.teams[0] if r.sim and r.sim.teams else None
+    if r.sim_error:
+        typer.secho(f"  sim     FAILED: {r.sim_error} (everything else continued)", fg="red")
+    elif r.sim and most:
+        name = r.sim.names.get(most.team_id, "-")
+        typer.echo(
+            f"  sim     {r.sim.sims:,} seasons, most projected wins {name} {most.expected_wins:.1f}"
+        )
     if r.grade:
         g = r.grade
         typer.echo(
