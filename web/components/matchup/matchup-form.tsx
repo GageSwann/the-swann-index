@@ -11,12 +11,16 @@ type Props = { teams: TeamRef[]; pick: MatchupPick }
  */
 export function MatchupForm({ teams, pick }: Props) {
   const { away, home, neutral } = pick
+  // FBS conferences first, then FCS ones (labeled), each alphabetical.
   const byConference = new Map<string, TeamRef[]>()
   for (const t of teams) {
-    const key = t.conference ?? "Other"
+    const key = `${t.conference ?? "Other"}${t.division === "fcs" ? " (FCS)" : ""}`
     byConference.set(key, [...(byConference.get(key) ?? []), t])
   }
-  const groups = [...byConference.entries()].sort(([a], [b]) => a.localeCompare(b))
+  const isFcs = (key: string) => key.endsWith(" (FCS)")
+  const groups = [...byConference.entries()].sort(
+    ([a], [b]) => Number(isFcs(a)) - Number(isFcs(b)) || a.localeCompare(b),
+  )
   const swap = away && home ? `/matchup?${matchupQuery({ away: home, home: away, neutral })}` : null
 
   return (

@@ -18,6 +18,7 @@ import type {
   TeamRef,
   WeekBoard,
 } from "./types"
+import type { DivisionView } from "@/lib/divisions"
 
 // One cached function per API endpoint. Arguments are part of each cache key; every
 // entry is tagged `tsi` plus a narrower tag (lib/api/tags.ts) for targeted refreshes.
@@ -30,24 +31,30 @@ export async function getMeta(): Promise<Meta> {
 }
 
 export async function getRankings(
-  options: { season?: number; week?: number; type?: RankingType } = {},
+  options: { season?: number; week?: number; type?: RankingType; division?: DivisionView } = {},
 ): Promise<Rankings | null> {
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.RANKINGS)
-  const { season, week, type = "power" } = options
+  const { season, week, type = "power", division = "fbs" } = options
   const result = await apiClient().GET("/rankings", {
-    params: { query: { season, week, type } },
+    params: { query: { season, week, type, division } },
   })
   return orNull("/rankings", result)
 }
 
-/** Rated (FBS) teams of a season, alphabetical: the matchup tool's picker. */
-export async function getTeams(season?: number): Promise<TeamRef[]> {
+/** Teams of a division (or "all": FBS and FCS), alphabetical: the matchup tool's picker. */
+export async function getTeams(
+  options: { season?: number; division?: DivisionView } = {},
+): Promise<TeamRef[]> {
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL)
-  return required("/teams", await apiClient().GET("/teams", { params: { query: { season } } }))
+  const { season, division = "fbs" } = options
+  return required(
+    "/teams",
+    await apiClient().GET("/teams", { params: { query: { season, division } } }),
+  )
 }
 
 export async function getTeam(slug: string, season?: number): Promise<TeamProfile | null> {
@@ -64,12 +71,13 @@ export async function getWeekGames(
   season: number,
   week: number,
   seasonType: SeasonType = "regular",
+  division: DivisionView = "fbs",
 ): Promise<WeekBoard> {
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.week(season, week))
   const result = await apiClient().GET("/weeks/{season}/{week}/games", {
-    params: { path: { season, week }, query: { season_type: seasonType } },
+    params: { path: { season, week }, query: { season_type: seasonType, division } },
   })
   return required(`/weeks/${season}/${week}/games`, result)
 }

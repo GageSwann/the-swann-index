@@ -19,8 +19,10 @@
 
 | Route | Page |
 |---|---|
-| `/` | **Rankings** (Power/Résumé toggle) |
-| `/week` → `/week/[season]/[week]` | **Matchup board** for the week (defaults to current week) |
+| `/` | **Rankings** (Power/Résumé toggle), FBS |
+| `/rankings/fcs`, `/rankings/all` | FCS rankings; FBS and FCS on one scale (Power only) (#115) |
+| `/week` → `/week/[season]/[week]` | **Matchup board** for the week (defaults to current week), games with an FBS team |
+| `/week/[season]/[week]/fcs`, `…/all` | the same board for games with an FCS team, or either (#115) |
 | `/games/[id]` | **Game center** |
 | `/teams/[slug]` | **Team page** |
 | `/book` | **TSI Book** ledger |

@@ -15,11 +15,27 @@ const PINNED: Record<string, string> = {
   team: "max-sm:sticky max-sm:left-19 max-sm:max-w-44 max-sm:shadow-[inset_-1px_0_0_var(--border)]",
 }
 
-/** `since`: date of the ratings the Δ column compares with; no Δ column without one. */
-export function RankingsTable({ teams, since }: { teams: RankedTeam[]; since: string | null }) {
+const NONE: string[] = []
+
+/**
+ * `since`: date of the ratings the Δ column compares with; no Δ column without one.
+ * `hidden`: column ids this view leaves out (e.g. the FBS-only season sim for FCS).
+ */
+export function RankingsTable({
+  teams,
+  since,
+  hidden = NONE,
+}: {
+  teams: RankedTeam[]
+  since: string | null
+  hidden?: string[]
+}) {
   const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([{ id: "rank", desc: false }])
-  const shown = useMemo(() => (since ? columns : columns.filter((c) => c.id !== "change")), [since])
+  const shown = useMemo(() => {
+    const skip = new Set([...hidden, ...(since ? [] : ["change"])])
+    return columns.filter((c) => !skip.has(c.id ?? ""))
+  }, [since, hidden])
   const table = useTable({
     features,
     columns: shown,

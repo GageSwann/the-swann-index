@@ -1,4 +1,5 @@
 import { getTeam } from "@/lib/api/queries"
+import { rankText, teamDivision } from "@/lib/divisions"
 import { teamColor } from "@/lib/format/color"
 import { record, signed } from "@/lib/format/numbers"
 import { Display, OG, OG_SIZE, OgLogo, ogImage, ogMessage } from "@/lib/og/frame"
@@ -12,13 +13,14 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const profile = await getTeam((await params).slug).catch(() => null)
   if (!profile) return ogMessage("Team not found")
   const { team, ratings: r } = profile
+  const division = teamDivision(team)
   const stats = r
     ? [
-        ["Power", r.rank_power ? `#${r.rank_power}` : "—"],
-        ["Résumé", r.rank_resume ? `#${r.rank_resume}` : "—"],
+        ["Power", r.rank_power ? rankText(r.rank_power, division) : "—"],
+        ["Résumé", r.rank_resume ? rankText(r.rank_resume, division) : "—"],
         ["Rating", signed(r.rating)],
       ]
-    : [["Rating", "FBS only"]]
+    : [["Rating", "Not rated"]]
 
   return ogImage(
     <div style={{ display: "flex", width: "100%", alignItems: "center", gap: 48 }}>

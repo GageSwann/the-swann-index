@@ -12,6 +12,7 @@ import { TeamHeader } from "@/components/team/team-header"
 import { getRankings, getTeam } from "@/lib/api/queries"
 import { publishedScheduleOdds, scheduleOdds } from "@/lib/api/schedule-odds"
 import type { TeamProfile } from "@/lib/api/types"
+import { rankText, teamDivision } from "@/lib/divisions"
 import { pageMeta } from "@/lib/metadata"
 import { record, signed } from "@/lib/format/numbers"
 
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ownImage: true,
     title: team.school,
     description: r?.rank_power
-      ? `${team.school} (${rec}) is #${r.rank_power} in the TSI Power rankings and #${r.rank_resume ?? "—"} in Résumé, rating ${signed(r.rating)}. Schedule, win chances and rating trend.`
+      ? `${team.school} (${rec}) is ${rankText(r.rank_power, teamDivision(team))} in the TSI Power rankings and ${r.rank_resume ? rankText(r.rank_resume, teamDivision(team)) : "unranked"} in Résumé, rating ${signed(r.rating)}. Schedule, win chances and rating trend.`
       : `${team.school} (${rec}): schedule and TSI win chances.`,
   })
 }
@@ -47,15 +48,21 @@ export default function TeamPage(props: Props) {
 
 async function TeamView({ params }: Props) {
   const { slug } = await params
-  const [profile, rankings] = await Promise.all([getTeam(slug), getRankings()])
+  // Both divisions' rankings are cached; the team's own decides its profile ranks.
+  const [profile, fbs, fcs] = await Promise.all([
+    getTeam(slug),
+    getRankings(),
+    getRankings({ division: "fcs" }).catch(() => null),
+  ])
   if (!profile) notFound()
-  const ranked = rankings?.teams ?? []
+  const division = teamDivision(profile.team)
+  const ranked = (division === "fcs" ? fcs : fbs)?.teams ?? []
   const row = ranked.find((t) => t.team.slug === slug)
 
   return (
     <div className="space-y-10">
       <TeamHeader profile={profile} />
-      {row && <RankProfile row={row} count={ranked.length} />}
+      {row && <RankProfile row={row} count={ranked.length} division={division} />}
       <ProjectionCard profile={profile} />
       {profile.history.length > 0 && (
         <section aria-labelledby="trend-heading" className="space-y-3">
@@ -72,6 +79,7 @@ async function TeamView({ params }: Props) {
           <ScheduleTable
             schedule={profile.schedule}
             odds={publishedScheduleOdds(profile.schedule)}
+            division={division}
           />
         }
       >
@@ -83,5 +91,7 @@ async function TeamView({ params }: Props) {
 
 async function Schedule({ profile }: { profile: TeamProfile }) {
   const odds = await scheduleOdds(profile.team, profile.schedule)
-  return <ScheduleTable schedule={profile.schedule} odds={odds} />
+  return (
+    <ScheduleTable schedule={profile.schedule} odds={odds} division={teamDivision(profile.team)} />
+  )
 }

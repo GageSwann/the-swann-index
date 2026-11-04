@@ -8,15 +8,18 @@ import { teamSpread } from "@/lib/format/odds"
 import { formatShortDay } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
+import { benchmarkName, type Division } from "@/lib/divisions"
 
-type Props = { schedule: ScheduleGame[]; odds: Map<number, GameOdds> }
+type Props = { schedule: ScheduleGame[]; odds: Map<number, GameOdds>; division?: Division }
 
 /**
  * Every game of the season with the result, TSI's pre-game (or current) view, and how hard
- * the game is for a typical #12 team (the Résumé breakdown, #89). A table from `sm` up; on
+ * the game is for the Résumé benchmark (a typical #12 FBS or #10 FCS team; #89, #114). A
+ * table from `sm` up; on
  * phones each game is a two-line row so nothing scrolls sideways.
  */
-export function ScheduleTable({ schedule, odds }: Props) {
+export function ScheduleTable({ schedule, odds, division = "fbs" }: Props) {
+  const bench = benchmarkName(division)
   const anyToday = [...odds.values()].some((o) => o.source === "today")
   const anyAdjusted = [...odds.values()].some((o) => o.adjusted)
   const date = (g: ScheduleGame) => (g.kickoff ? formatShortDay(g.kickoff) : `Week ${g.week}`)
@@ -36,9 +39,9 @@ export function ScheduleTable({ schedule, odds }: Props) {
               <HeadCell align="right">Win chance</HeadCell>
               <HeadCell
                 align="right"
-                title="How often a typical #12 team would win this game, against the opponent's current rating. Lower = harder. Counts toward the Résumé once played."
+                title={`How often a typical ${bench} would win this game, against the opponent's current rating. Lower = harder. Counts toward the Résumé once played.`}
               >
-                #12 team wins
+                {bench} wins
               </HeadCell>
             </tr>
           </thead>
@@ -88,7 +91,7 @@ export function ScheduleTable({ schedule, odds }: Props) {
               </p>
               {g.benchmark_win_prob != null && (
                 <p className="text-muted-foreground">
-                  A #12 team wins <Difficulty game={g} />
+                  A {bench} wins <Difficulty game={g} />
                 </p>
               )}
             </li>
@@ -99,8 +102,8 @@ export function ScheduleTable({ schedule, odds }: Props) {
         TSI line and win chance are from the team&apos;s side, as published before kickoff
         (predictions began Oct 20, 2026).
         {anyToday && " * Not yet published: if the game were played today, with current ratings."}
-        {anyAdjusted && " † Includes a manual adjustment (see the game center)."} &ldquo;#12 team
-        wins&rdquo;: how often a typical #12 team would win the game, against the opponent&apos;s
+        {anyAdjusted && " † Includes a manual adjustment (see the game center)."} &ldquo;{bench}{" "}
+        wins&rdquo;: how often a typical {bench} would win the game, against the opponent&apos;s
         current rating (lower = harder); played games make up the{" "}
         <a href="#resume" className="underline underline-offset-2">
           Résumé
@@ -171,7 +174,7 @@ function WinChance({ odds }: { odds: GameOdds | undefined }) {
   )
 }
 
-/** The game's difficulty for a typical #12 team; muted until it counts for the Résumé. */
+/** The game's difficulty for the benchmark team; muted until it counts for the Résumé. */
 function Difficulty({ game }: { game: ScheduleGame }) {
   if (game.benchmark_win_prob == null) return <span className="text-muted-foreground">—</span>
   return (

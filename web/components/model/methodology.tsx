@@ -22,9 +22,10 @@ export function Methodology() {
       </Step>
       <Step title="2. Rank résumés separately">
         <p>
-          Résumé asks how hard it would be for a typical #12 team to match a team&apos;s record
-          against its schedule, using each opponent&apos;s current rating. It rewards wins, not
-          margins, and changes as opponents&apos; seasons play out.
+          Résumé asks how hard it would be for a typical #12 team (a #10 team for FCS teams) to
+          match a team&apos;s record against its schedule, using each opponent&apos;s current
+          rating. It rewards wins, not margins, and changes as opponents&apos; seasons play out. FBS
+          and FCS teams share one rating scale; ranks are within each division.
         </p>
       </Step>
       <Step title="3. Predict each game">

@@ -1,6 +1,7 @@
 import Image from "next/image"
 
 import type { TeamProfile } from "@/lib/api/types"
+import { rankText, teamDivision } from "@/lib/divisions"
 import { describeAdjustment } from "@/lib/format/adjustments"
 import { teamColorVars } from "@/lib/format/color"
 import { record, signed } from "@/lib/format/numbers"
@@ -13,17 +14,19 @@ import { Stat } from "@/components/ui/stat"
  */
 export function TeamHeader({ profile }: { profile: TeamProfile }) {
   const { team, ratings: r } = profile
+  const division = teamDivision(team)
+  const rank = (n: number | null | undefined) => (n ? rankText(n, division) : "—")
   const stats = r
     ? [
-        { label: "Power rank", value: r.rank_power ? `#${r.rank_power}` : "—" },
-        { label: "Résumé rank", value: r.rank_resume ? `#${r.rank_resume}` : "—" },
+        { label: "Power rank", value: rank(r.rank_power) },
+        { label: "Résumé rank", value: rank(r.rank_resume) },
         { label: "Rating", value: signed(r.rating) },
         {
           label: "Predictive",
           value:
             r.predictive_rating == null
               ? "—"
-              : `${signed(r.predictive_rating)}${r.predictive_rank ? ` (#${r.predictive_rank})` : ""}`,
+              : `${signed(r.predictive_rating)}${r.predictive_rank ? ` (${rank(r.predictive_rank)})` : ""}`,
         },
         { label: "Schedule strength", value: r.sos == null ? "—" : signed(r.sos) },
       ]
@@ -70,7 +73,7 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
           </dl>
         ) : (
           <p className="text-sm text-muted-foreground">
-            TSI rates FBS teams only, so this team has no rating.
+            TSI rates FBS teams, and FCS teams from 2022 on, so this team has no rating.
           </p>
         )}
         {r && (

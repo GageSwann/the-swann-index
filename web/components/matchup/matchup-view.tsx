@@ -12,7 +12,7 @@ import { Suggestions } from "./suggestions"
 /** The form, then (once two teams are picked) TSI's projection and prices for the game. */
 export async function MatchupView({ pick }: { pick: MatchupPick }) {
   const { away, home } = pick
-  const [teams, rankings] = await Promise.all([getTeams(), getRankings()])
+  const [teams, rankings] = await Promise.all([getTeams({ division: "all" }), getRankings()])
   // Keyed by the picks so the dropdowns reset after a client-side navigation (e.g. "Swap").
   const form = <MatchupForm key={`${away}-${home}-${pick.neutral}`} teams={teams} pick={pick} />
 

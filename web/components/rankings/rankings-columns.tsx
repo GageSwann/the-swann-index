@@ -49,6 +49,14 @@ export const columns = col.columns([
       </span>
     ),
   }),
+  col.accessor((t) => t.team.division ?? "", {
+    id: "division",
+    header: "Div",
+    sortFn: "alphanumeric",
+    cell: ({ getValue }) => (
+      <span className="text-xs text-muted-foreground uppercase">{getValue()}</span>
+    ),
+  }),
   col.accessor((t) => (t.previous_rank === null ? undefined : t.previous_rank - t.rank), {
     id: "change",
     header: "Δ",
@@ -144,11 +152,13 @@ export const columns = col.columns([
 
 export const HEADER_HELP: Record<string, string> = {
   change: "Rank change over the past week",
+  division:
+    "Division: FBS or FCS (ranks here are on one scale; each team's own rank is within its division)",
   rating: "Points better than an average FBS team on a neutral field",
-  off_rating: "Offense in points per game vs. average (rank among FBS)",
+  off_rating: "Offense in points per game vs. average (rank in this list)",
   def_rating: "Defense in points per game vs. average; higher is better (rank)",
   sos: "Average current rating of opponents played",
-  sor: "Chance a typical #12 team would match this record against this schedule (lower is more impressive)",
+  sor: "Chance the benchmark team (a typical #12 FBS or #10 FCS team) would match this record against this schedule (lower is more impressive)",
   projected_wins:
     "Average final wins in 10,000 simulated seasons, including a conference title game",
   conference_title: "Chance of winning the conference title (simulated)",

@@ -1,13 +1,22 @@
 import type { RankedTeam } from "@/lib/api/types"
+import { DIVISION_NAME, type Division } from "@/lib/divisions"
 import { signed } from "@/lib/format/numbers"
 
 type Row = { label: string; rank: number | null | undefined; value?: string }
 
 /**
- * Where the team ranks among rated FBS teams: power, résumé, offense, defense. Bar
- * length is the share of teams it ranks ahead of (ranks come from the API).
+ * Where the team ranks within its division (FBS or FCS): power, résumé, offense,
+ * defense. Bar length is the share of teams it ranks ahead of (ranks come from the API).
  */
-export function RankProfile({ row, count }: { row: RankedTeam; count: number }) {
+export function RankProfile({
+  row,
+  count,
+  division,
+}: {
+  row: RankedTeam
+  count: number
+  division: Division
+}) {
   const rows: Row[] = [
     { label: "Power", rank: row.rank_power, value: signed(row.rating) },
     { label: "Résumé", rank: row.rank_resume },
@@ -46,8 +55,8 @@ export function RankProfile({ row, count }: { row: RankedTeam; count: number }) 
         ))}
       </ul>
       <p className="text-xs text-muted-foreground">
-        Ranks among the {count} rated FBS teams. Offense and defense are points per game better than
-        an average FBS unit.
+        Ranks among the {count} rated {DIVISION_NAME[division]} teams. Ratings, offense and defense
+        are points per game better than an average FBS team or unit.
       </p>
     </section>
   )

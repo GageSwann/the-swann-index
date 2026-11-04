@@ -14,7 +14,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   if (!m) {
     return pageMeta({
       title: "Matchup",
-      description: "How TSI would price any two FBS teams if they played today.",
+      description: "How TSI would price any two FBS or FCS teams if they played today.",
       image: "/api/og/matchup",
     })
   }
@@ -29,7 +29,7 @@ export default function MatchupPage({ searchParams }: Props) {
   return (
     <div className="space-y-10">
       <PageHeading title="Matchup">
-        Pick any two FBS teams to see how TSI would price the game if it were played today.
+        Pick any two FBS or FCS teams to see how TSI would price the game if it were played today.
       </PageHeading>
       <Suspense fallback={<p className="text-muted-foreground">Loading teams.</p>}>
         <PickedMatchup searchParams={searchParams} />

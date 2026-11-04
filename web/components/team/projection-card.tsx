@@ -1,5 +1,6 @@
 import { ScrollIntoView } from "@/components/ui/scroll-into-view"
 import type { TeamProfile } from "@/lib/api/types"
+import { teamDivision } from "@/lib/divisions"
 import { chance, record } from "@/lib/format/numbers"
 
 import { WinHistogram } from "./win-histogram"
@@ -11,7 +12,8 @@ import { Stat } from "@/components/ui/stat"
  * win totals. Shown for every rated team; a value the API doesn't have is left out.
  */
 export function ProjectionCard({ profile }: { profile: TeamProfile }) {
-  if (!profile.ratings) return null // non-FBS teams aren't simulated
+  if (!profile.ratings) return null // unrated teams (D-II and below) aren't shown at all
+  const fcs = teamDivision(profile.team) === "fcs"
   const proj = profile.projection
   const conf = profile.team.conference ?? "conference"
   const rec = record(profile.wins, profile.losses, profile.ties)
@@ -44,9 +46,11 @@ export function ProjectionCard({ profile }: { profile: TeamProfile }) {
         )}
         {proj && <WinHistogram dist={proj.win_dist} school={profile.team.school} />}
         <p className="max-w-[70ch] text-sm text-muted-foreground">
-          {proj
-            ? "Each remaining game uses TSI's published prediction, and in every simulated season each team can be better or worse than its rating for the rest of the year. Conference title games follow the simulated standings (simplified tiebreakers) and count as a win; the playoff field follows the simulated Résumé rankings (see the Playoff page)."
-            : "The season projection appears after the next nightly update."}
+          {fcs
+            ? "The season simulation covers FBS teams for now; projected wins and title odds for FCS teams come later."
+            : proj
+              ? "Each remaining game uses TSI's published prediction, and in every simulated season each team can be better or worse than its rating for the rest of the year. Conference title games follow the simulated standings (simplified tiebreakers) and count as a win; the playoff field follows the simulated Résumé rankings (see the Playoff page)."
+              : "The season projection appears after the next nightly update."}
         </p>
       </div>
     </section>
