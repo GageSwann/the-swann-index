@@ -78,7 +78,7 @@ def test_team_list_and_profile(api: TestClient) -> None:
     assert alpha["adjustments"] == [] and live["adjusted"] is False
     bravo = ok(api, "/teams/bravo")
     assert [a["reason"] for a in bravo["adjustments"]] == ["QB out"]
-    assert [g["adjusted"] for g in bravo["schedule"]] == [False, True]  # week 1, Bravo-Delta
+    assert [g["adjusted"] for g in bravo["schedule"]] == [True, True]  # week 1, Bravo-Delta
     proj = alpha["projection"]
     assert (proj["expected_wins"], proj["win_dist"], proj["win_out_prob"]) == (
         3.7,
@@ -170,6 +170,13 @@ def test_model_report(api: TestClient) -> None:
     assert live["games"] == 1  # game 101: finished with a locked snapshot
     assert live["mae"] == pytest.approx(abs(6.0 - 10))
     assert live["market_mae"] == pytest.approx(abs(7.0 - 10))
+    # Raw vs. adjusted on game 101 (Alpha won 30-20): raw -6 / 52, adjusted -8 / 50.
+    adj = report["adjustments"]["overall"]
+    assert (adj["games"], adj["raw_mae"], adj["adjusted_mae"]) == (1, 4.0, 2.0)
+    assert (adj["raw_total_mae"], adj["adjusted_total_mae"]) == (2.0, 0.0)
+    assert (adj["raw_su"], adj["adjusted_su"], adj["helped"], adj["hurt"]) == (1.0, 1.0, 1, 0)
+    (one,) = report["adjustments"]["adjustments"]
+    assert (one["adjustment"]["reason"], one["score"]["games"]) == ("Starting LB back", 1)
 
 
 def test_matchup(api: TestClient) -> None:

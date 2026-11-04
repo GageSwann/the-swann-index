@@ -232,6 +232,32 @@ export interface components {
             vegas_su: number;
         };
         /**
+         * AdjustedScore
+         * @description Raw vs. adjusted over a set of adjusted games (lower error is better).
+         */
+        AdjustedScore: {
+            /** Adjusted Mae */
+            adjusted_mae: number | null;
+            /** Adjusted Su */
+            adjusted_su: number | null;
+            /** Adjusted Total Mae */
+            adjusted_total_mae: number | null;
+            /** Games */
+            games: number;
+            /** Helped */
+            helped: number;
+            /** Hurt */
+            hurt: number;
+            /** Raw Mae */
+            raw_mae: number | null;
+            /** Raw Su */
+            raw_su: number | null;
+            /** Raw Total Mae */
+            raw_total_mae: number | null;
+            /** Same */
+            same: number;
+        };
+        /**
          * AdjustmentNote
          * @description A manual adjustment behind an adjusted prediction (decision #103).
          */
@@ -248,6 +274,17 @@ export interface components {
             school: string;
             /** Team Id */
             team_id: number;
+        };
+        /** AdjustmentReport */
+        AdjustmentReport: {
+            /** Adjustments */
+            adjustments: components["schemas"]["AdjustmentScore"][];
+            overall: components["schemas"]["AdjustedScore"];
+        };
+        /** AdjustmentScore */
+        AdjustmentScore: {
+            adjustment: components["schemas"]["AdjustmentNote"];
+            score: components["schemas"]["AdjustedScore"];
         };
         /** AtsRow */
         AtsRow: {
@@ -573,6 +610,7 @@ export interface components {
         };
         /** ModelReport */
         ModelReport: {
+            adjustments: components["schemas"]["AdjustmentReport"];
             backtest: components["schemas"]["BacktestSummary"] | null;
             live: components["schemas"]["LiveAccuracy"];
             /** Season */

@@ -6,6 +6,7 @@ import typer
 
 from tsi.cli.runtime import db_runtime, fail
 from tsi.db.queries.adjustments import StoredAdjustment
+from tsi.ingest.freshness import current_season
 from tsi.services.adjust import (
     AdjustmentError,
     NewAdjustment,
@@ -13,6 +14,7 @@ from tsi.services.adjust import (
     expire_adjustment,
     list_adjustments,
 )
+from tsi.services.read.adjustment_report import AdjustedScore, season_adjustment_report
 
 app = typer.Typer(help="Manual adjustments on top of the model.", no_args_is_help=True)
 
@@ -87,6 +89,35 @@ def expire(adjustment_id: int = typer.Argument(..., help="The # from `tsi adjust
         except AdjustmentError as exc:
             raise fail(str(exc)) from None
     typer.echo(f"Expired #{adjustment_id}; the next publish drops it from upcoming games.")
+
+
+@app.command()
+def report(season: int | None = typer.Option(None, help="Season (default: current).")) -> None:
+    """Did the adjustments help? Raw model vs. adjusted on finished adjusted games."""
+    now = datetime.now(UTC)
+    with db_runtime() as sessions, sessions() as session:
+        r = season_adjustment_report(session, season or current_season(now), now)
+    if r.overall.games == 0:
+        typer.echo("No finished games with an adjusted prediction yet.")
+        return
+    typer.echo(f"{'':<34}{'games':>6}{'margin err':>18}{'total err':>16}{'winners':>16}  helped")
+    typer.echo(f"{'(raw -> adjusted)':<34}" + _score(r.overall))
+    for a in r.adjustments:
+        n = a.adjustment
+        typer.echo(f"#{n.id:<3}{n.school[:14]:<15}{n.reason[:15]:<16}" + _score(a.score))
+
+
+def _score(s: AdjustedScore) -> str:
+    def pair(raw: float | None, adj: float | None, pct: bool = False) -> str:
+        if raw is None or adj is None:
+            return "-"
+        return f"{100 * raw:.0f}% -> {100 * adj:.0f}%" if pct else f"{raw:.2f} -> {adj:.2f}"
+
+    return (
+        f"{s.games:>6}{pair(s.raw_mae, s.adjusted_mae):>18}"
+        f"{pair(s.raw_total_mae, s.adjusted_total_mae):>16}"
+        f"{pair(s.raw_su, s.adjusted_su, pct=True):>16}  {s.helped}-{s.hurt}-{s.same}"
+    )
 
 
 def _date(text: str, option: str) -> date:

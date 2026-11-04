@@ -1,7 +1,8 @@
 """A tiny 2026 season for API tests. The clock is pinned at NOW.
 
 Teams: Alpha(1), Bravo(2), Charlie(3), Delta(4) are FBS; Echo(5), Foxtrot(6) are FCS.
-Week 1 (final): Alpha 30-20 Bravo; Charlie 21-24 Delta.
+Week 1 (final): Alpha 30-20 Bravo; Charlie 21-24 Delta. Alpha-Bravo was adjusted
+(Alpha's defense +2, since expired: raw Alpha -6 / 52, official Alpha -8 / 50).
 Week 2: Alpha-Charlie kicked off last night (in progress: a pre-kickoff snapshot plus
 one published after kickoff that must never count); Bravo-Delta is upcoming with two
 books' lines and an open pick, and is manually adjusted (Bravo's offense -3: raw
@@ -221,9 +222,25 @@ def _runs(session) -> None:
                 champion_prob=make * 0.2,
             )
         )
-    snap_101 = _snapshot(publish.id, 101, datetime(2026, 10, 17, 10, tzinfo=UTC), -6.0, 52.0)
+    week1_at = datetime(2026, 10, 17, 10, tzinfo=UTC)
+    raw_101 = _snapshot(publish.id, 101, week1_at, -6.0, 52.0)
+    snap_101 = _snapshot(publish.id, 101, week1_at, -8.0, 50.0, adjustment_ids=[2])
     snap_201_pre = _snapshot(publish.id, 201, datetime(2026, 10, 20, 10, tzinfo=UTC), -4.0, 50.0)
     snap_201_post = _snapshot(publish.id, 201, LIVE_KICKOFF + timedelta(hours=10), -9.0, 60.0)
+    session.add(
+        Adjustment(
+            id=2,
+            season=SEASON,
+            team_id=1,
+            off_points=0.0,
+            def_points=2.0,
+            reason="Starting LB back",
+            starts_at=datetime(2026, 10, 15, 10, tzinfo=UTC),
+            ends_at=datetime(2026, 10, 18, 10, tzinfo=UTC),
+            created_at=datetime(2026, 10, 15, 10, tzinfo=UTC),
+            expired_at=datetime(2026, 10, 18, 10, tzinfo=UTC),
+        )
+    )
     session.add(
         Adjustment(
             id=1,
@@ -238,7 +255,7 @@ def _runs(session) -> None:
     )
     raw_202 = _snapshot(publish.id, 202, WEEK2_RUN_AT, -5.0, 57.0)
     snap_202 = _snapshot(publish.id, 202, WEEK2_RUN_AT, -2.0, 54.0, adjustment_ids=[1])
-    session.add_all([snap_101, snap_201_pre, snap_201_post, raw_202, snap_202])
+    session.add_all([raw_101, snap_101, snap_201_pre, snap_201_post, raw_202, snap_202])
     session.flush()
     session.add_all(
         [

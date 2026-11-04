@@ -29,6 +29,8 @@ export type PlayoffTeam = Schemas["PlayoffTeam"]
 export type BracketFormat = Schemas["BracketFormat"]
 export type SnapshotView = Schemas["SnapshotView"]
 export type AdjustmentNote = Schemas["AdjustmentNote"]
+export type AdjustmentReport = Schemas["AdjustmentReport"]
+export type AdjustedScore = Schemas["AdjustedScore"]
 
 export type RankingType = "power" | "resume"
 export type SeasonType = "regular" | "postseason"

@@ -127,7 +127,9 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 ## Phase 9: Manual adjustments
 - [x] `adjustments` table + CLI (`tsi adjust add/list/expire`): offense/defense points per game, a reason and a kickoff window; expiring closes the window, rows are never deleted (#103)
 - [x] Raw vs. adjusted predictions stored and displayed: adjusted games publish a `raw` and an official `adjusted` row (picks on the adjusted one); the Book and season sim use adjusted, rankings stay raw; "Adjusted" note with the reason and the raw numbers on game cards, the game center and team pages (#104)
-- [ ] Report card: adjusted vs. raw accuracy
+- [x] Report card: adjusted vs. raw accuracy: raw and adjusted rows of each finished adjusted game scored against the result (margin, total, winners, closer/further), overall and per adjustment, on the Model page and in `tsi adjust report` (#105)
+
+✅ **Phase 9 complete (2026-11-03):** adjustments recorded with `tsi adjust`, applied to predictions, the Book and the season sim (rankings stay raw), shown with the raw numbers, and judged on the Model page.
 
 ## Phase 10: FCS expansion
 - [ ] Backfill FCS games/stats

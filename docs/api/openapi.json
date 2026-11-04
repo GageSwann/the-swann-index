@@ -59,6 +59,107 @@
         "title": "AccuracyRow",
         "type": "object"
       },
+      "AdjustedScore": {
+        "description": "Raw vs. adjusted over a set of adjusted games (lower error is better).",
+        "properties": {
+          "adjusted_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusted Mae"
+          },
+          "adjusted_su": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusted Su"
+          },
+          "adjusted_total_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusted Total Mae"
+          },
+          "games": {
+            "title": "Games",
+            "type": "integer"
+          },
+          "helped": {
+            "title": "Helped",
+            "type": "integer"
+          },
+          "hurt": {
+            "title": "Hurt",
+            "type": "integer"
+          },
+          "raw_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Mae"
+          },
+          "raw_su": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Su"
+          },
+          "raw_total_mae": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Total Mae"
+          },
+          "same": {
+            "title": "Same",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "games",
+          "raw_mae",
+          "adjusted_mae",
+          "raw_total_mae",
+          "adjusted_total_mae",
+          "raw_su",
+          "adjusted_su",
+          "helped",
+          "hurt",
+          "same"
+        ],
+        "title": "AdjustedScore",
+        "type": "object"
+      },
       "AdjustmentNote": {
         "description": "A manual adjustment behind an adjusted prediction (decision #103).",
         "properties": {
@@ -96,6 +197,42 @@
           "reason"
         ],
         "title": "AdjustmentNote",
+        "type": "object"
+      },
+      "AdjustmentReport": {
+        "properties": {
+          "adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentScore"
+            },
+            "title": "Adjustments",
+            "type": "array"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/AdjustedScore"
+          }
+        },
+        "required": [
+          "overall",
+          "adjustments"
+        ],
+        "title": "AdjustmentReport",
+        "type": "object"
+      },
+      "AdjustmentScore": {
+        "properties": {
+          "adjustment": {
+            "$ref": "#/components/schemas/AdjustmentNote"
+          },
+          "score": {
+            "$ref": "#/components/schemas/AdjustedScore"
+          }
+        },
+        "required": [
+          "adjustment",
+          "score"
+        ],
+        "title": "AdjustmentScore",
         "type": "object"
       },
       "AtsRow": {
@@ -1169,6 +1306,9 @@
       },
       "ModelReport": {
         "properties": {
+          "adjustments": {
+            "$ref": "#/components/schemas/AdjustmentReport"
+          },
           "backtest": {
             "anyOf": [
               {
@@ -1198,7 +1338,8 @@
           "season",
           "backtest",
           "live",
-          "versions"
+          "versions",
+          "adjustments"
         ],
         "title": "ModelReport",
         "type": "object"

@@ -3,7 +3,8 @@ version history, and how the published predictions are doing.
 
 Backtest = the latest saved `tsi backtest run` (model_runs kind 'backtest').
 Live = this season's finished games scored from their locked snapshots: TSI vs.
-the result and vs. the closing consensus (median of books).
+the result and vs. the closing consensus (median of books). Adjustments = raw vs.
+adjusted on the games that were manually adjusted (decision #105).
 """
 
 from dataclasses import dataclass
@@ -14,8 +15,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import ModelRun
-from tsi.db.queries.games import season_games
-from tsi.db.queries.snapshots import snapshots_for_season
+from tsi.db.queries.games import GameRow, season_games
+from tsi.db.queries.snapshots import SnapshotRow, snapshots_for_season
+from tsi.services.read.adjustment_report import AdjustmentReport, adjustment_report
 from tsi.services.read.backtest_report import (
     BacktestReport,
     ModelVersion,
@@ -51,11 +53,18 @@ class ModelReport:
     backtest: BacktestSummary | None
     live: LiveAccuracy
     versions: list[ModelVersion]
+    adjustments: AdjustmentReport  # raw vs. adjusted on manually adjusted games
 
 
 def model_report(session: Session, season: int, now: datetime) -> ModelReport:
+    snaps = snapshots_for_season(session, season)
+    games = season_games(session, season, list(snaps))
     return ModelReport(
-        season, _latest_backtest(session), _live(session, season, now), model_versions(session)
+        season,
+        _latest_backtest(session),
+        _live(session, games, snaps, now),
+        model_versions(session),
+        adjustment_report(session, games, snaps, now),
     )
 
 
@@ -73,12 +82,11 @@ def _latest_backtest(session: Session) -> BacktestSummary | None:
     return BacktestSummary(row[0], row[1], row[2], metrics, parse_report(params.get("report", {})))
 
 
-def _live(session: Session, season: int, now: datetime) -> LiveAccuracy:
-    snaps = snapshots_for_season(session, season)
+def _live(
+    session: Session, games: list[GameRow], snaps: dict[int, list[SnapshotRow]], now: datetime
+) -> LiveAccuracy:
     games = [
-        g
-        for g in season_games(session, season, list(snaps))
-        if g.completed and g.home_points is not None and g.start_time is not None
+        g for g in games if g.completed and g.home_points is not None and g.start_time is not None
     ]
     closing = market_lines(session, games, now)
     errs, market_errs, su, tot_errs, market_tot = [], [], [], [], []

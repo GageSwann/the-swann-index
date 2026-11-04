@@ -171,7 +171,7 @@ Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI 
 - `adjustments` table (#103): team, ± points per game split into offense and defense, reason, kickoff window (`tsi adjust add/list/expire`)
 - Applied **after** the stats model: `rating_adjusted = rating_raw + Σ adjustments`
 - Predictions store both raw and adjusted (#104): offense/defense points shift each team's projected points, the distribution is rebuilt from the new means. The Book and season sim use adjusted; rankings stay raw. The UI shows an "Adjusted" note with the reason and the raw numbers.
-- The report card tracks whether adjustments helped or hurt (raw vs. adjusted accuracy).
+- The report card tracks whether adjustments helped or hurt (#105): raw vs. adjusted margin/total error and winners on the adjusted games, overall and per adjustment (Model page, `tsi adjust report`).
 
 ## 12. Improvement backlog (brainstorm, 2026-10-14)
 Goal: the most accurate predictions and the most defensible rankings. **Rules for every idea:**
