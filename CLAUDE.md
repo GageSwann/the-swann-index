@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 9 in progress** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103). Next: raw vs. adjusted predictions stored and displayed.
+- **Phase 9 in progress** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104). Next: report card, adjusted vs. raw accuracy.
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
@@ -22,7 +22,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#103 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#104 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -48,6 +48,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Totals (#50):** stacked game total (league level shrunk to last season, PPD/success sums, pace + tempo, prior, last season's pace/tempo). Scores = (total ± margin) / 2.
 - **Distribution (#51):** bivariate normal. σ_margin 15.4, σ_total 16.4 + 0.12·(total − 55), ρ = 0.0074 × home margin. Production fits σ and the edge shrink on **leave-one-season-out** stack predictions (in-sample ones are too sharp, #53).
 - **Season sim (#94):** remaining games use the published forecasts; each sim draws a per-team shift N(0, τ), τ = 7.15 − 0.114 × week, held all season, game noise √(σ² − 2τ²) (single-game probabilities unchanged). Fixed seed.
+- **Manual adjustments (#103, #104):** offense/defense points per game on a team's games in a window, applied after the model to the game forecast only. Adjusted games publish `raw` + official `adjusted` rows at the same `published_at` (picks on the adjusted one); Book and season sim use adjusted, rankings/ratings and the matchup tool stay raw.
 - **Résumé (#24):** strength of record vs. a typical **#12** team with opponents' current ratings (dynamic SOS).
 - Tune on 2015–2022, validate on 2023–2025 (`backtest/splits.py`). 2020 treated normally (#26).
 - **New FBS teams in 2026:** North Dakota State (Mountain West) and Sacramento State (MAC) are FBS this season and rated individually; don't mistake them for pooled FCS teams.

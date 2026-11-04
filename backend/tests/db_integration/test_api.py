@@ -75,6 +75,10 @@ def test_team_list_and_profile(api: TestClient) -> None:
     # In progress: the locked pre-kickoff snapshot (Alpha -4), never the post-kickoff one (-9).
     assert live["spread"] == -4.0 and live["site"] == "home"
     assert api.get("/teams/nope").status_code == 404
+    assert alpha["adjustments"] == [] and live["adjusted"] is False
+    bravo = ok(api, "/teams/bravo")
+    assert [a["reason"] for a in bravo["adjustments"]] == ["QB out"]
+    assert [g["adjusted"] for g in bravo["schedule"]] == [False, True]  # week 1, Bravo-Delta
     proj = alpha["projection"]
     assert (proj["expected_wins"], proj["win_dist"], proj["win_out_prob"]) == (
         3.7,
@@ -112,6 +116,12 @@ def test_week_board(api: TestClient) -> None:
     upcoming = games[202]
     assert upcoming["prediction"]["locked"] is False
     assert [p["side"] for p in upcoming["prediction"]["picks"]] == ["over"]
+    assert live["adjusted"] is False and live["raw"] is None and live["adjustments"] == []
+    adjusted = upcoming["prediction"]
+    assert (adjusted["adjusted"], adjusted["spread"], adjusted["total"]) == (True, -2.0, 54.0)
+    assert (adjusted["raw"]["spread"], adjusted["raw"]["total"]) == (-5.0, 57.0)
+    (note,) = adjusted["adjustments"]
+    assert (note["school"], note["off_points"], note["reason"]) == ("Bravo", -3.0, "QB out")
     market = upcoming["market"]
     assert (market["spread"], market["total"], market["books"]) == (-3.25, 50.5, 2)  # median
 
@@ -120,8 +130,9 @@ def test_game_center(api: TestClient) -> None:
     center = ok(api, "/games/202")
 
     assert center["game"]["home"]["school"] == "Bravo"
-    assert center["markets"]["spread"]["line"] == -5.0  # re-priced from the stored distribution
-    assert center["markets"]["total"]["line"] == 57.0
+    # Re-priced from the stored (official, adjusted) distribution.
+    assert center["markets"]["spread"]["line"] == -2.0
+    assert center["markets"]["total"]["line"] == 54.0
     assert len(center["markets"]["alt_spreads"]) == 21
     assert len(center["history"]) == 1
     assert ok(api, "/games/101")["game"]["result"] == {

@@ -70,7 +70,7 @@ def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime
         away_div=a.division or "unknown",
         neutral=neutral,
     )
-    dist = forecast_game(game, live, artifact).distribution
+    dist = forecast_game(game, live, artifact).raw  # the model itself; no manual adjustments
     return Matchup(
         home=h,
         away=a,

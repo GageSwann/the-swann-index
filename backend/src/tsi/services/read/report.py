@@ -83,9 +83,10 @@ def _live(session: Session, season: int, now: datetime) -> LiveAccuracy:
     closing = market_lines(session, games, now)
     errs, market_errs, su, tot_errs, market_tot = [], [], [], [], []
     for g in games:
-        snap, locked = current_snapshot(snaps[g.id], g.start_time, now)
-        if snap is None or not locked:
+        official, locked = current_snapshot(snaps[g.id], g.start_time, now)
+        if official is None or not locked:
             continue
+        snap = official.raw or official  # the model's own accuracy: never adjusted
         margin, total = g.home_points - g.away_points, g.home_points + g.away_points
         errs.append(abs(-snap.spread - margin))
         tot_errs.append(abs(snap.total - total))

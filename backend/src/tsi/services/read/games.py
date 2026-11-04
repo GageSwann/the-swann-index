@@ -21,6 +21,7 @@ from tsi.model.distribution import ScoreDistribution
 from tsi.services.read.common import (
     Score,
     SnapshotView,
+    adjustment_notes,
     current_snapshot,
     market_lines,
     result_of,
@@ -109,6 +110,7 @@ def _summaries(
         if snap is not None:
             shown[g.id] = (snap, locked)
     picks = picks_for_snapshots(session, [s.id for s, _ in shown.values()])
+    notes = adjustment_notes(session, [s for s, _ in shown.values()])
     markets = market_lines(session, games, now)
     out = []
     for g in games:
@@ -129,7 +131,7 @@ def _summaries(
                 result=result_of(g),
                 prediction=None
                 if snap is None
-                else snapshot_view(snap[0], snap[1], picks.get(snap[0].id, [])),
+                else snapshot_view(snap[0], snap[1], picks.get(snap[0].id, []), notes),
                 market=markets.get(g.id),
             )
         )

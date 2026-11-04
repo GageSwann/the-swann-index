@@ -31,10 +31,11 @@ SEASON_DAYS = 200  # window when a specific week is asked for
 @dataclass(frozen=True)
 class BoardGame:
     forecast: GameForecast
-    markets: GameMarkets
+    markets: GameMarkets  # TSI Book prices of the official (adjusted when adjusted) forecast
     market: ConsensusLine
     edges: GameEdges
     picks: list[PickDecision]
+    raw_markets: GameMarkets | None = None  # the raw model's prices, when adjusted
 
 
 @dataclass(frozen=True)
@@ -73,8 +74,16 @@ def build_board(
         dist = forecast.distribution
         market = consensus(snaps[forecast.game.id])
         edges = game_edges(dist, market, artifact.edge_shrink)
+        raw_markets = price_game(forecast.raw, book) if forecast.adjustment else None
         board.append(
-            BoardGame(forecast, price_game(dist, book), market, edges, choose_picks(edges, rules))
+            BoardGame(
+                forecast,
+                price_game(dist, book),
+                market,
+                edges,
+                choose_picks(edges, rules),
+                raw_markets,
+            )
         )
     names = team_names(session, {t for g in games for t in (g.home_id, g.away_id)})
     return Board(board, names)

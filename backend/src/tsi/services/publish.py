@@ -5,6 +5,9 @@ forecast, prices or picks changed since that game's latest snapshot; unchanged
 games are skipped so re-runs don't pile up copies. Nothing is ever updated: the
 DB trigger rejects it. The snapshot that counts for grading is the latest one
 published before kickoff (the "locked" one).
+
+A game with manual adjustments gets a `raw` and an `adjusted` row at the same moment;
+the picks go on the adjusted one, the official forecast (decision #104).
 """
 
 from dataclasses import dataclass
@@ -16,7 +19,9 @@ from sqlalchemy.orm import Session, sessionmaker
 from tsi.db.models import ModelRun, Pick, Prediction
 from tsi.db.queries.calendar import calendar_week
 from tsi.db.queries.predictions import (
+    ADJUSTED,
     FINGERPRINT,
+    RAW,
     PickKey,
     SnapshotKey,
     fingerprint,
@@ -47,24 +52,32 @@ def publish_board(
         if not changed:
             return PublishResult(None, 0, len(board), 0)
         run = _new_run(session, changed, now, artifact)
-        predictions = [Prediction(**prediction_row(b, run.id, now)) for b in changed]
-        session.add_all(predictions)
+        raw = [Prediction(**prediction_row(b, run.id, now, RAW)) for b in changed if _adjusted(b)]
+        official = [
+            Prediction(**prediction_row(b, run.id, now, ADJUSTED if _adjusted(b) else RAW))
+            for b in changed
+        ]
+        session.add_all(raw + official)
         session.flush()
         picks = [
             Pick(**row)
-            for b, p in zip(changed, predictions, strict=True)
+            for b, p in zip(changed, official, strict=True)
             for row in pick_rows(b, p.id)
         ]
         session.add_all(picks)
         return PublishResult(run.id, len(changed), len(board) - len(changed), len(picks))
 
 
-def prediction_row(b: BoardGame, run_id: int, now: datetime) -> dict[str, Any]:
-    d, m = b.forecast.distribution, b.markets
+def prediction_row(b: BoardGame, run_id: int, now: datetime, variant: str) -> dict[str, Any]:
+    """The `raw` (pure model) or `adjusted` row of a board game."""
+    adjusted = variant == ADJUSTED
+    f = b.forecast
+    d, m = (f.distribution, b.markets) if adjusted or not _adjusted(b) else (f.raw, b.raw_markets)
     return {
         "run_id": run_id,
-        "game_id": b.forecast.game.id,
-        "variant": "raw",
+        "game_id": f.game.id,
+        "variant": variant,
+        "adjustment_ids": list(f.adjustment.ids) if adjusted and f.adjustment else None,
         "published_at": now,
         "proj_home": d.home_points,
         "proj_away": d.away_points,
@@ -103,10 +116,18 @@ def pick_rows(b: BoardGame, prediction_id: int) -> list[dict[str, Any]]:
 
 
 def snapshot_key(b: BoardGame) -> SnapshotKey:
-    row = prediction_row(b, 0, datetime.min)
-    values = [row[col.key] for col in FINGERPRINT]
+    def values(variant: str) -> tuple[float | int, ...]:
+        row = prediction_row(b, 0, datetime.min, variant)
+        return fingerprint(row[col.key] for col in FINGERPRINT)
+
     picks = frozenset(PickKey(p.market, p.side, p.line, p.odds, p.tier) for p in b.picks)
-    return SnapshotKey(fingerprint(values), picks)
+    if not _adjusted(b):
+        return SnapshotKey(values(RAW), picks)
+    return SnapshotKey(values(RAW), picks, values(ADJUSTED), b.forecast.adjustment.ids)
+
+
+def _adjusted(b: BoardGame) -> bool:
+    return b.forecast.adjustment is not None
 
 
 def _new_run(

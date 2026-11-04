@@ -2,7 +2,8 @@
 
 Only games that kicked off before `as_of` are used (rule 1). Shared by the daily
 ratings (`services/rate.py`) and game predictions (`services/predict.py`) so the
-two can never disagree about their inputs.
+two can never disagree about their inputs. The operator's manual adjustments in
+effect at `as_of` ride along for the predictions; the ratings never read them (rule 6).
 """
 
 from dataclasses import dataclass
@@ -10,6 +11,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from tsi.db.queries.adjustments import StoredAdjustment, season_adjustments
 from tsi.db.queries.priors import fbs_teams, prior_inputs
 from tsi.db.queries.results import completed_games
 from tsi.db.queries.stats import offense_rows
@@ -30,6 +32,7 @@ class LiveInputs:
     priors: dict[int, TeamRating]  # FBS team -> preseason prior
     elo: EloRun  # every completed game before `as_of`, all seasons
     fbs: set[int]
+    adjustments: tuple[StoredAdjustment, ...] = ()  # in effect at `as_of` (decision #104)
 
     def games_played(self, team_id: int) -> int:
         return self.components.games.get(team_id, 0) if self.components else 0
@@ -61,4 +64,7 @@ def load_live_inputs(
         priors=priors,
         elo=run_elo(games, artifact.elo),
         fbs=fbs,
+        adjustments=tuple(
+            a for a in season_adjustments(session, season, open_at=as_of) if a.created_at <= as_of
+        ),
     )

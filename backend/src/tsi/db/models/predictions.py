@@ -3,11 +3,16 @@
 `predictions` is INSERT-ONLY (rule 2); the migration adds a trigger that rejects
 UPDATE/DELETE. The locked snapshot for a game is derived, not flagged: the latest
 row with `published_at < games.start_time`.
+
+Variants (decision #104): a game with manual adjustments gets two rows per publish, at
+the same `published_at`: `raw` (the model) and `adjusted` (the official one, carrying
+the picks and the ids of the adjustments applied). Other games get one `raw` row.
 """
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, UniqueConstraint
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from tsi.db.base import Base, CreatedAtMixin
@@ -45,6 +50,7 @@ class Prediction(CreatedAtMixin, Base):
     book_spread_away_odds: Mapped[int]
     book_over_odds: Mapped[int]
     book_under_odds: Mapped[int]
+    adjustment_ids: Mapped[list[int] | None] = mapped_column(ARRAY(Integer))  # adjusted rows
 
 
 class Pick(CreatedAtMixin, Base):

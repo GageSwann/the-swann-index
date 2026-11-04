@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from tsi.book.consensus import ConsensusLine, consensus
 from tsi.book.grading import clv_points, clv_prob
 from tsi.book.odds import prob_from_american
+from tsi.db.queries.adjustments import StoredAdjustment, adjustments_by_id
 from tsi.db.queries.games import GameRow
 from tsi.db.queries.market import closing_snapshots, line_snapshots
 from tsi.db.queries.snapshots import PickRow, SnapshotRow
@@ -33,6 +34,29 @@ class PickView:
 
 
 @dataclass(frozen=True)
+class AdjustmentNote:
+    """A manual adjustment behind an adjusted prediction (decision #103)."""
+
+    id: int
+    team_id: int
+    school: str
+    off_points: float  # points per game for its offense
+    def_points: float  # points per game for its defense
+    reason: str
+
+
+@dataclass(frozen=True)
+class RawForecast:
+    """The raw model's numbers for a game whose official prediction is adjusted."""
+
+    proj_home: float
+    proj_away: float
+    spread: float  # home view
+    total: float
+    home_win_prob: float
+
+
+@dataclass(frozen=True)
 class SnapshotView:
     published_at: datetime
     locked: bool  # the official pre-kickoff snapshot of a game that has started
@@ -53,6 +77,10 @@ class SnapshotView:
     book_over_odds: int
     book_under_odds: int
     picks: list[PickView]
+    # Manual adjustments (decision #104): the numbers above are then the adjusted ones.
+    adjusted: bool
+    raw: RawForecast | None  # the raw model's numbers, when adjusted
+    adjustments: list[AdjustmentNote]
 
 
 @dataclass(frozen=True)
@@ -72,9 +100,39 @@ def current_snapshot(
     return (snaps[-1], False) if snaps else (None, False)
 
 
-def snapshot_view(snap: SnapshotRow, locked: bool, picks: Sequence[PickRow]) -> SnapshotView:
-    fields = {k: getattr(snap, k) for k in SnapshotView.__dataclass_fields__ if hasattr(snap, k)}
-    return SnapshotView(**fields, locked=locked, picks=[pick_view(p) for p in picks])
+def snapshot_view(
+    snap: SnapshotRow,
+    locked: bool,
+    picks: Sequence[PickRow],
+    notes: dict[int, AdjustmentNote],
+) -> SnapshotView:
+    skip = {"adjusted", "raw"}
+    fields = {
+        k: getattr(snap, k)
+        for k in SnapshotView.__dataclass_fields__
+        if k not in skip and hasattr(snap, k)
+    }
+    raw = snap.raw
+    return SnapshotView(
+        **fields,
+        locked=locked,
+        picks=[pick_view(p) for p in picks],
+        adjusted=snap.adjusted,
+        raw=None
+        if raw is None
+        else RawForecast(raw.proj_home, raw.proj_away, raw.spread, raw.total, raw.home_win_prob),
+        adjustments=[notes[i] for i in snap.adjustment_ids or () if i in notes],
+    )
+
+
+def adjustment_notes(session: Session, snaps: Iterable[SnapshotRow]) -> dict[int, AdjustmentNote]:
+    """id -> note for every adjustment behind these snapshots (one query, none if unadjusted)."""
+    ids = {i for s in snaps for i in s.adjustment_ids or ()}
+    return {i: note_of(a) for i, a in adjustments_by_id(session, ids).items()}
+
+
+def note_of(a: StoredAdjustment) -> AdjustmentNote:
+    return AdjustmentNote(a.id, a.team_id, a.school, a.off_points, a.def_points, a.reason)
 
 
 def pick_view(p: PickRow) -> PickView:

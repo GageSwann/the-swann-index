@@ -231,6 +231,24 @@ export interface components {
             /** Vegas Su */
             vegas_su: number;
         };
+        /**
+         * AdjustmentNote
+         * @description A manual adjustment behind an adjusted prediction (decision #103).
+         */
+        AdjustmentNote: {
+            /** Def Points */
+            def_points: number;
+            /** Id */
+            id: number;
+            /** Off Points */
+            off_points: number;
+            /** Reason */
+            reason: string;
+            /** School */
+            school: string;
+            /** Team Id */
+            team_id: number;
+        };
         /** AtsRow */
         AtsRow: {
             /** Bets */
@@ -768,6 +786,22 @@ export interface components {
             /** Week */
             week: number;
         };
+        /**
+         * RawForecast
+         * @description The raw model's numbers for a game whose official prediction is adjusted.
+         */
+        RawForecast: {
+            /** Home Win Prob */
+            home_win_prob: number;
+            /** Proj Away */
+            proj_away: number;
+            /** Proj Home */
+            proj_home: number;
+            /** Spread */
+            spread: number;
+            /** Total */
+            total: number;
+        };
         /** ResumeSummary */
         ResumeSummary: {
             /** Benchmark Expected Wins */
@@ -781,6 +815,8 @@ export interface components {
         };
         /** ScheduleGame */
         ScheduleGame: {
+            /** Adjusted */
+            adjusted: boolean;
             /** Benchmark Win Prob */
             benchmark_win_prob: number | null;
             /** Game Id */
@@ -841,6 +877,10 @@ export interface components {
         };
         /** SnapshotView */
         SnapshotView: {
+            /** Adjusted */
+            adjusted: boolean;
+            /** Adjustments */
+            adjustments: components["schemas"]["AdjustmentNote"][];
             /** Book Away Ml */
             book_away_ml: number;
             /** Book Home Ml */
@@ -872,6 +912,7 @@ export interface components {
              * Format: date-time
              */
             published_at: string;
+            raw: components["schemas"]["RawForecast"] | null;
             /** Rho */
             rho: number;
             /** Sigma Margin */
@@ -885,6 +926,8 @@ export interface components {
         };
         /** TeamProfile */
         TeamProfile: {
+            /** Adjustments */
+            adjustments: components["schemas"]["AdjustmentNote"][];
             /** History */
             history: components["schemas"]["RatingPoint"][];
             /** Losses */

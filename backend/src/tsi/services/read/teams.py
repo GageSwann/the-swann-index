@@ -5,6 +5,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from tsi.db.queries.adjustments import season_adjustments
 from tsi.db.queries.games import GameRow, team_games
 from tsi.db.queries.runs import rating_runs
 from tsi.db.queries.sim import stored_sims
@@ -19,7 +20,7 @@ from tsi.db.queries.team_info import (
     team_refs,
 )
 from tsi.divisions import RATED_DIVISION
-from tsi.services.read.common import Score, current_snapshot, result_of
+from tsi.services.read.common import AdjustmentNote, Score, current_snapshot, note_of, result_of
 from tsi.services.read.projection import Projection, projection
 from tsi.services.read.resume_view import (
     ResumeContext,
@@ -71,6 +72,7 @@ class ScheduleGame:
     projected_opponent: float | None
     win_prob: float | None  # TSI win probability for this team
     spread: float | None  # TSI spread from this team's view (negative = favored)
+    adjusted: bool  # the prediction above includes manual adjustments (decision #104)
     # Résumé breakdown (decision #89), from the shown rating run:
     opponent_rating: float | None  # opponent's current `season` rating
     opponent_rank: int | None  # opponent's current Power rank (FBS)
@@ -90,6 +92,7 @@ class TeamProfile:
     schedule: list[ScheduleGame]
     resume: ResumeSummary | None  # None for non-FBS teams or before ratings exist
     projection: Projection | None  # season sim of the shown run (#98); None for non-FBS
+    adjustments: list[AdjustmentNote]  # manual adjustments in effect now (decision #104)
 
 
 def team_list(session: Session, season: int) -> list[TeamRef]:
@@ -134,6 +137,11 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
         schedule=[_schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
         resume=resume_summary(ctx, games, team_id, refs) if ctx and rated else None,
         projection=projection(sim),
+        adjustments=[
+            note_of(a)
+            for a in season_adjustments(session, season, open_at=now)
+            if a.team_id == team_id and a.created_at <= now
+        ],
     )
 
 
@@ -202,6 +210,7 @@ def _schedule_game(
         projected_opponent=None if snap is None else (snap.proj_away if home else snap.proj_home),
         win_prob=None if snap is None else (snap.home_win_prob if home else 1 - snap.home_win_prob),
         spread=None if snap is None else sign * snap.spread,
+        adjusted=snap is not None and snap.adjusted,
         opponent_rating=diff.opponent_rating if diff else None,
         opponent_rank=diff.opponent_rank if diff else None,
         benchmark_win_prob=diff.benchmark_win_prob if diff else None,

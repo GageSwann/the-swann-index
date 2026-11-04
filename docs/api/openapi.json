@@ -59,6 +59,45 @@
         "title": "AccuracyRow",
         "type": "object"
       },
+      "AdjustmentNote": {
+        "description": "A manual adjustment behind an adjusted prediction (decision #103).",
+        "properties": {
+          "def_points": {
+            "title": "Def Points",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "off_points": {
+            "title": "Off Points",
+            "type": "number"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "school": {
+            "title": "School",
+            "type": "string"
+          },
+          "team_id": {
+            "title": "Team Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "team_id",
+          "school",
+          "off_points",
+          "def_points",
+          "reason"
+        ],
+        "title": "AdjustmentNote",
+        "type": "object"
+      },
       "AtsRow": {
         "properties": {
           "bets": {
@@ -1893,6 +1932,40 @@
         "title": "RatingPoint",
         "type": "object"
       },
+      "RawForecast": {
+        "description": "The raw model's numbers for a game whose official prediction is adjusted.",
+        "properties": {
+          "home_win_prob": {
+            "title": "Home Win Prob",
+            "type": "number"
+          },
+          "proj_away": {
+            "title": "Proj Away",
+            "type": "number"
+          },
+          "proj_home": {
+            "title": "Proj Home",
+            "type": "number"
+          },
+          "spread": {
+            "title": "Spread",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "proj_home",
+          "proj_away",
+          "spread",
+          "total",
+          "home_win_prob"
+        ],
+        "title": "RawForecast",
+        "type": "object"
+      },
       "ResumeSummary": {
         "properties": {
           "benchmark_expected_wins": {
@@ -1937,6 +2010,10 @@
       },
       "ScheduleGame": {
         "properties": {
+          "adjusted": {
+            "title": "Adjusted",
+            "type": "boolean"
+          },
           "benchmark_win_prob": {
             "anyOf": [
               {
@@ -2108,6 +2185,7 @@
           "projected_opponent",
           "win_prob",
           "spread",
+          "adjusted",
           "opponent_rating",
           "opponent_rank",
           "benchmark_win_prob",
@@ -2170,6 +2248,17 @@
       },
       "SnapshotView": {
         "properties": {
+          "adjusted": {
+            "title": "Adjusted",
+            "type": "boolean"
+          },
+          "adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentNote"
+            },
+            "title": "Adjustments",
+            "type": "array"
+          },
           "book_away_ml": {
             "title": "Book Away Ml",
             "type": "integer"
@@ -2230,6 +2319,16 @@
             "title": "Published At",
             "type": "string"
           },
+          "raw": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RawForecast"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "rho": {
             "title": "Rho",
             "type": "number"
@@ -2270,13 +2369,23 @@
           "book_spread_away_odds",
           "book_over_odds",
           "book_under_odds",
-          "picks"
+          "picks",
+          "adjusted",
+          "raw",
+          "adjustments"
         ],
         "title": "SnapshotView",
         "type": "object"
       },
       "TeamProfile": {
         "properties": {
+          "adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentNote"
+            },
+            "title": "Adjustments",
+            "type": "array"
+          },
           "history": {
             "items": {
               "$ref": "#/components/schemas/RatingPoint"
@@ -2351,7 +2460,8 @@
           "history",
           "schedule",
           "resume",
-          "projection"
+          "projection",
+          "adjustments"
         ],
         "title": "TeamProfile",
         "type": "object"

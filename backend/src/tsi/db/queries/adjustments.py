@@ -1,12 +1,14 @@
-"""Manual adjustments with their team names, and team lookup by slug."""
+"""Manual adjustments with their team names."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import or_, select
+from sqlalchemy import Select, or_, select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Adjustment, Team
+from tsi.db.queries.filters import one_of
 
 
 @dataclass(frozen=True)
@@ -37,7 +39,24 @@ def season_adjustments(
     session: Session, season: int, *, open_at: datetime | None = None
 ) -> list[StoredAdjustment]:
     """The season's adjustments, oldest first; with `open_at`, only windows still open then."""
-    query = (
+    query = _query().where(Adjustment.season == season)
+    if open_at is not None:
+        query = query.where(or_(Adjustment.ends_at.is_(None), Adjustment.ends_at > open_at))
+    return [StoredAdjustment(*row) for row in session.execute(query)]
+
+
+def adjustments_by_id(session: Session, ids: Iterable[int]) -> dict[int, StoredAdjustment]:
+    ids = set(ids)
+    if not ids:
+        return {}
+    return {
+        row[0]: StoredAdjustment(*row)
+        for row in session.execute(_query().where(one_of(Adjustment.id, ids)))
+    }
+
+
+def _query() -> Select:
+    return (
         select(
             Adjustment.id,
             Adjustment.season,
@@ -52,13 +71,5 @@ def season_adjustments(
             Adjustment.expired_at,
         )
         .join(Team, Team.id == Adjustment.team_id)
-        .where(Adjustment.season == season)
         .order_by(Adjustment.id)
     )
-    if open_at is not None:
-        query = query.where(or_(Adjustment.ends_at.is_(None), Adjustment.ends_at > open_at))
-    return [StoredAdjustment(*row) for row in session.execute(query)]
-
-
-def team_id_by_slug(session: Session, slug: str) -> int | None:
-    return session.scalar(select(Team.id).where(Team.slug == slug))

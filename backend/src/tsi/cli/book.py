@@ -59,6 +59,9 @@ def _line(b: BoardGame, names: dict[int, str]) -> str:
     tsi = f"{-d.margin:+.1f} / {d.total:.1f}"
     market = "-" if m.spread is None else f"{m.spread:+.1f} / {m.total or 0:.1f}"
     picks = ", ".join(f"{p.market} {p.side} {'*' * p.tier}" for p in b.picks)
+    if b.forecast.adjustment:  # official numbers are adjusted; show the raw model's too
+        r = b.forecast.raw
+        picks = f"{picks}  [adjusted; raw {-r.margin:+.1f} / {r.total:.1f}]".lstrip()
     return f"{matchup:<40}{tsi:>14}{market:>14}  {picks}"
 
 

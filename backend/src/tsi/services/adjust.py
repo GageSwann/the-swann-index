@@ -11,7 +11,8 @@ from datetime import datetime
 from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import Adjustment
-from tsi.db.queries.adjustments import StoredAdjustment, season_adjustments, team_id_by_slug
+from tsi.db.queries.adjustments import StoredAdjustment, season_adjustments
+from tsi.db.queries.team_info import team_id_by_slug
 from tsi.ingest.freshness import current_season
 
 MAX_POINTS = 21.0  # per side; anything bigger is almost surely a typo

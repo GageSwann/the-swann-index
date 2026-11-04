@@ -4,7 +4,9 @@ Teams: Alpha(1), Bravo(2), Charlie(3), Delta(4) are FBS; Echo(5), Foxtrot(6) are
 Week 1 (final): Alpha 30-20 Bravo; Charlie 21-24 Delta.
 Week 2: Alpha-Charlie kicked off last night (in progress: a pre-kickoff snapshot plus
 one published after kickoff that must never count); Bravo-Delta is upcoming with two
-books' lines and an open pick; Echo-Foxtrot is FCS-only (left off the board).
+books' lines and an open pick, and is manually adjusted (Bravo's offense -3: raw
+Bravo -5 / 57, official Bravo -2 / 54; decision #104); Echo-Foxtrot is FCS-only (left
+off the board).
 Ratings: a week-1 run and a week-2 run; the week-2 run has a season sim for the FBS
 teams (decision #98), the week-1 run predates the sim. Two saved backtests: an old version without
 report tables, and the current one with them.
@@ -15,6 +17,7 @@ from datetime import UTC, datetime, timedelta
 from tests.db_integration.api_seed_report import BACKTEST_REPORT
 
 from tsi.db.models import (
+    Adjustment,
     CalendarWeek,
     Game,
     MarketLine,
@@ -221,8 +224,21 @@ def _runs(session) -> None:
     snap_101 = _snapshot(publish.id, 101, datetime(2026, 10, 17, 10, tzinfo=UTC), -6.0, 52.0)
     snap_201_pre = _snapshot(publish.id, 201, datetime(2026, 10, 20, 10, tzinfo=UTC), -4.0, 50.0)
     snap_201_post = _snapshot(publish.id, 201, LIVE_KICKOFF + timedelta(hours=10), -9.0, 60.0)
-    snap_202 = _snapshot(publish.id, 202, WEEK2_RUN_AT, -5.0, 57.0)
-    session.add_all([snap_101, snap_201_pre, snap_201_post, snap_202])
+    session.add(
+        Adjustment(
+            id=1,
+            season=SEASON,
+            team_id=2,
+            off_points=-3.0,
+            def_points=0.0,
+            reason="QB out",
+            starts_at=WEEK2_RUN_AT - timedelta(days=1),
+            created_at=WEEK2_RUN_AT - timedelta(days=1),
+        )
+    )
+    raw_202 = _snapshot(publish.id, 202, WEEK2_RUN_AT, -5.0, 57.0)
+    snap_202 = _snapshot(publish.id, 202, WEEK2_RUN_AT, -2.0, 54.0, adjustment_ids=[1])
+    session.add_all([snap_101, snap_201_pre, snap_201_post, raw_202, snap_202])
     session.flush()
     session.add_all(
         [
@@ -254,12 +270,13 @@ def _rating(run_id, team, basis, rating, off, de, games, rp, rr, sor) -> TeamRat
     )
 
 
-def _snapshot(run_id, gid, published, spread, total) -> Prediction:
+def _snapshot(run_id, gid, published, spread, total, adjustment_ids=None) -> Prediction:
     margin = -spread
     return Prediction(
         run_id=run_id,
         game_id=gid,
-        variant="raw",
+        variant="adjusted" if adjustment_ids else "raw",
+        adjustment_ids=adjustment_ids,
         published_at=published,
         proj_home=(total + margin) / 2,
         proj_away=(total - margin) / 2,
