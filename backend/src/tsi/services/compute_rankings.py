@@ -1,14 +1,15 @@
-"""Compute Power and Résumé rankings for one season as of a moment (FBS teams).
+"""Compute Power and Résumé rankings for one season as of a moment, per division.
 
 (Stored rankings are read for the API by `services/read/rankings.py`.)
 
 Power  = `season` rating (this season's games only; decision #23/#38).
-Résumé = strength of record vs. a typical #12 team, with opponents' current ratings.
+Résumé = strength of record vs. a typical #12 team (FBS) or #10 team (FCS, #91), with
+opponents' current ratings. Ranks are within each division; FCS teams are ranked from
+FCS_STATS_FROM, when they are rated individually (decision #109).
 Teams with fewer than 4 games are marked provisional.
-Individually rated FCS teams (decision #109) are kept alongside, unranked for now.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from sqlalchemy import select
@@ -18,10 +19,12 @@ from tsi.db.models import Team
 from tsi.db.queries.priors import division_teams, fbs_teams
 from tsi.db.queries.results import completed_games
 from tsi.db.queries.stats import offense_rows
-from tsi.divisions import FCS
+from tsi.divisions import FCS, FCS_STATS_FROM
 from tsi.model.config import ESTABLISHED_GAMES
-from tsi.model.ratings.fit import RatingParams, RatingSet, TeamRating, fit_ratings
+from tsi.model.ratings.fit import RatingParams, RatingSet, fit_ratings
 from tsi.model.resume import (
+    BENCHMARK_RANK,
+    FCS_BENCHMARK_RANK,
     SEASON_SIGMA,
     Resume,
     ScheduleGame,
@@ -48,16 +51,17 @@ class Rankings:
     season: int
     as_of: datetime
     ratings: RatingSet
-    benchmark: float
-    teams: list[TeamRanking]  # in Power order
+    benchmark: float  # FBS Résumé benchmark (#12 FBS team's rating)
+    teams: list[TeamRanking]  # FBS, in Power order
     names: dict[int, str]
-    fcs: dict[int, TeamRating]  # individually rated FCS teams' `season` ratings (unranked)
+    fcs_benchmark: float | None = None  # #10 FCS team's rating
+    fcs_teams: list[TeamRanking] = field(default_factory=list)  # FCS, in Power order
 
     @property
     def fcs_average(self) -> float | None:
-        if not self.fcs:
+        if not self.fcs_teams:
             return None
-        return sum(r.rating for r in self.fcs.values()) / len(self.fcs)
+        return sum(t.rating for t in self.fcs_teams) / len(self.fcs_teams)
 
 
 def build_rankings(
@@ -73,10 +77,32 @@ def build_rankings(
     ]
     ratings = fit_ratings(rows, params)
     fbs = fbs_teams(session, season, season).get(season, set())
-    rated = {t: ratings.teams[t] for t in fbs if t in ratings.teams}
-    benchmark = benchmark_rating([r.rating for r in rated.values()])
+    fcs = (
+        division_teams(session, season, season, FCS).get(season, set())
+        if season >= FCS_STATS_FROM
+        else set()
+    )
+    schedules = _schedules(session, season, as_of, ratings, {*fbs, *fcs})
+    teams, benchmark = rank_division(fbs, ratings, schedules, BENCHMARK_RANK, sigma)
+    fcs_teams, fcs_benchmark = rank_division(fcs, ratings, schedules, FCS_BENCHMARK_RANK, sigma)
+    names = {tid: school for tid, school in session.execute(select(Team.id, Team.school))}
+    return Rankings(
+        season,
+        as_of,
+        ratings,
+        benchmark,
+        teams,
+        names,
+        fcs_benchmark if fcs_teams else None,
+        fcs_teams,
+    )
 
-    schedules: dict[int, list[ScheduleGame]] = {t: [] for t in rated}
+
+def _schedules(
+    session: Session, season: int, as_of: datetime, ratings: RatingSet, teams: set[int]
+) -> dict[int, list[ScheduleGame]]:
+    """Each team's decided games so far, with opponents' current ratings (ties don't count)."""
+    schedules: dict[int, list[ScheduleGame]] = {t: [] for t in teams}
     for g in completed_games(session, season):
         if g.season != season or not g.start_time or g.start_time >= as_of or g.margin == 0:
             continue
@@ -87,7 +113,19 @@ def build_rankings(
             if team in schedules:
                 opp_rating = ratings.get(opp, opp_div, season).rating
                 schedules[team].append(ScheduleGame(opp_rating, site, won))
+    return schedules
 
+
+def rank_division(
+    division: set[int],
+    ratings: RatingSet,
+    schedules: dict[int, list[ScheduleGame]],
+    benchmark_rank: int,
+    sigma: float,
+) -> tuple[list[TeamRanking], float]:
+    """Power and Résumé ranks within one division (teams without a rating are left out)."""
+    rated = {t: ratings.teams[t] for t in division if t in ratings.teams}
+    benchmark = benchmark_rating([r.rating for r in rated.values()], benchmark_rank)
     resumes = {t: strength_of_record(schedules[t], benchmark, ratings.hfa, sigma) for t in rated}
     power_order = sorted(rated, key=lambda t: -rated[t].rating)
     resume_order = sorted(rated, key=lambda t: (resumes[t].sor, -resumes[t].wins, -rated[t].rating))
@@ -106,7 +144,4 @@ def build_rankings(
         )
         for i, t in enumerate(power_order)
     ]
-    names = {tid: school for tid, school in session.execute(select(Team.id, Team.school))}
-    fcs = division_teams(session, season, season, FCS).get(season, set())
-    rated_fcs = {t: ratings.teams[t] for t in fcs if t in ratings.teams}
-    return Rankings(season, as_of, ratings, benchmark, teams, names, rated_fcs)
+    return teams, benchmark

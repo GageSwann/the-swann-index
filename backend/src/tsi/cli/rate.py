@@ -25,7 +25,11 @@ def rate(
     names = live.rankings.names
     pred_rank = {
         t.team_id: i + 1
-        for i, t in enumerate(sorted(live.predictive, key=lambda t: -t.rating.rating))
+        for i, t in enumerate(
+            sorted(
+                (t for t in live.predictive if t.division == "fbs"), key=lambda t: -t.rating.rating
+            )
+        )
     }
     pred = {t.team_id: t.rating.rating for t in live.predictive}
     typer.echo(f"{live.season} as of {now:%Y-%m-%d %H:%M} UTC ({artifact.version})")

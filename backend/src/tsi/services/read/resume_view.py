@@ -140,7 +140,8 @@ def _opponent(g: GameRow, team_id: int, refs: dict[int, TeamRef]) -> TeamRef:
 def _opponent_rating(ctx: ResumeContext, opponent: TeamRef) -> tuple[float | None, int | None]:
     row = ctx.season.get(opponent.id)  # FBS, and FCS from 2022 (#109): its own rating
     if row is not None:
-        return row.rating, row.rank_power
+        # FCS ranks are within FCS; only FBS opponents show a rank for now (item 7).
+        return row.rating, row.rank_power if opponent.division == RATED_DIVISION else None
     if opponent.division == RATED_DIVISION:
         return 0.0, None  # an FBS team without games is rated average, as in the fit
     if ctx.pooled is None:

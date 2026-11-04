@@ -4,8 +4,9 @@ forecast (services/predict.py) -> TSI Book prices (book/pricing.py)
 -> consensus market line as of now (book/consensus.py) -> shrunk edges
 (book/edges.py) -> TSI Plays (book/picks.py). Read-only: nothing is written here.
 
-Only FBS-vs-FBS games can be picks (decision #108): the stack was trained on them, and
-games with a pooled non-FBS team were found biased ~25 points toward that team.
+FCS-vs-FCS games are on the board too (published, decision #111). Only FBS-vs-FBS games
+can be picks (decision #108): the stacks were trained on them, and FCS picks wait for an
+FCS Book backtest (#107).
 """
 
 from collections import defaultdict
@@ -60,7 +61,7 @@ def build_board(
 ) -> Board:
     season = current_season(now)
     window = SEASON_DAYS if week else days
-    upcoming = upcoming_games(session, now, now + timedelta(days=window))
+    upcoming = upcoming_games(session, now, now + timedelta(days=window), with_fcs=True)
     games = [
         g
         for g in upcoming

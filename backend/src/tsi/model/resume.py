@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from tsi.model.ratings.probability import win_prob
 
 BENCHMARK_RANK = 12
+FCS_BENCHMARK_RANK = 10  # FCS résumés vs. a typical #10 FCS team (owner, #91)
 # Log-loss fit of `season` margins on 2015-22 games where both teams had 4+ games.
 SEASON_SIGMA = 15.7
 

@@ -11,6 +11,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from tsi.divisions import FCS, RATED_DIVISION
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
 from tsi.model.config import ESTABLISHED_GAMES
@@ -27,6 +28,7 @@ class PredictiveTeam:
     rating: TeamRating
     games: int
     provisional: bool
+    division: str = RATED_DIVISION  # ranked within its division
 
 
 @dataclass(frozen=True)
@@ -54,7 +56,8 @@ def compute_live_ratings(
     elo_mean = sum(fbs_elo) / len(fbs_elo) if fbs_elo else 1500.0
 
     teams = []
-    for t in sorted(live.fbs):
+    division_of = {t: RATED_DIVISION for t in live.fbs} | {t: FCS for t in live.fcs}
+    for t in [*sorted(live.fbs), *sorted(live.fcs)]:
         signals = TeamSignals(
             ppd=components.ppd.teams.get(t, AVERAGE_TEAM) if components else AVERAGE_TEAM,
             success=(
@@ -67,7 +70,7 @@ def compute_live_ratings(
         )
         n = live.games_played(t)
         rating = predictive_rating(artifact.stack, stage_bucket(n), signals)
-        teams.append(PredictiveTeam(t, rating, n, n < ESTABLISHED_GAMES))
+        teams.append(PredictiveTeam(t, rating, n, n < ESTABLISHED_GAMES, division_of[t]))
 
     # FBS teams only: the typical stage of an FBS game sets the predictive home field.
     played = {t: n for t, n in (components.games if components else {}).items() if t in live.fbs}

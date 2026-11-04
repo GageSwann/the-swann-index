@@ -33,6 +33,7 @@ class LiveInputs:
     priors: dict[int, TeamRating]  # FBS team -> preseason prior
     elo: EloRun  # every completed game before `as_of`, all seasons
     fbs: set[int]
+    fcs: frozenset[int] = frozenset()  # individually rated FCS teams this season (#109)
     adjustments: tuple[StoredAdjustment, ...] = ()  # in effect at `as_of` (decision #104)
 
     def games_played(self, team_id: int) -> int:
@@ -56,6 +57,7 @@ def load_live_inputs(
         t: artifact.prior.predict(prior_inputs_for(season, t, {season - 1: last_final}, table))
         for t in fbs
     }
+    fcs: dict[int, set[int]] = {}
     if season >= FCS_STATS_FROM:  # FCS teams are rated individually (decision #109)
         fcs = division_teams(session, season - 1, season, FCS)
         priors |= artifact.fcs_prior.priors(
@@ -70,6 +72,7 @@ def load_live_inputs(
         priors=priors,
         elo=run_elo(games, artifact.elo),
         fbs=fbs,
+        fcs=frozenset(fcs.get(season, set())),
         adjustments=tuple(
             a for a in season_adjustments(session, season, open_at=as_of) if a.created_at <= as_of
         ),

@@ -199,6 +199,9 @@ def _runs(session) -> None:
                 _rating(week1.id, t, "season", rating - 1, off, de, 0, rp, rr, sor),
             ]
         )
+    # FCS teams are ranked within FCS (decision #111); FBS lists must never show them.
+    for t, rating, rank in ((5, -30.0, 1), (6, -35.0, 2)):
+        session.add(_rating(week2.id, t, "season", rating, -15.0, -15.0, 1, rank, rank, 0.5))
     week2.params = {**WEEK2_PARAMS, "sim": {"sims": 10_000}}
     for t, rating, *_ in WEEK2_RATINGS:
         make = PLAYOFF_ODDS[t]

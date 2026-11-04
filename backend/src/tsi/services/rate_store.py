@@ -12,7 +12,6 @@ from tsi.db.models import ModelRun, TeamRating
 from tsi.db.queries.calendar import calendar_week
 from tsi.db.upsert import upsert_rows
 from tsi.model.artifact import ModelArtifact
-from tsi.model.config import ESTABLISHED_GAMES
 from tsi.services.backtest_store import current_git_sha
 from tsi.services.rate import LiveRatings
 
@@ -35,6 +34,7 @@ def save_live_ratings(
                 "season_hfa": live.rankings.ratings.hfa,
                 "predictive_hfa": live.predictive_hfa,
                 "resume_benchmark": live.rankings.benchmark,
+                "fcs_resume_benchmark": live.rankings.fcs_benchmark,  # #10 FCS team (#91)
                 "resume_sigma": artifact.sigma_season,  # SOR win-probability spread
                 # Fallback `season` ratings for opponents without a stored row, for the
                 # team page's Résumé breakdown (decision #89): FCS = the pool before
@@ -49,7 +49,6 @@ def save_live_ratings(
         session.add(run)
         session.flush()
         upsert_rows(session, TeamRating, _season_rows(run.id, live))
-        upsert_rows(session, TeamRating, _fcs_season_rows(run.id, live))
         upsert_rows(session, TeamRating, _predictive_rows(run.id, live))
         return run.id
 
@@ -71,30 +70,7 @@ def _season_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:
             "sos": t.resume.sos,
             "rank_resume": t.rank_resume,
         }
-        for t in live.rankings.teams
-    ]
-
-
-def _fcs_season_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:
-    """Individually rated FCS teams (decision #109): stored without ranks for now."""
-    games = live.rankings.ratings.games
-    return [
-        {
-            "run_id": run_id,
-            "team_id": team_id,
-            "basis": "season",
-            "variant": "raw",
-            "rating": r.rating,
-            "off_rating": r.off,
-            "def_rating": r.defense,
-            "games_played": games.get(team_id, 0),
-            "provisional": games.get(team_id, 0) < ESTABLISHED_GAMES,
-            "rank_power": None,
-            "sor": None,
-            "sos": None,
-            "rank_resume": None,
-        }
-        for team_id, r in sorted(live.rankings.fcs.items())
+        for t in [*live.rankings.teams, *live.rankings.fcs_teams]  # ranks within division
     ]
 
 
@@ -104,7 +80,12 @@ def _fcs_fallback(live: LiveRatings) -> float:
 
 
 def _predictive_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:
-    ordered = sorted(live.predictive, key=lambda t: -t.rating.rating)
+    """Predictive ratings, ranked within each division."""
+    ordered = sorted(live.predictive, key=lambda t: (t.division, -t.rating.rating))
+    rank: dict[int, int] = {}
+    for division in {t.division for t in ordered}:
+        same = [t for t in ordered if t.division == division]
+        rank |= {t.team_id: i + 1 for i, t in enumerate(same)}
     return [
         {
             "run_id": run_id,
@@ -116,7 +97,7 @@ def _predictive_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:
             "def_rating": t.rating.defense,
             "games_played": t.games,
             "provisional": t.provisional,
-            "rank_power": i + 1,
+            "rank_power": rank[t.team_id],
         }
-        for i, t in enumerate(ordered)
+        for t in ordered
     ]

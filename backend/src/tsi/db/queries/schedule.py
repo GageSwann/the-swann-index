@@ -3,11 +3,11 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import or_, select
+from sqlalchemy import and_, literal, or_, select
 from sqlalchemy.orm import Session, aliased
 
 from tsi.db.models import Game, TeamSeason
-from tsi.divisions import RATED_DIVISION
+from tsi.divisions import FCS, FCS_STATS_FROM, RATED_DIVISION
 
 
 @dataclass(frozen=True)
@@ -24,8 +24,13 @@ class UpcomingGame:
     neutral: bool
 
 
-def upcoming_games(session: Session, after: datetime, until: datetime) -> list[UpcomingGame]:
-    """Games kicking off in (after, until] with at least one rated (FBS) team, by kickoff."""
+def upcoming_games(
+    session: Session, after: datetime, until: datetime, *, with_fcs: bool = False
+) -> list[UpcomingGame]:
+    """Games kicking off in (after, until] with at least one FBS team, by kickoff.
+
+    `with_fcs` adds FCS-vs-FCS games from FCS_STATS_FROM (both teams rated, #109).
+    """
     home_ts, away_ts = aliased(TeamSeason), aliased(TeamSeason)
     query = (
         select(
@@ -45,7 +50,16 @@ def upcoming_games(session: Session, after: datetime, until: datetime) -> list[U
         .where(
             Game.start_time > after,
             Game.start_time <= until,
-            or_(home_ts.division == RATED_DIVISION, away_ts.division == RATED_DIVISION),
+            or_(
+                home_ts.division == RATED_DIVISION,
+                away_ts.division == RATED_DIVISION,
+                and_(
+                    literal(with_fcs),
+                    home_ts.division == FCS,
+                    away_ts.division == FCS,
+                    Game.season >= FCS_STATS_FROM,
+                ),
+            ),
         )
         .order_by(Game.start_time, Game.id)
     )

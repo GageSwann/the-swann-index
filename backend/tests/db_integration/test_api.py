@@ -41,6 +41,7 @@ def test_power_and_resume_rankings(api: TestClient) -> None:
     power = ok(api, "/rankings")
     resume = ok(api, "/rankings?type=resume")
 
+    # FBS only: the seeded FCS teams Echo and Foxtrot have FCS ranks 1 and 2.
     assert [t["team"]["school"] for t in power["teams"]] == ["Alpha", "Delta", "Charlie", "Bravo"]
     assert [t["team"]["school"] for t in resume["teams"]] == ["Alpha", "Delta", "Bravo", "Charlie"]
     alpha = power["teams"][0]

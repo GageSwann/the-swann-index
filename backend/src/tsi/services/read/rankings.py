@@ -16,6 +16,7 @@ from tsi.db.queries.team_info import (
     stored_ratings,
     team_refs,
 )
+from tsi.divisions import RATED_DIVISION
 
 RankingType = Literal["power", "resume"]
 
@@ -72,6 +73,8 @@ def rankings(
     season_rows = [r for r in rows if r.basis == "season"]
     predictive = {r.team_id: r for r in rows if r.basis == "predictive"}
     teams = team_refs(session, season, [r.team_id for r in season_rows])
+    # One division per list; FBS until the API's division switch (Phase 10 item 6).
+    season_rows = [r for r in season_rows if teams[r.team_id].division == RATED_DIVISION]
     record = records(session, season, run.run_at)
     sims = stored_sims(session, run.id)
     key = "rank_power" if ranking == "power" else "rank_resume"

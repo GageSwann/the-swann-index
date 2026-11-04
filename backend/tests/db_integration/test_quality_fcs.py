@@ -59,3 +59,26 @@ def test_flags_fcs_games_without_stats_from_2022_only(sessions) -> None:
         "10) [no stats]",
         "12) [one side]",
     ]
+
+
+@pytest.mark.db
+def test_board_query_adds_fcs_vs_fcs_games_only_when_asked(sessions) -> None:
+    from datetime import timedelta
+
+    from tsi.db.queries.schedule import upcoming_games
+
+    kickoff = datetime(2026, 11, 7, 18, tzinfo=UTC)
+    with sessions.begin() as s:
+        s.add_all([Team(id=t, school=f"T{t}", slug=f"t{t}") for t in TEAMS])
+        s.flush()
+        s.add_all(TeamSeason(team_id=t, season=2026, division=d) for t, d in TEAMS.items())
+        for gid, home, away in ((20, 1, 2), (21, 2, 3), (22, 2, 4)):  # FBS-FCS, FCS-FCS, FCS-II
+            s.add(Game(id=gid, season=2026, week=11, season_type="regular", start_time=kickoff,
+                       home_id=home, away_id=away))  # fmt: skip
+
+    with sessions() as s:
+        window = (kickoff - timedelta(days=1), kickoff + timedelta(days=1))
+        plain = [g.id for g in upcoming_games(s, *window)]
+        board = [g.id for g in upcoming_games(s, *window, with_fcs=True)]
+
+    assert (plain, board) == ([20], [20, 21])

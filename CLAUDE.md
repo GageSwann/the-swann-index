@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105). Next: Phase 10 (FCS expansion), scoped in the roadmap (#107); items 1 (data readiness), 2 (model experiment, #109) and 3 (model **v1.3** built: FCS rated individually from 2022, #110) done.
+- **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105). Next: Phase 10 (FCS expansion), scoped in the roadmap (#107); items 1 (data readiness), 2 (model experiment, #109) 3 (model **v1.3** built: FCS rated individually from 2022, #110) and 4 (nightly run ranks FCS within its division and publishes FCS games without picks, #111) done. Next: FCS Book backtest.
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
@@ -22,7 +22,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#110 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#111 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -50,7 +50,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Season sim (#94):** remaining games use the published forecasts; each sim draws a per-team shift N(0, τ), τ = 7.15 − 0.114 × week, held all season, game noise √(σ² − 2τ²) (single-game probabilities unchanged). Fixed seed.
 - **Manual adjustments (#103, #104):** offense/defense points per game on a team's games in a window, applied after the model to the game forecast only. Adjusted games publish `raw` + official `adjusted` rows at the same `published_at` (picks on the adjusted one); Book and season sim use adjusted, rankings/ratings and the matchup tool stay raw.
 - **FCS (v1.3, #109, #110):** from 2022 (`FCS_STATS_FROM`) FCS teams are rated individually: `rated_id(team, division, season)` and `RatingSet.get(team, division, season)` take the season; each component fit adds unpenalized FCS offense/defense level columns (FCS teams shrink to the FCS mean) and centers on FBS only; FCS priors = last season's rating regressed to the FCS mean (`model/fcs_prior.py`, slope in the artifact). D-II and below, and FCS before 2022, stay pooled. The stacks still learn from FBS-vs-FBS games only.
-- **Résumé (#24):** strength of record vs. a typical **#12** team with opponents' current ratings (dynamic SOS).
+- **Résumé (#24):** strength of record vs. a typical **#12** team with opponents' current ratings (dynamic SOS). FCS teams: vs. a typical **#10 FCS** team; ranks are always within a division (`rank_division`, #111).
 - Tune on 2015–2022, validate on 2023–2025 (`backtest/splits.py`). 2020 treated normally (#26).
 - **New FBS teams in 2026:** North Dakota State (Mountain West) and Sacramento State (MAC) are FBS this season and rated individually; don't mistake them for pooled FCS teams.
 
