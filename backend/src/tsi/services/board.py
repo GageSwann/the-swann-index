@@ -3,6 +3,9 @@
 forecast (services/predict.py) -> TSI Book prices (book/pricing.py)
 -> consensus market line as of now (book/consensus.py) -> shrunk edges
 (book/edges.py) -> TSI Plays (book/picks.py). Read-only: nothing is written here.
+
+Only FBS-vs-FBS games can be picks (decision #108): the stack was trained on them, and
+games with a pooled non-FBS team were found biased ~25 points toward that team.
 """
 
 from collections import defaultdict
@@ -17,8 +20,9 @@ from tsi.book.edges import GameEdges, game_edges
 from tsi.book.picks import PickDecision, PickRules, choose_picks
 from tsi.book.pricing import GameMarkets, price_game
 from tsi.db.queries.market import line_snapshots
-from tsi.db.queries.schedule import upcoming_games
+from tsi.db.queries.schedule import UpcomingGame, upcoming_games
 from tsi.db.queries.teams import team_names
+from tsi.divisions import RATED_DIVISION
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
 from tsi.services.live_inputs import LiveInputs, load_live_inputs
@@ -81,9 +85,14 @@ def build_board(
                 price_game(dist, book),
                 market,
                 edges,
-                choose_picks(edges, rules),
+                choose_picks(edges, rules) if pickable(forecast.game) else [],
                 raw_markets,
             )
         )
     names = team_names(session, {t for g in games for t in (g.home_id, g.away_id)})
     return Board(board, names)
+
+
+def pickable(game: UpcomingGame) -> bool:
+    """Picks only on games between two rated (FBS) teams."""
+    return game.home_div == RATED_DIVISION and game.away_div == RATED_DIVISION
