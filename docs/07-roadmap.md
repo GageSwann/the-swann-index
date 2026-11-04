@@ -132,12 +132,18 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 ✅ **Phase 9 complete (2026-11-03):** adjustments recorded with `tsi adjust`, applied to predictions, the Book and the season sim (rankings stay raw), shown with the raw numbers, and judged on the Model page.
 
 ## Phase 10: FCS expansion
-- [ ] Backfill FCS games/stats
-- [ ] Individual FCS ratings (replace pooled FCS team), cross-division linking
-- [ ] FCS rankings view + division filter across the site
+Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** every FCS game since 2014 is loaded; FCS-vs-FCS advanced stats (drives, plays, success rate: complete) and betting lines exist from **2022** on (~500–700 games a season). Before 2022 only scores exist, so FCS stays pooled for 2014–21. FCS priors: recruiting yes, talent only 2015–23, returning production none.
+- [ ] **Data readiness:** `tsi check` rule for FCS-vs-FCS games without stats (2022+); document FCS coverage in doc 03
+- [ ] **Model experiment (scratchpad first):** individual FCS ratings from 2022 with an FCS division level (teams shrink toward the FCS mean, not the FBS mean), pooled before 2022; FCS priors from last season's rating + recruiting (division mean when missing). Adopt only if FBS train doesn't get worse and FBS validation stays ≤ 12.40; also report FCS-game MAE vs. the closing line (2023–25) and FBS-vs-FCS games
+- [ ] **Build it in:** ratings, priors and stack features for FCS; walk-forward backtest saved; `tsi model fit` (v1.3); FBS Book backtest unchanged; live-vs-backtest parity check
+- [ ] **Nightly run:** store FCS `team_ratings` (no schema change), Power and Résumé ranks within each division (FCS Résumé vs. a typical **#10 FCS team**, #91); publish predictions for FCS games with no picks; the season sim stays FBS
+- [ ] **FCS Book backtest** (2023–25, median opener, CLV): FCS picks are turned on only if it earns it, as a separate owner decision
+- [ ] **API:** `division` (fbs default / fcs / all) on rankings and the team list; FCS games on the week board; FCS team profiles; cross-division matchups
+- [ ] **Site:** FBS / FCS / All toggle on rankings (FBS default; ranks within division, "All" on one scale); division filter on the week board and team list; FCS team pages with every section (the projection card shows the record and says FCS projections come later); the Playoff page stays FBS
 - [ ] Résumé breakdown (#89, #90) for the expansion: opponents use their own stored rating whenever one exists (pooled rating only as a fallback, `services/read/resume_view.py`); FCS teams get the Résumé card; FCS résumés are measured against a typical **#10 FCS team** (owner, #91); the "SOR rebuilt = stored SOR" check must still hold for every rated team
 
 ## Phase 11: Stretch
+- [ ] FCS season simulation: projected wins, conference titles, the 24-team FCS playoff (moved from Phase 10, #107)
 - [ ] Monte Carlo score sim with key numbers & push probabilities
 - [ ] First-half markets
 - [ ] Live odds + line movement (The Odds API)
