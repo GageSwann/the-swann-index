@@ -124,8 +124,9 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     division = refs[team_id].division or ""
     rated = rated_individually(division, season)  # FBS, and FCS from 2022 (#109)
     fbs = division == RATED_DIVISION
-    # The Résumé breakdown is FBS-only until FCS gets its own benchmark (Phase 10 item 8).
-    ctx = resume_context(session, latest) if latest and fbs else None
+    # Résumé breakdown vs. the team's own division benchmark (#12 FBS, #10 FCS; #114).
+    run_ctx = resume_context(session, latest) if latest and rated else None
+    ctx = run_ctx.for_division(division) if run_ctx else None
     sim = stored_sims(session, latest.id, team_id).get(team_id) if latest and fbs else None
     return TeamProfile(
         team=refs[team_id],

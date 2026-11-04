@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105). Next: Phase 10 (FCS expansion), scoped in the roadmap (#107); items 1 (data readiness), 2 (model experiment, #109) 3 (model **v1.3** built: FCS rated individually from 2022, #110) and 4 (nightly run ranks FCS within its division and publishes FCS games without picks, #111) 5 (FCS Book backtest: not earned yet, picks stay off, #112) and 6 (API `division` = fbs/fcs/all on rankings, teams, week board, #113) done. Next: the site.
+- **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105). Next: Phase 10 (FCS expansion), scoped in the roadmap (#107); items 1 (data readiness), 2 (model experiment, #109) 3 (model **v1.3** built: FCS rated individually from 2022, #110) and 4 (nightly run ranks FCS within its division and publishes FCS games without picks, #111) 5 (FCS Book backtest: not earned yet, picks stay off, #112) 6 (API `division` = fbs/fcs/all on rankings, teams, week board, #113) and 8 (FCS Résumé breakdown vs. the #10 FCS team, #114) done. Next: the site (item 7).
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
@@ -22,7 +22,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#113 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#114 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.

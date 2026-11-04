@@ -1,14 +1,15 @@
-"""The Résumé breakdown on a team page: each game's difficulty for a typical #12 team.
+"""The Résumé breakdown on a team page: each game's difficulty for the benchmark team.
 
-Mirrors the nightly ranking (`services/rate.py` -> `compute_rankings.py`) exactly
-(decision #89): opponents' ratings are their CURRENT `season` ratings from the shown
-rating run (FBS teams individually, non-FBS teams pooled), home field is that run's
-`season_hfa`, the win-probability spread is the production model's `sigma_season`, and
-only decided games kicked off before the run count. Recomputing SOR from these games
-reproduces the stored value.
+The benchmark is a typical #12 FBS team, or a typical #10 FCS team for FCS teams (owner,
+#91; decision #114). Mirrors the nightly ranking (`services/rate.py` ->
+`compute_rankings.py`) exactly (decision #89): opponents' ratings are their CURRENT
+`season` ratings from the shown rating run (their own stored rating whenever they have
+one, else the pooled rating), home field is that run's `season_hfa`, the win-probability
+spread is the production model's `sigma_season`, and only decided games kicked off before
+the run count. Recomputing SOR from these games reproduces the stored value.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from functools import lru_cache
 from typing import Any
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 from tsi.db.queries.games import GameRow
 from tsi.db.queries.runs import RunInfo, run_params
 from tsi.db.queries.team_info import StoredRating, TeamRef, stored_ratings
-from tsi.divisions import RATED_DIVISION
+from tsi.divisions import FCS, RATED_DIVISION
 from tsi.model.artifact import load_artifact
 from tsi.model.ratings.probability import win_prob
 from tsi.model.resume import ScheduleGame, benchmark_rating, strength_of_record
@@ -26,30 +27,40 @@ from tsi.model.resume import ScheduleGame, benchmark_rating, strength_of_record
 
 @dataclass(frozen=True)
 class ResumeSummary:
-    benchmark_rating: float  # the #12 team's `season` rating in the shown run
+    benchmark_rating: float  # the benchmark team's `season` rating (#12 FBS / #10 FCS)
     games: int  # decided games that count (kicked off before the run)
-    sor: float | None  # stored Résumé SOR: P(a #12 team wins at least as many); lower = better
-    # What a #12 team would expect from those games; None while any counted game's
+    sor: float | None  # stored SOR: P(the benchmark wins at least as many); lower = better
+    # What the benchmark team would expect from those games; None while any counted game's
     # difficulty is unknown (runs saved before pooled non-FBS ratings were, #89).
     benchmark_expected_wins: float | None
 
 
 @dataclass(frozen=True)
 class GameDifficulty:
-    opponent_rating: float | None  # current `season` rating (pooled for non-FBS)
-    opponent_rank: int | None  # current Power rank (FBS only)
-    benchmark_win_prob: float | None  # P(a typical #12 team wins this game)
+    opponent_rating: float | None  # current `season` rating (pooled if it has none)
+    opponent_rank: int | None  # current Power rank, only when in the team's own division
+    benchmark_win_prob: float | None  # P(the benchmark team wins this game)
     in_resume: bool  # decided and kicked off before the shown run
 
 
 @dataclass(frozen=True)
 class ResumeContext:
     run_at: datetime
-    benchmark: float
+    benchmark: float  # of `division`
     hfa: float | None
     sigma: float  # win-probability spread used for SOR
     season: dict[int, StoredRating]  # team id -> `season` rating in the run
     pooled: dict[str, float] | None  # "fcs" / "lower" -> pooled rating
+    division: str = RATED_DIVISION  # whose Résumé: sets the benchmark and shown ranks
+    fcs_benchmark: float | None = None  # #10 FCS team (#91), in runs from 2026-11-04
+
+    def for_division(self, division: str) -> "ResumeContext | None":
+        """The context for a team of `division`; None when that run has no benchmark for it."""
+        if division == RATED_DIVISION:
+            return self
+        if division == FCS and self.fcs_benchmark is not None:
+            return replace(self, benchmark=self.fcs_benchmark, division=FCS)
+        return None
 
 
 def resume_context(session: Session, run: RunInfo) -> ResumeContext:
@@ -68,6 +79,7 @@ def resume_context(session: Session, run: RunInfo) -> ResumeContext:
         sigma=float(params.get("resume_sigma") or _artifact_sigma()),
         season=season,
         pooled=params.get("pooled_season_ratings"),  # saved from 2026-10-28 (#89)
+        fcs_benchmark=params.get("fcs_resume_benchmark"),  # saved from 2026-11-04 (#111)
     )
 
 
@@ -140,8 +152,8 @@ def _opponent(g: GameRow, team_id: int, refs: dict[int, TeamRef]) -> TeamRef:
 def _opponent_rating(ctx: ResumeContext, opponent: TeamRef) -> tuple[float | None, int | None]:
     row = ctx.season.get(opponent.id)  # FBS, and FCS from 2022 (#109): its own rating
     if row is not None:
-        # FCS ranks are within FCS; only FBS opponents show a rank for now (item 7).
-        return row.rating, row.rank_power if opponent.division == RATED_DIVISION else None
+        # Ranks are within a division, so only an opponent from the team's own shows one.
+        return row.rating, row.rank_power if opponent.division == ctx.division else None
     if opponent.division == RATED_DIVISION:
         return 0.0, None  # an FBS team without games is rated average, as in the fit
     if ctx.pooled is None:

@@ -46,6 +46,7 @@ UPCOMING_KICKOFF = datetime(2026, 10, 24, 19, 0, tzinfo=UTC)  # Bravo-Delta
 WEEK2_PARAMS = {
     "season_hfa": 3.0,
     "resume_benchmark": 6.0,
+    "fcs_resume_benchmark": -25.0,  # the #10 FCS team (#91, #114)
     "resume_sigma": 15.0,
     "pooled_season_ratings": {"fcs": -20.0, "lower": -30.0},
 }

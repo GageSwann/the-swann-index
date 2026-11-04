@@ -235,6 +235,12 @@ def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
 
     assert (echo["ratings"]["rating"], echo["ratings"]["rank_power"]) == (-30.0, 1)
     assert len(echo["history"]) == 1  # FCS teams are stored from the week-2 run on
-    assert echo["resume"] is None and echo["projection"] is None  # Résumé: Phase 10 item 8
+    assert echo["projection"] is None  # the season sim is FBS only
+    # Résumé vs. the #10 FCS team (#114); Echo-Foxtrot is upcoming, so nothing counts yet.
+    assert (echo["resume"]["benchmark_rating"], echo["resume"]["games"]) == (-25.0, 0)
+    (foxtrot_game,) = echo["schedule"]
+    assert (foxtrot_game["opponent_rating"], foxtrot_game["opponent_rank"]) == (-35.0, 2)
+    p = win_prob(-25.0 - (-35.0) + 3.0, 15.0)  # Echo at home, #10 FCS benchmark
+    assert foxtrot_game["benchmark_win_prob"] == pytest.approx(p)
     m = ok(api, "/matchup?home=alpha&away=echo")
     assert (m["home"]["division"], m["away"]["division"]) == ("fbs", "fcs")

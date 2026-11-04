@@ -1,5 +1,6 @@
 """The team page's Résumé breakdown: every rated team gets a summary (decision #89)."""
 
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -7,7 +8,12 @@ import pytest
 from tsi.db.queries.games import GameRow
 from tsi.db.queries.team_info import StoredRating, TeamRef
 from tsi.model.ratings.probability import win_prob
-from tsi.services.read.resume_view import ResumeContext, recomputed_sor, resume_summary
+from tsi.services.read.resume_view import (
+    ResumeContext,
+    game_difficulty,
+    recomputed_sor,
+    resume_summary,
+)
 
 RUN_AT = datetime(2026, 10, 25, 12, tzinfo=UTC)
 
@@ -77,3 +83,17 @@ def test_an_fcs_opponent_with_its_own_stored_rating_uses_it() -> None:
     assert resume_summary(ctx, GAMES, 1, REFS).benchmark_expected_wins == pytest.approx(
         p_fbs + p_fcs
     )
+
+
+def test_each_division_uses_its_own_benchmark_and_ranks() -> None:
+    ctx = replace(context({"fcs": -20.0, "lower": -30.0}), fcs_benchmark=-25.0)
+    ctx.season[3] = StoredRating(3, "season", -31.0, 0.0, 0.0, 6, False, 4, 4, None, None)
+
+    fcs = ctx.for_division("fcs")
+    assert (fcs.benchmark, fcs.division) == (-25.0, "fcs")
+    assert ctx.for_division("fbs") is ctx
+    assert context(None).for_division("fcs") is None  # runs before FCS benchmarks were saved
+    # Team 3 is FCS #4: shown to an FCS team, hidden from an FBS one.
+    game_vs_3 = GAMES[1]
+    assert game_difficulty(fcs, game_vs_3, 1, ref(3, "fcs")).opponent_rank == 4
+    assert game_difficulty(ctx, game_vs_3, 1, ref(3, "fcs")).opponent_rank is None
