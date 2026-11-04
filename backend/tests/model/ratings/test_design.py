@@ -37,3 +37,25 @@ def test_team_index_is_sorted_rated_ids() -> None:
 
     assert design.team_index == {FCS_POOL_ID: 0, 9: 1}
     assert list(design.penalized) == [False, False, True, True, True, True]
+
+
+def test_fcs_level_columns_match_the_dense_design() -> None:
+    rng = np.random.default_rng(5)
+    teams = np.array([5, 9, 12, 700, 701])  # 700 and 701: individually rated FCS teams
+    team, opp = rng.choice(teams, 60), rng.choice(teams, 60)
+    keep = team != opp
+    matchups = Matchups(
+        team[keep], opp[keep], rng.choice([-1.0, 0.0, 1.0], keep.sum()), frozenset({700, 701})
+    )
+    y, w = rng.normal(size=keep.sum()), rng.uniform(0.5, 2.0, keep.sum())
+
+    design = build_design(matchups)
+    gram, rhs = design.normal_equations(y, w)
+
+    rows = int(keep.sum())
+    x = np.hstack([dense(design, rows), np.zeros((rows, 2))])
+    x[:, -2] = design.fcs[design.off]  # offense is FCS: + L_off
+    x[:, -1] = -design.fcs[design.opp].astype(float)  # opponent is FCS: - L_def
+    assert gram == pytest.approx(x.T @ (x * w[:, None]))
+    assert rhs == pytest.approx(x.T @ (w * y))
+    assert list(design.penalized[-2:]) == [False, False]

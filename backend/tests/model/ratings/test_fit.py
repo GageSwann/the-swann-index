@@ -27,6 +27,7 @@ class Row:
     start_time: None = None
     team_div: str = "fbs"
     opp_div: str = "fbs"
+    season: int = 2021  # before FCS teams were rated individually (FCS_STATS_FROM)
 
 
 def game(home, away, home_pts, away_pts, neutral=False, **kw):
@@ -94,7 +95,7 @@ def test_missing_epa_falls_back_to_points_per_drive() -> None:
 
 def test_no_games_means_everyone_is_average() -> None:
     assert fit_ratings([]) is AVERAGE
-    assert AVERAGE.get(123, "fbs").rating == 0
+    assert AVERAGE.get(123, "fbs", 2026).rating == 0
 
 
 def test_all_neutral_site_games_fit_without_home_field() -> None:
@@ -142,3 +143,44 @@ def test_fit_sigma_recovers_the_true_spread() -> None:
     actual = [p + rng.gauss(0, 15) for p in preds]
 
     assert fit_sigma(preds, actual) == pytest.approx(15, abs=1.0)
+
+
+def _fbs_fcs_season(season: int) -> list[Row]:
+    """FBS 1-4 play each other; FCS 700-703 play each other and FBS teams 1-2 (FCS ~20 worse)."""
+    fbs = {t: s for t, s in zip((1, 2, 3, 4), (6, 2, -2, -6), strict=True)}
+    fcs = {t: s for t, s in zip((700, 701, 702, 703), (-16, -19, -21, -24), strict=True)}
+    rows = []
+    for group, div in ((fbs, "fbs"), (fcs, "fcs")):
+        for a in group:
+            for b in group:
+                if a < b:
+                    for home, away in ((a, b), (b, a)):
+                        hp = round(24 + (group[home] - group[away]) / 2 + 1.5)
+                        ap = round(24 + (group[away] - group[home]) / 2 - 1.5)
+                        rows += game(home, away, hp, ap, team_div=div, opp_div=div, season=season)
+    for fbs_team, fcs_team in ((1, 700), (2, 701), (1, 702), (2, 703)):
+        gap = fbs[fbs_team] - fcs[fcs_team]
+        rows += [
+            Row(fbs_team, fcs_team, 1, round(24 + gap / 2 + 1.5), opp_div="fcs", season=season),
+            Row(fcs_team, fbs_team, -1, round(24 - gap / 2 - 1.5), team_div="fcs", season=season),
+        ]
+    return rows
+
+
+def test_fcs_teams_are_rated_individually_from_2022_around_an_fcs_level() -> None:
+    ratings = fit_ratings(_fbs_fcs_season(2024), RatingParams(lam=2.0))
+
+    fcs = [ratings.teams[t].rating for t in (700, 701, 702, 703)]
+    assert FCS_POOL_ID not in ratings.teams
+    assert fcs == sorted(fcs, reverse=True)  # their own order survives
+    assert sum(fcs) / 4 < -10  # shrunk toward the FCS level, not the FBS average (0)
+    fbs = [ratings.teams[t].rating for t in (1, 2, 3, 4)]
+    assert sum(fbs) == pytest.approx(0, abs=1e-6)  # centered on FBS only
+    assert ratings.get(700, "fcs", 2024) == ratings.teams[700]
+
+
+def test_fcs_teams_stay_pooled_before_2022() -> None:
+    ratings = fit_ratings(_fbs_fcs_season(2021), RatingParams(lam=2.0))
+
+    assert FCS_POOL_ID in ratings.teams and 700 not in ratings.teams
+    assert ratings.get(700, "fcs", 2021) == ratings.teams[FCS_POOL_ID]

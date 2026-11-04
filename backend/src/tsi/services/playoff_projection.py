@@ -58,7 +58,8 @@ def project_playoff(
     benchmark, hfa = rankings.benchmark, rankings.ratings.hfa
 
     def p_vs(opp: int, div: str, site: int) -> float:
-        return win_prob(benchmark - rankings.ratings.get(opp, div).rating + site * hfa, sigma)
+        rating = rankings.ratings.get(opp, div, rankings.season).rating
+        return win_prob(benchmark - rating + site * hfa, sigma)
 
     # Same games as the stored SOR (services/compute_rankings.py): ties don't count.
     games = [g for g in inputs.played if g.margin != 0] + list(inputs.remaining)
@@ -72,7 +73,9 @@ def project_playoff(
                 probs[index[team]].append(p_vs(opp, opp_div, site))
     tables = [sor_table(p) for p in probs]
 
-    season_rating = np.array([rankings.ratings.get(t, "fbs").rating for t in inputs.fbs])
+    season_rating = np.array(
+        [rankings.ratings.get(t, "fbs", rankings.season).rating for t in inputs.fbs]
+    )
     neutral_p = np.array([win_prob(benchmark - r, sigma) for r in season_rating])
     title_p = np.full(inputs.wins.shape, np.nan)  # benchmark's chance in a title game
     rows = np.arange(inputs.wins.shape[0])

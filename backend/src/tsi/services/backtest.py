@@ -16,6 +16,7 @@ from tsi.backtest.splits import TRAIN, VALIDATE
 from tsi.backtest.stacking import stacked_picks
 from tsi.backtest.totals_eval import summarize_totals
 from tsi.backtest.walk_forward import Pick, walk_forward
+from tsi.divisions import FCS_STATS_FROM, RATED_DIVISION
 from tsi.model.config import ModelConfig
 from tsi.model.distribution_fit import fit_distribution
 from tsi.model.ratings.probability import fit_sigma, win_prob
@@ -37,14 +38,22 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
         config.rating,
     )
     priors = {
-        s: setup.priors_for(s, data.fbs.get(s, set()), data.prior_table)
+        s: setup.season_priors(s, data.fbs, data.fcs, data.prior_table)
         for s in range(TRAIN[0], data.through_season + 1)
     }
     elo_margins = {gid: pick.margin for gid, pick in data.elo.items()}
     picks = walk_forward(
-        data.scored_games, data.rows, priors, config.rating, elo_margins, setup.final_components
+        [*data.scored_games, *data.fcs_games],
+        data.rows,
+        priors,
+        config.rating,
+        elo_margins,
+        setup.final_components,
     )
-    picks = stacked_picks(picks, config.stack_lam)
+    # The stacks learn from FBS-vs-FBS games only; FCS games are predicted, not fit.
+    picks = stacked_picks(picks, config.stack_lam, fit_on=lambda p: p.game.fbs_vs_fbs)
+    fcs_picks = [p for p in picks if not p.game.fbs_vs_fbs]
+    picks = [p for p in picks if p.game.fbs_vs_fbs]
     sigmas = {
         "season": _sigma(picks, lambda p: p.season_margin),
         "pred": _sigma(picks, lambda p: p.predictive_margin),
@@ -106,6 +115,20 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
         [p.predictive_total for p in train],
         [p.game.home_points + p.game.away_points for p in train],
     )
+    fcs_rows = [
+        row(
+            f"{label}, {period}",
+            [p for p in fcs_picks if keep(p) and first <= p.game.season <= last],
+        )
+        for label, keep in (
+            ("FCS vs FCS", lambda p: RATED_DIVISION not in (p.game.home_div, p.game.away_div)),
+            ("FBS vs FCS", lambda p: RATED_DIVISION in (p.game.home_div, p.game.away_div)),
+        )
+        for period, (first, last) in (
+            (f"train {FCS_STATS_FROM}", (FCS_STATS_FROM, TRAIN[1])),
+            (f"validate {VALIDATE[0]}-{VALIDATE[1]}", VALIDATE),
+        )
+    ]
     return BacktestResult(
         config,
         distribution,
@@ -121,6 +144,7 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
             {g: o.total for g, o in data.opening.items()},
         ),
         picks,
+        [r for r in fcs_rows if r.predictive.games],
     )
 
 

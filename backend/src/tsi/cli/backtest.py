@@ -46,6 +46,7 @@ def run(
         run_id = save_backtest_run(sessions, result, last, tables) if save else None
 
     _print_summary(result)
+    _print_fcs(result)
     _print_calibration(result)
     _print_ats(result)
     _print_totals(result)
@@ -73,6 +74,19 @@ def _print_summary(result: BacktestResult) -> None:
             f"{s.market_mae:>5.2f}  {100 * p.su_accuracy:>5.1f} {100 * e.su_accuracy:>5.1f} "
             f"{100 * p.market_su_accuracy:>5.1f}  {p.brier:>5.3f}",
             bold=not s.label[:1].isdigit(),
+        )
+
+
+def _print_fcs(result: BacktestResult) -> None:
+    if not result.fcs_rows:
+        return
+    typer.echo("\nGames with an FCS team (report only; the stacks learn from FBS games)")
+    typer.echo(f"{'':<30}{'games':>6}  {'Pred':>5} {'Elo':>5} {'Vegas':>5}  {'Pred%':>5}")
+    for r in result.fcs_rows:
+        p, e = r.predictive, r.elo
+        typer.echo(
+            f"{p.label:<30}{p.games:>6}  {p.mae:>5.2f} {e.mae:>5.2f} {p.market_mae:>5.2f}  "
+            f"{100 * p.su_accuracy:>5.1f}"
         )
 
 

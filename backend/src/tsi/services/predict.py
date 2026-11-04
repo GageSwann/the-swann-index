@@ -41,7 +41,11 @@ def forecast_games(
 
 
 def forecast_game(g: UpcomingGame, live: LiveInputs, artifact: ModelArtifact) -> GameForecast:
-    side = GameSide(rated_id(g.home_id, g.home_div), rated_id(g.away_id, g.away_div), g.neutral)
+    side = GameSide(
+        rated_id(g.home_id, g.home_div, g.season),
+        rated_id(g.away_id, g.away_div, g.season),
+        g.neutral,
+    )
     bucket = stage_bucket(min(live.games_played(g.home_id), live.games_played(g.away_id)))
     elo_margin = live.elo.margin(
         artifact.elo, g.season, (g.home_id, g.home_div), (g.away_id, g.away_div), g.neutral

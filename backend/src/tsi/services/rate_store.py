@@ -12,6 +12,7 @@ from tsi.db.models import ModelRun, TeamRating
 from tsi.db.queries.calendar import calendar_week
 from tsi.db.upsert import upsert_rows
 from tsi.model.artifact import ModelArtifact
+from tsi.model.config import ESTABLISHED_GAMES
 from tsi.services.backtest_store import current_git_sha
 from tsi.services.rate import LiveRatings
 
@@ -35,11 +36,12 @@ def save_live_ratings(
                 "predictive_hfa": live.predictive_hfa,
                 "resume_benchmark": live.rankings.benchmark,
                 "resume_sigma": artifact.sigma_season,  # SOR win-probability spread
-                # Non-FBS opponents' pooled `season` ratings, for the team page's Résumé
-                # breakdown (decision #89).
+                # Fallback `season` ratings for opponents without a stored row, for the
+                # team page's Résumé breakdown (decision #89): FCS = the pool before
+                # 2022, the average FCS team since (#109); everything below FCS pooled.
                 "pooled_season_ratings": {
-                    "fcs": live.rankings.ratings.get(0, "fcs").rating,
-                    "lower": live.rankings.ratings.get(0, "ii").rating,
+                    "fcs": _fcs_fallback(live),
+                    "lower": live.rankings.ratings.get(0, "ii", live.season).rating,
                 },
             },
             git_sha=current_git_sha(),
@@ -47,6 +49,7 @@ def save_live_ratings(
         session.add(run)
         session.flush()
         upsert_rows(session, TeamRating, _season_rows(run.id, live))
+        upsert_rows(session, TeamRating, _fcs_season_rows(run.id, live))
         upsert_rows(session, TeamRating, _predictive_rows(run.id, live))
         return run.id
 
@@ -70,6 +73,34 @@ def _season_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:
         }
         for t in live.rankings.teams
     ]
+
+
+def _fcs_season_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:
+    """Individually rated FCS teams (decision #109): stored without ranks for now."""
+    games = live.rankings.ratings.games
+    return [
+        {
+            "run_id": run_id,
+            "team_id": team_id,
+            "basis": "season",
+            "variant": "raw",
+            "rating": r.rating,
+            "off_rating": r.off,
+            "def_rating": r.defense,
+            "games_played": games.get(team_id, 0),
+            "provisional": games.get(team_id, 0) < ESTABLISHED_GAMES,
+            "rank_power": None,
+            "sor": None,
+            "sos": None,
+            "rank_resume": None,
+        }
+        for team_id, r in sorted(live.rankings.fcs.items())
+    ]
+
+
+def _fcs_fallback(live: LiveRatings) -> float:
+    average = live.rankings.fcs_average
+    return live.rankings.ratings.get(0, "fcs", live.season).rating if average is None else average
 
 
 def _predictive_rows(run_id: int, live: LiveRatings) -> list[dict[str, Any]]:

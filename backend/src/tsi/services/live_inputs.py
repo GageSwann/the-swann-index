@@ -12,9 +12,10 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from tsi.db.queries.adjustments import StoredAdjustment, season_adjustments
-from tsi.db.queries.priors import fbs_teams, prior_inputs
+from tsi.db.queries.priors import division_teams, fbs_teams, prior_inputs
 from tsi.db.queries.results import completed_games
 from tsi.db.queries.stats import offense_rows
+from tsi.divisions import FCS, FCS_STATS_FROM
 from tsi.model.artifact import ModelArtifact
 from tsi.model.elo import EloRun, run_elo
 from tsi.model.ratings.components import Components, fit_components
@@ -55,6 +56,11 @@ def load_live_inputs(
         t: artifact.prior.predict(prior_inputs_for(season, t, {season - 1: last_final}, table))
         for t in fbs
     }
+    if season >= FCS_STATS_FROM:  # FCS teams are rated individually (decision #109)
+        fcs = division_teams(session, season - 1, season, FCS)
+        priors |= artifact.fcs_prior.priors(
+            fcs.get(season, set()), last_final, fcs.get(season - 1, set())
+        )
     games = [g for g in completed_games(session, season) if g.start_time and g.start_time < as_of]
     return LiveInputs(
         season=season,

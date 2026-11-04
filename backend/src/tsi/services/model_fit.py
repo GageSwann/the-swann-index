@@ -44,7 +44,7 @@ def fit_production_model(
         config.rating,
     )
     priors = {
-        s: setup.priors_for(s, data.fbs.get(s, set()), data.prior_table)
+        s: setup.season_priors(s, data.fbs, data.fcs, data.prior_table)
         for s in range(seasons[0], seasons[1] + 1)
     }
     picks = walk_forward(
@@ -76,6 +76,7 @@ def fit_production_model(
         stack=fit_margin_stack(picks, config.stack_lam),
         totals=fit_total_stack(picks, config.stack_lam),
         prior=setup.model,
+        fcs_prior=setup.fcs_prior,
         distribution=distribution,
         edge_shrink=fit_edge_shrink(
             spread_samples(held_out, distribution, {g: o.spread for g, o in data.opening.items()}),

@@ -69,7 +69,8 @@ def compute_live_ratings(
         rating = predictive_rating(artifact.stack, stage_bucket(n), signals)
         teams.append(PredictiveTeam(t, rating, n, n < ESTABLISHED_GAMES))
 
-    played = components.games if components else {}
+    # FBS teams only: the typical stage of an FBS game sets the predictive home field.
+    played = {t: n for t, n in (components.games if components else {}).items() if t in live.fbs}
     typical = sorted(played.values())[len(played) // 2] if played else 0
     hfa = predictive_hfa(
         artifact.stack, stage_bucket(typical), artifact.elo.hfa / artifact.elo.elo_per_point

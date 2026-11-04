@@ -59,7 +59,7 @@ class Components:
     success: MetricRatings | None  # None when no game so far has advanced stats
     pace: MetricRatings  # drives per team-game
     tempo: MetricRatings | None  # plays per team-game (None when no play counts yet)
-    games: dict[int, int]  # FBS team id -> games counted
+    games: dict[int, int]  # rated team id -> games counted (FBS, and FCS from 2022)
 
 
 def fit_components(rows: Sequence[StatRow], lam: float) -> Components | None:
@@ -106,20 +106,25 @@ def _fit_metric(
     gram, rhs = design.normal_equations(y / scale, w / w.mean())
     coef = solve_normal(gram, rhs, lam, design.penalized) * scale * per_game
     n = design.n_teams
+    off, defense = coef[2 : 2 + n], coef[2 + n : 2 + 2 * n]
+    if design.has_levels:  # an FCS team = FCS level + its own (shrunk) deviation
+        off = off + design.fcs * coef[-2]
+        defense = defense + design.fcs * coef[-1]
     teams = {
-        team: TeamRating(float(coef[2 + i]), float(coef[2 + n + i]))
-        for team, i in design.team_index.items()
+        team: TeamRating(float(off[i]), float(defense[i])) for team, i in design.team_index.items()
     }
-    centered, shift = _center_on_fbs(teams)
+    centered, shift = _center_on_fbs(teams, matchups.fcs)
     return MetricRatings(centered, 2 * float(coef[1]), float(coef[0]) + shift)  # hfa: home +h
 
 
-def _center_on_fbs(teams: dict[int, TeamRating]) -> tuple[dict[int, TeamRating], float]:
+def _center_on_fbs(
+    teams: dict[int, TeamRating], fcs: frozenset[int]
+) -> tuple[dict[int, TeamRating], float]:
     """Shift so the average FBS team is exactly 0 (margins are unchanged by a common shift).
 
     Also returns mean(off) - mean(def) of the FBS teams, which moves into the level.
     """
-    fbs = [t for team, t in teams.items() if not is_pooled(team)]
+    fbs = [t for team, t in teams.items() if not is_pooled(team) and team not in fcs]
     if not fbs:
         return teams, 0.0
     off_mean = sum(t.off for t in fbs) / len(fbs)

@@ -64,3 +64,16 @@ def test_summary_before_any_game() -> None:
     res = resume_summary(context(None), [GAMES[2]], 1, REFS)
 
     assert (res.games, res.benchmark_expected_wins) == (0, 0)
+
+
+def test_an_fcs_opponent_with_its_own_stored_rating_uses_it() -> None:
+    # From 2022 FCS teams are rated individually and stored unranked (decision #109).
+    ctx = context({"fcs": -20.0, "lower": -30.0})
+    ctx.season[3] = StoredRating(3, "season", -31.0, 0.0, 0.0, 6, False, None, None, None, None)
+
+    p_fbs = win_prob(12.0 - 4.0 + 3.0, 15.0)
+    p_fcs = win_prob(12.0 + 31.0 + 3.0, 15.0)  # its own -31, not the pooled -20
+    assert recomputed_sor(ctx, GAMES, 1, REFS) == pytest.approx(p_fbs * p_fcs)
+    assert resume_summary(ctx, GAMES, 1, REFS).benchmark_expected_wins == pytest.approx(
+        p_fbs + p_fcs
+    )

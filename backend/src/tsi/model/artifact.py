@@ -16,6 +16,7 @@ import numpy as np
 from tsi.book.edges import EdgeShrink
 from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
+from tsi.model.fcs_prior import FcsPrior
 from tsi.model.prior import PriorModel
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import StackModel
@@ -32,6 +33,7 @@ class ModelArtifact:
     stack: StackModel  # predictive margin
     totals: StackModel  # predictive game total (model/totals.py)
     prior: PriorModel
+    fcs_prior: FcsPrior  # FCS teams' preseason priors (decision #109)
     distribution: DistributionParams  # predictive score distribution (sigmas, rho)
     edge_shrink: EdgeShrink  # how far the Book trusts TSI over the market line (#52)
     sigma_season: float
@@ -48,6 +50,7 @@ class ModelArtifact:
                 f"{side}|{','.join(feats)}": c.tolist()
                 for (side, feats), c in sorted(self.prior.coefs.items())
             },
+            "fcs_prior": asdict(self.fcs_prior),
             "distribution": asdict(self.distribution),
             "edge_shrink": asdict(self.edge_shrink),
             "sigma_season": self.sigma_season,
@@ -67,6 +70,7 @@ class ModelArtifact:
             stack=_stack_model(data["stack"]),
             totals=_stack_model(data["totals"]),
             prior=PriorModel(prior),
+            fcs_prior=FcsPrior(**data["fcs_prior"]),
             distribution=DistributionParams(**data["distribution"]),
             edge_shrink=EdgeShrink(**data["edge_shrink"]),
             sigma_season=data["sigma_season"],

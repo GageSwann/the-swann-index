@@ -128,11 +128,13 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
         wins=rec.wins,
         losses=rec.losses,
         ties=rec.ties,
-        ratings=_ratings(history_rows.get(latest.id, [])) if latest else None,
+        # FCS teams' stored ratings wait for their rankings (Phase 10, items 4 and 7).
+        ratings=_ratings(history_rows.get(latest.id, [])) if latest and rated else None,
         history=[
             point
             for run in runs
-            if (point := _point(run.run_at, run.week, history_rows.get(run.id, []))) is not None
+            if rated
+            and (point := _point(run.run_at, run.week, history_rows.get(run.id, []))) is not None
         ],
         schedule=[_schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
         resume=resume_summary(ctx, games, team_id, refs) if ctx and rated else None,

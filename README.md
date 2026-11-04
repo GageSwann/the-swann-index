@@ -17,7 +17,7 @@ Every number is out of sample: each game was predicted using only what was known
 | Average miss on the final margin | **12.40 pts** | 12.00 pts | 13.15 pts |
 | Winners picked | **71.7%** | 72.6% | n/a |
 
-The closing line is the bar to clear, and TSI sits within half a point of it. Its spread disagreements with the close don't predict covers, but they do predict which way the line moves, and its totals beat the **opening** line: the TSI Book's backtest at the median opener went **104-75-2 (+10.8% ROI)** over 2023–25, with positive closing-line value every season. The details are in [the model doc](docs/04-model.md) and [the Book doc](docs/05-sportsbook.md).
+The closing line is the bar to clear, and TSI sits within half a point of it. Its spread disagreements with the close don't predict covers, but they do predict which way the line moves, and its totals beat the **opening** line: the TSI Book's backtest at the median opener went **110-68-1 (+17.9% ROI)** over 2023–25, with positive closing-line value every season. The details are in [the model doc](docs/04-model.md) and [the Book doc](docs/05-sportsbook.md).
 
 ## What's on the site
 

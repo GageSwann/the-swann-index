@@ -29,9 +29,16 @@ def fit_margin_stack(picks: Sequence[Pick], lam: float) -> StackModel:
     return fit_stack([margin_sample(p) for p in picks], lam)
 
 
-def stacked_picks(picks: Sequence[Pick], lam: float, train: tuple[int, int] = TRAIN) -> list[Pick]:
-    margin = _held_out(picks, lambda ps: fit_margin_stack(ps, lam), train)
-    total = _held_out(picks, lambda ps: fit_total_stack(ps, lam), train)
+def stacked_picks(
+    picks: Sequence[Pick],
+    lam: float,
+    train: tuple[int, int] = TRAIN,
+    fit_on: Callable[[Pick], bool] = lambda p: True,
+) -> list[Pick]:
+    """`fit_on` picks the games the stacks learn from (the rest are only predicted)."""
+    fitted = [p for p in picks if fit_on(p)]
+    margin = _held_out(fitted, lambda ps: fit_margin_stack(ps, lam), train)
+    total = _held_out(fitted, lambda ps: fit_total_stack(ps, lam), train)
     return [
         replace(
             p,

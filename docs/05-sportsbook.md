@@ -51,7 +51,7 @@ For each game, using the consensus market line:
 **Implementation** (`book/consensus.py`, `book/edges.py`, `book/shrink_fit.py`; decisions #52, #53):
 - **Consensus** = each sportsbook's latest line at or before the publish time (`db/queries/market.line_snapshots`; aggregator "providers" `consensus` and `teamrankings` excluded). Spread and total: median across books. Moneyline: each book's pair de-vigged, then averaged.
 - **Shrunk probabilities:** the Book moves a fraction k from the market's number toward TSI's: P(home covers s) = Φ(k·(TSI margin + s)/σ_margin), P(over t) = Φ(k·(TSI total − t)/σ_total); moneyline uses the spread-implied margin moved by k_spread.
-- **k** is fit by log loss on leave-one-season-out predictions against the **median opening line** (history has no publish-time snapshots; the opener is the closest proxy). Production: **k_spread 0.07, k_total 0.32**. Backtest (train → validation): spread 0.00, total 0.24.
+- **k** is fit by log loss on leave-one-season-out predictions against the **median opening line** (history has no publish-time snapshots; the opener is the closest proxy). Production (v1.3): **k_spread 0.081, k_total 0.308** (v1.2: 0.07 / 0.32). Backtest (train → validation): spread 0.00, total 0.24.
 - **Edges:** spread/total = shrunk P − 0.5238 (−110 assumed: CFBD has no spread prices); moneyline = shrunk P − no-vig P, with EV per unit at the market price. The better side of each market is reported.
 - Validation calibration at the opener (k from train): spreads 50.0% predicted / 49.9% observed; overs within ±0.5 pts in the bins holding 93% of games.
 
@@ -85,10 +85,12 @@ CLV is the best long-run skill signal. If TSI consistently beats the closing lin
 
 | Totals | Bets | W-L-P | Win | ROI (flat) | CLV | Beat close |
 |---|---|---|---|---|---|---|
-| Train 2021–22 (k fit here) | 123 | 63-58-2 | 52.1% | −0.6% | +1.12 | 67% |
-| **Validation 2023–25** | 181 | 104-75-2 | **58.1%** | **+10.8%** | +0.93 | 60% |
-| 1★ / 2★ / 3★ (validation) | 144 / 33 / 4 | | 56.3% / 63.6% / 75% | +7.5% / +21.5% / +43% | | |
-| 2026 to date | 22 | 10-12-0 | 45.5% | −13.2% | +0.91 | 64% |
+| Train 2021–22 (k fit here) | 117 | 60-55-2 | 52.2% | −0.4% | +1.09 | 64% |
+| **Validation 2023–25** | 179 | 110-68-1 | **61.8%** | **+17.9%** | +0.95 | 61% |
+| 1★ / 2★ / 3★ (validation) | 139 / 35 / 5 | | 60.9% / 68.6% / 40% | +16.1% / +30.9% / −23.6% | | |
+| 2026 to date (v1.2) | 22 | 10-12-0 | 45.5% | −13.2% | +0.91 | 64% |
+
+v1.3 (#110) rates FCS teams individually, which moves FBS ratings slightly; v1.2 went 104-75-2 (+10.8%, CLV +0.93) over the same validation seasons.
 
 CLV is positive in every season (+0.2 to +1.8 points): lines move toward TSI's totals picks, the most reliable sign of signal. Win rates are noisy at these sample sizes (train 2★ went 15-19). Checked and rejected: an intercept in the shrink (base rate of overs) improved log loss but turned the Book into an under-only bettor (503 of 508 validation bets) with lower ROI (+2.6%).
 

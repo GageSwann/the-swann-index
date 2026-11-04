@@ -37,8 +37,15 @@ def prior_inputs(session: Session, first_season: int, last_season: int) -> dict[
 
 def fbs_teams(session: Session, first_season: int, last_season: int) -> dict[int, set[int]]:
     """season -> FBS team ids that season."""
+    return division_teams(session, first_season, last_season, RATED_DIVISION)
+
+
+def division_teams(
+    session: Session, first_season: int, last_season: int, division: str
+) -> dict[int, set[int]]:
+    """season -> ids of the teams in `division` that season."""
     query = select(TeamSeason.season, TeamSeason.team_id).where(
-        TeamSeason.division == RATED_DIVISION,
+        TeamSeason.division == division,
         TeamSeason.season.between(first_season, last_season),
     )
     teams: dict[int, set[int]] = {}

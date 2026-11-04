@@ -69,7 +69,9 @@ def walk_forward(
             played = min(season_set.games.get(g.home_id, 0), season_set.games.get(g.away_id, 0))
             season_margin = _margin(season_set, g)
             side = GameSide(
-                rated_id(g.home_id, g.home_div), rated_id(g.away_id, g.away_div), g.neutral
+                rated_id(g.home_id, g.home_div, g.season),
+                rated_id(g.away_id, g.away_div, g.season),
+                g.neutral,
             )
             picks.append(
                 Pick(
@@ -89,5 +91,6 @@ def walk_forward(
 
 
 def _margin(ratings: RatingSet, g: GameResult) -> float:
-    home, away = ratings.get(g.home_id, g.home_div), ratings.get(g.away_id, g.away_div)
+    home = ratings.get(g.home_id, g.home_div, g.season)
+    away = ratings.get(g.away_id, g.away_div, g.season)
     return predicted_margin(ratings, home, away, g.neutral)

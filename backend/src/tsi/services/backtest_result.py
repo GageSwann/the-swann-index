@@ -28,7 +28,8 @@ class BacktestResult:
     ats: list[AtsRecord]  # predictive vs. closing line, validation seasons
     totals: list[TotalsSummary]  # predictive total vs. closing total, by season + period
     lines: LineCheck  # edge shrink (train) + Book cover/over calibration at the opener
-    picks: list[Pick]
+    picks: list[Pick]  # scored FBS-vs-FBS games
+    fcs_rows: list[ComparisonRow]  # games with an FCS team, reported only (decision #109)
 
     @property
     def validation(self) -> ComparisonRow:
@@ -56,6 +57,17 @@ class BacktestResult:
             "validate_total_mae": self.validation_totals.mae,
             "validate_total_market_mae": self.validation_totals.market_mae,
             "validate_ou": self.validation_totals.ou_accuracy,
+            **{
+                f"validate_{key}_{name}": value
+                for r in self.fcs_rows
+                if "validate" in r.predictive.label
+                for key in ("fcs" if r.predictive.label.startswith("FCS vs") else "fbs_fcs",)
+                for name, value in (
+                    ("mae", r.predictive.mae),
+                    ("market_mae", r.predictive.market_mae),
+                    ("elo_mae", r.elo.mae),
+                )
+            },
         }
 
     @property

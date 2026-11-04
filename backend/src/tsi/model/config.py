@@ -6,7 +6,8 @@ from typing import Any
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
 
-MODEL_VERSION = "tsi-v1.2"  # v1.1: season blend + stacked margin; v1.2: + stacked totals
+MODEL_VERSION = "tsi-v1.3"  # v1.1: season blend + stacked margin; v1.2: + stacked totals;
+# v1.3: FCS teams rated individually from 2022 with an FCS level + FCS priors (#109)
 ESTABLISHED_GAMES = 4  # fewer games played -> provisional rank (doc 04)
 
 
