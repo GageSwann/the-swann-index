@@ -125,7 +125,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 ✅ **Phase 8 complete (2026-11-03):** stored by every nightly run since Oct 29; live API and site checked (field odds sum to 12, title odds to 1, all pages load cleanly).
 
 ## Phase 9: Manual adjustments
-- [ ] `adjustments` table + CLI (`tsi adjust add/list/expire`)
+- [x] `adjustments` table + CLI (`tsi adjust add/list/expire`): offense/defense points per game, a reason and a kickoff window; expiring closes the window, rows are never deleted (#103)
 - [ ] Raw vs. adjusted predictions stored and displayed
 - [ ] Report card: adjusted vs. raw accuracy
 

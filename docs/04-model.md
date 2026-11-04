@@ -168,7 +168,7 @@ Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI 
 `model_version` follows `tsi-v{major}.{minor}`. Each `model_runs` row stores the version and full params. Changing methodology bumps the version, and the report card can compare versions.
 
 ## 11. Manual adjustments (later phase)
-- `adjustments` table: team, ± points, reason, active weeks
+- `adjustments` table (#103): team, ± points per game split into offense and defense, reason, kickoff window (`tsi adjust add/list/expire`)
 - Applied **after** the stats model: `rating_adjusted = rating_raw + Σ adjustments`
 - Predictions store both raw and adjusted. The UI shows an "adjusted" badge with the reason.
 - The report card tracks whether adjustments helped or hurt (raw vs. adjusted accuracy).

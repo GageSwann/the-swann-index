@@ -20,6 +20,7 @@ def test_all_schema_tables_registered() -> None:
         "predictions",
         "picks",
         "sim_results",
+        "adjustments",
     }
 
 
