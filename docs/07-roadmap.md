@@ -103,7 +103,7 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] `security-review` pass; confirm no secrets in repo history; all secrets set in GH/Vercel/API host (#81; GH: CFBD_API_KEY, DATABASE_URL, REVALIDATE_TOKEN; Render: DATABASE_URL; Vercel: REVALIDATE_TOKEN)
 - [x] Project skill `tsi-weekly-run` (via `skill-creator`) documenting the operator runbook (`.claude/skills/tsi-weekly-run/`: daily check, re-run/refresh, weekly review script, deploys/rollbacks, Neon branches + migrations, secret rotation, troubleshooting; #84)
 
-**Done when:** the public URL updates on its own for a full week without manual intervention.
+**Done when:** the public URL updates on its own for a full week without manual intervention. ✅ **Phase 6 complete (2026-11-03):** the scheduled nightly job succeeded on 7 consecutive days (Oct 28 – Nov 3) and the site showed each day's run; the one manual run in that span (Oct 29) only filled the new season sim early.
 
 ## Phase 7: Polish & secondary pages
 - [x] TSI Book page (built in Phase 5 at the owner's request; #75)
@@ -121,6 +121,8 @@ Baseline exactly as doc 04 (decision #28). Key decisions: two rating sets (`seas
 - [x] Store the sim nightly (`sim_results`, part of `tsi run`) and show projected wins, win out and title odds on the rankings and team pages (#98; CFP odds come with the projector)
 - [x] CFP selection approximation + bracket page (2026–27 format verified by the owner: doc 05 §7.2, #95; Résumé as the committee stand-in, #100; stored nightly + `/playoff` page with a projected bracket and odds table, #101)
 - [x] Futures fair odds (playoff, conference title and national title chances as fair American odds in `/playoff`; title odds on the page, #101)
+
+✅ **Phase 8 complete (2026-11-03):** stored by every nightly run since Oct 29; live API and site checked (field odds sum to 12, title odds to 1, all pages load cleanly).
 
 ## Phase 9: Manual adjustments
 - [ ] `adjustments` table + CLI (`tsi adjust add/list/expire`)
