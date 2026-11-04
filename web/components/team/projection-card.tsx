@@ -3,6 +3,7 @@ import type { TeamProfile } from "@/lib/api/types"
 import { chance, record } from "@/lib/format/numbers"
 
 import { WinHistogram } from "./win-histogram"
+import { Stat } from "@/components/ui/stat"
 
 /**
  * Where the season is headed (decision #98): projected wins, the chance to win out, and
@@ -49,14 +50,5 @@ export function ProjectionCard({ profile }: { profile: TeamProfile }) {
         </p>
       </div>
     </section>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-2xl font-bold font-stretch-condensed">{value}</dd>
-    </div>
   )
 }

@@ -10,7 +10,8 @@ import { ResumeCard } from "@/components/team/resume-card"
 import { ScheduleTable } from "@/components/team/schedule-table"
 import { TeamHeader } from "@/components/team/team-header"
 import { getRankings, getTeam } from "@/lib/api/queries"
-import { scheduleOdds } from "@/lib/api/schedule-odds"
+import { publishedScheduleOdds, scheduleOdds } from "@/lib/api/schedule-odds"
+import type { TeamProfile } from "@/lib/api/types"
 import { pageMeta } from "@/lib/metadata"
 import { record, signed } from "@/lib/format/numbers"
 
@@ -48,7 +49,6 @@ async function TeamView({ params }: Props) {
   const { slug } = await params
   const [profile, rankings] = await Promise.all([getTeam(slug), getRankings()])
   if (!profile) notFound()
-  const odds = await scheduleOdds(profile.team, profile.schedule)
   const ranked = rankings?.teams ?? []
   const row = ranked.find((t) => t.team.slug === slug)
 
@@ -66,7 +66,22 @@ async function TeamView({ params }: Props) {
         </section>
       )}
       <ResumeCard profile={profile} />
-      <ScheduleTable schedule={profile.schedule} odds={odds} />
+      {/* Streams in: games without a published prediction need a matchup call each. */}
+      <Suspense
+        fallback={
+          <ScheduleTable
+            schedule={profile.schedule}
+            odds={publishedScheduleOdds(profile.schedule)}
+          />
+        }
+      >
+        <Schedule profile={profile} />
+      </Suspense>
     </div>
   )
+}
+
+async function Schedule({ profile }: { profile: TeamProfile }) {
+  const odds = await scheduleOdds(profile.team, profile.schedule)
+  return <ScheduleTable schedule={profile.schedule} odds={odds} />
 }

@@ -184,3 +184,28 @@ def test_client_errors_are_not_retried(tmp_path: Path, ledger) -> None:
     with pytest.raises(CfbdError, match="HTTP 404"):
         make_client(tmp_path, ledger, api, sleeps=sleeps).get("/games", {"year": 2024})
     assert sleeps == [] and len(api.requests) == 1
+
+
+def test_prefetch_fetches_each_request_once_then_the_cache_serves(tmp_path: Path, ledger) -> None:
+    api = FakeApi()
+    client = make_client(tmp_path, ledger, api)
+    requests = [("/games", {"year": 2024}), ("/lines", {"year": 2024}), ("/games", {"year": 2023})]
+
+    client.prefetch(requests)
+    for endpoint, params in requests:
+        assert client.get(endpoint, params) == GAMES
+
+    assert sorted((r.url.path, r.url.params["year"]) for r in api.requests) == [
+        ("/games", "2023"),
+        ("/games", "2024"),
+        ("/lines", "2024"),
+    ]
+    client.prefetch(requests)  # still fresh: no new requests
+    assert len(api.requests) == 3
+
+
+def test_prefetch_raises_a_failure(tmp_path: Path, ledger) -> None:
+    client = make_client(tmp_path, ledger, FakeApi(status=404))
+
+    with pytest.raises(CfbdError, match="HTTP 404"):
+        client.prefetch([("/games", {"year": 2024})])

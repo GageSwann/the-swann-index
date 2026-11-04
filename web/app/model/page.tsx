@@ -14,6 +14,7 @@ import { getModelReport } from "@/lib/api/queries"
 import { percent } from "@/lib/format/numbers"
 import { formatUpdated } from "@/lib/format/time"
 import { pageMeta } from "@/lib/metadata"
+import { Stat } from "@/components/ui/stat"
 
 export const metadata: Metadata = pageMeta({
   title: "Model",
@@ -41,10 +42,18 @@ export default async function ModelPage() {
             className="rounded-md border border-border bg-card p-5"
           >
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
-              <Stat label="TSI miss per game" value={`${validate.predictive_mae.toFixed(2)} pts`} />
-              <Stat label="Vegas closing line" value={`${validate.vegas_mae.toFixed(2)} pts`} />
-              <Stat label="Elo baseline" value={`${validate.elo_mae.toFixed(2)} pts`} />
-              <Stat label="Winners picked" value={percent(validate.predictive_su)} />
+              <Stat
+                large
+                label="TSI miss per game"
+                value={`${validate.predictive_mae.toFixed(2)} pts`}
+              />
+              <Stat
+                large
+                label="Vegas closing line"
+                value={`${validate.vegas_mae.toFixed(2)} pts`}
+              />
+              <Stat large label="Elo baseline" value={`${validate.elo_mae.toFixed(2)} pts`} />
+              <Stat large label="Winners picked" value={percent(validate.predictive_su)} />
             </dl>
             <p className="mt-4 text-sm text-muted-foreground">
               {validate.label}, {validate.games.toLocaleString()} FBS games. The closing line is the
@@ -113,14 +122,5 @@ function Section({ id, title, children }: { id: string; title: string; children:
       </h2>
       {children}
     </section>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-3xl font-bold font-stretch-condensed">{value}</dd>
-    </div>
   )
 }

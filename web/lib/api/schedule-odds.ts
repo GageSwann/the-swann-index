@@ -24,24 +24,8 @@ export async function scheduleOdds(
 ): Promise<Map<number, GameOdds>> {
   const entries = await Promise.all(
     schedule.map(async (g): Promise<[number, GameOdds] | null> => {
-      if (
-        g.win_prob != null &&
-        g.spread != null &&
-        g.projected_team != null &&
-        g.projected_opponent != null
-      ) {
-        return [
-          g.game_id,
-          {
-            winProb: g.win_prob,
-            spread: g.spread,
-            teamPoints: g.projected_team,
-            opponentPoints: g.projected_opponent,
-            source: "published",
-            adjusted: g.adjusted,
-          },
-        ]
-      }
+      const published = publishedOdds(g)
+      if (published) return [g.game_id, published]
       if (g.outcome !== null || g.result?.final) return null
       const atHome = g.site !== "away"
       const m = await getMatchup(
@@ -64,4 +48,33 @@ export async function scheduleOdds(
     }),
   )
   return new Map(entries.filter((e) => e !== null))
+}
+
+/** The published prediction's odds for every game that has one (no API calls). */
+export function publishedScheduleOdds(schedule: ScheduleGame[]): Map<number, GameOdds> {
+  return new Map(
+    schedule.flatMap((g) => {
+      const odds = publishedOdds(g)
+      return odds ? [[g.game_id, odds] as const] : []
+    }),
+  )
+}
+
+function publishedOdds(g: ScheduleGame): GameOdds | null {
+  if (
+    g.win_prob == null ||
+    g.spread == null ||
+    g.projected_team == null ||
+    g.projected_opponent == null
+  ) {
+    return null
+  }
+  return {
+    winProb: g.win_prob,
+    spread: g.spread,
+    teamPoints: g.projected_team,
+    opponentPoints: g.projected_opponent,
+    source: "published",
+    adjusted: g.adjusted,
+  }
 }

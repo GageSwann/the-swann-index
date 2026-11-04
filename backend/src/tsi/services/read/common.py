@@ -189,3 +189,9 @@ def _clv(p: PickRow) -> float | None:
         return None
     # Only the picked side's closing price is stored: compare implied probabilities.
     return clv_prob(p.odds_taken, prob_from_american(p.closing_odds))
+
+
+def mean_or_none(values: Iterable[float | None]) -> float | None:
+    """Average of the known values; None when there are none."""
+    xs = [v for v in values if v is not None]
+    return sum(xs) / len(xs) if xs else None

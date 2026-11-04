@@ -1,6 +1,7 @@
 import { ScrollIntoView } from "@/components/ui/scroll-into-view"
 import type { TeamProfile } from "@/lib/api/types"
 import { chance, record, signed } from "@/lib/format/numbers"
+import { Stat } from "@/components/ui/stat"
 
 /**
  * Why the team ranks where it does in Résumé (decision #89): how a typical #12 team would
@@ -51,14 +52,5 @@ export function ResumeCard({ profile }: { profile: TeamProfile }) {
         )}
       </div>
     </section>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-2xl font-bold font-stretch-condensed">{value}</dd>
-    </div>
   )
 }

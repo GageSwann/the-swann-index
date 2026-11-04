@@ -96,6 +96,9 @@ class FakeCfbd:
     def get(self, endpoint: str, params: Mapping[str, Any] | None = None, **kw: Any) -> Any:
         return self.get_response(endpoint, params, **kw).data
 
+    def prefetch(self, requests: Any, *, refresh: bool = False) -> None:
+        self.prefetched = [(e, dict(p)) for e, p in requests]  # served from fixtures anyway
+
 
 @pytest.fixture
 def fake_cfbd(cfbd_fixture: Callable[[str], Any]) -> FakeCfbd:

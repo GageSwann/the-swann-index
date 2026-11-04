@@ -15,7 +15,14 @@ from sqlalchemy.orm import Session
 
 from tsi.db.queries.games import GameRow, season_games
 from tsi.db.queries.snapshots import SnapshotRow, snapshots_for_season
-from tsi.services.read.common import AdjustmentNote, adjustment_notes, current_snapshot
+from tsi.services.read.common import (
+    AdjustmentNote,
+    adjustment_notes,
+    current_snapshot,
+)
+from tsi.services.read.common import (
+    mean_or_none as mean,
+)
 
 SAME = 0.05  # points: closer by less than this counts as no change
 
@@ -110,10 +117,6 @@ def score(games: Sequence[_Graded]) -> AdjustedScore:
         if g.margin == 0 or s.spread == 0:
             return None
         return float((g.margin > 0) == (s.spread < 0))
-
-    def mean(values: Iterable[float | None]) -> float | None:
-        xs = [v for v in values if v is not None]
-        return sum(xs) / len(xs) if xs else None
 
     gains = [margin_err(g.raw, g) - margin_err(g.adjusted, g) for g in games]
     return AdjustedScore(

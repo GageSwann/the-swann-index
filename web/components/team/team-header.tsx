@@ -4,6 +4,8 @@ import type { TeamProfile } from "@/lib/api/types"
 import { describeAdjustment } from "@/lib/format/adjustments"
 import { teamColorVars } from "@/lib/format/color"
 import { record, signed } from "@/lib/format/numbers"
+import { AdjustedCallout } from "@/components/game/adjusted-note"
+import { Stat } from "@/components/ui/stat"
 
 /**
  * Team identity and its headline numbers. A solid band in the team's (contrast-checked)
@@ -63,10 +65,7 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
         {r ? (
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-5">
             {stats.map((s) => (
-              <div key={s.label}>
-                <dt className="text-sm text-muted-foreground">{s.label}</dt>
-                <dd className="text-2xl font-bold font-stretch-condensed">{s.value}</dd>
-              </div>
+              <Stat key={s.label} label={s.label} value={s.value} />
             ))}
           </dl>
         ) : (
@@ -81,11 +80,10 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
           </p>
         )}
         {profile.adjustments.length > 0 && (
-          <p className="border-l-2 border-primary pl-2 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">Adjusted:</span>{" "}
+          <AdjustedCallout>
             {profile.adjustments.map(describeAdjustment).join("; ")}, points per game. TSI&apos;s
             predictions for its upcoming games include this; the ratings and ranks above don&apos;t.
-          </p>
+          </AdjustedCallout>
         )}
       </div>
     </section>

@@ -9,6 +9,7 @@ and not logged).
 import logging
 import time
 from collections.abc import Callable, Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from typing import Any, Self
 
@@ -21,6 +22,7 @@ from tsi.ingest.freshness import is_fresh
 from tsi.ingest.ledger import CallLedger, CallRecord
 
 FreshnessRule = Callable[[Mapping[str, Any], datetime, datetime], bool]
+Request = tuple[str, Mapping[str, Any]]  # (endpoint, params)
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +84,16 @@ class CfbdClient:
         self._cache.put(endpoint, clean, data, fetched_at=fetched_at)
         self._record(endpoint, clean, status="ok", data=data)
         return CachedResponse(data, fetched_at)
+
+    def prefetch(self, requests: Sequence[Request], *, refresh: bool = False) -> None:
+        """Fetch independent requests concurrently into the cache, so the loaders that
+        follow read them from disk. CFBD response time dominates the nightly ingest
+        (several seconds per advanced-stats call); our own work is well under a second.
+        """
+        with ThreadPoolExecutor(max_workers=len(requests) or 1) as pool:
+            futures = [pool.submit(self.get_response, e, p, refresh=refresh) for e, p in requests]
+            for future in futures:
+                future.result()  # re-raise the first failure
 
     def _check_budget(self) -> None:
         used = self._ledger.calls_this_month(self._clock())

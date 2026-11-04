@@ -24,7 +24,7 @@ from tsi.services.read.backtest_report import (
     model_versions,
     parse_report,
 )
-from tsi.services.read.common import current_snapshot, market_lines
+from tsi.services.read.common import current_snapshot, market_lines, mean_or_none
 
 
 @dataclass(frozen=True)
@@ -41,10 +41,7 @@ class LiveAccuracy:
     games: int  # finished games with a locked snapshot
     mae: float | None  # |TSI margin - actual|
     market_mae: float | None  # |closing spread - actual|, same games with a closing line
-    market_games: int
     su_accuracy: float | None  # TSI favorite won (ties excluded)
-    total_mae: float | None
-    market_total_mae: float | None
 
 
 @dataclass(frozen=True)
@@ -85,33 +82,22 @@ def _latest_backtest(session: Session) -> BacktestSummary | None:
 def _live(
     session: Session, games: list[GameRow], snaps: dict[int, list[SnapshotRow]], now: datetime
 ) -> LiveAccuracy:
-    games = [
-        g for g in games if g.completed and g.home_points is not None and g.start_time is not None
-    ]
-    closing = market_lines(session, games, now)
-    errs, market_errs, su, tot_errs, market_tot = [], [], [], [], []
+    """The raw model's locked predictions of finished games vs. the result and the close."""
+    scored: list[tuple[GameRow, SnapshotRow]] = []
     for g in games:
-        official, locked = current_snapshot(snaps[g.id], g.start_time, now)
-        if official is None or not locked:
+        if not g.completed or g.home_points is None or g.away_points is None:
             continue
-        snap = official.raw or official  # the model's own accuracy: never adjusted
-        margin, total = g.home_points - g.away_points, g.home_points + g.away_points
+        official, locked = current_snapshot(snaps.get(g.id, []), g.start_time, now)
+        if official is not None and locked:
+            scored.append((g, official.raw or official))  # the model's own: never adjusted
+    closing = market_lines(session, [g for g, _ in scored], now) if scored else {}
+    errs, market_errs, su = [], [], []
+    for g, snap in scored:
+        margin = g.home_points - g.away_points
         errs.append(abs(-snap.spread - margin))
-        tot_errs.append(abs(snap.total - total))
         if margin != 0 and snap.spread != 0:
-            su.append((margin > 0) == (snap.spread < 0))
+            su.append(float((margin > 0) == (snap.spread < 0)))
         line = closing.get(g.id)
         if line and line.spread is not None:
             market_errs.append(abs(-line.spread - margin))
-        if line and line.total is not None:
-            market_tot.append(abs(line.total - total))
-    mean = lambda xs: sum(xs) / len(xs) if xs else None  # noqa: E731
-    return LiveAccuracy(
-        games=len(errs),
-        mae=mean(errs),
-        market_mae=mean(market_errs),
-        market_games=len(market_errs),
-        su_accuracy=mean([float(s) for s in su]),
-        total_mae=mean(tot_errs),
-        market_total_mae=mean(market_tot),
-    )
+    return LiveAccuracy(len(errs), mean_or_none(errs), mean_or_none(market_errs), mean_or_none(su))

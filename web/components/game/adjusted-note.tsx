@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+
 import type { GameSummary, SnapshotView } from "@/lib/api/types"
 import { describeAdjustment } from "@/lib/format/adjustments"
 import { chance } from "@/lib/format/numbers"
@@ -15,8 +17,7 @@ export function AdjustedNote({ prediction: p, game, className }: Props) {
   const raw = p.raw
   const favorite = raw && (raw.home_win_prob >= 0.5 ? game.home : game.away)
   return (
-    <p className={cn("border-l-2 border-primary pl-2 text-sm text-muted-foreground", className)}>
-      <span className="font-semibold text-foreground">Adjusted:</span>{" "}
+    <AdjustedCallout className={className}>
       {p.adjustments.map(describeAdjustment).join("; ") || "manual adjustment"}.
       {raw && favorite && (
         <>
@@ -26,6 +27,21 @@ export function AdjustedNote({ prediction: p, game, className }: Props) {
           {chance(Math.max(raw.home_win_prob, 1 - raw.home_win_prob))}.
         </>
       )}
+    </AdjustedCallout>
+  )
+}
+
+/** "Adjusted: …" set off with the accent rule (game notes and the team header). */
+export function AdjustedCallout({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <p className={cn("border-l-2 border-primary pl-2 text-sm text-muted-foreground", className)}>
+      <span className="font-semibold text-foreground">Adjusted:</span> {children}
     </p>
   )
 }

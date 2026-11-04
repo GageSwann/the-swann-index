@@ -1,6 +1,8 @@
 """The step shared by the daily and season jobs: games -> stats -> lines.
 
-Order matters: stats and lines attach to games, so games load first.
+Order matters: stats and lines attach to games, so games load first. The four CFBD
+requests don't depend on each other, so they are fetched concurrently first; the
+loaders then read them from the cache in order.
 """
 
 from dataclasses import dataclass
@@ -8,9 +10,9 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.ingest.client import CfbdClient
-from tsi.ingest.loaders.games import load_games
-from tsi.ingest.loaders.lines import load_lines
-from tsi.ingest.loaders.stats import load_team_game_stats
+from tsi.ingest.loaders import games as games_loader
+from tsi.ingest.loaders import lines as lines_loader
+from tsi.ingest.loaders import stats as stats_loader
 
 
 @dataclass(frozen=True)
@@ -27,7 +29,9 @@ def refresh_results(
     *,
     refresh: bool = False,
 ) -> ResultsRefresh:
-    games = load_games(client, session_factory, season, refresh=refresh)
-    stats = load_team_game_stats(client, session_factory, season, refresh=refresh)
-    lines = load_lines(client, session_factory, season, refresh=refresh)
+    loaders = (games_loader, stats_loader, lines_loader)
+    client.prefetch([r for loader in loaders for r in loader.requests(season)], refresh=refresh)
+    games = games_loader.load_games(client, session_factory, season)  # now cached and fresh
+    stats = stats_loader.load_team_game_stats(client, session_factory, season)
+    lines = lines_loader.load_lines(client, session_factory, season)
     return ResultsRefresh(games.games, stats.rows, lines.inserted)

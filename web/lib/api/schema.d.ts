@@ -555,16 +555,10 @@ export interface components {
             games: number;
             /** Mae */
             mae: number | null;
-            /** Market Games */
-            market_games: number;
             /** Market Mae */
             market_mae: number | null;
-            /** Market Total Mae */
-            market_total_mae: number | null;
             /** Su Accuracy */
             su_accuracy: number | null;
-            /** Total Mae */
-            total_mae: number | null;
         };
         /** Matchup */
         Matchup: {

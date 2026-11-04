@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select, union_all
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, Team, TeamRating, TeamSeason
@@ -110,14 +110,31 @@ def stored_ratings(
 
 
 def records(session: Session, season: int, before: datetime) -> dict[int, Record]:
-    """Win-loss records of every team from games completed and kicked off before `before`."""
-    query = select(Game.home_id, Game.away_id, Game.home_points, Game.away_points).where(
+    """Win-loss records of every team from games completed and kicked off before `before`.
+
+    Tallied in the database (one row per team instead of every game of every division).
+    """
+    done = (
         Game.season == season,
         Game.completed,
         Game.home_points.is_not(None),
+        Game.away_points.is_not(None),
         Game.start_time < before,
     )
-    return tally_records(tuple(row) for row in session.execute(query))
+    home = select(
+        Game.home_id.label("team_id"),
+        Game.home_points.label("pf"),
+        Game.away_points.label("pa"),
+    ).where(*done)
+    away = select(Game.away_id, Game.away_points, Game.home_points).where(*done)
+    sides = union_all(home, away).subquery()
+    query = select(
+        sides.c.team_id,
+        func.count().filter(sides.c.pf > sides.c.pa),
+        func.count().filter(sides.c.pf < sides.c.pa),
+        func.count().filter(sides.c.pf == sides.c.pa),
+    ).group_by(sides.c.team_id)
+    return {team: Record(w, lo, t) for team, w, lo, t in session.execute(query)}
 
 
 def tally_records(results: Iterable[tuple[int, int, int, int]]) -> dict[int, Record]:

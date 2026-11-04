@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import distinct_on, insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import Game, MarketLine
-from tsi.ingest.client import CfbdClient
+from tsi.ingest.client import CfbdClient, Request
 from tsi.ingest.transform.lines import (
     VALUE_FIELDS,
     LineKey,
@@ -26,6 +26,10 @@ class LinesLoadResult:
     skipped: int  # lines for games not in our games table
 
 
+def requests(season: int) -> list[Request]:
+    return [("/lines", {"year": season})]
+
+
 def load_lines(
     client: CfbdClient,
     session_factory: sessionmaker[Session],
@@ -33,7 +37,8 @@ def load_lines(
     *,
     refresh: bool = False,
 ) -> LinesLoadResult:
-    response = client.get_response("/lines", {"year": season}, refresh=refresh)
+    ((endpoint, params),) = requests(season)
+    response = client.get_response(endpoint, params, refresh=refresh)
     snapshots = line_snapshots(response.data)
     with session_factory.begin() as session:
         games = select(Game.id, Game.start_time).where(Game.season == season)

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from tsi.db.models import Game, Team, TeamGameStats
 from tsi.db.upsert import upsert_rows
-from tsi.ingest.client import CfbdClient
+from tsi.ingest.client import CfbdClient, Request
 from tsi.ingest.transform.stats import GameIndex, team_game_stat_rows
 
 ENDPOINT = "/stats/game/advanced"
@@ -23,6 +23,14 @@ class StatsLoadResult:
     unmatched: int  # CFBD rows whose game/team isn't in our tables
 
 
+def requests(season: int) -> list[Request]:
+    """Garbage-time filtered (efficiency) and full-game (plays, drives) stats."""
+    return [
+        (ENDPOINT, {"year": season, "excludeGarbageTime": "true"}),
+        (ENDPOINT, {"year": season}),
+    ]
+
+
 def load_team_game_stats(
     client: CfbdClient,
     session_factory: sessionmaker[Session],
@@ -30,8 +38,7 @@ def load_team_game_stats(
     *,
     refresh: bool = False,
 ) -> StatsLoadResult:
-    filtered = client.get(ENDPOINT, {"year": season, "excludeGarbageTime": "true"}, refresh=refresh)
-    full = client.get(ENDPOINT, {"year": season}, refresh=refresh)
+    filtered, full = (client.get(e, p, refresh=refresh) for e, p in requests(season))
     with session_factory.begin() as session:
         rows = team_game_stat_rows(filtered, full, _game_index(session, season))
         count = upsert_rows(session, TeamGameStats, rows)

@@ -1123,10 +1123,6 @@
             ],
             "title": "Mae"
           },
-          "market_games": {
-            "title": "Market Games",
-            "type": "integer"
-          },
           "market_mae": {
             "anyOf": [
               {
@@ -1138,17 +1134,6 @@
             ],
             "title": "Market Mae"
           },
-          "market_total_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Market Total Mae"
-          },
           "su_accuracy": {
             "anyOf": [
               {
@@ -1159,27 +1144,13 @@
               }
             ],
             "title": "Su Accuracy"
-          },
-          "total_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Mae"
           }
         },
         "required": [
           "games",
           "mae",
           "market_mae",
-          "market_games",
-          "su_accuracy",
-          "total_mae",
-          "market_total_mae"
+          "su_accuracy"
         ],
         "title": "LiveAccuracy",
         "type": "object"
