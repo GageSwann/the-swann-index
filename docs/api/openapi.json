@@ -1927,6 +1927,15 @@
             "title": "As Of",
             "type": "string"
           },
+          "division": {
+            "enum": [
+              "fbs",
+              "fcs",
+              "all"
+            ],
+            "title": "Division",
+            "type": "string"
+          },
           "model_version": {
             "title": "Model Version",
             "type": "string"
@@ -1979,7 +1988,8 @@
           "previous_as_of",
           "model_version",
           "type",
-          "teams"
+          "teams",
+          "division"
         ],
         "title": "Rankings",
         "type": "object"
@@ -3239,7 +3249,7 @@
     },
     "/rankings": {
       "get": {
-        "description": "Power (how good now) or Résumé (what they've accomplished) rankings.",
+        "description": "Power (how good now) or Résumé (what they've accomplished) rankings.\n\n`division`: fbs (default), fcs, or all. Ranks are within a division; `all` ranks FBS and\nFCS together by rating (Power only: Résumé benchmarks differ by division, so 422).",
         "operationId": "get_rankings",
         "parameters": [
           {
@@ -3309,6 +3319,21 @@
               ],
               "title": "Season Type"
             }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs",
+                "all"
+              ],
+              "title": "Division",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3341,7 +3366,7 @@
     },
     "/teams": {
       "get": {
-        "description": "FBS teams of a season (slug, name, colors, logo, conference).",
+        "description": "Teams of a season (slug, name, colors, logo, conference): FBS, FCS, or both.",
         "operationId": "get_teams",
         "parameters": [
           {
@@ -3358,6 +3383,21 @@
                 }
               ],
               "title": "Season"
+            }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs",
+                "all"
+              ],
+              "title": "Division",
+              "type": "string"
             }
           }
         ],
@@ -3454,7 +3494,7 @@
     },
     "/weeks/{season}/{week}/games": {
       "get": {
-        "description": "Matchup board: every game with an FBS team, TSI's prediction and the market.",
+        "description": "Matchup board: every game with a team of `division` (fbs default, fcs, or all), with\nTSI's prediction and the market.",
         "operationId": "get_week_games",
         "parameters": [
           {
@@ -3486,6 +3526,21 @@
                 "postseason"
               ],
               "title": "Season Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs",
+                "all"
+              ],
+              "title": "Division",
               "type": "string"
             }
           }

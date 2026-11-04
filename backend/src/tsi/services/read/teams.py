@@ -19,7 +19,7 @@ from tsi.db.queries.team_info import (
     team_id_by_slug,
     team_refs,
 )
-from tsi.divisions import RATED_DIVISION
+from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION, rated_individually
 from tsi.services.read.common import AdjustmentNote, Score, current_snapshot, note_of, result_of
 from tsi.services.read.projection import Projection, projection
 from tsi.services.read.resume_view import (
@@ -95,9 +95,11 @@ class TeamProfile:
     adjustments: list[AdjustmentNote]  # manual adjustments in effect now (decision #104)
 
 
-def team_list(session: Session, season: int) -> list[TeamRef]:
-    teams = team_refs(session, season, division=RATED_DIVISION)
-    return sorted(teams.values(), key=lambda t: t.school)
+def team_list(session: Session, season: int, division: str = RATED_DIVISION) -> list[TeamRef]:
+    """Teams of a division ("all": every listed division) that season, by name."""
+    divisions = LISTED_DIVISIONS if division == "all" else (division,)
+    teams = [t for d in divisions for t in team_refs(session, season, division=d).values()]
+    return sorted(teams, key=lambda t: t.school)
 
 
 def team_profile(session: Session, slug: str, season: int, now: datetime) -> TeamProfile | None:
@@ -119,16 +121,18 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     ]
     rec = tally_records(finished).get(team_id, Record())
     snaps = snapshots_for_games(session, [g.id for g in games])
-    ctx = resume_context(session, latest) if latest else None
-    rated = refs[team_id].division == RATED_DIVISION
-    sim = stored_sims(session, latest.id, team_id).get(team_id) if latest and rated else None
+    division = refs[team_id].division or ""
+    rated = rated_individually(division, season)  # FBS, and FCS from 2022 (#109)
+    fbs = division == RATED_DIVISION
+    # The Résumé breakdown is FBS-only until FCS gets its own benchmark (Phase 10 item 8).
+    ctx = resume_context(session, latest) if latest and fbs else None
+    sim = stored_sims(session, latest.id, team_id).get(team_id) if latest and fbs else None
     return TeamProfile(
         team=refs[team_id],
         season=season,
         wins=rec.wins,
         losses=rec.losses,
         ties=rec.ties,
-        # FCS teams' stored ratings wait for their rankings (Phase 10, items 4 and 7).
         ratings=_ratings(history_rows.get(latest.id, [])) if latest and rated else None,
         history=[
             point
@@ -137,7 +141,7 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
             and (point := _point(run.run_at, run.week, history_rows.get(run.id, []))) is not None
         ],
         schedule=[_schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
-        resume=resume_summary(ctx, games, team_id, refs) if ctx and rated else None,
+        resume=resume_summary(ctx, games, team_id, refs) if ctx else None,
         projection=projection(sim),
         adjustments=[
             note_of(a)

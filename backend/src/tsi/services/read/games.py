@@ -16,7 +16,7 @@ from tsi.book.pricing import GameMarkets, price_game
 from tsi.db.queries.games import GameRow, game_by_id, week_games
 from tsi.db.queries.snapshots import SnapshotRow, picks_for_snapshots, snapshots_for_games
 from tsi.db.queries.team_info import TeamRef, team_refs
-from tsi.divisions import RATED_DIVISION
+from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION
 from tsi.model.distribution import ScoreDistribution
 from tsi.services.read.common import (
     Score,
@@ -71,13 +71,19 @@ class GameCenter:
 
 
 def week_board(
-    session: Session, season: int, week: int, season_type: str, now: datetime
+    session: Session,
+    season: int,
+    week: int,
+    season_type: str,
+    now: datetime,
+    division: str = RATED_DIVISION,
 ) -> WeekBoard:
-    """Games with at least one FBS team (the rated division); FCS-only games are left out."""
+    """Games with at least one team of `division` ("all": FBS or FCS); others are left out."""
+    wanted = set(LISTED_DIVISIONS) if division == "all" else {division}
     games = week_games(session, season, week, season_type)
-    summaries = _summaries(session, games, now)
-    rated = [s for s in summaries if RATED_DIVISION in (s.home.division, s.away.division)]
-    return WeekBoard(season, season_type, week, rated)
+    refs = team_refs(session, season, {t for g in games for t in (g.home_id, g.away_id)})
+    games = [g for g in games if wanted & {refs[g.home_id].division, refs[g.away_id].division}]
+    return WeekBoard(season, season_type, week, _summaries(session, games, now, refs=refs))
 
 
 def game_center(session: Session, game_id: int, now: datetime) -> GameCenter | None:
@@ -98,10 +104,14 @@ def _summaries(
     games: list[GameRow],
     now: datetime,
     snaps: dict[int, list[SnapshotRow]] | None = None,  # preloaded, to skip the query
+    refs: dict[int, TeamRef] | None = None,  # preloaded too
 ) -> list[GameSummary]:
     if not games:
         return []
-    refs = team_refs(session, games[0].season, {t for g in games for t in (g.home_id, g.away_id)})
+    if refs is None:
+        refs = team_refs(
+            session, games[0].season, {t for g in games for t in (g.home_id, g.away_id)}
+        )
     if snaps is None:
         snaps = snapshots_for_games(session, [g.id for g in games])
     shown: dict[int, tuple[SnapshotRow, bool]] = {}

@@ -3,7 +3,13 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 
 from tsi.api.deps import NowDep, SessionsDep, read, season_or_current
-from tsi.services.read.rankings import Rankings, RankingType, rankings
+from tsi.services.read.rankings import (
+    Division,
+    MixedResumeError,
+    Rankings,
+    RankingType,
+    rankings,
+)
 
 router = APIRouter(tags=["rankings"])
 
@@ -16,11 +22,21 @@ async def get_rankings(
     week: int | None = Query(None, description="Latest run within this week (default: latest)."),
     type: RankingType = "power",  # noqa: A002 (the documented query name)
     season_type: Literal["regular", "postseason"] | None = None,
+    division: Division = "fbs",
 ) -> Rankings:
-    """Power (how good now) or Résumé (what they've accomplished) rankings."""
-    result = await read(
-        sessions, lambda s: rankings(s, season_or_current(season, now), type, week, season_type)
-    )
+    """Power (how good now) or Résumé (what they've accomplished) rankings.
+
+    `division`: fbs (default), fcs, or all. Ranks are within a division; `all` ranks FBS and
+    FCS together by rating (Power only: Résumé benchmarks differ by division, so 422)."""
+    try:
+        result = await read(
+            sessions,
+            lambda s: rankings(
+                s, season_or_current(season, now), type, week, season_type, division
+            ),
+        )
+    except MixedResumeError as exc:
+        raise HTTPException(422, str(exc)) from exc
     if result is None:
         raise HTTPException(404, "No rankings for that season/week yet.")
     return result

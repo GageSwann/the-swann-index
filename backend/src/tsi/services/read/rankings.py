@@ -16,9 +16,14 @@ from tsi.db.queries.team_info import (
     stored_ratings,
     team_refs,
 )
-from tsi.divisions import RATED_DIVISION
+from tsi.divisions import FCS, RATED_DIVISION
 
 RankingType = Literal["power", "resume"]
+Division = Literal["fbs", "fcs", "all"]  # "all": FBS and FCS on one scale (Power only)
+
+
+class MixedResumeError(ValueError):
+    """Résumé ranks compare against a division's own benchmark, so they can't be mixed."""
 
 
 @dataclass(frozen=True)
@@ -56,6 +61,7 @@ class Rankings:
     model_version: str
     type: RankingType
     teams: list[RankedTeam]
+    division: Division
 
 
 def rankings(
@@ -64,7 +70,11 @@ def rankings(
     ranking: RankingType = "power",
     week: int | None = None,
     season_type: str | None = None,
+    division: Division = RATED_DIVISION,
 ) -> Rankings | None:
+    """Ranks are within a division (decision #111); "all" re-ranks both by rating."""
+    if division == "all" and ranking == "resume":
+        raise MixedResumeError("Résumé rankings are per division; pick fbs or fcs.")
     run, previous = run_and_week_ago(session, season, week, season_type)
     if run is None:
         return None
@@ -73,19 +83,19 @@ def rankings(
     season_rows = [r for r in rows if r.basis == "season"]
     predictive = {r.team_id: r for r in rows if r.basis == "predictive"}
     teams = team_refs(session, season, [r.team_id for r in season_rows])
-    # One division per list; FBS until the API's division switch (Phase 10 item 6).
-    season_rows = [r for r in season_rows if teams[r.team_id].division == RATED_DIVISION]
+    listed = (RATED_DIVISION, FCS) if division == "all" else (division,)
+    season_rows = [r for r in season_rows if teams[r.team_id].division in listed]
     record = records(session, season, run.run_at)
     sims = stored_sims(session, run.id)
     key = "rank_power" if ranking == "power" else "rank_resume"
-    ranked = sorted(
-        (r for r in season_rows if getattr(r, key) is not None), key=lambda r: getattr(r, key)
-    )
-    before = {
-        r.team_id: getattr(r, key)
+    rank = _ranks(season_rows, key, division)
+    ranked = sorted((r for r in season_rows if r.team_id in rank), key=lambda r: rank[r.team_id])
+    previous_rows = [
+        r
         for r in (stored.get(previous.id, []) if previous else [])
-        if r.basis == "season"
-    }
+        if r.basis == "season" and r.team_id in teams and teams[r.team_id].division in listed
+    ]
+    before = _ranks(previous_rows, key, division)
     off_rank = _rank_by(ranked, lambda r: r.off_rating)
     def_rank = _rank_by(ranked, lambda r: r.def_rating)
     return Rankings(
@@ -99,7 +109,7 @@ def rankings(
         teams=[
             _ranked(
                 r,
-                getattr(r, key),
+                rank[r.team_id],
                 before.get(r.team_id),
                 (off_rank[r.team_id], def_rank[r.team_id]),
                 teams[r.team_id],
@@ -109,7 +119,16 @@ def rankings(
             )
             for r in ranked
         ],
+        division=division,
     )
+
+
+def _ranks(rows: list[StoredRating], key: str, division: Division) -> dict[int, int]:
+    """team -> rank: the stored (within-division) rank, or for "all" by rating."""
+    ranked = [r for r in rows if getattr(r, key) is not None]
+    if division != "all":
+        return {r.team_id: getattr(r, key) for r in ranked}
+    return {r.team_id: i + 1 for i, r in enumerate(sorted(ranked, key=lambda r: -r.rating))}
 
 
 def _rank_by(rows: list[StoredRating], value) -> dict[int, int]:

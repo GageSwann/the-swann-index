@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException
 
 from tsi.api.deps import NowDep, SessionsDep, read, season_or_current
@@ -12,9 +14,10 @@ async def get_teams(
     sessions: SessionsDep,
     now: NowDep,
     season: int | None = None,
+    division: Literal["fbs", "fcs", "all"] = "fbs",
 ) -> list[TeamRef]:
-    """FBS teams of a season (slug, name, colors, logo, conference)."""
-    return await read(sessions, lambda s: team_list(s, season_or_current(season, now)))
+    """Teams of a season (slug, name, colors, logo, conference): FBS, FCS, or both."""
+    return await read(sessions, lambda s: team_list(s, season_or_current(season, now), division))
 
 
 @router.get("/teams/{slug}", response_model=TeamProfile)

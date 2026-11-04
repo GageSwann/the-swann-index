@@ -99,10 +99,10 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | Method | Path | Returns |
 |---|---|---|
 | GET | `/meta/current` | current season, week, last model run time |
-| GET | `/rankings?season&week&type=power\|resume` | ranked team list |
-| GET | `/teams` | all teams (slug, name, colors, logo) |
+| GET | `/rankings?season&week&type=power\|resume&division=fbs\|fcs\|all` | ranked team list (ranks within a division; `all` = Power on one scale, #113) |
+| GET | `/teams?division=fbs\|fcs\|all` | teams of a division (slug, name, colors, logo) |
 | GET | `/teams/{slug}?season` | team profile, rating history, schedule + win probs |
-| GET | `/weeks/{season}/{week}/games` | matchup board with TSI vs. market |
+| GET | `/weeks/{season}/{week}/games?division=fbs|fcs|all` | matchup board with TSI vs. market (games with a team of that division) |
 | GET | `/games/{id}` | full game center payload (odds board, distribution, comparison, result/grade) |
 | GET | `/book/ledger?season` | picks + running record, ROI, CLV |
 | GET | `/model/report?season` | latest saved backtest (headline metrics + report tables: accuracy by season/period, calibration, ATS, totals, Book record/calibration/units), model version history, live accuracy (#76) |

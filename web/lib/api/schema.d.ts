@@ -134,6 +134,9 @@ export interface paths {
         /**
          * Get Rankings
          * @description Power (how good now) or Résumé (what they've accomplished) rankings.
+         *
+         *     `division`: fbs (default), fcs, or all. Ranks are within a division; `all` ranks FBS and
+         *     FCS together by rating (Power only: Résumé benchmarks differ by division, so 422).
          */
         get: operations["get_rankings"];
         put?: never;
@@ -153,7 +156,7 @@ export interface paths {
         };
         /**
          * Get Teams
-         * @description FBS teams of a season (slug, name, colors, logo, conference).
+         * @description Teams of a season (slug, name, colors, logo, conference): FBS, FCS, or both.
          */
         get: operations["get_teams"];
         put?: never;
@@ -193,7 +196,8 @@ export interface paths {
         };
         /**
          * Get Week Games
-         * @description Matchup board: every game with an FBS team, TSI's prediction and the market.
+         * @description Matchup board: every game with a team of `division` (fbs default, fcs, or all), with
+         *     TSI's prediction and the market.
          */
         get: operations["get_week_games"];
         put?: never;
@@ -782,6 +786,11 @@ export interface components {
              * Format: date-time
              */
             as_of: string;
+            /**
+             * Division
+             * @enum {string}
+             */
+            division: "fbs" | "fcs" | "all";
             /** Model Version */
             model_version: string;
             /** Previous As Of */
@@ -1277,6 +1286,7 @@ export interface operations {
                 week?: number | null;
                 type?: "power" | "resume";
                 season_type?: ("regular" | "postseason") | null;
+                division?: "fbs" | "fcs" | "all";
             };
             header?: never;
             path?: never;
@@ -1308,6 +1318,7 @@ export interface operations {
         parameters: {
             query?: {
                 season?: number | null;
+                division?: "fbs" | "fcs" | "all";
             };
             header?: never;
             path?: never;
@@ -1372,6 +1383,7 @@ export interface operations {
         parameters: {
             query?: {
                 season_type?: "regular" | "postseason";
+                division?: "fbs" | "fcs" | "all";
             };
             header?: never;
             path: {

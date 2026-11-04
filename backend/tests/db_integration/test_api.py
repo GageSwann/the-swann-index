@@ -203,3 +203,38 @@ def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
     assert [t["team"]["school"] for t in result["projected"]][0] == "Alpha"
     assert "Charlie" not in [t["team"]["school"] for t in result["projected"]]
     assert api.get("/playoff?season=2015").status_code == 404
+
+
+def test_rankings_by_division(api: TestClient) -> None:
+    fcs = ok(api, "/rankings?division=fcs")
+    both = ok(api, "/rankings?division=all")
+
+    assert fcs["division"] == "fcs"
+    assert [(t["rank"], t["team"]["school"]) for t in fcs["teams"]] == [(1, "Echo"), (2, "Foxtrot")]
+    # "all": one scale, re-ranked by rating; FCS teams keep their own division ranks too.
+    assert [t["team"]["school"] for t in both["teams"]] == [
+        "Alpha", "Delta", "Charlie", "Bravo", "Echo", "Foxtrot",
+    ]  # fmt: skip
+    assert [t["rank"] for t in both["teams"]] == [1, 2, 3, 4, 5, 6]
+    assert both["teams"][4]["rank_power"] == 1  # Echo: #1 in FCS
+    assert api.get("/rankings?division=all&type=resume").status_code == 422
+
+
+def test_team_list_and_week_board_by_division(api: TestClient) -> None:
+    assert [t["school"] for t in ok(api, "/teams?division=fcs")] == ["Echo", "Foxtrot"]
+    assert len(ok(api, "/teams?division=all")) == 6
+
+    def ids(division: str) -> list[int]:
+        return [g["id"] for g in ok(api, f"/weeks/2026/2/games?division={division}")["games"]]
+
+    assert (ids("fbs"), ids("fcs"), ids("all")) == ([201, 202], [203], [201, 202, 203])
+
+
+def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
+    echo = ok(api, "/teams/echo")
+
+    assert (echo["ratings"]["rating"], echo["ratings"]["rank_power"]) == (-30.0, 1)
+    assert len(echo["history"]) == 1  # FCS teams are stored from the week-2 run on
+    assert echo["resume"] is None and echo["projection"] is None  # Résumé: Phase 10 item 8
+    m = ok(api, "/matchup?home=alpha&away=echo")
+    assert (m["home"]["division"], m["away"]["division"]) == ("fbs", "fcs")

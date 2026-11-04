@@ -15,9 +15,11 @@ async def get_week_games(
     sessions: SessionsDep,
     now: NowDep,
     season_type: Literal["regular", "postseason"] = "regular",
+    division: Literal["fbs", "fcs", "all"] = "fbs",
 ) -> WeekBoard:
-    """Matchup board: every game with an FBS team, TSI's prediction and the market."""
-    return await read(sessions, lambda s: week_board(s, season, week, season_type, now))
+    """Matchup board: every game with a team of `division` (fbs default, fcs, or all), with
+    TSI's prediction and the market."""
+    return await read(sessions, lambda s: week_board(s, season, week, season_type, now, division))
 
 
 @router.get("/games/{game_id}", response_model=GameCenter)
