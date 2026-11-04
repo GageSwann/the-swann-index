@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 
 import { PageHeading } from "@/components/layout/page-heading"
 import { AccuracyTable } from "@/components/model/accuracy-table"
+import { AdjustmentReportView } from "@/components/model/adjustment-report"
 import { BookBacktest } from "@/components/model/book-backtest"
 import { CalibrationChart } from "@/components/charts/lazy"
 import { MarketChecks } from "@/components/model/market-checks"
@@ -83,6 +84,10 @@ export default async function ModelPage() {
           run.
         </p>
       )}
+
+      <Section id="adjustments" title="Manual adjustments: did they help?">
+        <AdjustmentReportView report={report.adjustments} season={report.season} />
+      </Section>
 
       <Methodology />
 
