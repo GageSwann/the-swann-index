@@ -145,6 +145,7 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
         ),
         picks,
         [r for r in fcs_rows if r.predictive.games],
+        fcs_picks,
     )
 
 

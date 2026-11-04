@@ -30,6 +30,7 @@ class BacktestResult:
     lines: LineCheck  # edge shrink (train) + Book cover/over calibration at the opener
     picks: list[Pick]  # scored FBS-vs-FBS games
     fcs_rows: list[ComparisonRow]  # games with an FCS team, reported only (decision #109)
+    fcs_picks: list[Pick]  # those games' stacked predictions (FCS Book backtest, #112)
 
     @property
     def validation(self) -> ComparisonRow:

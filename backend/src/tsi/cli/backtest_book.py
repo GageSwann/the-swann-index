@@ -36,14 +36,22 @@ def book(
         if not seasons and r.label[:1].isdigit():
             continue
         typer.secho(_row(r), bold=r.tier == 0)
+    for fcs in result.fcs:  # report only: the live Book doesn't pick FCS games (#108)
+        k = fcs.shrink
+        typer.echo(
+            f"\nGames with an FCS team, {fcs.label}: k spread {k.k_spread:.3f}, "
+            f"k total {k.k_total:.3f} (not live: FCS picks are off)"
+        )
+        for r in fcs.records:
+            typer.secho(_row(r, width=26), bold=r.tier == 0)
 
 
-def _row(r: BookRecord) -> str:
+def _row(r: BookRecord, width: int = 20) -> str:
     tier = "all" if r.tier == 0 else "*" * r.tier
     clv = "" if r.clv is None else f"{r.clv:+.2f}"
     beat = "" if r.beat_close is None else f"{100 * r.beat_close:.0f}%"
     return (
-        f"{r.label:<20}{r.market:<7}{tier:<5}{f'{r.wins}-{r.losses}-{r.pushes}':>12}"
+        f"{r.label:<{width}}{r.market:<7}{tier:<5}{f'{r.wins}-{r.losses}-{r.pushes}':>12}"
         f"{100 * r.win_rate:>6.1f}%{r.units:>+8.1f}{100 * r.roi:>+8.1f}%"
         f"{r.kelly_units:>+8.1f}{clv:>7}{beat:>6}"
     )
