@@ -244,3 +244,12 @@ def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
     assert foxtrot_game["benchmark_win_prob"] == pytest.approx(p)
     m = ok(api, "/matchup?home=alpha&away=echo")
     assert (m["home"]["division"], m["away"]["division"]) == ("fbs", "fcs")
+
+
+def test_no_movement_until_the_earlier_run_ranked_the_division(api: TestClient) -> None:
+    # The week-1 run predates FCS rankings: FCS and "all" lists show no movement yet.
+    for division in ("fcs", "all"):
+        board = ok(api, f"/rankings?division={division}")
+        assert board["previous_as_of"] is None
+        assert all(t["previous_rank"] is None for t in board["teams"])
+    assert ok(api, "/rankings")["previous_as_of"] is not None  # FBS keeps its movement

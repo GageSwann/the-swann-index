@@ -95,6 +95,11 @@ def rankings(
         for r in (stored.get(previous.id, []) if previous else [])
         if r.basis == "season" and r.team_id in teams and teams[r.team_id].division in listed
     ]
+    # Movement only when the earlier run ranked every listed division (the first FCS
+    # rankings would otherwise all read "new", and "all" would mix in phantom moves).
+    ranked_before = {teams[r.team_id].division for r in previous_rows if getattr(r, key)}
+    if not set(listed) <= ranked_before:
+        previous, previous_rows = None, []
     before = _ranks(previous_rows, key, division)
     off_rank = _rank_by(ranked, lambda r: r.off_rating)
     def_rank = _rank_by(ranked, lambda r: r.def_rating)
