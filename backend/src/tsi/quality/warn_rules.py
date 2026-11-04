@@ -1,7 +1,15 @@
 """`warn` rules: known CFBD source gaps the model must tolerate."""
 
+from tsi.divisions import FCS_STATS_FROM
 from tsi.quality.rule import Check
-from tsi.quality.sql import FBS_INVOLVED, FBS_VS_FBS, GAMES, MATCHUP, SEASON_FILTER
+from tsi.quality.sql import (
+    FBS_INVOLVED,
+    FBS_VS_FBS,
+    FCS_RATED_GAME,
+    GAMES,
+    MATCHUP,
+    SEASON_FILTER,
+)
 
 WARN_RULES: tuple[Check, ...] = (
     # --- Known source gaps (model must tolerate) ----------------------------
@@ -18,6 +26,18 @@ WARN_RULES: tuple[Check, ...] = (
         "Completed FBS-vs-FBS game has no advanced stats (CFBD gap)",
         f"""SELECT x.season, {MATCHUP} FROM ({GAMES}) x WHERE {FBS_VS_FBS} AND completed
             AND NOT EXISTS (SELECT 1 FROM team_game_stats s WHERE s.game_id = x.id)""",
+    ),
+    Check(
+        "fcs_game_missing_stats",
+        "warn",
+        f"Completed game with an FCS team ({FCS_STATS_FROM}+) lacks advanced stats for a side",
+        f"""SELECT x.season, {MATCHUP} || CASE n.rows WHEN 0 THEN ' [no stats]'
+                                                       ELSE ' [one side]' END
+            FROM ({GAMES}) x
+            CROSS JOIN LATERAL (SELECT count(*) AS rows FROM team_game_stats s
+                                WHERE s.game_id = x.id) n
+            WHERE {FCS_RATED_GAME} AND completed AND x.season >= {FCS_STATS_FROM}
+              AND n.rows < 2""",
     ),
     Check(
         "fbs_game_without_closing_line",

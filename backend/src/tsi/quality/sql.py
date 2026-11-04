@@ -15,4 +15,8 @@ GAMES = f"""
 """
 FBS_INVOLVED = "(home_div = 'fbs' OR away_div = 'fbs')"
 FBS_VS_FBS = "(home_div = 'fbs' AND away_div = 'fbs')"
+# An FCS team against FBS or FCS (games with D-II and below aren't rated individually).
+FCS_RATED_GAME = (
+    "('fcs' IN (home_div, away_div) AND home_div IN ('fbs', 'fcs') AND away_div IN ('fbs', 'fcs'))"
+)
 MATCHUP = "x.home_school || ' vs ' || x.away_school || ' (game ' || x.id || ')'"

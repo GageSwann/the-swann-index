@@ -5,3 +5,7 @@ pooled by the ratings fit. Dependency-free so every layer can import it.
 """
 
 RATED_DIVISION = "fbs"
+
+# CFBD has advanced stats for FCS-vs-FCS games from this season on (scores only before),
+# so FCS teams can be rated individually from here (Phase 10, decision #107).
+FCS_STATS_FROM = 2022

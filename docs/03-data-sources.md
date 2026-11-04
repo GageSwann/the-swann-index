@@ -47,6 +47,16 @@ Every real CFBD request (including failed ones) is recorded in `ingest_log`; cac
 - **Daily job:** `tsi ingest daily` runs from GitHub Actions at 10:00 UTC. It re-fetches current-season games (~1 call/day); teams and calendar are loaded only when a season first appears.
 - **Garbage time:** use CFBD's garbage-time-filtered advanced stats where offered.
 - **FCS opponents:** ingest the games and the FCS team rows (division = `fcs`) so FCS expansion needs no schema change.
+- **FCS coverage (checked 2026-11-03 for Phase 10, #107):** the daily and season loaders already fetch every division, so FCS needs no backfill and no extra calls.
+
+  | | 2014–2021 | 2022 | 2023 | 2024 | 2025 | 2026 (so far) |
+  |---|---|---|---|---|---|---|
+  | FCS-vs-FCS games | scores only (~620/season; 19 in 2020) | 645 | 635 | 692 | 691 | 467 |
+  | FCS team-games with advanced stats (vs. FBS or FCS) | FBS games only (~110/season) | 82% | 90% | 94% | 97% | 100% |
+  | FCS teams with < 4 stat games | — | 3 | 0 | 0 | 0 | 0 |
+  | FCS-vs-FCS games with a line | none | 567 | 506 | 653 | 663 | 466 |
+
+  Stats rows are complete (drives, plays, success rate) wherever they exist, and missing stats are always a whole game (never one side, never an FBS game). FCS priors: recruiting nearly every season, talent 2015–2023 only, returning production none. `FCS_STATS_FROM = 2022` (`tsi/divisions.py`) marks the first season FCS teams can be rated individually.
 - **Conference/division per season:** write `team_seasons` from each season's `/teams?year=` response, because teams change conferences and move FCS→FBS.
 
 ### Market lines
@@ -66,6 +76,7 @@ Every real CFBD request (including failed ones) is recorded in `ingest_log`; cac
 **Warn** (known CFBD gaps the model must tolerate):
 - Non-FBS completed games without a score
 - FBS-vs-FBS games without advanced stats or without a closing spread
+- Games with an FCS team (vs. FBS or FCS), 2022 on, without advanced stats for a side (`fcs_game_missing_stats`; 265 as of 2026-11-03: 126 in 2022 down to 22 in 2025). Becomes a `fail` rule if a later CFBD refresh starts dropping one side once FCS teams are rated
 - FBS game 2+ days past kickoff but not final (cancelled/stale)
 - FBS game within 3 days of kickoff with no line yet
 - FBS team with fewer than 10 games in a finished season (2020 excluded)

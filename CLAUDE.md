@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105). Next: Phase 10 (FCS expansion), scoped in the roadmap (#107).
+- **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105). Next: Phase 10 (FCS expansion), scoped in the roadmap (#107); item 1 (data readiness) done.
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
 - **Phase 3 built** (2026-10-20): score distribution, pricing, consensus + shrunk edges, picks, publishing/grading/CLV, Book backtest, `tsi run`. **The nightly job (10:00 UTC) runs `tsi run`:** ingest → rate → grade → publish. "Done when" = first fully graded live week: week 8 (games Oct 20–25, 5 published totals picks, all overs) is graded by the Oct 26 run.
@@ -67,7 +67,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Division values:** `fbs`, `fcs`, `ii`, `iii`, `unknown` (CFBD `classification`). Conference sub-divisions (Sun Belt East/West) are `team_seasons.conference_division` (CFBD's `division`). Conference title games are found by "championship" in `games.notes` (CFBD doesn't always flag them as conference games). Teams missing from CFBD `/teams` (mostly NAIA) get placeholder rows with slug `name-<id>`.
 - **Times** are UTC, timezone-aware; `parse_utc` rejects naive timestamps. `games.start_time_tbd` marks date-only kickoffs.
 - **Market lines** are change-only snapshots; `is_closing` = captured at/after kickoff. History has closing snapshots plus openers (`spread_open`/`total_open`, 2021+; some single-book openers are stale, hence medians). CFBD lines carry no spread/total prices: assume −110.
-- **Known gaps** (`tsi check` warns): 47 FBS games without advanced stats (mostly 2014–16), no talent before 2015, some new-FBS teams without returning production.
+- **Known gaps** (`tsi check` warns): 47 FBS games without advanced stats (mostly 2014–16), no talent before 2015, some new-FBS teams without returning production; 265 FCS games (2022+) without stats (126 in 2022, 22 in 2025). FCS-vs-FCS games have scores only before 2022 (`FCS_STATS_FROM`); FCS priors lack returning production and talent after 2023 (doc 03).
 - CFBD identifies teams by **school name** in stats/talent/returning, so match through our tables.
 
 ## Gotchas
