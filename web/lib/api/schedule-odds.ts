@@ -10,6 +10,7 @@ export type GameOdds = {
   teamPoints: number
   opponentPoints: number
   source: "published" | "today"
+  adjusted: boolean // the published prediction includes manual adjustments
 }
 
 /**
@@ -37,6 +38,7 @@ export async function scheduleOdds(
             teamPoints: g.projected_team,
             opponentPoints: g.projected_opponent,
             source: "published",
+            adjusted: g.adjusted,
           },
         ]
       }
@@ -56,6 +58,7 @@ export async function scheduleOdds(
           teamPoints: atHome ? m.proj_home : m.proj_away,
           opponentPoints: atHome ? m.proj_away : m.proj_home,
           source: "today",
+          adjusted: false,
         },
       ]
     }),

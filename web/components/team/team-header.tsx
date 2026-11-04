@@ -1,6 +1,7 @@
 import Image from "next/image"
 
 import type { TeamProfile } from "@/lib/api/types"
+import { describeAdjustment } from "@/lib/format/adjustments"
 import { teamColorVars } from "@/lib/format/color"
 import { record, signed } from "@/lib/format/numbers"
 
@@ -77,6 +78,13 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
           <p className="text-xs text-muted-foreground">
             Rating and ranks use this season&apos;s games only; the predictive rating also weighs
             the preseason prior and drives TSI&apos;s game predictions.
+          </p>
+        )}
+        {profile.adjustments.length > 0 && (
+          <p className="border-l-2 border-primary pl-2 text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">Adjusted:</span>{" "}
+            {profile.adjustments.map(describeAdjustment).join("; ")}, points per game. TSI&apos;s
+            predictions for its upcoming games include this; the ratings and ranks above don&apos;t.
           </p>
         )}
       </div>

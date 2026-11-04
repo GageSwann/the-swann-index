@@ -18,6 +18,7 @@ type Props = { schedule: ScheduleGame[]; odds: Map<number, GameOdds> }
  */
 export function ScheduleTable({ schedule, odds }: Props) {
   const anyToday = [...odds.values()].some((o) => o.source === "today")
+  const anyAdjusted = [...odds.values()].some((o) => o.adjusted)
   const date = (g: ScheduleGame) => (g.kickoff ? formatShortDay(g.kickoff) : `Week ${g.week}`)
   return (
     <section aria-labelledby="schedule-heading" className="space-y-3">
@@ -54,7 +55,7 @@ export function ScheduleTable({ schedule, odds }: Props) {
                     <Result game={g} odds={o} />
                   </td>
                   <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
-                    {o ? teamSpread(Math.round(o.spread * 10) / 10) : "—"}
+                    {o ? <Line odds={o} /> : "—"}
                   </td>
                   <td className="px-3 py-2 text-right whitespace-nowrap tabular-nums">
                     <WinChance odds={o} />
@@ -81,7 +82,7 @@ export function ScheduleTable({ schedule, odds }: Props) {
                 <span>{date(g)}</span>
                 {o && (
                   <span>
-                    TSI {teamSpread(Math.round(o.spread * 10) / 10)}, win <WinChance odds={o} />
+                    TSI <Line odds={o} />, win <WinChance odds={o} />
                   </span>
                 )}
               </p>
@@ -97,10 +98,10 @@ export function ScheduleTable({ schedule, odds }: Props) {
       <p className="text-xs text-muted-foreground">
         TSI line and win chance are from the team&apos;s side, as published before kickoff
         (predictions began Oct 20, 2026).
-        {anyToday &&
-          " * Not yet published: if the game were played today, with current ratings."}{" "}
-        &ldquo;#12 team wins&rdquo;: how often a typical #12 team would win the game, against the
-        opponent&apos;s current rating (lower = harder); played games make up the{" "}
+        {anyToday && " * Not yet published: if the game were played today, with current ratings."}
+        {anyAdjusted && " † Includes a manual adjustment (see the game center)."} &ldquo;#12 team
+        wins&rdquo;: how often a typical #12 team would win the game, against the opponent&apos;s
+        current rating (lower = harder); played games make up the{" "}
         <a href="#resume" className="underline underline-offset-2">
           Résumé
         </a>
@@ -177,5 +178,19 @@ function Difficulty({ game }: { game: ScheduleGame }) {
     <span className={game.in_resume ? "text-foreground" : "text-muted-foreground"}>
       {chance(game.benchmark_win_prob)}
     </span>
+  )
+}
+
+/** The TSI line from the team's side; † marks a manually adjusted prediction. */
+function Line({ odds }: { odds: GameOdds }) {
+  return (
+    <>
+      {teamSpread(Math.round(odds.spread * 10) / 10)}
+      {odds.adjusted && (
+        <span className="text-muted-foreground" title="Includes a manual adjustment">
+          †
+        </span>
+      )}
+    </>
   )
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
+import { AdjustedNote } from "@/components/game/adjusted-note"
 import { AltLadder } from "@/components/game/alt-ladder"
 import { GameHeader } from "@/components/game/game-header"
 import { MarginChart } from "@/components/charts/lazy"
@@ -65,6 +66,7 @@ async function GameCenterView({ params }: Props) {
         {game.away.school} {game.neutral ? "vs" : "at"} {game.home.school}
       </h1>
       <GameHeader game={game} home={home} away={away} />
+      {p && <AdjustedNote prediction={p} game={game} className="max-w-[70ch]" />}
       {p && p.picks.length > 0 && (
         <div className="space-y-2">
           {p.picks.map((pick) => (

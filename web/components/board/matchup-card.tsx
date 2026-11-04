@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { AdjustedNote } from "@/components/game/adjusted-note"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameSummary, TeamRef } from "@/lib/api/types"
 import { american, favoriteLine, totalLine } from "@/lib/format/odds"
@@ -86,6 +87,7 @@ export function MatchupCard({ game, ranks }: Props) {
               />
             </tbody>
           </table>
+          <AdjustedNote prediction={p} game={game} />
           {p.picks.map((pick) => (
             <PickBadge key={`${pick.market}-${pick.side}`} pick={pick} game={game} />
           ))}
