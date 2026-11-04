@@ -1,0 +1,40 @@
+# Manual only: run the walk-forward backtest (+ Book backtest) on the production database
+# (Neon `production` branch, the DATABASE_URL secret) and save it as a `model_runs` row
+# (kind='backtest'), which the Model page and /model/report show (decision #76).
+# Run it after every model change once the new artifact is on main (CLAUDE.md):
+#   Actions tab -> "Save backtest to production" -> Run workflow, or
+#   gh workflow run backtest.yml
+# The connection string never leaves GitHub. Read-only apart from that one saved run.
+name: Save backtest to production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-refresh # never overlap the nightly job
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0 # exact tag: setup-uv has no floating major tag
+
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Run and save the backtest
+        run: uv run tsi backtest run
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONIOENCODING: utf-8
