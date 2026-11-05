@@ -40,7 +40,11 @@ def forecast_games(
     return [forecast_game(g, live, artifact) for g in games]
 
 
-def forecast_game(g: UpcomingGame, live: LiveInputs, artifact: ModelArtifact) -> GameForecast:
+def forecast_game(
+    g: UpcomingGame, live: LiveInputs, artifact: ModelArtifact, *, scheduled: bool = True
+) -> GameForecast:
+    """`scheduled=False` for hypothetical games (matchups, projected title games): no rest
+    adjustment, since their rest days aren't real."""
     side = GameSide(
         rated_id(g.home_id, g.home_div, g.season),
         rated_id(g.away_id, g.away_div, g.season),
@@ -53,6 +57,8 @@ def forecast_game(g: UpcomingGame, live: LiveInputs, artifact: ModelArtifact) ->
     margin = artifact.stack.predict(
         bucket, margin_features(side, live.components, live.priors, elo_margin)
     )
+    if scheduled:  # rest, byes, short weeks (#120)
+        margin += artifact.situational.shift(live.situation(g.home_id, g.away_id, g.start_time))
     total = artifact.totals.predict(
         bucket, total_features(side, live.components, live.last_components, live.priors)
     )

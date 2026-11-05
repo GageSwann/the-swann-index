@@ -149,6 +149,6 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 - [x] Key numbers & push probabilities (#118: whole-number margin/total tables with learned key-number weights instead of a Monte Carlo; margin log loss 4.168 → 4.027 on validation; pushes priced on whole-number lines; picks unchanged)
 - [ ] First-half markets
 - [ ] Live odds + line movement (The Odds API)
-- [ ] Team-specific HFA, travel, rest
+- [x] Team-specific HFA, travel, rest (#120: rest / bye / short-week adjustment adopted, model v1.4; travel, time zones, altitude and team-specific home field tested and rejected)
 - [ ] Model v2: gradient-boosted ensemble on top of ratings
 - [ ] AI-written game previews

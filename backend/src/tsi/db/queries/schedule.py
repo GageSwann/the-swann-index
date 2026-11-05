@@ -64,3 +64,21 @@ def upcoming_games(
         .order_by(Game.start_time, Game.id)
     )
     return [UpcomingGame(*row) for row in session.execute(query)]
+
+
+def team_kickoffs(
+    session: Session, first_season: int, last_season: int
+) -> dict[tuple[int, int], list[datetime]]:
+    """(team, season) -> every scheduled kickoff, sorted (rest days, decision #120)."""
+    home = select(Game.home_id, Game.season, Game.start_time)
+    away = select(Game.away_id, Game.season, Game.start_time)
+    out: dict[tuple[int, int], list[datetime]] = {}
+    for query in (home, away):
+        query = query.where(
+            Game.season.between(first_season, last_season), Game.start_time.is_not(None)
+        )
+        for team, season, start in session.execute(query):
+            out.setdefault((team, season), []).append(start)
+    for kickoffs in out.values():
+        kickoffs.sort()
+    return out

@@ -13,6 +13,7 @@ from tsi.backtest.ats import ats_record
 from tsi.backtest.calibration import calibration_table
 from tsi.backtest.evaluate import ScoredGame, summarize
 from tsi.backtest.market_calibration import line_check
+from tsi.backtest.situational_fit import apply_situational
 from tsi.backtest.splits import TRAIN, VALIDATE
 from tsi.backtest.stacking import stacked_picks
 from tsi.backtest.totals_eval import summarize_totals
@@ -50,9 +51,12 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
         config.rating,
         elo_margins,
         setup.final_components,
+        data.kickoffs,
     )
     # The stacks learn from FBS-vs-FBS games only; FCS games are predicted, not fit.
     picks = stacked_picks(picks, config.stack_lam, fit_on=lambda p: p.game.fbs_vs_fbs)
+    if config.situational:  # rest, byes, short weeks (#120)
+        picks, _ = apply_situational(picks, TRAIN, fit_on=lambda p: p.game.fbs_vs_fbs)
     fcs_picks = [p for p in picks if not p.game.fbs_vs_fbs]
     picks = [p for p in picks if p.game.fbs_vs_fbs]
     sigmas = {

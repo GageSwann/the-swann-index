@@ -107,7 +107,7 @@ def project_season(
         """Team a's mean margin vs. FBS team b (a at home unless neutral)."""
         game = UpcomingGame(0, season, week, "regular", now, a, b, RATED_DIVISION,
                             RATED_DIVISION, neutral)  # fmt: skip
-        return forecast_game(game, live, artifact).distribution.margin
+        return forecast_game(game, live, artifact, scheduled=False).distribution.margin
 
     members = conference_members(session, season)
     conferences = build_conferences(

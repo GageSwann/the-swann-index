@@ -6,8 +6,9 @@ from typing import Any
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
 
-MODEL_VERSION = "tsi-v1.3"  # v1.1: season blend + stacked margin; v1.2: + stacked totals;
-# v1.3: FCS teams rated individually from 2022 with an FCS level + FCS priors (#109)
+MODEL_VERSION = "tsi-v1.4"  # v1.1: season blend + stacked margin; v1.2: + stacked totals;
+# v1.3: FCS teams rated individually from 2022 with an FCS level + FCS priors (#109);
+# v1.4: key-number pricing (#118, #119) + rest / bye / short-week adjustment (#120)
 ESTABLISHED_GAMES = 4  # fewer games played -> provisional rank (doc 04)
 
 
@@ -15,6 +16,7 @@ ESTABLISHED_GAMES = 4  # fewer games played -> provisional rank (doc 04)
 class ModelConfig:
     rating: RatingParams = field(default_factory=RatingParams)
     stack_lam: float = DEFAULT_LAM  # ridge penalty on the predictive stack weights
+    situational: bool = True  # rest / bye / short-week margin adjustment (#120)
 
     def to_dict(self) -> dict[str, Any]:
         return {"version": MODEL_VERSION, **asdict(self)}

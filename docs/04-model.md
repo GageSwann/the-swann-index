@@ -166,6 +166,9 @@ Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI 
 - Hyperparameters (λ, k, w, decay, HFA, σ) are tuned on 2015–2022 and **validated on 2023–2025**. Don't tune on the validation seasons.
 - Every backtest run is saved with its params and git SHA.
 
+## 9b. Rest, byes and short weeks (v1.4, #120)
+A global adjustment to the predicted margin after the stack: `rest −0.07 × clip(home − away rest days, ±7) + 1.36 × bye − 1.26 × short week` (home minus away flags; bye = 13+ days since the last game, short = 5.5 or fewer). Validation 12.394 → 12.390, train 12.900 → 12.895. Travel distance, time zones, altitude and team-specific home field were screened and did not help out of sample.
+
 ## 10. Model versioning
 `model_version` follows `tsi-v{major}.{minor}`. Each `model_runs` row stores the version and full params. Changing methodology bumps the version, and the report card can compare versions.
 

@@ -6,7 +6,7 @@ two can never disagree about their inputs. The operator's manual adjustments in
 effect at `as_of` ride along for the predictions; the ratings never read them (rule 6).
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from tsi.db.queries.adjustments import StoredAdjustment, season_adjustments
 from tsi.db.queries.priors import division_teams, fbs_teams, prior_inputs
 from tsi.db.queries.results import completed_games
+from tsi.db.queries.schedule import team_kickoffs
 from tsi.db.queries.stats import offense_rows
 from tsi.divisions import FCS, FCS_STATS_FROM
 from tsi.model.artifact import ModelArtifact
@@ -21,6 +22,8 @@ from tsi.model.elo import EloRun, run_elo
 from tsi.model.ratings.components import Components, fit_components
 from tsi.model.ratings.fit import AVERAGE, blend_components
 from tsi.model.ratings.types import TeamRating
+from tsi.model.situational import features as situational_features
+from tsi.model.situational import rest_days
 from tsi.services.prior_setup import prior_inputs_for
 
 
@@ -35,9 +38,15 @@ class LiveInputs:
     fbs: set[int]
     fcs: frozenset[int] = frozenset()  # individually rated FCS teams this season (#109)
     adjustments: tuple[StoredAdjustment, ...] = ()  # in effect at `as_of` (decision #104)
+    kickoffs: dict[int, list[datetime]] = field(default_factory=dict)  # team -> season (#120)
 
     def games_played(self, team_id: int) -> int:
         return self.components.games.get(team_id, 0) if self.components else 0
+
+    def situation(self, home: int, away: int, kickoff: datetime) -> tuple[float, float, float]:
+        """Rest / bye / short-week features of a scheduled game (model/situational.py)."""
+        rest = [rest_days(self.kickoffs.get(t, ()), kickoff) for t in (home, away)]
+        return situational_features(*rest)
 
 
 def load_live_inputs(
@@ -73,6 +82,7 @@ def load_live_inputs(
         elo=run_elo(games, artifact.elo),
         fbs=fbs,
         fcs=frozenset(fcs.get(season, set())),
+        kickoffs={team: k for (team, _), k in team_kickoffs(session, season, season).items()},
         adjustments=tuple(
             a for a in season_adjustments(session, season, open_at=as_of) if a.created_at <= as_of
         ),

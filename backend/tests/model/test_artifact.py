@@ -10,6 +10,7 @@ from tsi.model.fcs_prior import FcsPrior
 from tsi.model.key_numbers import KeyNumbers
 from tsi.model.prior import PriorModel
 from tsi.model.ratings.fit import RatingParams
+from tsi.model.situational import Situational
 from tsi.model.stack import StackModel
 
 
@@ -32,6 +33,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
         edge_shrink=EdgeShrink(0.05, 0.28),
         sigma_season=15.6,
         key_numbers=KeyNumbers((0.0, 0.7, 0.6, 2.3) + (1.0,) * 57, (1.0,) * 161),
+        situational=Situational((-0.07, 1.36, -1.26)),
     )
     path = tmp_path / "artifact.json"
 
@@ -44,6 +46,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
     assert loaded.edge_shrink == artifact.edge_shrink
     assert loaded.fcs_prior == FcsPrior(0.59, 0.61)
     assert loaded.key_numbers == artifact.key_numbers
+    assert loaded.situational == Situational((-0.07, 1.36, -1.26))
     np.testing.assert_allclose(loaded.stack.coefs[6], artifact.stack.coefs[6])
     np.testing.assert_allclose(loaded.totals.coefs[0], artifact.totals.coefs[0])
     np.testing.assert_allclose(loaded.prior.coefs[("off", ("last", "talent"))], [-8.0, 0.4, 0.01])

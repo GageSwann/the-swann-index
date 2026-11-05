@@ -19,6 +19,8 @@ from tsi.model.ratings.components import Components, fit_components
 from tsi.model.ratings.design import rated_id
 from tsi.model.ratings.fit import AVERAGE, RatingParams, blend_components, predicted_margin
 from tsi.model.ratings.types import RatingSet, TeamRating
+from tsi.model.situational import features as situational_features
+from tsi.model.situational import rest_days
 from tsi.model.stack import stage_bucket
 
 REFIT_HOUR = 10  # UTC, same as the nightly job
@@ -34,6 +36,7 @@ class Pick:
     bucket: int  # stacking stage (fewer games played of the two teams)
     features: tuple[float, ...]  # margin stack features, model/stack.FEATURES order
     total_features: tuple[float, ...]  # model/totals.TOTAL_FEATURES order
+    situation: tuple[float, ...] = (0.0, 0.0, 0.0)  # model/situational.FEATURES (rest, #120)
 
 
 def refit_day(kickoff: datetime) -> date:
@@ -48,10 +51,12 @@ def walk_forward(
     rating_params: RatingParams | None = None,
     elo_margins: Mapping[int, float] | None = None,  # game_id -> Elo margin (pre-game)
     finals: Mapping[int, Components | None] | None = None,  # season -> final components
+    kickoffs: Mapping[tuple[int, int], Sequence[datetime]] | None = None,  # rest days (#120)
 ) -> list[Pick]:
     rating_params = rating_params or RatingParams()
     elo_margins = elo_margins or {}
     finals = finals or {}
+    kickoffs = kickoffs or {}
     slates: dict[tuple[int, date], list[GameResult]] = defaultdict(list)
     for g in games:
         if g.start_time is not None:
@@ -85,9 +90,21 @@ def walk_forward(
                         side, components, season_priors, elo_margins.get(g.id, 0.0)
                     ),
                     total_features=total_features(side, components, last, season_priors),
+                    situation=situation(g, kickoffs),
                 )
             )
     return picks
+
+
+def situation(
+    g: GameResult, kickoffs: Mapping[tuple[int, int], Sequence[datetime]]
+) -> tuple[float, float, float]:
+    if g.start_time is None:
+        return (0.0, 0.0, 0.0)
+    rest = [
+        rest_days(kickoffs.get((t, g.season), ()), g.start_time) for t in (g.home_id, g.away_id)
+    ]
+    return situational_features(*rest)
 
 
 def _margin(ratings: RatingSet, g: GameResult) -> float:

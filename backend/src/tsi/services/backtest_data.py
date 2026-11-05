@@ -2,6 +2,7 @@
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,7 @@ from tsi.backtest.splits import is_fcs_scored, is_scored
 from tsi.db.queries.market import OpeningLine, closing_spreads, closing_totals, opening_lines
 from tsi.db.queries.priors import division_teams, fbs_teams, prior_inputs
 from tsi.db.queries.results import GameResult, completed_games
+from tsi.db.queries.schedule import team_kickoffs
 from tsi.db.queries.stats import OffenseRow, offense_rows
 from tsi.divisions import FCS
 from tsi.model.elo import EloParams
@@ -31,6 +33,7 @@ class BacktestData:
     fcs: Mapping[int, set[int]]  # season -> FCS team ids (their priors, decision #109)
     prior_table: InputsTable
     elo: Mapping[int, EloPick]
+    kickoffs: Mapping[tuple[int, int], list[datetime]]  # (team, season) -> kickoffs (#120)
 
 
 def load_backtest_data(session: Session, through_season: int) -> BacktestData:
@@ -49,4 +52,5 @@ def load_backtest_data(session: Session, through_season: int) -> BacktestData:
         fcs=division_teams(session, FIRST_DATA_SEASON, through_season, FCS),
         prior_table=prior_inputs(session, FIRST_DATA_SEASON, through_season),
         elo=elo,
+        kickoffs=team_kickoffs(session, FIRST_DATA_SEASON, through_season),
     )

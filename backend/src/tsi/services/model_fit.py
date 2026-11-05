@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from tsi.backtest import key_numbers_eval
 from tsi.backtest.elo_picks import elo_picks
 from tsi.backtest.market_calibration import fit_edge_shrink, spread_samples, total_samples
+from tsi.backtest.situational_fit import apply_situational
 from tsi.backtest.splits import FIRST_SCORED_SEASON
 from tsi.backtest.stacking import fit_margin_stack, fit_total_stack, stacked_picks
 from tsi.backtest.walk_forward import walk_forward
@@ -21,6 +22,7 @@ from tsi.model.config import MODEL_VERSION, ModelConfig
 from tsi.model.distribution_fit import fit_distribution
 from tsi.model.elo import EloParams
 from tsi.model.ratings.probability import fit_sigma
+from tsi.model.situational import NONE as NO_SITUATIONAL
 from tsi.services.backtest_data import FIRST_DATA_SEASON, load_backtest_data
 from tsi.services.prior_setup import build_prior_setup
 
@@ -55,10 +57,14 @@ def fit_production_model(
         config.rating,
         {gid: pick.margin for gid, pick in elo.items()},
         setup.final_components,
+        data.kickoffs,
     )
     # Distribution and edge shrink are fit on leave-one-season-out stack predictions:
     # in-sample predictions look sharper than live ones and would overstate edges.
     held_out = stacked_picks(picks, config.stack_lam, seasons)
+    situational = NO_SITUATIONAL
+    if config.situational:  # rest, byes, short weeks (#120), held out the same way
+        held_out, situational = apply_situational(held_out, seasons)
     margins = [p.predictive_margin for p in held_out]
     actual = [p.game.margin for p in held_out]
     distribution = fit_distribution(
@@ -88,4 +94,5 @@ def fit_production_model(
         ),
         # Same held-out predictions as the distribution, so the weights see live-like spread.
         key_numbers=key_numbers_eval.fit_on(held_out, distribution),
+        situational=situational,
     )

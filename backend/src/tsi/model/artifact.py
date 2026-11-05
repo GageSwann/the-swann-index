@@ -21,6 +21,8 @@ from tsi.model.fcs_prior import FcsPrior
 from tsi.model.key_numbers import KeyNumbers
 from tsi.model.prior import PriorModel
 from tsi.model.ratings.fit import RatingParams
+from tsi.model.situational import FEATURES as SITUATIONAL_FEATURES
+from tsi.model.situational import Situational
 from tsi.model.stack import StackModel
 
 ARTIFACT_PATH = Path(__file__).parent / "artifacts" / "current.json"
@@ -40,6 +42,7 @@ class ModelArtifact:
     edge_shrink: EdgeShrink  # how far the Book trusts TSI over the market line (#52)
     sigma_season: float
     key_numbers: KeyNumbers  # whole-number margin/total weights for pricing (#118)
+    situational: Situational  # rest / bye / short-week margin adjustment (#120)
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -61,6 +64,7 @@ class ModelArtifact:
                 "margin": [round(w, 6) for w in self.key_numbers.margin],
                 "total": [round(w, 6) for w in self.key_numbers.total],
             },
+            "situational": dict(zip(SITUATIONAL_FEATURES, self.situational.coefs, strict=True)),
         }
 
     @classmethod
@@ -83,6 +87,9 @@ class ModelArtifact:
             sigma_season=data["sigma_season"],
             key_numbers=KeyNumbers(
                 tuple(data["key_numbers"]["margin"]), tuple(data["key_numbers"]["total"])
+            ),
+            situational=Situational(
+                tuple(float(data["situational"][f]) for f in SITUATIONAL_FEATURES)
             ),
         )
 
