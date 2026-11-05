@@ -3,12 +3,17 @@
 # Then refreshes the deployed site's cached pages.
 # Secrets: CFBD_API_KEY, DATABASE_URL (Neon `production` branch), REVALIDATE_TOKEN.
 # Variables: TSI_API_URL (Render), SITE_URL (Vercel). Repo Settings -> Secrets and variables -> Actions.
+#
+# When it runs (Phase 12.1, decision #126): cron-job.org starts it at 11:00 UTC (6 AM EST /
+# 7 AM EDT) through the workflow_dispatch API, because GitHub started scheduled runs 5-10
+# hours late. GitHub's own schedule below is only a backup: it skips itself when a run
+# already succeeded today (UTC).
 name: Daily refresh
 
 on:
   schedule:
-    - cron: "0 10 * * *" # 10:00 UTC = 5-6 AM US Eastern, after late West Coast games end
-  workflow_dispatch: # "Run workflow" button in the Actions tab
+    - cron: "23 14 * * *" # backup only; off the busy top of the hour
+  workflow_dispatch: # cron-job.org (11:00 UTC) and the "Run workflow" button
 
 permissions:
   contents: read
@@ -18,7 +23,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A scheduled (backup) run goes ahead only if no run succeeded earlier today.
+  # Manual and cron-job.org runs always go ahead.
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          THIS_RUN: ${{ github.run_id }}
+        run: |
+          if [ "$EVENT" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          today=$(date -u +%F)
+          done_today=$(gh run list --repo "$REPO" --workflow daily-refresh.yml \
+            --created ">=$today" --status success --limit 20 --json databaseId \
+            --jq "[.[] | select(.databaseId != $THIS_RUN)] | length")
+          if [ "$done_today" -gt 0 ]; then
+            echo "A run already succeeded today ($today UTC); skipping the backup."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No successful run yet today ($today UTC); running the backup."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
   refresh:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:

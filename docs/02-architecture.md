@@ -15,7 +15,7 @@ CollegeFootballData API ──► Ingest (Python) ──► PostgreSQL (Neon)
                                                    │
                                                Public viewers
 
-GitHub Actions (cron, 10:00 UTC) ── `tsi run`: ingest → rate → grade → publish ── then POST /api/revalidate (bearer token) refreshes the site's cached pages
+GitHub Actions (11:00 UTC, started by cron-job.org) ── `tsi run`: ingest → rate → grade → publish ── then POST /api/revalidate (bearer token) refreshes the site's cached pages
 ```
 
 The Python side owns **all** data and math. The frontend never calculates odds or ratings; it only renders what the API returns. The one exception is the hypothetical matchup tool, which calls an API endpoint that computes on demand.
@@ -122,7 +122,7 @@ Behavior (decision #60):
 
 ## Data flow per week (in season)
 
-**Daily, 10:00 UTC** (`.github/workflows/daily-refresh.yml`), one job:
+**Daily, 11:00 UTC** (`.github/workflows/daily-refresh.yml`, started by cron-job.org through the `workflow_dispatch` API; GitHub's own schedule at 14:23 UTC is a backup that skips itself when a run already succeeded that day, #126), one job:
 1. Ingest current-season games, advanced stats, lines (built: Phase 1)
 2. `tsi rate`: refit `season` + `predictive` ratings from the committed artifact → new `live` `model_run` + `team_ratings` rows (Power, Résumé, predictive) (built: Phase 2)
 3. Generate and publish prediction snapshots for upcoming games; grade finished picks (Phase 3)

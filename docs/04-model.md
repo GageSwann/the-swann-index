@@ -19,7 +19,7 @@ Each model run produces two sets of ratings, stored separately:
 - Once the prior has faded out (around midseason), the two sets are identical.
 - Past seasons are still used to **tune the method**: HFA size, how much to trust EPA vs. points, ridge λ, σ. That teaches the model *how* to rate, never *who* is good this year.
 - **Provisional ranks:** a team with fewer than **4** games this season (threshold tunable) is still ranked, but shown as *provisional*.
-- **Updated daily:** the nightly job (10:00 UTC) refits both sets after loading data, so a Tuesday-night game moves the rankings by Wednesday morning. Each day's run is a new `model_runs` row; published snapshots are never edited (rule 2).
+- **Updated daily:** the nightly job (11:00 UTC) refits both sets after loading data, so a Tuesday-night game moves the rankings by Wednesday morning. Each day's run is a new `model_runs` row; published snapshots are never edited (rule 2).
 
 ### Model v1.1 at a glance (decisions #37–#38)
 - **`season` (rankings):** `off = 0.726 × PPD off + 0.635 × success-rate off` (same for def), HFA 3.24 pts. The weights were learned on 2015–22 walk-forward games, but the inputs are **this season's games only**. EPA is not fitted (#49): it added nothing to either rating set. Raw EPA/play can still be shown as a stat.

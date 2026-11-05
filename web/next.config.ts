@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: { "/**": ["./assets/fonts/*.ttf"] },
   partialPrefetching: true,
   cacheLife: {
-    // TSI data changes once a day (the 10:00 UTC nightly run). Pages re-check hourly, and
+    // TSI data changes once a day (the 11:00 UTC nightly run). Pages re-check hourly, and
     // the nightly job calls /api/revalidate so updates land right away.
     tsi: {
       stale: 300, // client may reuse for 5 minutes without asking

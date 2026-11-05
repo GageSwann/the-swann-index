@@ -35,7 +35,7 @@ The closing line is the bar to clear, and TSI sits within half a point of it. It
 ```mermaid
 flowchart LR
     CFBD[(CollegeFootballData API)]
-    subgraph Nightly["GitHub Actions, nightly 10:00 UTC"]
+    subgraph Nightly["GitHub Actions, nightly 11:00 UTC"]
         RUN["tsi run<br/>ingest → rate → grade → publish"]
     end
     DB[(Neon Postgres<br/>production branch)]

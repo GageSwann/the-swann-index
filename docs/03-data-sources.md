@@ -44,7 +44,7 @@ Every real CFBD request (including failed ones) is recorded in `ingest_log`; cac
   - **In-progress season:** a cached response expires after 6 hours, so the daily job always gets new results.
   - **No season** (e.g. `/venues`): expires after 30 days.
   - `--refresh` forces a re-fetch.
-- **Daily job:** `tsi ingest daily` runs from GitHub Actions at 10:00 UTC. It re-fetches current-season games (~1 call/day); teams and calendar are loaded only when a season first appears.
+- **Daily job:** `tsi ingest daily` runs from GitHub Actions at 11:00 UTC (started by cron-job.org, #126). It re-fetches current-season games (~1 call/day); teams and calendar are loaded only when a season first appears.
 - **Garbage time:** use CFBD's garbage-time-filtered advanced stats where offered.
 - **FCS opponents:** ingest the games and the FCS team rows (division = `fcs`) so FCS expansion needs no schema change.
 - **FCS coverage (checked 2026-11-03 for Phase 10, #107):** the daily and season loaders already fetch every division, so FCS needs no backfill and no extra calls.

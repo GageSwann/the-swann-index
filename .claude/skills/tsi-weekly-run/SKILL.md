@@ -18,7 +18,7 @@ the rare manual jobs (deploys, rollbacks, migrations, secret rotation). Project 
 | API | https://tsi-api-44wx.onrender.com (Render free web service `tsi-api`, Docker) | push to `main` touching `backend/`, after CI passes |
 | Database | Neon project `nameless-morning-73071395`, branch **`production`** (`br-purple-frog-b5ee7m4a`) | nightly job only |
 | Local dev DB | Neon branch **`dev`** (`br-long-dust-b5phcp0e`), a copy of production | local work (`backend/.env`) |
-| Nightly job | `.github/workflows/daily-refresh.yml`, cron 10:00 UTC | `tsi run` (ingest, rate, grade, publish), then site refresh |
+| Nightly job | `.github/workflows/daily-refresh.yml`, started 11:00 UTC by cron-job.org (GitHub schedule 14:23 UTC = backup) | `tsi run` (ingest, rate, grade, publish), then site refresh |
 | CI | `.github/workflows/ci.yml` | every push and pull request; gates Render deploys |
 
 Pages are served from Vercel's cache. The API is only called when the cache refreshes
@@ -48,8 +48,13 @@ curl -s https://tsi-api-44wx.onrender.com/meta/current
 curl -s https://the-swann-index.vercel.app/ | grep -oE "Model updated [^<]{0,40}" | head -1
 ```
 
-The cron is 10:00 UTC, but GitHub often starts scheduled jobs hours late (13:50–16:40
-UTC has been normal). A run that hasn't started by ~20:00 UTC is worth a look.
+cron-job.org starts the run at 11:00 UTC (6 AM EST / 7 AM EDT) through GitHub's
+`workflow_dispatch` API (event `workflow_dispatch` in `gh run list`; #126). GitHub's own
+schedule (14:23 UTC, often hours late) is only a backup: its `gate` job skips the run
+when one already succeeded that UTC day. No run by ~12:00 UTC means cron-job.org didn't
+fire: check its execution history (a 401/403 there = the GitHub token expired or lost
+its Actions permission; a new fine-grained token goes into the cron-job.org job's
+Authorization header, never into the repo).
 
 What a healthy log says:
 

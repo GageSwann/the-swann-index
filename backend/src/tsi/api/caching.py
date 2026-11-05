@@ -1,4 +1,4 @@
-"""HTTP caching for a read-only API whose data changes once a day (the 10:00 UTC run).
+"""HTTP caching for a read-only API whose data changes once a day (the 11:00 UTC nightly run).
 
 - `Cache-Control` per path prefix: successful GETs are public and short-lived with a
   long stale-while-revalidate window; `/matchup` is cached as long as its live inputs;
