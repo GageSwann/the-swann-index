@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   // The free Render API sleeps when idle and takes up to ~1 minute to wake; give build-time
   // prerendering room for that instead of the 60 s default (decision #80).
   staticPageGenerationTimeout: 180,
+  experimental: {
+    // Render's free tier answers a burst of prerender requests with 429/503 (its proxy, not
+    // our API), which failed CI builds: fewer pages at once per worker, and a failed page is
+    // retried before the build gives up (decision #131).
+    staticGenerationMaxConcurrency: 4,
+    staticGenerationRetryCount: 2,
+  },
   // Link-preview images read these fonts from disk at runtime; make sure every server
   // function bundles them (decision #86).
   outputFileTracingIncludes: { "/**": ["./assets/fonts/*.ttf"] },
