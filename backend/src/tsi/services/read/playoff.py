@@ -73,7 +73,9 @@ class Playoff:
     seeds: int  # seeded teams (12 CFP, 16 FCS); the rest are placed by rank
     byes: int  # seeds that skip the first round
     rounds: list[BracketRound]  # the bracket, first round first
-    format: BracketFormat | None  # FBS only; superseded by field_size / byes / rounds
+    # Deprecated (#125): FBS only, superseded by field_size / byes / rounds. Remove once the
+    # live site reads `rounds` (the /playoff/fcs site change).
+    format: BracketFormat | None
     projected: list[PlayoffTeam]  # one representative field, seed 1 first
     teams: list[PlayoffTeam]  # every team in the division with a 1%+ chance, likeliest first
 
