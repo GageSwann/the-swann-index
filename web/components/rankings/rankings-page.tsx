@@ -2,7 +2,7 @@ import { PageHeading } from "@/components/layout/page-heading"
 import { DivisionNav } from "@/components/ui/division-nav"
 import { getRankings } from "@/lib/api/queries"
 import type { DivisionView } from "@/lib/divisions"
-import { formatMonthDay, formatUpdated } from "@/lib/format/time"
+import { formatShortDay, formatUpdated } from "@/lib/format/time"
 
 import { RankingsView } from "./rankings-view"
 
@@ -43,8 +43,8 @@ export async function RankingsPage({ division }: { division: DivisionView }) {
     )
   }
 
-  // Weekly movement compares with ratings from about a week earlier (decision #79).
-  const since = power.previous_as_of ? formatMonthDay(power.previous_as_of) : null
+  // Movement compares with the latest Sunday poll before this run (Phase 12.5, #126).
+  const since = power.previous_as_of ? formatShortDay(power.previous_as_of) : null
 
   return (
     <>

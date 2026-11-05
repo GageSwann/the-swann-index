@@ -1,9 +1,10 @@
-"""Live rating runs: which run a page shows, the run a week before it, and the history."""
+"""Live rating runs: which run a page shows, its Sunday baseline, and the history."""
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import Select, exists, func, or_, select
+from sqlalchemy import Select, exists, select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import ModelRun, TeamRating
@@ -42,37 +43,47 @@ def newest_first(query: Select) -> Select:
     return query.order_by(ModelRun.run_at.desc(), ModelRun.id.desc())
 
 
-# Movement compares with the newest run at least this much older: about a week, with
-# slack for the nightly job's start time drifting by a few hours (decision #79).
-WEEK_AGO = timedelta(days=6)
+# Movement (rank arrows, biggest movers) compares with the official weekly poll: the last
+# run of the most recent Sunday before the shown run's day, Eastern time (Phase 12.5,
+# owner's rule, #126). Sunday's run comes after Saturday's games, so on a Sunday the
+# arrows show the week's official move (vs. the previous Sunday); Monday to Saturday they
+# show the move since that Sunday, with midweek results.
+EASTERN = ZoneInfo("America/New_York")
+BASELINE_WINDOW = timedelta(days=15)  # runs fetched to find it (a week back, plus gaps)
 
 
-def run_and_week_ago(
+def baseline_cutoff(run_at: datetime) -> datetime:
+    """The end (midnight Eastern) of the most recent Sunday before `run_at`'s Eastern date,
+    in UTC: the baseline is the last run before this moment, so a Sunday without a run
+    falls back to the latest run before it."""
+    day = run_at.astimezone(EASTERN).date()
+    since_sunday = (day.weekday() + 1) % 7 or 7  # Mon 1 ... Sat 6, Sun 7 (the previous one)
+    monday_after = day - timedelta(days=since_sunday - 1)
+    return datetime.combine(monday_after, time(0), tzinfo=EASTERN).astimezone(UTC)
+
+
+def run_and_baseline(
     session: Session, season: int, week: int | None = None, season_type: str | None = None
 ) -> tuple[RunInfo | None, RunInfo | None]:
-    """The newest rating run (optionally within a week) and the newest run at least
-    `WEEK_AGO` before it (any week), in one round trip: the rankings' weekly movement.
-    Daily runs barely move between game days, so day-over-day change shows little."""
+    """The newest rating run (optionally within a week) and its baseline: the last run
+    before the end of the most recent Sunday before it (`baseline_cutoff`, any week), in
+    one round trip. None for the baseline before the season's first Sunday run."""
     anchor = rating_runs_query(season, ModelRun.run_at)
     if week is not None:
         anchor = anchor.where(ModelRun.week == week)
     if season_type is not None:
         anchor = anchor.where(ModelRun.season_type == season_type)
     latest_at = newest_first(anchor).limit(1).scalar_subquery()
-    week_ago_at = (
-        rating_runs_query(season, func.max(ModelRun.run_at))
-        .where(ModelRun.run_at <= latest_at - WEEK_AGO)
-        .scalar_subquery()
-    )
     query = newest_first(
         rating_runs_query(season).where(
-            or_(ModelRun.run_at == latest_at, ModelRun.run_at == week_ago_at)
+            ModelRun.run_at <= latest_at, ModelRun.run_at > latest_at - BASELINE_WINDOW
         )
     )
     runs = [RunInfo(*row) for row in session.execute(query)]
     if not runs:
         return None, None
-    return runs[0], next((r for r in runs[1:] if r.run_at < runs[0].run_at), None)
+    cutoff = baseline_cutoff(runs[0].run_at)
+    return runs[0], next((r for r in runs[1:] if r.run_at < cutoff), None)
 
 
 def rating_runs(session: Session, season: int) -> list[RunInfo]:

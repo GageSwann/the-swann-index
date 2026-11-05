@@ -6,7 +6,7 @@ from typing import Literal
 
 from sqlalchemy.orm import Session
 
-from tsi.db.queries.runs import run_and_week_ago, run_params
+from tsi.db.queries.runs import run_and_baseline, run_params
 from tsi.db.queries.sim import StoredSim, stored_sims
 from tsi.db.queries.team_info import (
     Record,
@@ -30,7 +30,7 @@ class MixedResumeError(ValueError):
 @dataclass(frozen=True)
 class RankedTeam:
     rank: int  # in the requested ranking
-    previous_rank: int | None  # same ranking ~a week earlier (`previous_as_of`); None: unranked
+    previous_rank: int | None  # same ranking at the baseline (`previous_as_of`); None: unranked
     team: TeamRef
     wins: int
     losses: int
@@ -58,7 +58,7 @@ class Rankings:
     season_type: str
     week: int
     as_of: datetime
-    previous_as_of: datetime | None  # the run movement compares with (~a week earlier)
+    previous_as_of: datetime | None  # the baseline: last run of the latest Sunday before (#126)
     model_version: str
     type: RankingType
     teams: list[RankedTeam]
@@ -79,7 +79,7 @@ def rankings(
     """Ranks are within a division (decision #111); "all" re-ranks both by rating."""
     if division == "all" and ranking == "resume":
         raise MixedResumeError("Résumé rankings are per division; pick fbs or fcs.")
-    run, previous = run_and_week_ago(session, season, week, season_type)
+    run, previous = run_and_baseline(session, season, week, season_type)
     if run is None:
         return None
     stored = stored_ratings(session, [run.id] + ([previous.id] if previous else []))

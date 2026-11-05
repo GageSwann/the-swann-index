@@ -7,7 +7,7 @@ type Move = { team: RankedTeam; moved: number }
 
 /**
  * The week's biggest risers and fallers among the given teams (the active ranking and
- * conference filter). Sorting only: ranks and week-ago ranks both come from the API.
+ * conference filter). Sorting only: ranks and baseline ranks (the latest Sunday's poll, #126) come from the API.
  * Ties go to the higher-ranked team.
  */
 export function Movers({

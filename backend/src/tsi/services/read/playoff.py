@@ -12,7 +12,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from tsi.book.odds import american_from_prob
-from tsi.db.queries.runs import run_and_week_ago, run_params
+from tsi.db.queries.runs import run_and_baseline, run_params
 from tsi.db.queries.sim import StoredSim, stored_sims
 from tsi.db.queries.team_info import Record, TeamRef, records, stored_ratings, team_refs
 from tsi.divisions import FCS, RATED_DIVISION
@@ -73,7 +73,7 @@ def playoff(
     fmt: CfpFormat = FORMAT_2026,
     fcs_fmt: FcsFormat = FCS_FORMAT_2026,
 ) -> Playoff | None:
-    run, _ = run_and_week_ago(session, season)
+    run, _ = run_and_baseline(session, season)
     if run is None:
         return None
     sims = {t: s for t, s in stored_sims(session, run.id).items() if s.playoff_prob is not None}
