@@ -58,6 +58,8 @@ Every real CFBD request (including failed ones) is recorded in `ingest_log`; cac
 
   Stats rows are complete (drives, plays, success rate) wherever they exist, and missing stats are always a whole game (never one side, never an FBS game). FCS priors: recruiting nearly every season, talent 2015–2023 only, returning production none. `FCS_STATS_FROM = 2022` (`tsi/divisions.py`) marks the first season FCS teams can be rated individually.
 - **Conference/division per season:** write `team_seasons` from each season's `/teams?year=` response, because teams change conferences and move FCS→FBS.
+- **FCS playoff games (checked 2026-11-05, #125):** notes read "FCS Championship - First Round" / "- Second Round" / "- Quarterfinals" / "- Semifinals" / "FCS Championship", and CFBD often files them as `season_type = 'regular'` (2022 and 2024–25 had most of them there). They contain "championship", so code that looks for conference title games must skip them (`is_fcs_playoff`). They appear once the field is picked (the Sunday before Thanksgiving week), which is how the sim knows the real field is set. The SWAC title game is the only FCS conference title game.
+- **Teams moving up a division** show up in `team_seasons`: lower-division seasons (`ii`, `iii`, `unknown`) before their first FCS season (e.g. West Georgia, Mercyhurst, New Haven, West Florida). New Division I programs (Kennesaw State, UTRGV, Chicago State) have no lower-division seasons. Teams moving to FBS can't be seen ahead of time (a slug list in `sim/fcs_format.py`).
 
 ### Market lines
 - CFBD `/lines` returns lines from multiple providers (2024: ESPN Bet, DraftKings, Bovada), with team ids. All providers are stored. A **consensus** line (median across providers) is computed in Phase 3.

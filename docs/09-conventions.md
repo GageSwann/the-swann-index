@@ -81,3 +81,31 @@ Install command (for the [skills CLI](https://github.com/vercel-labs/skills)), r
 ```powershell
 npx skills add anthropics/skills --skill frontend-design --agent claude-code
 ```
+
+## 6. Model experiments: the playbook (lessons from Phase 11, #118–#125)
+How a model idea gets tested, distilled from what worked and what misled us.
+
+**Before believing a gain**
+- **Small MAE gains need a paired test.** Compare the two models game by game (difference in absolute error per game, mean ÷ standard error). v1.5's signals passed at 2.3–2.6 SE; the totals signals (#123) looked good on MAE but were ≤ 1.6 SE and were rejected.
+- **Check every season, not just the two periods.** A gain that comes mostly from one season (2023 kept showing up) is fragile; report the per-season deltas.
+- **Combinations rarely add much.** Screen signals one at a time first; pairs usually add little beyond the best single one.
+- **For totals changes, run the Book backtest too.** Totals drive the Book's profit: a lower totals MAE can still make the Book worse (#123: every candidate cut validation ROI). For margin changes, check that the Book is unchanged and watch the refit `k_spread`.
+- **More complex isn't more accurate.** Gradient boosting on top of the ratings (#121) and per-closeness key-number weights (#119) were worse out of sample. The linear stack plus small, well-tested corrections wins.
+
+**Look for gaps by game type**
+- Break errors down by **game type** (FBS–FBS, FBS–FCS, FCS–FCS), **season stage** (stack bucket) and **size of the prediction**. The biggest single gain of the phase (#124: FBS-vs-FCS margins overshot by ~30%, MAE 14.34 → 12.56) was invisible in the headline FBS numbers and only showed up while checking the FCS sim's inputs.
+- Compare TSI's bias with the **closing line's** bias on the same games: if the line is close to unbiased and TSI isn't, it's a model problem, not noise in the games.
+- Check σ (log loss by σ) and the sim's τ for any new group before reusing the FBS values; for FCS both held (#125).
+
+**Corrections after the stack**
+- Fit post-stack corrections (rest #120, FBS-vs-FCS #124) on **held-out** stack predictions with the same leave-one-season-out rule as the stacks (`backtest/situational_fit.py`, `backtest/cross_division_fit.py`); fit production on all seasons the same way in `services/model_fit.py`.
+- Prefer the simplest form that holds out of sample (one or two factors, an offset) and leave groups with too few games unadjusted.
+- When a correction needs games the stacks don't learn from (FCS), walk them forward but keep every other fitted piece on FBS-vs-FBS games, then confirm the rest of the artifact is **byte-identical** after the refit.
+
+**Verifying changes**
+- **Refactors:** snapshot the output before (a pickle of the sim's projections, the backtest numbers) and prove it identical after. Example: the shared Résumé helper (`services/playoff_resume.py`) reproduced the FBS playoff odds exactly.
+- **Intended changes that alter random draws:** adding teams or games to the season sim changes every draw, so compare against the old run within simulation noise (max 0.05 wins at 4,000 sims), and check the totals: 24 in the field, one champion per conference and per simulation.
+- **Committee stand-ins and formats:** check against real history (the FCS Résumé picked 88 of 96 real playoff teams, 2022–25), and get the **current season's format from the owner or the NCAA**, not from last year's data (the 2026 FCS bracket seeds 16, not 8).
+
+**Record everything**
+- Every experiment, adopted or rejected, gets a `decisions.md` entry with the numbers and the scratchpad script names. Rejected ideas are as useful as adopted ones: they stop us retrying them.
