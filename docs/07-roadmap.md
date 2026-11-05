@@ -223,7 +223,7 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
     - CSS only (gradients, `box-shadow`/`filter` bloom, a conic-gradient border sweep), no heavy libraries;
     - every animation off under `prefers-reduced-motion`;
     - focus rings stay visible and contrast-checked;
-    - light mode gets a softer version of each effect.
+    - full support in both light and dark mode: every effect designed and checked in each theme (#127).
   - Write the design plan into doc 06 first and review it with the owner before building.
 - [ ] **13.2 Team colors that are never white (or invisible).**
   - *Problem:* some teams' primary color is white, or too close to the background.
@@ -231,10 +231,12 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
   - Check every FBS and FCS team in both themes; a small manual override table covers the rare team with no usable color.
 
 **Pages**
-- [ ] **13.3 Remove the TSI Book and Model pages from the site; the Book becomes owner-only.** (decision needed, see below)
-  - Remove the Book and Model pages, their nav links and link previews, and the TSI plays on This week (13.5).
-  - Picks keep being published and graded nightly for the owner (CLI, `tsi book …`).
-  - *Open question:* the public API also serves the Book. Either remove those endpoints or require a private key the site never sees.
+- [ ] **13.3 Remove the TSI Book and Model pages; the Book becomes owner-only** (owner, #127).
+  - *Site:* remove the Book and Model pages, their nav links and link previews, and the TSI plays on This week (13.5). No "How TSI works" page.
+  - *API:* `/book/*` and `/model/report` answer only requests carrying the owner's key (an `Authorization` header checked against an `OWNER_API_KEY` environment variable on Render). The key lives in Render's settings and the owner's local `.env` (used by the weekly review script, which reads `/book/ledger`), never in the code or the site; wrong or missing key → 404.
+  - Any pick or Book data inside public responses (week board, game pages) is removed from those responses.
+  - Picks keep being published and graded nightly; the owner works with them through the CLI and the weekly review.
+  - *Done when:* the public API and site expose no Book or Model data; the weekly review still works with the key; API tests cover key / no key.
 - [ ] **13.4 New home page at `/`.**
   - *Layout:* the rankings tucked into a side rail, with an **FBS game of the week** and an **FCS game of the week** in the middle. The full rankings move to `/rankings` (`/rankings/fcs`, `/rankings/all` stay).
   - *Toggle:* **Power / Résumé** switches both the rail and the games of the week. Power answers "who's best"; Résumé is "who has earned it" (it favors undefeated teams with good schedules).
@@ -242,7 +244,8 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
     - **quality:** both teams' ranks in the chosen ranking, so a weak team pulls the score down;
     - **competitiveness:** how close TSI's win probability is to 50%;
     - **stakes:** how much the result moves both teams' conference-title and playoff odds in the season sim.
-  - Tune it on past seasons so obvious marquee games (#1 vs #2, rivalry top-10 games) come out on top, and use the Sunday poll's ranks (#126).
+  - Tune it on past seasons so obvious marquee games (#1 vs #2, rivalry top-10 games) come out on top.
+  - *When:* picked on Sunday with the poll (#126, #127) from the coming weekend's games, and held all week.
 - [ ] **13.5 This week.**
   - *Kickoff:* once a game has kicked off, show "—" for the score with an "In progress" label instead of "Kicked off" plus TSI's predicted score. Show the final score once the nightly run records it; TSI's prediction stays visible as a "TSI predicted" line.
   - *Picks:* remove the TSI plays.
@@ -253,16 +256,19 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
 - [ ] **13.7 Team page header:** `| Logo | #5 Miami` instead of `#5 | Logo | Miami` (rank between the logo and the name; "#5 FCS" for FCS teams).
 
 **Data**
-- [ ] **13.8 Fill in 2026 before the nightly job started (rule check needed).**
-  - *Problem:* team pages have empty or short tables for the weeks before the first nightly run (late October): rating trend, movement, early predictions.
-  - *Data on hand:* every 2026 game result is already loaded.
-  - *Plan:* rebuild the missing days with the same walk-forward code the backtest uses (data before each day's cutoff only, so no look-ahead), and store them as a separate run kind ("rebuilt") that the site labels as such ("rebuilt from games played before that date").
-  - *Rule #2 / #57 still holds:* rebuilt numbers are never stored as published predictions, never back-date `published_at`, and their picks are never graded.
-  - *Done when:* every team's 2026 trend starts in week 1 and the early points are visibly marked.
+- [ ] **13.8 Fill in all of 2026 before the nightly job started** (owner, #127).
+  - *Goal:* every table filled from week 1: TSI's line and win chance for every 2026 game, and every team's daily ratings and ranks, exactly as if the model had been running and adjusting itself from week 1.
+  - *Plan:* replay the season day by day (each day's 10:00 UTC cutoff, the same live code path, data before the cutoff only), from the first day of the season to the first nightly run. That means storing:
+    - a rating run per day (rankings, rating trend, movement);
+    - a forecast for every game from the last replayed day before its kickoff;
+    - a season sim per Sunday, if cheap enough.
+  - Use the current artifact (the only model there is). Note in decisions that early-2026 numbers come from a model fit through 2025, the same as live.
+  - *Rule #2 / #57 still holds:* rebuilt forecasts are stored apart from published snapshots (their own run kind and table or flag), never back-date `published_at`, and their picks are never made or graded. The site shows them like any other number, with a small "rebuilt" footnote marker.
+  - *Done when:* no 2026 team page or week board shows dashes where TSI numbers belong; the replay reproduces the backtest's features for those games (parity check); the published-snapshot tables are untouched.
 
-**Questions for the owner (before Phase 13 starts)**
-1. **13.3 Book data:** should the public API stop serving Book data (remove the endpoints), or keep it behind a private key only you have?
-2. **13.3 Model page:** remove it entirely, or keep a short "How TSI works" page (method and accuracy in plain words) for visitors?
-3. **13.8 Early weeks:** are clearly labelled rebuilt ratings and predictions OK? The alternative is showing results only (no TSI numbers) before the nightly job started.
-4. **13.1 Themes:** should the full effects be in dark mode, with a softer version in light mode? Or dark mode only?
-5. **13.4 Which games qualify:** the next 7 days (refreshed nightly), or the coming weekend's slate picked on Sunday?
+**Owner's answers (2026-11-05, #127):**
+1. Book data behind a private owner key (more practical than deleting the routes, since the weekly review reads `/book/ledger`).
+2. Remove the Model page entirely.
+3. Rebuild all of 2026 (lines, win chances, daily ratings), as in 13.8.
+4. Every effect and color must work **fully in both light and dark mode**: each glow, sweep and border light gets its own light-mode version, contrast-checked, not a weaker copy.
+5. Games of the week: the coming weekend's games, picked on Sunday with the poll (#126).
