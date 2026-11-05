@@ -6,7 +6,7 @@ import { Stat } from "@/components/ui/stat"
 
 /**
  * Why the team ranks where it does in Résumé (decision #89): how the benchmark team (a
- * typical #12 FBS team, or #10 FCS team for FCS teams, #114) would fare against the same
+ * typical #12 FBS team, or #24 FCS team for FCS teams, #114, #133) would fare against the same
  * games, with each opponent's current rating. Shown for every
  * rated team (the API always returns the summary for them); the expected wins are left
  * out while a counted game's difficulty is unknown. Every number comes from the API.
@@ -15,7 +15,7 @@ export function ResumeCard({ profile }: { profile: TeamProfile }) {
   const res = profile.resume
   if (!res) return null // unrated teams: no rating, no résumé
   const division = teamDivision(profile.team)
-  const bench = benchmarkName(division)
+  const bench = benchmarkName(division, res.benchmark_rank)
   const rank = profile.ratings?.rank_resume
   const school = profile.team.school
   const rec = record(profile.wins, profile.losses, profile.ties)

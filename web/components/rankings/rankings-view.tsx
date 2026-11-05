@@ -9,9 +9,13 @@ import { benchmarkName, type DivisionView } from "@/lib/divisions"
 import { Movers } from "./movers"
 import { RankingsTable } from "./rankings-table"
 
-function explainer(type: RankingType, division: DivisionView): string {
+function explainer(
+  type: RankingType,
+  division: DivisionView,
+  benchmarkRank: number | null,
+): string {
   if (type === "resume") {
-    const team = benchmarkName(division === "fcs" ? "fcs" : "fbs")
+    const team = benchmarkName(division === "fcs" ? "fcs" : "fbs", benchmarkRank)
     return `How hard would it be for a typical ${team} to match this record against this schedule? Re-evaluated daily as opponents' seasons play out.`
   }
   return division === "all"
@@ -32,9 +36,10 @@ type Props = {
   resume: RankedTeam[] | null // null: no Résumé view ("all")
   since: string | null
   division: DivisionView
+  benchmarkRank: number | null // the Résumé benchmark the run used (#133)
 }
 
-export function RankingsView({ power, resume, since, division }: Props) {
+export function RankingsView({ power, resume, since, division, benchmarkRank }: Props) {
   const [type, setType] = useState<RankingType>("power")
   const [scope, setScope] = useState<"top25" | "all">("top25")
   const [conference, setConference] = useState("")
@@ -96,7 +101,9 @@ export function RankingsView({ power, resume, since, division }: Props) {
           </select>
         </label>
       </div>
-      <p className="max-w-[75ch] text-sm text-muted-foreground">{explainer(type, division)}</p>
+      <p className="max-w-[75ch] text-sm text-muted-foreground">
+        {explainer(type, division, benchmarkRank)}
+      </p>
       {/* Wide screens: the movers panel beside the table; below it otherwise. */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-start">
         {teams.length > 0 ? (

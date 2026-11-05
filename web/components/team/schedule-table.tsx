@@ -10,16 +10,21 @@ import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
 import { benchmarkName, type Division } from "@/lib/divisions"
 
-type Props = { schedule: ScheduleGame[]; odds: Map<number, GameOdds>; division?: Division }
+type Props = {
+  schedule: ScheduleGame[]
+  odds: Map<number, GameOdds>
+  division?: Division
+  benchmarkRank?: number | null // the API's, from the team's Résumé summary (#133)
+}
 
 /**
  * Every game of the season with the result, TSI's pre-game (or current) view, and how hard
- * the game is for the Résumé benchmark (a typical #12 FBS or #10 FCS team; #89, #114). A
+ * the game is for the Résumé benchmark (a typical #12 FBS or #24 FCS team; #89, #114, #133). A
  * table from `sm` up; on
  * phones each game is a two-line row so nothing scrolls sideways.
  */
-export function ScheduleTable({ schedule, odds, division = "fbs" }: Props) {
-  const bench = benchmarkName(division)
+export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank }: Props) {
+  const bench = benchmarkName(division, benchmarkRank)
   const anyToday = [...odds.values()].some((o) => o.source === "today")
   const anyAdjusted = [...odds.values()].some((o) => o.adjusted)
   const date = (g: ScheduleGame) => (g.kickoff ? formatShortDay(g.kickoff) : `Week ${g.week}`)

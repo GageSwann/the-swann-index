@@ -80,6 +80,7 @@ async function TeamView({ params }: Props) {
             schedule={profile.schedule}
             odds={publishedScheduleOdds(profile.schedule)}
             division={division}
+            benchmarkRank={profile.resume?.benchmark_rank}
           />
         }
       >
@@ -92,6 +93,11 @@ async function TeamView({ params }: Props) {
 async function Schedule({ profile }: { profile: TeamProfile }) {
   const odds = await scheduleOdds(profile.team, profile.schedule)
   return (
-    <ScheduleTable schedule={profile.schedule} odds={odds} division={teamDivision(profile.team)} />
+    <ScheduleTable
+      schedule={profile.schedule}
+      odds={odds}
+      division={teamDivision(profile.team)}
+      benchmarkRank={profile.resume?.benchmark_rank}
+    />
   )
 }

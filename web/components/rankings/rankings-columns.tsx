@@ -158,7 +158,7 @@ export const HEADER_HELP: Record<string, string> = {
   off_rating: "Offense in points per game vs. average (rank in this list)",
   def_rating: "Defense in points per game vs. average; higher is better (rank)",
   sos: "Average current rating of opponents played",
-  sor: "Chance the benchmark team (a typical #12 FBS or #10 FCS team) would match this record against this schedule (lower is more impressive)",
+  sor: "Chance the benchmark team (a typical #12 FBS or #24 FCS team) would match this record against this schedule (lower is more impressive)",
   projected_wins:
     "Average final wins in 10,000 simulated seasons, including a conference title game",
   conference_title: "Chance of winning the conference title (simulated)",

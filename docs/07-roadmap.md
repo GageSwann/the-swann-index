@@ -185,7 +185,7 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
   - Fit on 2015–22, score totals MAE and the Book on 2023–25, for FBS-vs-FCS games and FBS blowouts.
   - Separately, the displayed score never goes below 0 even if a projection would.
   - *Done when:* no projected score is negative and totals in lopsided games are no worse (ideally better).
-- [ ] **12.4 FCS Résumé measured against a typical #24 FCS team.**
+- [x] **12.4 FCS Résumé measured against a typical #24 FCS team.** (#133: from the 2026-11-06 run; breakdown = stored SOR exactly for all 128 FCS teams; selection check #24 84/96 + 24/32 seeds vs. #10 83/96 + 24/32, same rebuilt rules)
   - *Why:* the bar should match the 24-team FCS field, like the FBS #12 for the 12-team CFP. This reverses #91 (#10).
   - *Plan:* change `FCS_BENCHMARK_RANK` from 10 to 24. That moves stored SOR from the next run, the Résumé breakdown text ("#24 FCS team") and the FCS playoff projection.
   - Rerun the FCS selection check (with #10: 88 of 96 real playoff teams, 2022–25) and report the number with #24.

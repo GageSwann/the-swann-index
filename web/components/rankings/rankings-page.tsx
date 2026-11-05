@@ -64,6 +64,7 @@ export async function RankingsPage({ division }: { division: DivisionView }) {
           resume={resume?.teams ?? null}
           since={since}
           division={division}
+          benchmarkRank={resume?.benchmark_rank ?? null}
         />
       )}
     </>

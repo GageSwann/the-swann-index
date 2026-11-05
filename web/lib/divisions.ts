@@ -14,9 +14,16 @@ export function teamDivision(team: Pick<TeamRef, "division">): Division {
   return team.division === "fcs" ? "fcs" : "fbs"
 }
 
-/** The Résumé benchmark team: a typical #12 FBS team, or #10 FCS team (#24, #91). */
-export function benchmarkName(division: Division): string {
-  return division === "fcs" ? "#10 FCS team" : "#12 team"
+/** Today's Résumé benchmark ranks: a typical #12 FBS team, or #24 FCS team (#24, #133). */
+export const BENCHMARK_RANK: Record<Division, number> = { fbs: 12, fcs: 24 }
+
+/**
+ * The Résumé benchmark team, "#12 team" or "#24 FCS team". Pass the API's
+ * `benchmark_rank` (the rank that run measured against: FCS was #10 before 2026-11-06).
+ */
+export function benchmarkName(division: Division, rank?: number | null): string {
+  const n = rank ?? BENCHMARK_RANK[division]
+  return division === "fcs" ? `#${n} FCS team` : `#${n} team`
 }
 
 /** "#7", or "#7 FCS": ranks are within a division, so FCS ranks say so. */
