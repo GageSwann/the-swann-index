@@ -41,7 +41,7 @@ class RankedTeam:
     provisional: bool  # fewer than 4 games
     rank_power: int | None
     rank_resume: int | None
-    sor: float | None  # strength of record: chance a #12 team matches this record
+    sor: float | None  # strength of record: chance the benchmark (#12 FBS / #10 FCS) matches it
     sos: float | None  # strength of schedule: mean current rating of opponents played
     off_rank: int  # offense rating among ranked FBS teams (1 = best)
     def_rank: int  # defense rating (positive = better defense)

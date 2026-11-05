@@ -6,7 +6,7 @@ import { formatMonthDay, formatUpdated } from "@/lib/format/time"
 
 import { RankingsView } from "./rankings-view"
 
-export const RANKINGS_HREF: Record<DivisionView, string> = {
+const RANKINGS_HREF: Record<DivisionView, string> = {
   fbs: "/",
   fcs: "/rankings/fcs",
   all: "/rankings/all",

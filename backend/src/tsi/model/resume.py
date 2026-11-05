@@ -1,4 +1,5 @@
-"""Résumé ranking: strength of record vs. a typical #12 team (doc 04 §7, decision #24).
+"""Résumé ranking: strength of record vs. a typical #12 team (doc 04 §7, decision #24);
+FCS teams are measured against a typical #10 FCS team (#91, #111).
 
 SOR = P(a benchmark team, playing this exact schedule, wins at least as many games).
 Lower SOR = harder to match = more impressive. Win probabilities come from the

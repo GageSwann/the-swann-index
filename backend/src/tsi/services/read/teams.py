@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from tsi.db.queries.adjustments import season_adjustments
-from tsi.db.queries.games import GameRow, team_games
+from tsi.db.queries.games import team_games
 from tsi.db.queries.runs import rating_runs
 from tsi.db.queries.sim import stored_sims
 from tsi.db.queries.snapshots import snapshots_for_games
@@ -20,15 +20,14 @@ from tsi.db.queries.team_info import (
     team_refs,
 )
 from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION, rated_individually
-from tsi.services.read.common import AdjustmentNote, Score, current_snapshot, note_of, result_of
+from tsi.services.read.common import AdjustmentNote, note_of
 from tsi.services.read.projection import Projection, projection
 from tsi.services.read.resume_view import (
-    ResumeContext,
     ResumeSummary,
-    game_difficulty,
     resume_context,
     resume_summary,
 )
+from tsi.services.read.schedule_view import ScheduleGame, schedule_game
 
 
 @dataclass(frozen=True)
@@ -57,30 +56,6 @@ class RatingPoint:
 
 
 @dataclass(frozen=True)
-class ScheduleGame:
-    game_id: int
-    kickoff: datetime | None
-    week: int
-    season_type: str
-    opponent: TeamRef
-    site: str  # 'home' | 'away' | 'neutral'
-    result: Score | None  # home/away points as played
-    team_points: int | None
-    opponent_points: int | None
-    outcome: str | None  # 'W' | 'L' | 'T' once final
-    projected_team: float | None  # TSI projection, latest (or locked) snapshot
-    projected_opponent: float | None
-    win_prob: float | None  # TSI win probability for this team
-    spread: float | None  # TSI spread from this team's view (negative = favored)
-    adjusted: bool  # the prediction above includes manual adjustments (decision #104)
-    # Résumé breakdown (decision #89), from the shown rating run:
-    opponent_rating: float | None  # opponent's current `season` rating
-    opponent_rank: int | None  # opponent's current Power rank (FBS)
-    benchmark_win_prob: float | None  # chance a typical #12 team wins this game
-    in_resume: bool  # counts toward the Résumé (decided before the run)
-
-
-@dataclass(frozen=True)
 class TeamProfile:
     team: TeamRef
     season: int
@@ -90,8 +65,8 @@ class TeamProfile:
     ratings: TeamRatings | None
     history: list[RatingPoint]
     schedule: list[ScheduleGame]
-    resume: ResumeSummary | None  # None for non-FBS teams or before ratings exist
-    projection: Projection | None  # season sim of the shown run (#98); None for non-FBS
+    resume: ResumeSummary | None  # None for unrated teams or before ratings exist
+    projection: Projection | None  # season sim of the shown run (#98); FBS teams only
     adjustments: list[AdjustmentNote]  # manual adjustments in effect now (decision #104)
 
 
@@ -141,7 +116,7 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
             if rated
             and (point := _point(run.run_at, run.week, history_rows.get(run.id, []))) is not None
         ],
-        schedule=[_schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
+        schedule=[schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
         resume=resume_summary(ctx, games, team_id, refs) if ctx else None,
         projection=projection(sim),
         adjustments=[
@@ -177,49 +152,3 @@ def _point(as_of: datetime, week: int, rows: list[StoredRating]) -> RatingPoint 
     if r is None:
         return None
     return RatingPoint(as_of, week, r.rating, r.rank_power, r.rank_resume, r.predictive_rating)
-
-
-def _schedule_game(
-    g: GameRow,
-    team_id: int,
-    refs: dict[int, TeamRef],
-    snaps,
-    now: datetime,
-    ctx: ResumeContext | None,
-) -> ScheduleGame:
-    home = g.home_id == team_id
-    sign = 1 if home else -1
-    opponent = refs[g.away_id if home else g.home_id]
-    result = result_of(g)
-    team_pts = opp_pts = outcome = None
-    if result is not None:
-        team_pts, opp_pts = (
-            (result.home_points, result.away_points)
-            if home
-            else (result.away_points, result.home_points)
-        )
-        if result.final:
-            outcome = "W" if team_pts > opp_pts else "L" if team_pts < opp_pts else "T"
-    snap, _ = current_snapshot(snaps, g.start_time, now)
-    diff = game_difficulty(ctx, g, team_id, opponent) if ctx else None
-    return ScheduleGame(
-        game_id=g.id,
-        kickoff=g.start_time,
-        week=g.week,
-        season_type=g.season_type,
-        opponent=opponent,
-        site="neutral" if g.neutral else "home" if home else "away",
-        result=result,
-        team_points=team_pts,
-        opponent_points=opp_pts,
-        outcome=outcome,
-        projected_team=None if snap is None else (snap.proj_home if home else snap.proj_away),
-        projected_opponent=None if snap is None else (snap.proj_away if home else snap.proj_home),
-        win_prob=None if snap is None else (snap.home_win_prob if home else 1 - snap.home_win_prob),
-        spread=None if snap is None else sign * snap.spread,
-        adjusted=snap is not None and snap.adjusted,
-        opponent_rating=diff.opponent_rating if diff else None,
-        opponent_rank=diff.opponent_rank if diff else None,
-        benchmark_win_prob=diff.benchmark_win_prob if diff else None,
-        in_resume=diff.in_resume if diff else False,
-    )

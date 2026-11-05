@@ -14,7 +14,7 @@ from tsi.model.totals import scoring_level
 
 @dataclass(frozen=True)
 class GameSide:
-    """A game's two teams as rated ids (non-FBS opponents mapped to their pool)."""
+    """A game's two teams as rated ids (teams not rated individually mapped to their pool)."""
 
     home: int
     away: int

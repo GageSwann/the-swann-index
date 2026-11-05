@@ -8,7 +8,7 @@ import { DIVISION_NAME, type DivisionView } from "@/lib/divisions"
 import { BoardView } from "./board-view"
 import { WeekNav } from "./week-nav"
 
-export function weekHref(season: number, week: number, division: DivisionView = "fbs"): string {
+function weekHref(season: number, week: number, division: DivisionView = "fbs"): string {
   return `/week/${season}/${week}${division === "fbs" ? "" : `/${division}`}`
 }
 

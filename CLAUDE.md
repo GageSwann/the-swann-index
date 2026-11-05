@@ -23,7 +23,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#115 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#116 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -39,13 +39,13 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 2. **Published predictions are immutable.** Never update a snapshot; insert a new one. The **locked** snapshot is derived: the latest `raw` prediction with `published_at < kickoff`; only its picks are graded. A DB trigger rejects updates. **Never back-date `published_at`** and never "replay" past weeks as live snapshots (#57).
 3. **No secrets in code.** Passwords, API keys, tokens and connection strings come from environment variables only: `backend/.env` (loaded by `tsi/config.py`) and `web/.env.local`, both gitignored. Never hard-code, log, print, or commit them; never prefix a secret with `NEXT_PUBLIC_`. Keep each `.env.example` current (names only). When checking `.env`, print booleans/lengths only.
 4. **Cache API data.** Free tier ≈ 1,000 calls/month (guard: 980). Finished seasons are cached forever; the in-progress season expires after 6h. Nightly job ≈ 4 calls/day.
-5. **Division-agnostic schema.** FBS-only today, FCS later; never hard-code "FBS" into table design. Conference and division are **per season** (`team_seasons`). The rated division is named once, in `tsi/divisions.py`.
+5. **Division-agnostic schema.** FBS and (from 2022) FCS are rated; never hard-code a division into table design. Conference and division are **per season** (`team_seasons`). Which divisions are rated, and from when, is decided once, in `tsi/divisions.py` (`rated_individually`).
 6. Raw model output and manual adjustments are stored separately; the UI must be able to show both.
 7. **Market lines are never model inputs.** They are evaluation points, and in the Book they only size edges (#52).
 
 ## Model (doc 04)
 - **Two rating sets (#23, #37, #38):** `season` = this season's games only (0.726·PPD + 0.635·success rate, HFA 3.24) → **Power + Résumé rankings**. `predictive` = **stacked** margin (site, PPD, success, prior, Elo; ridge per season-stage bucket) → **predictions/Book**. Fewer than 4 games = *provisional*.
-- **Components** (`model/ratings/components.py`): opponent-adjusted ridge fits of PPD, success rate, pace (drives) and tempo (plays), each with a `level`. Non-FBS opponents pool into FCS (−1) and lower (−2). EPA is not fitted (#49).
+- **Components** (`model/ratings/components.py`): opponent-adjusted ridge fits of PPD, success rate, pace (drives) and tempo (plays), each with a `level`. Teams not rated individually pool into FCS (−1, before 2022 only) and lower (−2, D-II and below). EPA is not fitted (#49).
 - **Totals (#50):** stacked game total (league level shrunk to last season, PPD/success sums, pace + tempo, prior, last season's pace/tempo). Scores = (total ± margin) / 2.
 - **Distribution (#51):** bivariate normal. σ_margin 15.4, σ_total 16.4 + 0.12·(total − 55), ρ = 0.0074 × home margin. Production fits σ and the edge shrink on **leave-one-season-out** stack predictions (in-sample ones are too sharp, #53).
 - **Season sim (#94):** remaining games use the published forecasts; each sim draws a per-team shift N(0, τ), τ = 7.15 − 0.114 × week, held all season, game noise √(σ² − 2τ²) (single-game probabilities unchanged). Fixed seed.
@@ -58,7 +58,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 ## TSI Book (doc 05)
 - **TSI has no edge against closing lines.** Its spread disagreements don't predict covers (fitted trust k_spread ≈ 0); it *does* predict line moves (positive CLV every season) and beats **opening totals**.
 - **Shrunk edges (#52):** P(cover/over) = Φ(k · (TSI − line)/σ), k learned vs. the median opener: production **k_spread 0.081, k_total 0.308** (v1.3). Moneyline edge = TSI's win-probability *shift* added to the market's no-vig probability (#55); never compare Φ(margin/σ) with ML prices directly. No intercept/base-rate term (#56: it turned the Book into an under-only bettor).
-- **Picks only on FBS-vs-FBS games (#108)** until Phase 10 fixes FBS-vs-FCS predictions (they were ~25 pts biased toward the FCS team).
+- **Picks only on FBS-vs-FBS games (#108, #112):** FCS games are published without picks; the FCS Book backtest hasn't earned them (no FCS-vs-FCS openers, no CLV on FCS totals). Revisit after 2026 with live snapshots.
 - **Picks (#54):** ★/★★/★★★ at 1.5/3/5 probability points of edge (ML 3/5/8, EV > 0); flat 1u + ¼ Kelly on 100u (cap 3u). In practice: totals picks, spreads almost never.
 - **Book backtest** (`tsi backtest book`, totals at the median opener, CLV vs. closing consensus): validation 2023–25 **110-68-1, +17.9% ROI, CLV +0.95** (v1.3; v1.2 was 104-75-2, +10.8%); train 2021–22 about break-even. Openers only exist 2021+, so samples are small; CLV is the steadiest signal.
 - **Consensus everywhere = median across sportsbooks, aggregators excluded** (#53, #59): openers, closing lines (backtests) and live lines all use it.

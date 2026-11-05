@@ -104,7 +104,7 @@ rating = (prior_weight · prior + n · observed) / (prior_weight + n)
 ## 5. FCS opponents (FBS-only phase)
 FBS vs. FCS games are included. In v1 all FCS teams are pooled into a single `FCS` pseudo-team with its own rating, so those games inform FBS ratings without needing full FCS ratings. Phase 10 replaces this with individual FCS team ratings.
 
-**Phase 10 (adopted in the experiment, #109; being built):** from 2022 every FCS team is rated individually, with unpenalized FCS offense/defense level columns in each component fit so FCS teams shrink toward the FCS mean; D-II and below stay pooled, and 2014–21 stay pooled. FCS priors are last season's rating regressed toward the FCS mean (FBS prior slope). FBS accuracy is unchanged or slightly better (validation 12.394 vs. 12.403); FCS-vs-FCS games 12.46 vs. the close's 11.93. Until it ships, picks are FBS-vs-FBS only (#108).
+**Phase 10 (v1.3, #109, #110):** from 2022 every FCS team is rated individually, with unpenalized FCS offense/defense level columns in each component fit so FCS teams shrink toward the FCS mean; D-II and below stay pooled, and 2014–21 stay pooled. FCS priors are last season's rating regressed toward the FCS mean (FBS prior slope). FBS accuracy is unchanged or slightly better (validation 12.394 vs. 12.403); FCS-vs-FCS games 12.46 vs. the close's 11.93. FCS teams are ranked within their division (#111); picks stay FBS-vs-FBS only (#108, #112).
 
 ## 6. Game prediction
 Margin and total are predicted by two learned stacks, then turned into scores:

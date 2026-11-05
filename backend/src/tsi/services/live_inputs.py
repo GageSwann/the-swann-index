@@ -30,7 +30,7 @@ class LiveInputs:
     as_of: datetime
     components: Components | None  # this season's games before `as_of`
     last_components: Components | None  # last season's final fit
-    priors: dict[int, TeamRating]  # FBS team -> preseason prior
+    priors: dict[int, TeamRating]  # FBS (and from 2022 FCS) team -> preseason prior
     elo: EloRun  # every completed game before `as_of`, all seasons
     fbs: set[int]
     fcs: frozenset[int] = frozenset()  # individually rated FCS teams this season (#109)
