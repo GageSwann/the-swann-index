@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 10 complete** (2026-11-04): FCS rated individually from 2022 (model **v1.3**, #109, #110), ranked within its division and published nightly without picks (#111; FCS Book backtest not earned, #112), API `division` switch (#113), FCS Résumé vs. the #10 FCS team (#114), site FBS / FCS / All views (#115). Live picks are FBS-vs-FBS only (#108). Phase 11: key numbers (#118, #119) and rest / bye / short week (model **v1.4**, #120) done; model v2 boosting rejected (#121); second-level yards + power success (model **v1.5**, #122) done.
+- **Phase 10 complete** (2026-11-04): FCS rated individually from 2022 (model **v1.3**, #109, #110), ranked within its division and published nightly without picks (#111; FCS Book backtest not earned, #112), API `division` switch (#113), FCS Résumé vs. the #10 FCS team (#114), site FBS / FCS / All views (#115). Live picks are FBS-vs-FBS only (#108). Phase 11: key numbers (#118, #119) and rest / bye / short week (model **v1.4**, #120) done; model v2 boosting rejected (#121); second-level yards + power success (model **v1.5**, #122) done; the same signals in the totals stack rejected (#123).
 - **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105).
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
@@ -23,7 +23,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#122 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#123 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
