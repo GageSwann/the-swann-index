@@ -56,11 +56,13 @@ jobs:
           curl -fsS -X POST -H "Authorization: Bearer $REVALIDATE_TOKEN" "$SITE_URL/api/revalidate"
           echo
           # The first visit after a refresh gets the cached page while the new one builds;
-          # visit the main pages now so readers get fresh ones.
-          for page in / /week /book /model; do
+          # visit the main pages now so readers get fresh ones (FCS views and Playoff: #117).
+          WEEK=$(curl -fsS --max-time 60 "$API_URL/meta/current" | jq -r '"\(.season)/\([.week, 1] | max)"')
+          PAGES="/ /week /book /model /playoff /rankings/fcs /week/$WEEK/fcs"
+          for page in $PAGES; do
             curl -fsS -L -o /dev/null --max-time 120 "$SITE_URL$page"
           done
           sleep 20
-          for page in / /week /book /model; do
+          for page in $PAGES; do
             curl -fsS -L -o /dev/null -w "%{http_code} $page\n" --max-time 120 "$SITE_URL$page"
           done
