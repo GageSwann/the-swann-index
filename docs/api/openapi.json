@@ -544,58 +544,6 @@
         "title": "BookUnitsPoint",
         "type": "object"
       },
-      "BracketFormat": {
-        "description": "The CFP bracket's old description (FBS only); `Playoff.rounds` replaces it.",
-        "properties": {
-          "byes": {
-            "title": "Byes",
-            "type": "integer"
-          },
-          "field_size": {
-            "title": "Field Size",
-            "type": "integer"
-          },
-          "first_round": {
-            "items": {
-              "items": {
-                "type": "integer"
-              },
-              "type": "array"
-            },
-            "title": "First Round",
-            "type": "array"
-          },
-          "quarterfinals": {
-            "items": {
-              "items": {
-                "type": "integer"
-              },
-              "type": "array"
-            },
-            "title": "Quarterfinals",
-            "type": "array"
-          },
-          "semifinals": {
-            "items": {
-              "items": {
-                "type": "integer"
-              },
-              "type": "array"
-            },
-            "title": "Semifinals",
-            "type": "array"
-          }
-        },
-        "required": [
-          "field_size",
-          "byes",
-          "first_round",
-          "quarterfinals",
-          "semifinals"
-        ],
-        "title": "BracketFormat",
-        "type": "object"
-      },
       "BracketRound": {
         "properties": {
           "advance": {
@@ -1593,16 +1541,6 @@
             "title": "Field Size",
             "type": "integer"
           },
-          "format": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BracketFormat"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "projected": {
             "items": {
               "$ref": "#/components/schemas/PlayoffTeam"
@@ -1658,7 +1596,6 @@
           "seeds",
           "byes",
           "rounds",
-          "format",
           "projected",
           "teams"
         ],

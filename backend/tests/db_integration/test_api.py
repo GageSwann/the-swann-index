@@ -198,7 +198,7 @@ def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
     alpha = result["teams"][0]
     assert (alpha["playoff_prob"], alpha["bye_prob"], alpha["rank_resume"]) == (0.9, 0.45, 1)
     assert alpha["fair_odds"] == {"playoff": -900, "conference": 300, "title": 456}
-    assert result["sims"] == 10_000 and result["format"]["first_round"][0] == [5, 12]
+    assert result["sims"] == 10_000 and "format" not in result  # dropped for `rounds` (#125)
     # Projected field: everyone with a chance, by average seed (Alpha ~1.5, the rest 5).
     assert [t["team"]["school"] for t in result["projected"]][0] == "Alpha"
     assert "Charlie" not in [t["team"]["school"] for t in result["projected"]]
@@ -216,7 +216,6 @@ def test_fcs_playoff_odds(api: TestClient) -> None:
     assert [t["team"]["school"] for t in result["teams"]] == ["Echo", "Foxtrot"]
     assert (result["division"], result["field_size"], result["byes"]) == ("fcs", 24, 8)
     assert result["seeds"] == 16 and result["rounds"][0]["games"][0][0] == {"seed": 9, "game": None}
-    assert result["format"] is None
     assert [r["name"] for r in result["rounds"]] == [
         "First round", "Second round", "Quarterfinals", "Semifinals", "Championship",
     ]  # fmt: skip

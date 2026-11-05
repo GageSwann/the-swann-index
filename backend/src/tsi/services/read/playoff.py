@@ -52,17 +52,6 @@ class PlayoffTeam:
 
 
 @dataclass(frozen=True)
-class BracketFormat:
-    """The CFP bracket's old description (FBS only); `Playoff.rounds` replaces it."""
-
-    field_size: int
-    byes: int
-    first_round: list[list[int]]  # [higher seed (hosts), lower seed]
-    quarterfinals: list[list[int]]  # [bye seed, first-round game index]
-    semifinals: list[list[int]]  # [quarterfinal index, quarterfinal index]
-
-
-@dataclass(frozen=True)
 class Playoff:
     season: int
     week: int
@@ -73,9 +62,6 @@ class Playoff:
     seeds: int  # seeded teams (12 CFP, 16 FCS); the rest are placed by rank
     byes: int  # seeds that skip the first round
     rounds: list[BracketRound]  # the bracket, first round first
-    # Deprecated (#125): FBS only, superseded by field_size / byes / rounds. Remove once the
-    # live site reads `rounds` (the /playoff/fcs site change).
-    format: BracketFormat | None
     projected: list[PlayoffTeam]  # one representative field, seed 1 first
     teams: list[PlayoffTeam]  # every team in the division with a 1%+ chance, likeliest first
 
@@ -125,15 +111,6 @@ def playoff(
         seeds=fcs_fmt.seeds if fcs else fmt.field_size,
         byes=fcs_fmt.byes if fcs else fmt.byes,
         rounds=fcs_rounds(fcs_fmt) if fcs else cfp_rounds(fmt),
-        format=None
-        if fcs
-        else BracketFormat(
-            field_size=fmt.field_size,
-            byes=fmt.byes,
-            first_round=[list(g) for g in fmt.first_round],
-            quarterfinals=[list(g) for g in fmt.quarterfinals],
-            semifinals=[list(g) for g in fmt.semifinals],
-        ),
         projected=[rows[r.team_id] for r in field],
         teams=sorted(
             (row for row in rows.values() if row.playoff_prob >= LISTED),

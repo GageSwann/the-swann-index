@@ -398,22 +398,6 @@ export interface components {
             /** Units */
             units: number;
         };
-        /**
-         * BracketFormat
-         * @description The CFP bracket's old description (FBS only); `Playoff.rounds` replaces it.
-         */
-        BracketFormat: {
-            /** Byes */
-            byes: number;
-            /** Field Size */
-            field_size: number;
-            /** First Round */
-            first_round: number[][];
-            /** Quarterfinals */
-            quarterfinals: number[][];
-            /** Semifinals */
-            semifinals: number[][];
-        };
         /** BracketRound */
         BracketRound: {
             /** Advance */
@@ -698,7 +682,6 @@ export interface components {
             division: string;
             /** Field Size */
             field_size: number;
-            format: components["schemas"]["BracketFormat"] | null;
             /** Projected */
             projected: components["schemas"]["PlayoffTeam"][];
             /** Rounds */
