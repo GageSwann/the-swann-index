@@ -16,6 +16,7 @@ from tsi.model.artifact import ModelArtifact
 from tsi.model.cross_division import is_cross_division
 from tsi.model.distribution import ScoreDistribution
 from tsi.model.features import GameSide, margin_features, total_features
+from tsi.model.lopsided import applies as lopsided_applies
 from tsi.model.ratings.design import rated_id
 from tsi.model.stack import stage_bucket
 from tsi.services.live_inputs import LiveInputs
@@ -66,6 +67,8 @@ def forecast_game(
     if is_cross_division(g.home_div, g.away_div, g.season):  # FBS vs. FCS (#124)
         margin *= artifact.cross_division.scale(bucket)
         total += artifact.cross_division.total
+    if lopsided_applies(g.home_div, g.away_div, g.season):  # FCS mismatches score more (#132)
+        total = artifact.lopsided.bump(margin, total)
     raw = artifact.distribution.for_game(margin, total)
     adjustment = game_adjustment(g.home_id, g.away_id, g.start_time, live.adjustments)
     if adjustment is None:

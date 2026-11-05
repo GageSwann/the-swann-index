@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from tsi.backtest import key_numbers_eval
 from tsi.backtest.cross_division_fit import apply_cross_division
 from tsi.backtest.elo_picks import elo_picks
+from tsi.backtest.lopsided_fit import apply_lopsided
 from tsi.backtest.market_calibration import fit_edge_shrink, spread_samples, total_samples
 from tsi.backtest.situational_fit import apply_situational
 from tsi.backtest.splits import FIRST_SCORED_SEASON
@@ -23,6 +24,7 @@ from tsi.model.config import MODEL_VERSION, ModelConfig
 from tsi.model.cross_division import NONE as NO_CROSS_DIVISION
 from tsi.model.distribution_fit import fit_distribution
 from tsi.model.elo import EloParams
+from tsi.model.lopsided import NONE as NO_LOPSIDED
 from tsi.model.ratings.probability import fit_sigma
 from tsi.model.situational import NONE as NO_SITUATIONAL
 from tsi.services.backtest_data import FIRST_DATA_SEASON, load_backtest_data
@@ -76,6 +78,9 @@ def fit_production_model(
     cross_division = NO_CROSS_DIVISION
     if config.cross_division:  # FBS-vs-FCS margin scale (#124), on the same held-out picks
         held_out, cross_division = apply_cross_division(held_out, seasons)
+    lopsided = NO_LOPSIDED
+    if config.lopsided:  # lopsided-game totals (#132), every game kind, before the FBS filter
+        held_out, lopsided = apply_lopsided(held_out, seasons)
     held_out = [p for p in held_out if p.game.fbs_vs_fbs]
     margins = [p.predictive_margin for p in held_out]
     actual = [p.game.margin for p in held_out]
@@ -108,4 +113,5 @@ def fit_production_model(
         key_numbers=key_numbers_eval.fit_on(held_out, distribution),
         situational=situational,
         cross_division=cross_division,
+        lopsided=lopsided,
     )

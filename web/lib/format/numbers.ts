@@ -7,6 +7,14 @@ export function signed(value: number, digits = 1): string {
   return `${value > 0 ? "+" : MINUS}${text}`
 }
 
+/**
+ * A score as shown: whole points, never below 0 (Phase 12.3). The model floors the
+ * underdog's projection since v1.7 (#132); this also covers forecasts published before.
+ */
+export function points(value: number): number {
+  return Math.max(0, Math.round(value))
+}
+
 /** "6-1", or "6-1-1" with ties. */
 export function record(wins: number, losses: number, ties = 0): string {
   return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`

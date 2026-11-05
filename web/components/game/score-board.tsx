@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
 import type { TeamProfile, TeamRef } from "@/lib/api/types"
-import { record } from "@/lib/format/numbers"
+import { points, record } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
 
 type Side = { team: TeamRef; profile: TeamProfile | null; score: number | null | undefined }
@@ -80,7 +80,7 @@ function TeamScore({ side, alignEnd = false }: { side: Side; alignEnd?: boolean 
         {ranks && `, ${ranks}`}
       </p>
       <p className="mt-2 text-4xl font-bold font-stretch-condensed proportional-nums sm:text-5xl">
-        {score == null ? "–" : Math.round(score)}
+        {score == null ? "–" : points(score)}
       </p>
     </div>
   )

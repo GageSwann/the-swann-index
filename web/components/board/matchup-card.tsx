@@ -8,6 +8,7 @@ import { formatKickoff } from "@/lib/format/time"
 
 import { PickBadge } from "./pick-badge"
 import { WinProbBar } from "./win-prob-bar"
+import { points } from "@/lib/format/numbers"
 
 type Props = { game: GameSummary; ranks: Record<number, number> }
 
@@ -43,7 +44,7 @@ export function MatchupCard({ game, ranks }: Props) {
         />
         {final && p && (
           <p className="text-xs text-muted-foreground">
-            TSI projected {Math.round(p.proj_away)}–{Math.round(p.proj_home)}
+            TSI projected {points(p.proj_away)}–{points(p.proj_home)}
           </p>
         )}
       </div>
@@ -136,7 +137,7 @@ function TeamRow({
             : "text-xl font-semibold text-muted-foreground font-stretch-condensed"
         }
       >
-        {score == null ? "" : Math.round(score)}
+        {score == null ? "" : points(score)}
       </span>
     </div>
   )

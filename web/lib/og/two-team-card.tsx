@@ -4,6 +4,7 @@ import type { TeamRef } from "@/lib/api/types"
 import { separation, teamColor } from "@/lib/format/color"
 
 import { Display, OG, OgLogo } from "./frame"
+import { points } from "@/lib/format/numbers"
 
 type Props = {
   context: string // "Saturday, Oct 31 | TSI projection", "Final", "Hypothetical | neutral site"
@@ -115,7 +116,7 @@ function Side({
           {team.school}
         </Display>
         <Display size={96} style={{ lineHeight: 1 }}>
-          {score == null ? "–" : String(Math.round(score))}
+          {score == null ? "–" : String(points(score))}
         </Display>
       </div>
     </div>

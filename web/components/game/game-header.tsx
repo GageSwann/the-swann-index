@@ -2,6 +2,7 @@ import type { GameSummary, TeamProfile } from "@/lib/api/types"
 import { formatDay, formatKickoff } from "@/lib/format/time"
 
 import { ScoreBoard } from "./score-board"
+import { points } from "@/lib/format/numbers"
 
 type Props = { game: GameSummary; home: TeamProfile | null; away: TeamProfile | null }
 
@@ -37,7 +38,7 @@ export function GameHeader({ game, home, away }: Props) {
       note={
         p &&
         (final
-          ? `TSI projected ${game.away.school} ${Math.round(p.proj_away)}, ${game.home.school} ${Math.round(p.proj_home)}.`
+          ? `TSI projected ${game.away.school} ${points(p.proj_away)}, ${game.home.school} ${points(p.proj_home)}.`
           : "Projected score and win probability from TSI's latest prediction.")
       }
       homeWinProb={p?.home_win_prob}

@@ -176,7 +176,7 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
   - Pre-visit a few more pages: `/playoff/fcs`, `/rankings/all`, `/week/{week}/all`, plus the Top 25 team pages if the run time allows. Changing the pre-visit list changes the nightly workflow, so **ask**.
   - *Done when:* right after a run, every page (a team page nobody has opened yet included) shows the new data.
   - *Built 2026-11-05:* `revalidateTag("tsi", { expire: 0 })`; a team page builds fresh in 0.8-1.4 s on the live site. The job pre-visits 60 pages once each (owner: "all of them"): the 10 main pages (`/playoff/fcs`, `/rankings/all`, this week's All view added) and the FBS and FCS Power Top 25 team pages, with 2 retries per page; one pass measured 43 s, no failures. Left: confirm after the next nightly run.
-- [ ] **12.3 No negative projected points.**
+- [x] **12.3 No negative projected points.** (#132, model v1.7: FCS-mismatch total bump + underdog floor ≥ 1 point on every forecast; site never shows a score below 0; validation FBS vs. FCS totals 12.335 → 12.005, 0 negative projections, Book unchanged at a fixed shrink)
   - *Problem:* Wake Forest–Merrimack showed a 57.5-point margin with a 48.7 total, so Merrimack was projected at −4.4 points. v1.6 (#124) shrank the margin to 53.4, but it's still −2.4.
   - *Cause:* scores are (total ± margin) / 2, and the totals model doesn't know that a lopsided game still has a floor for the underdog. In the #124 data, FBS-vs-FCS totals ran low by **+0.25 points per point of predicted margin** (2023–25).
   - *Plan (experiment first):* let the total grow with the size of the predicted margin in lopsided games. Candidates:

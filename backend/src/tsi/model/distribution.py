@@ -15,6 +15,8 @@ Every market (doc 05 §2) is a probability from this one distribution.
 import math
 from dataclasses import dataclass
 
+from tsi.model.lopsided import floored_total
+
 TOTAL_PIVOT = 55.0  # points; sigma_total is quoted at this projected total
 MIN_SIGMA = 5.0
 RHO_LIMIT = 0.5
@@ -35,6 +37,8 @@ class DistributionParams:
         )
 
     def for_game(self, margin: float, total: float) -> "ScoreDistribution":
+        # Every forecast passes through here, so the underdog floor holds everywhere (#132).
+        total = floored_total(margin, total)
         sigma_total = self.sigma_total + self.sigma_total_slope * (total - TOTAL_PIVOT)
         rho = max(-RHO_LIMIT, min(RHO_LIMIT, self.rho_per_point * margin))
         return ScoreDistribution(margin, total, self.sigma_margin, max(MIN_SIGMA, sigma_total), rho)

@@ -3,7 +3,7 @@ import Link from "next/link"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameOdds } from "@/lib/api/schedule-odds"
 import type { ScheduleGame } from "@/lib/api/types"
-import { chance, percent } from "@/lib/format/numbers"
+import { chance, percent, points } from "@/lib/format/numbers"
 import { teamSpread } from "@/lib/format/odds"
 import { formatShortDay } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
@@ -151,7 +151,7 @@ function Result({ game, odds }: { game: ScheduleGame; odds: GameOdds | undefined
         </span>
       ) : odds ? (
         <span className="text-muted-foreground">
-          Proj. {Math.round(odds.teamPoints)}–{Math.round(odds.opponentPoints)}
+          Proj. {points(odds.teamPoints)}–{points(odds.opponentPoints)}
         </span>
       ) : (
         <span className="text-muted-foreground">Game center</span>

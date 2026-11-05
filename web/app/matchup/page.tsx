@@ -5,6 +5,7 @@ import { PageHeading } from "@/components/layout/page-heading"
 import { MatchupView } from "@/components/matchup/matchup-view"
 import { matchupQuery, pricedMatchup, readPick } from "@/lib/matchup"
 import { pageMeta } from "@/lib/metadata"
+import { points } from "@/lib/format/numbers"
 
 type Props = PageProps<"/matchup">
 
@@ -20,7 +21,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   }
   return pageMeta({
     title: `${m.away.school} ${pick.neutral ? "vs" : "at"} ${m.home.school} (hypothetical)`,
-    description: `If they played today, TSI projects ${m.away.school} ${Math.round(m.proj_away)}, ${m.home.school} ${Math.round(m.proj_home)} (${m.home.school} ${Math.round(m.home_win_prob * 100)}% to win).`,
+    description: `If they played today, TSI projects ${m.away.school} ${points(m.proj_away)}, ${m.home.school} ${points(m.proj_home)} (${m.home.school} ${Math.round(m.home_win_prob * 100)}% to win).`,
     image: `/api/og/matchup?${matchupQuery(pick)}`,
   })
 }

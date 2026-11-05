@@ -6,11 +6,12 @@ from typing import Any
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
 
-MODEL_VERSION = "tsi-v1.6"  # v1.1: season blend + stacked margin; v1.2: + stacked totals;
+MODEL_VERSION = "tsi-v1.7"  # v1.1: season blend + stacked margin; v1.2: + stacked totals;
 # v1.3: FCS teams rated individually from 2022 with an FCS level + FCS priors (#109);
 # v1.4: key-number pricing (#118, #119) + rest / bye / short-week adjustment (#120);
 # v1.5: second-level rushing yards + power success in the stack (#122);
-# v1.6: FBS-vs-FCS margin scale (#124)
+# v1.6: FBS-vs-FCS margin scale (#124);
+# v1.7: FCS-mismatch total bump + underdog floor, no negative scores (#132)
 ESTABLISHED_GAMES = 4  # fewer games played -> provisional rank (doc 04)
 
 
@@ -20,6 +21,7 @@ class ModelConfig:
     stack_lam: float = DEFAULT_LAM  # ridge penalty on the predictive stack weights
     situational: bool = True  # rest / bye / short-week margin adjustment (#120)
     cross_division: bool = True  # FBS-vs-FCS margin scale (#124)
+    lopsided: bool = True  # FCS-mismatch total bump (#132); the underdog floor always holds
 
     def to_dict(self) -> dict[str, Any]:
         return {"version": MODEL_VERSION, **asdict(self)}

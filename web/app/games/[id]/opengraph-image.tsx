@@ -2,6 +2,7 @@ import { getGame } from "@/lib/api/queries"
 import { formatDay } from "@/lib/format/time"
 import { OG_SIZE, ogImage, ogMessage } from "@/lib/og/frame"
 import { TwoTeamCard } from "@/lib/og/two-team-card"
+import { points } from "@/lib/format/numbers"
 
 export const alt = "TSI's projected score and win probability for this game"
 export const size = OG_SIZE
@@ -16,7 +17,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const final = game.result?.final === true
   const day = game.kickoff ? formatDay(game.kickoff) : "Date TBA"
   const context = final
-    ? `Final | ${day}${p ? ` | TSI had ${game.home.abbreviation ?? game.home.school} ${Math.round(p.proj_home)}-${Math.round(p.proj_away)}` : ""}`
+    ? `Final | ${day}${p ? ` | TSI had ${game.home.abbreviation ?? game.home.school} ${points(p.proj_home)}-${points(p.proj_away)}` : ""}`
     : `${day} | TSI projection`
 
   return ogImage(
