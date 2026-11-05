@@ -207,3 +207,62 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
   - *Plan:* let the name truncate (a flex container with `min-w-0` around `TeamLink`, the same fix as the playoff bracket) or wrap. Check at desktop and phone widths.
 
 **Owner's answers (2026-11-05, #126):** 12.1 cron-job.org; 12.5 compare with the most recent Sunday before today, as written above; 12.6 no preference on the FCS rank style. Still to set up with the owner when 12.1 starts: a fine-grained GitHub token that can only start this repo's workflows, stored in cron-job.org (never in the repo).
+
+## Phase 13: Frontend overhaul (requested 2026-11-05, planned only)
+Starts after Phase 12. A full redesign of the public site; the Book becomes the owner's private tool. Design work uses the `frontend-design` skill (plan → review against the brief → build → screenshot critique), charts the `dataviz` skill, checks the `webapp-testing` skill at desktop and 360/390 px, and keeps Lighthouse ≥ 90 (#87).
+
+**Look and feel**
+- [ ] **13.1 Neon-inspired lighting, used sparingly.**
+  - *Brief:* the behavior of light, not a retro neon theme:
+    - soft layered glows and bloom around key elements;
+    - light sweeps across buttons and cards on hover;
+    - highlights that travel around borders.
+  - *Where:* only as accents on interactive states (hover, focus, the selected tab) and focal points (game of the week, the playoff champion path, #1). Everything else stays calm.
+  - *Colors:* the existing brand tokens (doc 06) and team colors only; no new hues.
+  - *Rules:*
+    - CSS only (gradients, `box-shadow`/`filter` bloom, a conic-gradient border sweep), no heavy libraries;
+    - every animation off under `prefers-reduced-motion`;
+    - focus rings stay visible and contrast-checked;
+    - light mode gets a softer version of each effect.
+  - Write the design plan into doc 06 first and review it with the owner before building.
+- [ ] **13.2 Team colors that are never white (or invisible).**
+  - *Problem:* some teams' primary color is white, or too close to the background.
+  - *Plan:* pick each team's display color from CFBD's `color` / `alt_color`. Skip near-white and near-black and anything below a contrast floor against the card background in each theme; fall back to the next team color, then a neutral brand tone.
+  - Check every FBS and FCS team in both themes; a small manual override table covers the rare team with no usable color.
+
+**Pages**
+- [ ] **13.3 Remove the TSI Book and Model pages from the site; the Book becomes owner-only.** (decision needed, see below)
+  - Remove the Book and Model pages, their nav links and link previews, and the TSI plays on This week (13.5).
+  - Picks keep being published and graded nightly for the owner (CLI, `tsi book …`).
+  - *Open question:* the public API also serves the Book. Either remove those endpoints or require a private key the site never sees.
+- [ ] **13.4 New home page at `/`.**
+  - *Layout:* the rankings tucked into a side rail, with an **FBS game of the week** and an **FCS game of the week** in the middle. The full rankings move to `/rankings` (`/rankings/fcs`, `/rankings/all` stay).
+  - *Toggle:* **Power / Résumé** switches both the rail and the games of the week. Power answers "who's best"; Résumé is "who has earned it" (it favors undefeated teams with good schedules).
+  - *Game-of-the-week score (experiment first),* combining:
+    - **quality:** both teams' ranks in the chosen ranking, so a weak team pulls the score down;
+    - **competitiveness:** how close TSI's win probability is to 50%;
+    - **stakes:** how much the result moves both teams' conference-title and playoff odds in the season sim.
+  - Tune it on past seasons so obvious marquee games (#1 vs #2, rivalry top-10 games) come out on top, and use the Sunday poll's ranks (#126).
+- [ ] **13.5 This week.**
+  - *Kickoff:* once a game has kicked off, show "—" for the score with an "In progress" label instead of "Kicked off" plus TSI's predicted score. Show the final score once the nightly run records it; TSI's prediction stays visible as a "TSI predicted" line.
+  - *Picks:* remove the TSI plays.
+- [ ] **13.6 Playoff tab: a real bracket.**
+  - *Plan:* a proper bracket drawing, rounds left to right with connector lines between games, for both the 12-team CFP and the 24-team FCS (from the API's generic rounds, #125).
+  - The projected champion path is highlighted (a focal point for 13.1).
+  - On phones it scrolls sideways inside its own frame, or switches to a round-by-round view; the page itself never scrolls sideways.
+- [ ] **13.7 Team page header:** `| Logo | #5 Miami` instead of `#5 | Logo | Miami` (rank between the logo and the name; "#5 FCS" for FCS teams).
+
+**Data**
+- [ ] **13.8 Fill in 2026 before the nightly job started (rule check needed).**
+  - *Problem:* team pages have empty or short tables for the weeks before the first nightly run (late October): rating trend, movement, early predictions.
+  - *Data on hand:* every 2026 game result is already loaded.
+  - *Plan:* rebuild the missing days with the same walk-forward code the backtest uses (data before each day's cutoff only, so no look-ahead), and store them as a separate run kind ("rebuilt") that the site labels as such ("rebuilt from games played before that date").
+  - *Rule #2 / #57 still holds:* rebuilt numbers are never stored as published predictions, never back-date `published_at`, and their picks are never graded.
+  - *Done when:* every team's 2026 trend starts in week 1 and the early points are visibly marked.
+
+**Questions for the owner (before Phase 13 starts)**
+1. **13.3 Book data:** should the public API stop serving Book data (remove the endpoints), or keep it behind a private key only you have?
+2. **13.3 Model page:** remove it entirely, or keep a short "How TSI works" page (method and accuracy in plain words) for visitors?
+3. **13.8 Early weeks:** are clearly labelled rebuilt ratings and predictions OK? The alternative is showing results only (no TSI numbers) before the nightly job started.
+4. **13.1 Themes:** should the full effects be in dark mode, with a softer version in light mode? Or dark mode only?
+5. **13.4 Which games qualify:** the next 7 days (refreshed nightly), or the coming weekend's slate picked on Sunday?
