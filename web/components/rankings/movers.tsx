@@ -61,7 +61,8 @@ function MoveList({ title, moves }: { title: string; moves: Move[] }) {
             <span className="w-9 shrink-0 tabular-nums">
               <RankChange rank={t.rank} previous={t.previous_rank} />
             </span>
-            <span className="min-w-0 flex-1">
+            {/* A flex box, so the link can shrink and long names truncate (Phase 12.7). */}
+            <span className="flex min-w-0 flex-1" title={t.team.school}>
               <TeamLink team={t.team} />
             </span>
             <span className="shrink-0 text-muted-foreground tabular-nums">

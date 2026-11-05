@@ -71,7 +71,7 @@ function Round({
   champion?: Entry
 }) {
   return (
-    <section aria-label={title} className="space-y-3">
+    <section aria-label={title} className="min-w-0 space-y-3">
       <h3 className="font-semibold">
         {title}
         {note && <span className="ml-2 text-sm font-normal text-muted-foreground">{note}</span>}
@@ -102,7 +102,11 @@ function Slot({ entry, seeded, advances }: { entry: Entry; seeded: boolean; adva
   return (
     <div className={cn("flex items-center gap-3 px-3 py-2", !advances && "text-muted-foreground")}>
       <span className="w-5 text-right text-sm tabular-nums">{seeded ? entry.seed : ""}</span>
-      <span className={cn("min-w-0 flex-1", advances && "font-semibold")}>
+      {/* A flex box, so long names truncate instead of running into the record (12.7). */}
+      <span
+        className={cn("flex min-w-0 flex-1", advances && "font-semibold")}
+        title={entry.team.team.school}
+      >
         <TeamLink team={entry.team.team} />
       </span>
       <span className="text-sm tabular-nums">

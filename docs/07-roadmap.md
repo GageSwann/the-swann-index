@@ -204,7 +204,7 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
   - *Problem:* only FBS Top 25 ranks appear.
   - *Plan:* show FCS Top 25 ranks too, marked as FCS ("FCS #3") in a distinct, contrast-checked style of our choosing (owner has no preference, #126), as the FCS tab already ranks them.
   - Check desktop and 360/390 px.
-- [ ] **12.7 Biggest movers: long names overlap the rank change.**
+- [x] **12.7 Biggest movers: long names overlap the rank change.** (2026-11-05: the name's wrapper is a flex box, so `TeamLink` shrinks and truncates, with the full name on hover; the playoff bracket had the same pattern and got the same fix, plus `min-w-0` on its grid columns. Reproduced first: "Florida International" overlapped at 1280/1536 px; after: no overlap and no sideways scroll at 1536/1280/1024/390/360 px, also with a 45-character stress name in every bracket slot)
   - *Example:* Florida International.
   - *Plan:* let the name truncate (a flex container with `min-w-0` around `TeamLink`, the same fix as the playoff bracket) or wrap. Check at desktop and phone widths.
 
