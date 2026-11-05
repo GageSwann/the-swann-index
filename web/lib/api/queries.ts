@@ -18,7 +18,7 @@ import type {
   TeamRef,
   WeekBoard,
 } from "./types"
-import type { DivisionView } from "@/lib/divisions"
+import type { Division, DivisionView } from "@/lib/divisions"
 
 // One cached function per API endpoint. Arguments are part of each cache key; every
 // entry is tagged `tsi` plus a narrower tag (lib/api/tags.ts) for targeted refreshes.
@@ -123,11 +123,14 @@ export async function getMatchup(
   return orNull("/matchup", result)
 }
 
-/** Playoff odds and a projected bracket; null outside the regular season. */
-export async function getPlayoff(season?: number): Promise<Playoff | null> {
+/** CFP or FCS playoff odds and a projected bracket; null outside the regular season. */
+export async function getPlayoff(
+  division: Division = "fbs",
+  season?: number,
+): Promise<Playoff | null> {
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.PLAYOFF)
-  const result = await apiClient().GET("/playoff", { params: { query: { season } } })
+  const result = await apiClient().GET("/playoff", { params: { query: { season, division } } })
   return orNull("/playoff", result)
 }

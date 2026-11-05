@@ -5,18 +5,19 @@ import { cn } from "@/lib/utils"
 
 /**
  * FBS / FCS / All as links (each view is its own cached page, so the default FBS page
- * doesn't carry the other divisions' data). Styled like `Segmented`.
+ * doesn't carry the other divisions' data). Shows the views listed in `hrefs`, in
+ * FBS / FCS / All order. Styled like `Segmented`.
  */
-export function DivisionNav({
+export function DivisionNav<V extends DivisionView>({
   current,
   hrefs,
   label = "Division",
 }: {
-  current: DivisionView
-  hrefs: Record<DivisionView, string>
+  current: V
+  hrefs: Record<V, string>
   label?: string
 }) {
-  const views: DivisionView[] = ["fbs", "fcs", "all"]
+  const views = (["fbs", "fcs", "all"] as const).filter((d): d is V => d in hrefs)
   return (
     <nav aria-label={label} className="inline-flex rounded-md border border-border bg-card p-0.5">
       {views.map((d) => (

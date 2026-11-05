@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     week,
     `${week}/fcs`,
     "/playoff",
+    "/playoff/fcs",
     "/book",
     "/model",
     "/matchup",

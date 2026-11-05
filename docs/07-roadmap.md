@@ -158,7 +158,7 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 ## Phase 12: Fixes from the owner's review (planned 2026-11-05, nothing built yet)
 Found by the owner on the live site. Ordered by impact: the first two cause most of the "the site didn't update" reports. Each item follows the usual loop (build → test → tick → commit → push) and stops for review. Items marked **ask** need the owner's OK first (workflow, outward-facing, or a product choice).
 
-**Before Phase 12:** finish #125's site push (`/playoff/fcs`) once the live API serves `seeds`, then drop the old `Playoff.format` field.
+**Before Phase 12:** ~~finish #125's site push (`/playoff/fcs`) once the live API serves `seeds`~~ done 2026-11-05 (the bracket is drawn from `rounds`; CI had been red since `32baf0d`, so the API only deployed then); then drop the old `Playoff.format` field.
 
 - [ ] **12.1 Run the nightly job at 6–7 AM Eastern** (owner chose cron-job.org, #126).
   - *Problem:* the job is meant to run at 5–6 AM Eastern but lands around noon.
