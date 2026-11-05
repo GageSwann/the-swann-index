@@ -154,3 +154,57 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 - [x] New box-score signals from the cached advanced stats (#122: second-level rushing yards + power success adopted, model v1.5: validation 12.390 → 12.349; others rejected)
 - [ ] AI-written game previews
 - [x] Found while scoping the FCS sim: FBS-vs-FCS margins overshot by ~30% and totals ran low (#124: margin scale + total offset, model v1.6; validation margin MAE 14.34 → 12.56, totals 12.62 → 12.31)
+
+## Phase 12: Fixes from the owner's review (planned 2026-11-05, nothing built yet)
+Found by the owner on the live site. Ordered by impact: the first two cause most of the "the site didn't update" reports. Each item follows the usual loop (build → test → tick → commit → push) and stops for review. Items marked **ask** need the owner's OK first (workflow, outward-facing, or a product choice).
+
+**Before Phase 12:** finish #125's site push (`/playoff/fcs`) once the live API serves `seeds`, then drop the old `Playoff.format` field.
+
+- [ ] **12.1 Run the nightly job at 6–7 AM Eastern (ask).**
+  - *Problem:* the job is meant to run at 5–6 AM Eastern but lands around noon.
+  - *Cause (checked):* the cron is `0 10 * * *` (10:00 UTC), but GitHub started the last seven scheduled runs **5½–10 hours late** (15:38–20:06 UTC). Scheduled workflows aren't guaranteed to start on time, and the top of the hour is the busiest slot.
+  - *Plan:* trigger the run from an outside scheduler at **11:00 UTC** (6 AM EST / 7 AM EDT, inside the window all year) through GitHub's `workflow_dispatch` API, using a fine-grained token that can only start this repo's workflows. Options:
+    - **cron-job.org** (free, on time to the minute; recommended);
+    - **Vercel Cron** (Hobby plan: once a day, fires anywhere in the hour, so 7–8 AM during daylight time).
+  - Keep the GitHub schedule as a later backup (e.g. 14:23 UTC) that skips itself when today's run already happened.
+  - *Done when:* a week of runs all start between 6 and 7 AM Eastern.
+- [ ] **12.2 The site shows each run's results right away.**
+  - *Problem:* team pages kept old schedules after a run, and the FCS rankings took a long time to appear.
+  - *Cause (checked):* after a run, `/api/revalidate` calls `revalidateTag("tsi", "max")`. That only marks pages stale: the **first visit after a run still gets yesterday's page** while the new one builds in the background, and only the 7 pages the job pre-visits get past that. Team pages are never pre-visited, so the first person to open one sees the old schedule.
+  - *Plan:* switch to `revalidateTag("tsi", { expire: 0 })`, the Next.js 16 setting for refreshes triggered from outside the site, so the next visit waits for fresh data instead of showing old data.
+  - Measure how long a team page takes to build fresh on Render's free tier (0.1 CPU).
+  - Pre-visit a few more pages: `/playoff/fcs`, `/rankings/all`, `/week/{week}/all`, plus the Top 25 team pages if the run time allows. Changing the pre-visit list changes the nightly workflow, so **ask**.
+  - *Done when:* right after a run, every page (a team page nobody has opened yet included) shows the new data.
+- [ ] **12.3 No negative projected points.**
+  - *Problem:* Wake Forest–Merrimack showed a 57.5-point margin with a 48.7 total, so Merrimack was projected at −4.4 points. v1.6 (#124) shrank the margin to 53.4, but it's still −2.4.
+  - *Cause:* scores are (total ± margin) / 2, and the totals model doesn't know that a lopsided game still has a floor for the underdog. In the #124 data, FBS-vs-FCS totals ran low by **+0.25 points per point of predicted margin** (2023–25).
+  - *Plan (experiment first):* let the total grow with the size of the predicted margin in lopsided games. Candidates:
+    - a |margin| term in the totals correction;
+    - a learned floor on the underdog's expected points.
+  - Fit on 2015–22, score totals MAE and the Book on 2023–25, for FBS-vs-FCS games and FBS blowouts.
+  - Separately, the displayed score never goes below 0 even if a projection would.
+  - *Done when:* no projected score is negative and totals in lopsided games are no worse (ideally better).
+- [ ] **12.4 FCS Résumé measured against a typical #24 FCS team.**
+  - *Why:* the bar should match the 24-team FCS field, like the FBS #12 for the 12-team CFP. This reverses #91 (#10).
+  - *Plan:* change `FCS_BENCHMARK_RANK` from 10 to 24. That moves stored SOR from the next run, the Résumé breakdown text ("#24 FCS team") and the FCS playoff projection.
+  - Rerun the FCS selection check (with #10: 88 of 96 real playoff teams, 2022–25) and report the number with #24.
+  - *Done when:* the FCS Résumé and its breakdown use #24, the breakdown still adds up to the stored SOR for every FCS team, and the selection check is recorded.
+- [ ] **12.5 Arrows and biggest movers compare with the previous Sunday (ask about midweek).**
+  - *Problem:* movement compares with "the newest run at least 7 days earlier" (`run_and_week_ago`), which can be any weekday.
+  - *Wanted:* rankings still update daily, but movement is measured against **Sunday's rankings** (Eastern time). The Sunday run is the one after Saturday's games.
+  - *Plan:* pick the baseline run by date (the last run on the chosen Sunday) in the rankings and movers queries.
+  - *Done when:* on Sunday, the arrows and movers show the change since the previous Sunday.
+- [ ] **12.6 The All view of This week shows FCS ranks.**
+  - *Problem:* only FBS Top 25 ranks appear.
+  - *Plan:* show FCS Top 25 ranks too, marked as FCS ("FCS #3") in a distinct, contrast-checked style, as the FCS tab already ranks them.
+  - Check desktop and 360/390 px.
+- [ ] **12.7 Biggest movers: long names overlap the rank change.**
+  - *Example:* Florida International.
+  - *Plan:* let the name truncate (a flex container with `min-w-0` around `TeamLink`, the same fix as the playoff bracket) or wrap. Check at desktop and phone widths.
+
+**Open questions for the owner**
+1. **12.1 scheduler:** cron-job.org (recommended, needs a GitHub token stored there) or Vercel Cron?
+2. **12.5, between Sundays:** should the arrows on Mon–Sat
+   - compare today's rank with **last Sunday's** (they can move during the week after Tue–Fri games), or
+   - keep showing **last Sunday vs. the Sunday before** and only change on Sunday, like a weekly poll?
+3. **12.6 color:** any preference for how FCS ranks look next to FBS ranks?
