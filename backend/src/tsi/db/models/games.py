@@ -53,4 +53,8 @@ class TeamGameStats(CreatedAtMixin, Base):
     pass_epa_per_play: Mapped[float | None]
     success_rate: Mapped[float | None]
     explosiveness: Mapped[float | None]
+    # Rushing yards 5-10 past the line per rush, and short-yardage conversion rate
+    # (CFBD "secondLevelYards", "powerSuccess"; garbage time excluded; decision #122).
+    second_level_yards: Mapped[float | None]
+    power_success: Mapped[float | None]
     garbage_time_filtered: Mapped[bool] = mapped_column(default=True)

@@ -1,6 +1,7 @@
 # Manual only: apply Alembic migrations to the production database (Neon `production`
 # branch, the DATABASE_URL secret), optionally reloading one season of CFBD teams after
-# (e.g. to fill a new team_seasons column). The connection string never leaves GitHub.
+# (e.g. to fill a new team_seasons column) and/or advanced game stats from a season on
+# (e.g. new team_game_stats columns). The connection string never leaves GitHub.
 # Run: Actions tab -> "Migrate production" -> Run workflow, or
 #   gh workflow run migrate.yml -f reload_teams_season=2026
 # Deploy order: run this BEFORE pushing code that needs the new schema (CLAUDE.md).
@@ -11,6 +12,10 @@ on:
     inputs:
       reload_teams_season:
         description: "Also reload CFBD /teams for this season after migrating (blank = skip)"
+        required: false
+        default: ""
+      reload_stats_from:
+        description: "Also reload advanced game stats from this season through the current one (blank = skip; 2 CFBD calls per season)"
         required: false
         default: ""
 
@@ -49,5 +54,18 @@ jobs:
         run: uv run tsi ingest teams --season "$SEASON"
         env:
           SEASON: ${{ inputs.reload_teams_season }}
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Reload advanced stats
+        if: ${{ inputs.reload_stats_from != '' }}
+        run: |
+          last=$(date -u +%Y)
+          if [ "$(date -u +%m)" -lt 2 ]; then last=$((last - 1)); fi
+          for season in $(seq "$FROM" "$last"); do
+            uv run tsi ingest stats --season "$season"
+          done
+        env:
+          FROM: ${{ inputs.reload_stats_from }}
           CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

@@ -42,6 +42,8 @@ def team_game_stat_rows(
             "pass_epa_per_play": (offense.get("passingPlays") or {}).get("ppa"),
             "success_rate": offense.get("successRate"),
             "explosiveness": offense.get("explosiveness"),
+            "second_level_yards": offense.get("secondLevelYards"),
+            "power_success": offense.get("powerSuccess"),
             "garbage_time_filtered": True,
         }
     return list(rows.values())
