@@ -64,7 +64,7 @@ What a healthy log says:
 | `rate 138 FBS teams, #1 ... -> model_runs.id=N` | new daily ratings + rankings |
 | `grade N picks W-L-P, +X units` | locked picks of finished games graded; 0 on days without finished games |
 | `board N games, N TSI Plays` / `publish N new snapshots (N unchanged), N picks` | predictions for the next 8 days; a snapshot is inserted only when something changed |
-| `{"revalidated":"tsi",...}` then `200 /`, `200 /week`, ... | the site was told to refresh and its main pages reloaded |
+| `{"revalidated":"tsi",...}` then `200 0.4s /`, `200 1.2s /teams/...`, ... | the site's cache was expired (`expire: 0`, Phase 12.2) and ~60 pages rebuilt one by one: 10 main pages plus the FBS and FCS Power Top 25 team pages; ~1-2 s each when fresh |
 
 Then confirm `ratings_updated_at` from `/meta/current` matches the run, and the site's
 "Model updated" time (US Eastern) matches it too. If the API is newer than the site,
