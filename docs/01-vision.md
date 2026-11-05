@@ -32,7 +32,7 @@ There are no user accounts. Operator actions happen locally or through GitHub Ac
 - Manual adjustments layer (injuries, QB changes), shown transparently as raw vs. adjusted
 - FCS expansion (full FCS ratings, not just a pooled FCS opponent)
 - Advanced markets: first half, key-number pricing, props
-- AI-written game previews
+- ~~AI-written game previews~~ (dropped for now, #130)
 
 ## Non-goals
 - User accounts, logins, or user-submitted picks
