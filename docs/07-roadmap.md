@@ -147,8 +147,6 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 ## Phase 11: Stretch
 - [x] FCS season simulation: projected wins, conference titles, the 24-team FCS playoff (moved from Phase 10, #107; #125: one simulation for both divisions, FCS champions from the standings, 24-team bracket by the FCS Résumé, which picked 88/96 real playoff teams 2022–25; `/playoff/fcs`)
 - [x] Key numbers & push probabilities (#118: whole-number margin/total tables with learned key-number weights instead of a Monte Carlo; margin log loss 4.168 → 4.027 on validation; pushes priced on whole-number lines; picks unchanged)
-- [ ] First-half markets
-- [ ] Live odds + line movement (The Odds API)
 - [x] Team-specific HFA, travel, rest (#120: rest / bye / short-week adjustment adopted, model v1.4; travel, time zones, altitude and team-specific home field tested and rejected)
 - [x] Model v2: gradient-boosted ensemble on top of ratings (#121: tested, rejected: worse than the linear stack out of sample; leftover error has no pattern)
 - [x] New box-score signals from the cached advanced stats (#122: second-level rushing yards + power success adopted, model v1.5: validation 12.390 → 12.349; others rejected)
