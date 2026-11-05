@@ -8,5 +8,6 @@
     "editor.defaultFormatter": "charliermarshall.ruff",
     "editor.formatOnSave": true
   },
-  "files.eol": "\n"
+  "files.eol": "\n",
+  "python.terminal.useEnvFile": true
 }
