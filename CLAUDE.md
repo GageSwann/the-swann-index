@@ -23,7 +23,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#118 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#119 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -47,7 +47,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Two rating sets (#23, #37, #38):** `season` = this season's games only (0.726·PPD + 0.635·success rate, HFA 3.24) → **Power + Résumé rankings**. `predictive` = **stacked** margin (site, PPD, success, prior, Elo; ridge per season-stage bucket) → **predictions/Book**. Fewer than 4 games = *provisional*.
 - **Components** (`model/ratings/components.py`): opponent-adjusted ridge fits of PPD, success rate, pace (drives) and tempo (plays), each with a `level`. Teams not rated individually pool into FCS (−1, before 2022 only) and lower (−2, D-II and below). EPA is not fitted (#49).
 - **Totals (#50):** stacked game total (league level shrunk to last season, PPD/success sums, pace + tempo, prior, last season's pace/tempo). Scores = (total ± margin) / 2.
-- **Key numbers (#118):** spreads, totals and alt ladders are priced from whole-number tables (normal mass × learned weights in the artifact: margin spikes at 3/7/10/14, no ties; totals full weights); whole-number lines get `push` and no-push prices. Moneylines, team totals and Book edges stay on the smooth distribution.
+- **Key numbers (#118):** spreads, totals and alt ladders are priced from whole-number tables (normal mass × learned weights in the artifact: margin spikes vs. neighbours within 7 at 3/7/10/14, no ties, #119; totals full weights); whole-number lines get `push` and no-push prices. Moneylines, team totals and Book edges stay on the smooth distribution.
 - **Distribution (#51):** bivariate normal. σ_margin 15.4, σ_total 16.4 + 0.12·(total − 55), ρ = 0.0074 × home margin. Production fits σ and the edge shrink on **leave-one-season-out** stack predictions (in-sample ones are too sharp, #53).
 - **Season sim (#94):** remaining games use the published forecasts; each sim draws a per-team shift N(0, τ), τ = 7.15 − 0.114 × week, held all season, game noise √(σ² − 2τ²) (single-game probabilities unchanged). Fixed seed.
 - **Manual adjustments (#103, #104):** offense/defense points per game on a team's games in a window, applied after the model to the game forecast only. Adjusted games publish `raw` + official `adjusted` rows at the same `published_at` (picks on the adjusted one); Book and season sim use adjusted, rankings/ratings and the matchup tool stay raw.

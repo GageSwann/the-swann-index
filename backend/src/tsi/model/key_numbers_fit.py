@@ -2,8 +2,9 @@
 
 Iterative proportional fitting: start every weight at 1, then repeatedly scale each one
 by (observed count + s) / (expected count under the current weights + s), where s pulls
-rare values toward 1. Margins fold to |k| and keep only the spikes (each weight over its
-local average); a tie gets weight 0 (college football has no ties). Pure.
+rare values toward 1. Margins fold to |k| and keep only the spikes (each weight over the
+average of its neighbours within 7, itself excluded); a tie gets weight 0 (college
+football has no ties). Pure.
 """
 
 from collections.abc import Sequence
@@ -21,7 +22,10 @@ from tsi.model.key_numbers import (
 
 SHRINK = 30.0  # pseudo-count toward weight 1
 ITERATIONS = 8
-SPIKE_HALF_WIDTH = 3  # the local average for margin spikes: |k| - 3 .. |k| + 3
+# A margin's spike = its weight over the average of its neighbours |k| - 7 .. |k| + 7 (itself
+# left out). Narrower windows inflated 14 (its neighbours 11 and 13 are rare) and left 3
+# underpredicted (#119).
+SPIKE_HALF_WIDTH = 7
 
 
 def fit_key_numbers(
@@ -67,7 +71,8 @@ def _spikes(w: NDArray[np.float64]) -> NDArray[np.float64]:
     """Each margin weight over its local average: the key-number shape without the tails."""
     out = w.copy()
     for i in range(1, len(w)):
-        window = w[max(1, i - SPIKE_HALF_WIDTH) : i + SPIKE_HALF_WIDTH + 1]
-        out[i] = w[i] / window.mean()
+        lo, hi = max(1, i - SPIKE_HALF_WIDTH), min(len(w), i + SPIKE_HALF_WIDTH + 1)
+        neighbours = [w[j] for j in range(lo, hi) if j != i]
+        out[i] = w[i] / (sum(neighbours) / len(neighbours))
     out[0] = 0.0
     return out
