@@ -167,7 +167,7 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
     - **Vercel Cron** (Hobby plan: once a day, fires anywhere in the hour, so 7–8 AM during daylight time).
   - Keep the GitHub schedule as a later backup (e.g. 14:23 UTC) that skips itself when today's run already happened.
   - *Done when:* a week of runs all start between 6 and 7 AM Eastern.
-  - *Built 2026-11-05:* the workflow takes `workflow_dispatch` from cron-job.org and keeps GitHub's schedule at 14:23 UTC as a backup that skips itself after a successful run that UTC day (`gate` job). Left: the owner's fine-grained token + the cron-job.org job, then a week of on-time runs.
+  - *Built 2026-11-05:* the workflow takes `workflow_dispatch` from cron-job.org and keeps GitHub's schedule at 14:23 UTC as a backup that skips itself after a successful run that UTC day (`gate` job). The owner's fine-grained token (Actions read/write, this repo only) and the cron-job.org job (daily 11:00 UTC) were set up the same day; its test run started a full nightly run that succeeded. Left: a week of on-time runs.
 - [ ] **12.2 The site shows each run's results right away.**
   - *Problem:* team pages kept old schedules after a run, and the FCS rankings took a long time to appear.
   - *Cause (checked):* after a run, `/api/revalidate` calls `revalidateTag("tsi", "max")`. That only marks pages stale: the **first visit after a run still gets yesterday's page** while the new one builds in the background, and only the 7 pages the job pre-visits get past that. Team pages are never pre-visited, so the first person to open one sees the old schedule.
