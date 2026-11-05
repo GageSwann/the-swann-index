@@ -113,7 +113,8 @@ export interface paths {
         };
         /**
          * Get Playoff
-         * @description Playoff odds, fair futures odds and a projected bracket (regular season only).
+         * @description Playoff odds, fair futures odds and a projected bracket (regular season only):
+         *     the College Football Playoff (`fbs`) or the 24-team FCS playoff (`fcs`).
          */
         get: operations["get_playoff"];
         put?: never;
@@ -397,7 +398,10 @@ export interface components {
             /** Units */
             units: number;
         };
-        /** BracketFormat */
+        /**
+         * BracketFormat
+         * @description The CFP bracket's old description (FBS only); `Playoff.rounds` replaces it.
+         */
         BracketFormat: {
             /** Byes */
             byes: number;
@@ -409,6 +413,24 @@ export interface components {
             quarterfinals: number[][];
             /** Semifinals */
             semifinals: number[][];
+        };
+        /** BracketRound */
+        BracketRound: {
+            /** Advance */
+            advance: string;
+            /** Games */
+            games: components["schemas"]["BracketSlot"][][];
+            /** Name */
+            name: string;
+            /** Note */
+            note: string | null;
+        };
+        /** BracketSlot */
+        BracketSlot: {
+            /** Game */
+            game?: number | null;
+            /** Seed */
+            seed?: number | null;
         };
         /** CalibrationBin */
         CalibrationBin: {
@@ -670,11 +692,21 @@ export interface components {
              * Format: date-time
              */
             as_of: string;
-            format: components["schemas"]["BracketFormat"];
+            /** Byes */
+            byes: number;
+            /** Division */
+            division: string;
+            /** Field Size */
+            field_size: number;
+            format: components["schemas"]["BracketFormat"] | null;
             /** Projected */
             projected: components["schemas"]["PlayoffTeam"][];
+            /** Rounds */
+            rounds: components["schemas"]["BracketRound"][];
             /** Season */
             season: number;
+            /** Seeds */
+            seeds: number;
             /** Sims */
             sims: number | null;
             /** Teams */
@@ -1256,6 +1288,7 @@ export interface operations {
         parameters: {
             query?: {
                 season?: number | null;
+                division?: "fbs" | "fcs";
             };
             header?: never;
             path?: never;

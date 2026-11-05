@@ -12,7 +12,7 @@ type Game = { a: Entry; b: Entry; winner: Entry }
  */
 export function ProjectedBracket({ playoff }: { playoff: Playoff }) {
   const { format, projected } = playoff
-  if (projected.length < format.field_size) return null
+  if (!format || projected.length < format.field_size) return null
   const seed = (s: number): Entry => ({ seed: s, team: projected[s - 1] })
   const play = (a: Entry, b: Entry, next: (t: PlayoffTeam) => number): Game => ({
     a,
