@@ -225,10 +225,13 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
     - focus rings stay visible and contrast-checked;
     - full support in both light and dark mode: every effect designed and checked in each theme (#127).
   - Write the design plan into doc 06 first and review it with the owner before building.
-- [ ] **13.2 Team colors that are never white (or invisible).**
-  - *Problem:* some teams' primary color is white, or too close to the background.
-  - *Plan:* pick each team's display color from CFBD's `color` / `alt_color`. Skip near-white and near-black and anything below a contrast floor against the card background in each theme; fall back to the next team color, then a neutral brand tone.
-  - Check every FBS and FCS team in both themes; a small manual override table covers the rare team with no usable color.
+- [ ] **13.2 Team colors: correct for 2026, and never white (or invisible).**
+  - *Current:* every team's colors must be its **current (2026) official colors**. Steps:
+    - refresh colors and logos from CFBD's 2026 `/teams` (cached; 1–2 calls) and list what changed;
+    - spot-check against each school's athletics brand guide wherever CFBD looks stale: recent rebrands, teams that moved up to FBS or FCS, new programs;
+    - corrections go in a small override table in the repo (team, color, alt color, source, date checked).
+  - *Visible:* pick each team's display color from its corrected colors. Skip near-white and near-black and anything below a contrast floor against the card background **in each theme**; fall back to the next team color, then a neutral brand tone.
+  - *Done when:* every FBS and FCS team is checked in both themes (a contact sheet of all teams' chips, light and dark), no white or invisible colors remain, and every override is sourced.
 
 **Pages**
 - [ ] **13.3 Remove the TSI Book and Model pages; the Book becomes owner-only** (owner, #127).
@@ -254,6 +257,10 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
   - The projected champion path is highlighted (a focal point for 13.1).
   - On phones it scrolls sideways inside its own frame, or switches to a round-by-round view; the page itself never scrolls sideways.
 - [ ] **13.7 Team page header:** `| Logo | #5 Miami` instead of `#5 | Logo | Miami` (rank between the logo and the name; "#5 FCS" for FCS teams).
+
+**Ideas to tinker with (owner, "maybe"; prototype before committing to them)**
+- [ ] **13.9 Team-spirit team pages.** Each team page dressed in its school's identity: its colors through the page's accents and glows (13.1), its logo used more boldly (a large faded mark in the header, logo details in section headers), maybe its alternate logos and wordmarks where CFBD provides them. Keep it readable: data first, decoration behind it, in both themes. Use only the logos and colors we already get from CFBD (no copied photos or fan art). Prototype on two or three teams, review with the owner, then roll out.
+- [ ] **13.10 "TSI's Pick" on This week.** Next to spread, total and moneyline, a small college-football picket sign with a swan logo on the side of the team TSI expects to win (straight up, with its win chance). This is the model's prediction, not a Book bet, so it fits the Book being private (#127). Needs an original swan mark for the sign (SVG, our own artwork, in brand colors), sized for phones. Prototype a few designs and pick one with the owner.
 
 **Data**
 - [ ] **13.8 Fill in all of 2026 before the nightly job started** (owner, #127).
