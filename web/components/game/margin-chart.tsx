@@ -133,6 +133,7 @@ function MarginTip({
           <span className="font-semibold">{percent(rung.first.prob, 0)}</span>{" "}
           <span className="text-muted-foreground">
             {homeName} covers {teamSpread(rung.line ?? 0)}
+            {rung.push >= 0.005 && `, push ${percent(rung.push, 0)}`}
           </span>
         </p>
       )}

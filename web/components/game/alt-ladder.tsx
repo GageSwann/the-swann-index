@@ -42,9 +42,11 @@ export function AltLadder({
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        Chance from TSI&apos;s score distribution
+        Chance from TSI&apos;s score distribution, which puts extra weight on key numbers like 3 and
+        7. On a whole-number line the chance (and price) is for games that don&apos;t land exactly
+        on it; Push is how often one does
         {marketSpread !== null || marketTotal !== null
-          ? "; the Vegas line is highlighted (nearest rung)."
+          ? ". The Vegas line is highlighted (nearest rung)."
           : "."}
       </p>
     </section>
@@ -64,6 +66,7 @@ function Ladder({
   probLabel: string
   highlight: number | null
 }) {
+  const pushes = rungs.some((r) => r.push >= 0.005)
   const nearest =
     highlight === null
       ? null
@@ -78,6 +81,7 @@ function Ladder({
           <tr className="border-b border-border">
             <HeadCell>{caption}</HeadCell>
             <HeadCell align="right">{probLabel}</HeadCell>
+            {pushes && <HeadCell align="right">Push</HeadCell>}
             <HeadCell align="right">Fair</HeadCell>
             <HeadCell align="right">TSI Book</HeadCell>
           </tr>
@@ -96,6 +100,11 @@ function Ladder({
                 {r.line === nearest && <span className="ml-2 text-xs text-primary">Vegas</span>}
               </th>
               <td className="px-3 py-1.5 text-right">{percent(r.first.prob, 0)}</td>
+              {pushes && (
+                <td className="px-3 py-1.5 text-right text-muted-foreground">
+                  {r.push >= 0.005 ? percent(r.push, 0) : "—"}
+                </td>
+              )}
               <td className="px-3 py-1.5 text-right">{american(r.first.fair)}</td>
               <td className="px-3 py-1.5 text-right">{american(r.first.book)}</td>
             </tr>

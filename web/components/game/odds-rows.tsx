@@ -42,7 +42,7 @@ export function tsiRows({
         <Price
           line={favoriteLine(markets.spread.line ?? 0, home, away, 1)}
           odds={markets.spread.first.book}
-          note={`${short(home)} covers ${percent(markets.spread.first.prob, 0)}`}
+          note={`${short(home)} covers ${percent(markets.spread.first.prob, 0)}${pushNote(markets.spread.push)}`}
         />
       ),
     },
@@ -54,7 +54,7 @@ export function tsiRows({
         <Price
           line={`O/U ${totalLine(markets.total.line ?? 0)}`}
           odds={markets.total.first.book}
-          note={`over ${percent(markets.total.first.prob, 0)}`}
+          note={`over ${percent(markets.total.first.prob, 0)}${pushNote(markets.total.push)}`}
         />
       ),
     },
@@ -136,4 +136,9 @@ function TeamPair({ home, away, homeOdds, awayOdds }: PairProps) {
       <span>{`${short(home)} ${american(homeOdds)}`}</span>
     </span>
   )
+}
+
+/** ", push 6%" on a whole-number line (key numbers, decision #118); nothing otherwise. */
+function pushNote(push: number): string {
+  return push >= 0.005 ? `, push ${percent(push, 0)}` : ""
 }
