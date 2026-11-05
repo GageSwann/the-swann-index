@@ -150,7 +150,11 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 - [x] Team-specific HFA, travel, rest (#120: rest / bye / short-week adjustment adopted, model v1.4; travel, time zones, altitude and team-specific home field tested and rejected)
 - [x] Model v2: gradient-boosted ensemble on top of ratings (#121: tested, rejected: worse than the linear stack out of sample; leftover error has no pattern)
 - [x] New box-score signals from the cached advanced stats (#122: second-level rushing yards + power success adopted, model v1.5: validation 12.390 → 12.349; others rejected)
-- [ ] AI-written game previews
+- [ ] AI-written game previews (#129: every FBS and FCS game TSI forecasts, written by Claude Opus 5.5 from TSI data only, TSI's own forecast only: no market lines, picks or bets)
+  - [ ] Prototype: a scratch script builds each game's facts from the public API and writes previews for a sample of games (top-25, close, FBS-vs-FCS mismatch, FCS); owner reviews the writing before anything is built
+  - [ ] Build: `tsi/previews/` (facts from the DB, prompt, writer with checks), a `game_previews` table (**ask** before the migration), `tsi previews write` (`--dry-run`, `--limit`); a preview is rewritten only when a team has played since or TSI's line moved 2+ points
+  - [ ] Nightly + site: a step in `tsi run` after publish (**ask**: workflow change and the `ANTHROPIC_API_KEY` secret); `GameCenter.preview` in the API; a Preview section on game pages, labeled as AI-written from TSI's numbers
+  - *Done when:* a week of nightly runs writes a preview for every forecast game, and the owner's spot checks find no wrong facts
 - [x] Found while scoping the FCS sim: FBS-vs-FCS margins overshot by ~30% and totals ran low (#124: margin scale + total offset, model v1.6; validation margin MAE 14.34 → 12.56, totals 12.62 → 12.31)
 
 ## Phase 12: Fixes from the owner's review (planned 2026-11-05, nothing built yet)
