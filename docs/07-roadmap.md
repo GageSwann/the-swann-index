@@ -160,7 +160,7 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
 
 **Before Phase 12:** finish #125's site push (`/playoff/fcs`) once the live API serves `seeds`, then drop the old `Playoff.format` field.
 
-- [ ] **12.1 Run the nightly job at 6–7 AM Eastern (ask).**
+- [ ] **12.1 Run the nightly job at 6–7 AM Eastern** (owner chose cron-job.org, #126).
   - *Problem:* the job is meant to run at 5–6 AM Eastern but lands around noon.
   - *Cause (checked):* the cron is `0 10 * * *` (10:00 UTC), but GitHub started the last seven scheduled runs **5½–10 hours late** (15:38–20:06 UTC). Scheduled workflows aren't guaranteed to start on time, and the top of the hour is the busiest slot.
   - *Plan:* trigger the run from an outside scheduler at **11:00 UTC** (6 AM EST / 7 AM EDT, inside the window all year) through GitHub's `workflow_dispatch` API, using a fine-grained token that can only start this repo's workflows. Options:
@@ -189,22 +189,21 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
   - *Plan:* change `FCS_BENCHMARK_RANK` from 10 to 24. That moves stored SOR from the next run, the Résumé breakdown text ("#24 FCS team") and the FCS playoff projection.
   - Rerun the FCS selection check (with #10: 88 of 96 real playoff teams, 2022–25) and report the number with #24.
   - *Done when:* the FCS Résumé and its breakdown use #24, the breakdown still adds up to the stored SOR for every FCS team, and the selection check is recorded.
-- [ ] **12.5 Arrows and biggest movers compare with the previous Sunday (ask about midweek).**
+- [ ] **12.5 Arrows and biggest movers compare with the previous Sunday** (owner's rule, #126).
   - *Problem:* movement compares with "the newest run at least 7 days earlier" (`run_and_week_ago`), which can be any weekday.
-  - *Wanted:* rankings still update daily, but movement is measured against **Sunday's rankings** (Eastern time). The Sunday run is the one after Saturday's games.
-  - *Plan:* pick the baseline run by date (the last run on the chosen Sunday) in the rankings and movers queries.
-  - *Done when:* on Sunday, the arrows and movers show the change since the previous Sunday.
+  - *Rule:* Sunday's rankings are the official weekly poll (the Sunday run comes after Saturday's games). Rankings still update daily, but arrows and biggest movers always compare with the **most recent Sunday before today** (Eastern date):
+    - **on Sunday**, the change since the previous Sunday (the week's official move);
+    - **Monday–Saturday**, the change since that Sunday, moving with midweek results.
+  - *Owner's example:* Central Michigan is #91 on Sunday and wins Tuesday to #75: ▲16. Saturday's results shuffle it to #81: ▲10. That Sunday shows ▲10 and #81 becomes the baseline. It wins again the next week to #61: ▲20, not ▲30.
+  - *Plan:* pick the baseline run by date (the last run on that Sunday) in the rankings and movers queries.
+  - *Edge cases:* the season's first weeks, before there are two Sundays; a Sunday with no run (use the latest run before that Sunday ended); FBS and FCS lists alike.
+  - *Done when:* the example above reproduces in a test with fixed run dates, and on the live site Sunday's arrows match the previous Sunday's ranks.
 - [ ] **12.6 The All view of This week shows FCS ranks.**
   - *Problem:* only FBS Top 25 ranks appear.
-  - *Plan:* show FCS Top 25 ranks too, marked as FCS ("FCS #3") in a distinct, contrast-checked style, as the FCS tab already ranks them.
+  - *Plan:* show FCS Top 25 ranks too, marked as FCS ("FCS #3") in a distinct, contrast-checked style of our choosing (owner has no preference, #126), as the FCS tab already ranks them.
   - Check desktop and 360/390 px.
 - [ ] **12.7 Biggest movers: long names overlap the rank change.**
   - *Example:* Florida International.
   - *Plan:* let the name truncate (a flex container with `min-w-0` around `TeamLink`, the same fix as the playoff bracket) or wrap. Check at desktop and phone widths.
 
-**Open questions for the owner**
-1. **12.1 scheduler:** cron-job.org (recommended, needs a GitHub token stored there) or Vercel Cron?
-2. **12.5, between Sundays:** should the arrows on Mon–Sat
-   - compare today's rank with **last Sunday's** (they can move during the week after Tue–Fri games), or
-   - keep showing **last Sunday vs. the Sunday before** and only change on Sunday, like a weekly poll?
-3. **12.6 color:** any preference for how FCS ranks look next to FBS ranks?
+**Owner's answers (2026-11-05, #126):** 12.1 cron-job.org; 12.5 compare with the most recent Sunday before today, as written above; 12.6 no preference on the FCS rank style. Still to set up with the owner when 12.1 starts: a fine-grained GitHub token that can only start this repo's workflows, stored in cron-job.org (never in the repo).
