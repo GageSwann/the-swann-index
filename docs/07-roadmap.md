@@ -200,7 +200,7 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
   - *Edge cases:* the season's first weeks, before there are two Sundays; a Sunday with no run (use the latest run before that Sunday ended); FBS and FCS lists alike.
   - *Done when:* the example above reproduces in a test with fixed run dates, and on the live site Sunday's arrows match the previous Sunday's ranks.
   - *Built 2026-11-05 (#134):* `run_and_baseline` + `baseline_cutoff` (`db/queries/runs.py`); the example passes step by step in `tests/db_integration/test_run_queries.py`. Left: check the live site on Sunday Nov 8.
-- [ ] **12.6 The All view of This week shows FCS ranks.**
+- [x] **12.6 The All view of This week shows FCS ranks.** (#135: muted "FCS 8" chip, contrast 5.3:1 light / 5.5:1 dark; checked at 1440/390/360 px in both themes)
   - *Problem:* only FBS Top 25 ranks appear.
   - *Plan:* show FCS Top 25 ranks too, marked as FCS ("FCS #3") in a distinct, contrast-checked style of our choosing (owner has no preference, #126), as the FCS tab already ranks them.
   - Check desktop and 360/390 px.

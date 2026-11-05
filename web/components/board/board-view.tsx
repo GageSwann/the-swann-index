@@ -5,10 +5,11 @@ import { useMemo, useState } from "react"
 import type { GameSummary } from "@/lib/api/types"
 import { formatDay } from "@/lib/format/time"
 
+import { type BoardRanks, shownRank } from "./board-ranks"
 import { MatchupCard } from "./matchup-card"
 
 type Sort = "kickoff" | "edge" | "closest"
-type Props = { games: GameSummary[]; ranks: Record<number, number> }
+type Props = { games: GameSummary[]; ranks: BoardRanks }
 
 const SORTS: { value: Sort; label: string }[] = [
   { value: "kickoff", label: "Kickoff" },
@@ -30,8 +31,9 @@ export function BoardView({ games, ranks }: Props) {
     [games],
   )
   const shown = useMemo(() => {
+    // Top 25 of either division in the All view (FCS ranks are marked, Phase 12.6).
     const ranked = (g: GameSummary) =>
-      (ranks[g.home.id] ?? 99) <= 25 || (ranks[g.away.id] ?? 99) <= 25
+      !!(shownRank(ranks[g.home.id]) || shownRank(ranks[g.away.id]))
     const filtered = games.filter(
       (g) =>
         (!top25 || ranked(g)) &&

@@ -6,11 +6,13 @@ import type { GameSummary, TeamRef } from "@/lib/api/types"
 import { american, favoriteLine, totalLine } from "@/lib/format/odds"
 import { formatKickoff } from "@/lib/format/time"
 
+import { type BoardRank, type BoardRanks, shownRank } from "./board-ranks"
 import { PickBadge } from "./pick-badge"
 import { WinProbBar } from "./win-prob-bar"
 import { points } from "@/lib/format/numbers"
+import { cn } from "@/lib/utils"
 
-type Props = { game: GameSummary; ranks: Record<number, number> }
+type Props = { game: GameSummary; ranks: BoardRanks }
 
 /** One game: teams, projected (or final) score, win probability, TSI vs. market, TSI plays. */
 export function MatchupCard({ game, ranks }: Props) {
@@ -18,6 +20,9 @@ export function MatchupCard({ game, ranks }: Props) {
   const m = game.market
   const final = game.result?.final === true
   const status = final ? "Final" : p?.locked ? "Kicked off" : null
+  const awayRank = shownRank(ranks[game.away.id])
+  const homeRank = shownRank(ranks[game.home.id])
+  const wide = !!(awayRank?.fcs || homeRank?.fcs) // both rows make room, names stay aligned
 
   return (
     <article className="flex flex-col gap-3 rounded-md border border-border bg-card p-4">
@@ -32,13 +37,15 @@ export function MatchupCard({ game, ranks }: Props) {
       <div className="space-y-1.5">
         <TeamRow
           team={game.away}
-          rank={ranks[game.away.id]}
+          rank={awayRank}
+          wide={wide}
           score={final ? game.result?.away_points : p?.proj_away}
           isFinal={final}
         />
         <TeamRow
           team={game.home}
-          rank={ranks[game.home.id]}
+          rank={homeRank}
+          wide={wide}
           score={final ? game.result?.home_points : p?.proj_home}
           isFinal={final}
         />
@@ -114,19 +121,23 @@ export function MatchupCard({ game, ranks }: Props) {
 function TeamRow({
   team,
   rank,
+  wide,
   score,
   isFinal,
 }: {
   team: TeamRef
-  rank?: number
+  rank?: BoardRank // already limited to the Top 25
+  wide: boolean // the card shows an FCS rank: room for the "FCS" marker
   score?: number | null
   isFinal: boolean
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <span className="flex min-w-0 items-center gap-1.5">
-        <span className="w-5 shrink-0 text-right text-xs text-muted-foreground">
-          {rank !== undefined && rank <= 25 ? rank : ""}
+        <span
+          className={cn("shrink-0 text-right text-xs text-muted-foreground", wide ? "w-11" : "w-5")}
+        >
+          {rank && (rank.fcs ? <FcsRank rank={rank.rank} /> : rank.rank)}
         </span>
         <TeamLink team={team} />
       </span>
@@ -140,6 +151,22 @@ function TeamRow({
         {score == null ? "" : points(score)}
       </span>
     </div>
+  )
+}
+
+/** An FCS Top 25 rank among FBS ones (the All view, Phase 12.6): a small muted chip,
+ * 5.3:1 contrast in light and 5.5:1 in dark. */
+function FcsRank({ rank }: { rank: number }) {
+  return (
+    <span
+      aria-label={`FCS rank ${rank}`}
+      className="inline-flex items-baseline gap-0.5 rounded-sm border border-border bg-muted px-1 leading-4 whitespace-nowrap"
+    >
+      <span aria-hidden className="text-[0.625rem] font-semibold tracking-wide">
+        FCS
+      </span>
+      <span aria-hidden>{rank}</span>
+    </span>
   )
 }
 

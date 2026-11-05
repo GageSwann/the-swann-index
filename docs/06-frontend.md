@@ -49,6 +49,7 @@
 - **Matchup card:** logos & ranks, kickoff/TV, win-probability bar in team colors, projected score, a TSI line vs. market line row (spread, total, ML), edge badge (★ tier) when it's a TSI play.
 - After games: final score, ✔/✘ for each market, CLV.
 - **Built (decision #71):** `/week` redirects to the current week; `generateStaticParams` prerenders it and other weeks render on first visit (params awaited inside `<Suspense>`). Filters: Top 25 only, TSI plays only, conference; sort: kickoff (grouped by day), biggest edge, closest game. Card: kickoff (ET), Top-25 ranks, projected score (final score once over, with TSI's projection beside it), win-probability bar, TSI vs. Vegas for spread / total / moneyline (favorite named), ★ play badges with ✔/✘ and CLV once graded. ✔/✘ is shown for official picks only (grading stays in the API). No TV listings (CFBD media not ingested).
+- **Ranks in the All view (Phase 12.6, #135):** FBS Top 25 ranks stay plain numbers; FCS Top 25 ranks show as a small muted "FCS 8" chip (`components/board/board-ranks.ts`, `matchup-card.tsx`; muted text on the muted background, 5.3:1 light / 5.5:1 dark), and a card with one widens both rank slots so names stay aligned. "Top 25 only" there keeps games with a Top 25 team of either division.
 - **Team colors** go through `lib/format/color.ts`: primary color if its contrast with the theme's card background is ≥ 2:1, else the alternate color, else a neutral; chosen per theme via CSS variables (`--team-dark` / `--team-light`).
 
 ### Game center `/games/[id]`
