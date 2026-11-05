@@ -10,7 +10,6 @@ burst of requests (e.g. a site build) can't exhaust the connection pool.
 import threading
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from functools import lru_cache
 
 from sqlalchemy.orm import Session
 
@@ -18,7 +17,7 @@ from tsi.book.pricing import GameMarkets, price_game
 from tsi.db.queries.schedule import UpcomingGame
 from tsi.db.queries.team_info import TeamRef, team_ids_by_slug, team_refs
 from tsi.ingest.freshness import current_season
-from tsi.model.artifact import ModelArtifact, load_artifact
+from tsi.model.artifact import ModelArtifact, production_artifact
 from tsi.services.live_inputs import LiveInputs, load_live_inputs
 from tsi.services.predict import forecast_game
 
@@ -83,13 +82,12 @@ def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime
         home_win_prob=dist.home_win_prob,
         sigma_margin=dist.sigma_margin,
         sigma_total=dist.sigma_total,
-        markets=price_game(dist),
+        markets=price_game(dist, keys=artifact.key_numbers),
     )
 
 
-@lru_cache(maxsize=1)
 def _artifact() -> ModelArtifact:
-    return load_artifact()
+    return production_artifact()
 
 
 def _live_inputs(

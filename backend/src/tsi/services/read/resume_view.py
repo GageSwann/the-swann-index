@@ -11,7 +11,6 @@ the run count. Recomputing SOR from these games reproduces the stored value.
 
 from dataclasses import dataclass, replace
 from datetime import datetime
-from functools import lru_cache
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -20,7 +19,7 @@ from tsi.db.queries.games import GameRow
 from tsi.db.queries.runs import RunInfo, run_params
 from tsi.db.queries.team_info import StoredRating, TeamRef, stored_ratings
 from tsi.divisions import FCS, RATED_DIVISION
-from tsi.model.artifact import load_artifact
+from tsi.model.artifact import production_artifact
 from tsi.model.ratings.probability import win_prob
 from tsi.model.resume import ScheduleGame, benchmark_rating, strength_of_record
 
@@ -76,7 +75,7 @@ def resume_context(session: Session, run: RunInfo) -> ResumeContext:
         benchmark=float(benchmark),
         hfa=params.get("season_hfa"),
         # Saved with each run from 2026-10-28; older runs used the production artifact's.
-        sigma=float(params.get("resume_sigma") or _artifact_sigma()),
+        sigma=float(params.get("resume_sigma") or production_artifact().sigma_season),
         season=season,
         pooled=params.get("pooled_season_ratings"),  # saved from 2026-10-28 (#89)
         fcs_benchmark=params.get("fcs_resume_benchmark"),  # saved from 2026-11-04 (#111)
@@ -159,8 +158,3 @@ def _opponent_rating(ctx: ResumeContext, opponent: TeamRef) -> tuple[float | Non
     if ctx.pooled is None:
         return None, None
     return ctx.pooled["fcs" if opponent.division == "fcs" else "lower"], None
-
-
-@lru_cache(maxsize=1)
-def _artifact_sigma() -> float:
-    return load_artifact().sigma_season

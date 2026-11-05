@@ -14,9 +14,10 @@ Every game prediction is a **joint distribution of the two teams' scores**, not 
   - team totals follow: home = (total + margin)/2, away = (total − margin)/2, both normal
 - Residuals are close to normal (kurtosis 3.0–3.5), so v1 is a reasonable start; key numbers wait for v2
 
-**v2: Monte Carlo simulation (later)**
-- Simulate 10k+ games (drive-level or score-event-level) so that scores land on real football numbers
-- Captures **key numbers** (3, 7, 10, 14), push probabilities, and fat tails
+**v2: key numbers (built, decision #118)**
+- Margin and total become probability tables over whole numbers: the normal's mass on each number times a learned weight (`model/key_numbers.py`). Margins keep only the key-number spikes (3 and 7 about 2.25×, 10 and 14 about 1.5×, 9 about 0.4×, ties 0) so the tails stay normal; totals use full weights (41, 44, 51, 55 ...)
+- Whole-number lines carry a **push** probability; each side's price is conditional on no push. Moneylines and team totals stay on the smooth distribution (win probability is unchanged)
+- Validation 2023–25: margin log loss 4.168 → 4.027, total 4.194 → 4.149; Book picks unchanged (edges use the fitted trust on the smooth distribution). A score-event Monte Carlo was considered and not needed
 
 ## 2. Markets priced
 

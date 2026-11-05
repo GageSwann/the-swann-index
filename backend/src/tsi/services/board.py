@@ -79,11 +79,12 @@ def build_board(
         dist = forecast.distribution
         market = consensus(snaps[forecast.game.id])
         edges = game_edges(dist, market, artifact.edge_shrink)
-        raw_markets = price_game(forecast.raw, book) if forecast.adjustment else None
+        keys = artifact.key_numbers
+        raw_markets = price_game(forecast.raw, book, keys) if forecast.adjustment else None
         board.append(
             BoardGame(
                 forecast,
-                price_game(dist, book),
+                price_game(dist, book, keys),
                 market,
                 edges,
                 choose_picks(edges, rules) if pickable(forecast.game) else [],

@@ -146,7 +146,7 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 
 ## Phase 11: Stretch
 - [ ] FCS season simulation: projected wins, conference titles, the 24-team FCS playoff (moved from Phase 10, #107)
-- [ ] Monte Carlo score sim with key numbers & push probabilities
+- [x] Key numbers & push probabilities (#118: whole-number margin/total tables with learned key-number weights instead of a Monte Carlo; margin log loss 4.168 → 4.027 on validation; pushes priced on whole-number lines; picks unchanged)
 - [ ] First-half markets
 - [ ] Live odds + line movement (The Odds API)
 - [ ] Team-specific HFA, travel, rest

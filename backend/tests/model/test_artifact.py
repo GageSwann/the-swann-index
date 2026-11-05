@@ -7,6 +7,7 @@ from tsi.model.artifact import ModelArtifact, load_artifact, save_artifact
 from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
 from tsi.model.fcs_prior import FcsPrior
+from tsi.model.key_numbers import KeyNumbers
 from tsi.model.prior import PriorModel
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import StackModel
@@ -30,6 +31,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
         distribution=DistributionParams(15.2, 16.5, 0.1, 0.006),
         edge_shrink=EdgeShrink(0.05, 0.28),
         sigma_season=15.6,
+        key_numbers=KeyNumbers((0.0, 0.7, 0.6, 2.3) + (1.0,) * 57, (1.0,) * 161),
     )
     path = tmp_path / "artifact.json"
 
@@ -41,6 +43,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
     assert loaded.distribution == artifact.distribution
     assert loaded.edge_shrink == artifact.edge_shrink
     assert loaded.fcs_prior == FcsPrior(0.59, 0.61)
+    assert loaded.key_numbers == artifact.key_numbers
     np.testing.assert_allclose(loaded.stack.coefs[6], artifact.stack.coefs[6])
     np.testing.assert_allclose(loaded.totals.coefs[0], artifact.totals.coefs[0])
     np.testing.assert_allclose(loaded.prior.coefs[("off", ("last", "talent"))], [-8.0, 0.4, 0.01])

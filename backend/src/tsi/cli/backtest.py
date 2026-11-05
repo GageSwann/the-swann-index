@@ -47,6 +47,7 @@ def run(
 
     _print_summary(result)
     _print_fcs(result)
+    _print_key_numbers(result)
     _print_calibration(result)
     _print_ats(result)
     _print_totals(result)
@@ -87,6 +88,21 @@ def _print_fcs(result: BacktestResult) -> None:
         typer.echo(
             f"{p.label:<30}{p.games:>6}  {p.mae:>5.2f} {e.mae:>5.2f} {p.market_mae:>5.2f}  "
             f"{100 * p.su_accuracy:>5.1f}"
+        )
+
+
+def _print_key_numbers(result: BacktestResult) -> None:
+    k = result.key_numbers
+    typer.echo(
+        f"\nKey numbers (weights fit on train), validation {k.games} games: log loss of the"
+        f" actual margin {k.margin_log_loss_normal:.3f} -> {k.margin_log_loss:.3f}, total"
+        f" {k.total_log_loss_normal:.3f} -> {k.total_log_loss:.3f}"
+    )
+    for r in k.pushes:
+        spread = "other" if r.spread is None else str(r.spread)
+        typer.echo(
+            f"  push at a closing spread of {spread:>5}: {r.games:>4} games, predicted"
+            f" {100 * r.predicted:4.1f}%, actual {100 * r.actual:4.1f}%"
         )
 
 

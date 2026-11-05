@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from tsi.backtest.ats import AtsRecord
 from tsi.backtest.calibration import CalibrationBin
 from tsi.backtest.evaluate import Summary
+from tsi.backtest.key_numbers_eval import KeyNumberCheck
 from tsi.backtest.market_calibration import LineCheck
 from tsi.backtest.totals_eval import TotalsSummary
 from tsi.backtest.walk_forward import Pick
@@ -31,6 +32,7 @@ class BacktestResult:
     picks: list[Pick]  # scored FBS-vs-FBS games
     fcs_rows: list[ComparisonRow]  # games with an FCS team, reported only (decision #109)
     fcs_picks: list[Pick]  # those games' stacked predictions (FCS Book backtest, #112)
+    key_numbers: KeyNumberCheck  # weights fit on TRAIN, scored on VALIDATE (#118)
 
     @property
     def validation(self) -> ComparisonRow:
@@ -58,6 +60,10 @@ class BacktestResult:
             "validate_total_mae": self.validation_totals.mae,
             "validate_total_market_mae": self.validation_totals.market_mae,
             "validate_ou": self.validation_totals.ou_accuracy,
+            "validate_margin_log_loss": self.key_numbers.margin_log_loss,
+            "validate_margin_log_loss_normal": self.key_numbers.margin_log_loss_normal,
+            "validate_total_log_loss": self.key_numbers.total_log_loss,
+            "validate_total_log_loss_normal": self.key_numbers.total_log_loss_normal,
             **{
                 f"validate_{key}_{name}": value
                 for r in self.fcs_rows

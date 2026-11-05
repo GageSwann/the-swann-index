@@ -8,6 +8,7 @@ loads it. Committing the file makes every live rating reproducible from a git SH
 
 import json
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,7 @@ from tsi.book.edges import EdgeShrink
 from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
 from tsi.model.fcs_prior import FcsPrior
+from tsi.model.key_numbers import KeyNumbers
 from tsi.model.prior import PriorModel
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import StackModel
@@ -37,6 +39,7 @@ class ModelArtifact:
     distribution: DistributionParams  # predictive score distribution (sigmas, rho)
     edge_shrink: EdgeShrink  # how far the Book trusts TSI over the market line (#52)
     sigma_season: float
+    key_numbers: KeyNumbers  # whole-number margin/total weights for pricing (#118)
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -54,6 +57,10 @@ class ModelArtifact:
             "distribution": asdict(self.distribution),
             "edge_shrink": asdict(self.edge_shrink),
             "sigma_season": self.sigma_season,
+            "key_numbers": {
+                "margin": [round(w, 6) for w in self.key_numbers.margin],
+                "total": [round(w, 6) for w in self.key_numbers.total],
+            },
         }
 
     @classmethod
@@ -74,6 +81,9 @@ class ModelArtifact:
             distribution=DistributionParams(**data["distribution"]),
             edge_shrink=EdgeShrink(**data["edge_shrink"]),
             sigma_season=data["sigma_season"],
+            key_numbers=KeyNumbers(
+                tuple(data["key_numbers"]["margin"]), tuple(data["key_numbers"]["total"])
+            ),
         )
 
 
@@ -93,3 +103,9 @@ def save_artifact(artifact: ModelArtifact, path: Path = ARTIFACT_PATH) -> None:
 
 def load_artifact(path: Path = ARTIFACT_PATH) -> ModelArtifact:
     return ModelArtifact.from_json(json.loads(path.read_text(encoding="utf-8")))
+
+
+@lru_cache(maxsize=1)
+def production_artifact() -> ModelArtifact:
+    """The committed artifact, loaded once per process (read paths: API, pricing)."""
+    return load_artifact()

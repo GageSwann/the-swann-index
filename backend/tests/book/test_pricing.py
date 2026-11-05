@@ -3,7 +3,7 @@ import pytest
 from tsi.book.config import BookConfig
 from tsi.book.odds import prob_from_american
 from tsi.book.pricing import price_game, round_half
-from tsi.model.distribution import ScoreDistribution
+from tsi.model.distribution import DistributionParams, ScoreDistribution
 
 # Home favored by 6.8, total 54.3.
 DIST = ScoreDistribution(margin=6.8, total=54.3, sigma_margin=15.2, sigma_total=16.4, rho=0.05)
@@ -54,3 +54,22 @@ def test_unflat_main_lines_are_priced_from_probability() -> None:
 
 def test_round_half() -> None:
     assert [round_half(x) for x in (-6.8, -3.25, 3.25, 54.74, 0.2)] == [-7.0, -3.0, 3.5, 54.5, 0.0]
+
+
+def test_key_numbers_add_a_push_and_price_the_decided_outcomes() -> None:
+    from tsi.model.key_numbers import KeyNumbers
+
+    keys = KeyNumbers((0.0, 1.0, 1.0, 2.5) + (1.0,) * 57, (1.0,) * 161)
+    dist = DistributionParams(15.4, 16.4, 0.12, 0.0075).for_game(3.0, 50.0)  # home by 3
+
+    markets = price_game(dist, keys=keys)
+    half_line = price_game(
+        DistributionParams(15.4, 16.4, 0.12, 0.0075).for_game(3.3, 50.0), keys=keys
+    )  # main line -3.5
+
+    whole, half = markets.spread, half_line.spread
+    assert (whole.line, half.line) == (-3.0, -3.5)
+    assert whole.push > 0.05 and half.push == 0.0
+    assert whole.first.prob + whole.second.prob == pytest.approx(1.0)  # given no push
+    assert markets.moneyline.push == 0.0
+    assert markets.moneyline.first.prob == pytest.approx(dist.home_win_prob)  # unchanged

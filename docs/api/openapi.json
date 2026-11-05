@@ -2854,6 +2854,11 @@
             ],
             "title": "Line"
           },
+          "push": {
+            "default": 0.0,
+            "title": "Push",
+            "type": "number"
+          },
           "second": {
             "$ref": "#/components/schemas/Price"
           }

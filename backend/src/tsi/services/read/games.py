@@ -17,6 +17,7 @@ from tsi.db.queries.games import GameRow, game_by_id, week_games
 from tsi.db.queries.snapshots import SnapshotRow, picks_for_snapshots, snapshots_for_games
 from tsi.db.queries.team_info import TeamRef, team_refs
 from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION
+from tsi.model.artifact import production_artifact
 from tsi.model.distribution import ScoreDistribution
 from tsi.services.read.common import (
     Score,
@@ -94,7 +95,8 @@ def game_center(session: Session, game_id: int, now: datetime) -> GameCenter | N
     summary = _summaries(session, [game], now, all_snaps)[0]
     snaps = all_snaps.get(game.id, [])
     p = summary.prediction
-    markets = None if p is None else price_game(_distribution(p))
+    keys = production_artifact().key_numbers
+    markets = None if p is None else price_game(_distribution(p), keys=keys)
     history = [SnapshotPoint(s.published_at, s.spread, s.total, s.home_win_prob) for s in snaps]
     return GameCenter(summary, markets, history)
 

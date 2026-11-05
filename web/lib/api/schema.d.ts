@@ -1054,6 +1054,11 @@ export interface components {
             first: components["schemas"]["Price"];
             /** Line */
             line: number | null;
+            /**
+             * Push
+             * @default 0
+             */
+            push: number;
             second: components["schemas"]["Price"];
         };
         /** UnitsPoint */

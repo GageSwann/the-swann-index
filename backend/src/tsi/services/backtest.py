@@ -8,6 +8,7 @@ seasons only, so VALIDATE seasons are out-of-sample.
 
 from collections.abc import Sequence
 
+from tsi.backtest import key_numbers_eval
 from tsi.backtest.ats import ats_record
 from tsi.backtest.calibration import calibration_table
 from tsi.backtest.evaluate import ScoredGame, summarize
@@ -129,6 +130,8 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
             (f"validate {VALIDATE[0]}-{VALIDATE[1]}", VALIDATE),
         )
     ]
+    keys = key_numbers_eval.fit_on(train, distribution)
+    keyed = key_numbers_eval.check(keys, validate, distribution, data.closing)
     return BacktestResult(
         config,
         distribution,
@@ -146,6 +149,7 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
         picks,
         [r for r in fcs_rows if r.predictive.games],
         fcs_picks,
+        keyed,
     )
 
 

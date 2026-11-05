@@ -8,6 +8,7 @@ learn from the most data.
 
 from sqlalchemy.orm import Session
 
+from tsi.backtest import key_numbers_eval
 from tsi.backtest.elo_picks import elo_picks
 from tsi.backtest.market_calibration import fit_edge_shrink, spread_samples, total_samples
 from tsi.backtest.splits import FIRST_SCORED_SEASON
@@ -85,4 +86,6 @@ def fit_production_model(
         sigma_season=fit_sigma(
             [p.season_margin for p in established], [p.game.margin for p in established]
         ),
+        # Same held-out predictions as the distribution, so the weights see live-like spread.
+        key_numbers=key_numbers_eval.fit_on(held_out, distribution),
     )
