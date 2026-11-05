@@ -1,5 +1,6 @@
 """Résumé ranking: strength of record vs. a typical #12 team (doc 04 §7, decision #24);
-FCS teams are measured against a typical #10 FCS team (#91, #111).
+FCS teams are measured against a typical #24 FCS team, the size of the FCS playoff
+field, as #12 matches the 12-team CFP (Phase 12.4, #133; #10 before, #91).
 
 SOR = P(a benchmark team, playing this exact schedule, wins at least as many games).
 Lower SOR = harder to match = more impressive. Win probabilities come from the
@@ -14,7 +15,8 @@ from dataclasses import dataclass
 from tsi.model.ratings.probability import win_prob
 
 BENCHMARK_RANK = 12
-FCS_BENCHMARK_RANK = 10  # FCS résumés vs. a typical #10 FCS team (owner, #91)
+FCS_BENCHMARK_RANK = 24  # FCS résumés vs. a typical #24 FCS team (owner, #133)
+LEGACY_FCS_BENCHMARK_RANK = 10  # runs saved before 2026-11-06 used #10 (#91)
 # Log-loss fit of `season` margins on 2015-22 games where both teams had 4+ games.
 SEASON_SIGMA = 15.7
 

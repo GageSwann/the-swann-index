@@ -1969,6 +1969,17 @@
             "title": "As Of",
             "type": "string"
           },
+          "benchmark_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Rank"
+          },
           "division": {
             "enum": [
               "fbs",
@@ -2143,6 +2154,10 @@
             ],
             "title": "Benchmark Expected Wins"
           },
+          "benchmark_rank": {
+            "title": "Benchmark Rank",
+            "type": "integer"
+          },
           "benchmark_rating": {
             "title": "Benchmark Rating",
             "type": "number"
@@ -2165,6 +2180,7 @@
         },
         "required": [
           "benchmark_rating",
+          "benchmark_rank",
           "games",
           "sor",
           "benchmark_expected_wins"

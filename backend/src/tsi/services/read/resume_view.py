@@ -1,7 +1,7 @@
 """The Résumé breakdown on a team page: each game's difficulty for the benchmark team.
 
-The benchmark is a typical #12 FBS team, or a typical #10 FCS team for FCS teams (owner,
-#91; decision #114). Mirrors the nightly ranking (`services/rate.py` ->
+The benchmark is a typical #12 FBS team, or a typical #24 FCS team for FCS teams (#133;
+#10 in runs before 2026-11-06, #91, #114). Mirrors the nightly ranking (`services/rate.py` ->
 `compute_rankings.py`) exactly (decision #89): opponents' ratings are their CURRENT
 `season` ratings from the shown rating run (their own stored rating whenever they have
 one, else the pooled rating), home field is that run's `season_hfa`, the win-probability
@@ -21,12 +21,19 @@ from tsi.db.queries.team_info import StoredRating, TeamRef, stored_ratings
 from tsi.divisions import FCS, RATED_DIVISION
 from tsi.model.artifact import production_artifact
 from tsi.model.ratings.probability import win_prob
-from tsi.model.resume import ScheduleGame, benchmark_rating, strength_of_record
+from tsi.model.resume import (
+    BENCHMARK_RANK,
+    LEGACY_FCS_BENCHMARK_RANK,
+    ScheduleGame,
+    benchmark_rating,
+    strength_of_record,
+)
 
 
 @dataclass(frozen=True)
 class ResumeSummary:
-    benchmark_rating: float  # the benchmark team's `season` rating (#12 FBS / #10 FCS)
+    benchmark_rating: float  # the benchmark team's `season` rating
+    benchmark_rank: int  # which team that is: #12 FBS / #24 FCS (#10 FCS before 2026-11-06)
     games: int  # decided games that count (kicked off before the run)
     sor: float | None  # stored SOR: P(the benchmark wins at least as many); lower = better
     # What the benchmark team would expect from those games; None while any counted game's
@@ -51,14 +58,21 @@ class ResumeContext:
     season: dict[int, StoredRating]  # team id -> `season` rating in the run
     pooled: dict[str, float] | None  # "fcs" / "lower" -> pooled rating
     division: str = RATED_DIVISION  # whose Résumé: sets the benchmark and shown ranks
-    fcs_benchmark: float | None = None  # #10 FCS team (#91), in runs from 2026-11-04
+    fcs_benchmark: float | None = None  # FCS benchmark rating, in runs from 2026-11-04
+    benchmark_rank: int = BENCHMARK_RANK  # of `division`
+    fcs_benchmark_rank: int = LEGACY_FCS_BENCHMARK_RANK
 
     def for_division(self, division: str) -> "ResumeContext | None":
         """The context for a team of `division`; None when that run has no benchmark for it."""
         if division == RATED_DIVISION:
             return self
         if division == FCS and self.fcs_benchmark is not None:
-            return replace(self, benchmark=self.fcs_benchmark, division=FCS)
+            return replace(
+                self,
+                benchmark=self.fcs_benchmark,
+                benchmark_rank=self.fcs_benchmark_rank,
+                division=FCS,
+            )
         return None
 
 
@@ -79,6 +93,17 @@ def resume_context(session: Session, run: RunInfo) -> ResumeContext:
         season=season,
         pooled=params.get("pooled_season_ratings"),  # saved from 2026-10-28 (#89)
         fcs_benchmark=params.get("fcs_resume_benchmark"),  # saved from 2026-11-04 (#111)
+        benchmark_rank=benchmark_ranks(params)[0],
+        fcs_benchmark_rank=benchmark_ranks(params)[1],
+    )
+
+
+def benchmark_ranks(params: dict[str, Any]) -> tuple[int, int]:
+    """(FBS, FCS) Résumé benchmark ranks a run used; saved with each run from 2026-11-06
+    (#133). Older runs: #12 FBS, #10 FCS."""
+    return (
+        int(params.get("resume_benchmark_rank", BENCHMARK_RANK)),
+        int(params.get("fcs_resume_benchmark_rank", LEGACY_FCS_BENCHMARK_RANK)),
     )
 
 
@@ -116,6 +141,7 @@ def resume_summary(
     row = ctx.season.get(team_id)
     return ResumeSummary(
         benchmark_rating=ctx.benchmark,
+        benchmark_rank=ctx.benchmark_rank,
         games=len(probs),
         sor=row.sor if row else None,
         # The expected wins are the sum of each counted game's chance; unknown if any is.

@@ -3,7 +3,7 @@
 Shared by the CFP (services/playoff_projection.py) and FCS (services/fcs_playoff_projection.py)
 projectors: the committee stand-in (#100, #125). SOR uses the same games as the stored
 ranking (ties don't count) plus the remaining schedule, against the division's
-benchmark (#12 FBS, #10 FCS); opponents keep today's ratings. A simulated conference
+benchmark (#12 FBS, #24 FCS); opponents keep today's ratings. A simulated conference
 title game adds one game against that simulation's opponent.
 """
 

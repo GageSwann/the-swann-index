@@ -30,7 +30,7 @@ class ScheduleGame:
     # Résumé breakdown (decision #89), from the shown rating run:
     opponent_rating: float | None  # opponent's current `season` rating
     opponent_rank: int | None  # current Power rank, if in the team's own division
-    benchmark_win_prob: float | None  # chance the benchmark (#12 FBS / #10 FCS) wins it
+    benchmark_win_prob: float | None  # chance the benchmark (#12 FBS / #24 FCS) wins it
     in_resume: bool  # counts toward the Résumé (decided before the run)
 
 

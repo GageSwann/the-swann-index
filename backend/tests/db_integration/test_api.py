@@ -102,7 +102,7 @@ def test_team_resume_breakdown(api: TestClient) -> None:
     assert first["benchmark_win_prob"] == pytest.approx(p)
     assert first["in_resume"] is True and live["in_resume"] is False  # live: not decided
     res = alpha["resume"]
-    assert (res["games"], res["benchmark_rating"]) == (1, 6.0)
+    assert (res["games"], res["benchmark_rating"], res["benchmark_rank"]) == (1, 6.0, 12)
     assert res["sor"] == 0.20  # the stored ranking's SOR (Alpha's seeded value)
     assert res["benchmark_expected_wins"] == pytest.approx(p)  # one counted game
 
@@ -230,7 +230,8 @@ def test_rankings_by_division(api: TestClient) -> None:
     fcs = ok(api, "/rankings?division=fcs")
     both = ok(api, "/rankings?division=all")
 
-    assert fcs["division"] == "fcs"
+    assert (fcs["division"], fcs["benchmark_rank"], both["benchmark_rank"]) == ("fcs", 24, None)
+    assert ok(api, "/rankings")["benchmark_rank"] == 12
     assert [(t["rank"], t["team"]["school"]) for t in fcs["teams"]] == [(1, "Echo"), (2, "Foxtrot")]
     # "all": one scale, re-ranked by rating; FCS teams keep their own division ranks too.
     assert [t["team"]["school"] for t in both["teams"]] == [
@@ -257,11 +258,14 @@ def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
     assert (echo["ratings"]["rating"], echo["ratings"]["rank_power"]) == (-30.0, 1)
     assert len(echo["history"]) == 1  # FCS teams are stored from the week-2 run on
     assert echo["projection"]["conference_title_prob"] == 0.6  # FCS teams are simulated
-    # Résumé vs. the #10 FCS team (#114); Echo-Foxtrot is upcoming, so nothing counts yet.
-    assert (echo["resume"]["benchmark_rating"], echo["resume"]["games"]) == (-25.0, 0)
+    # Résumé vs. the #24 FCS team (#114, #133); Echo-Foxtrot is upcoming, so nothing counts.
+    resume = echo["resume"]
+    assert (resume["benchmark_rating"], resume["benchmark_rank"], resume["games"]) == (
+        -25.0, 24, 0,
+    )  # fmt: skip
     (foxtrot_game,) = echo["schedule"]
     assert (foxtrot_game["opponent_rating"], foxtrot_game["opponent_rank"]) == (-35.0, 2)
-    p = win_prob(-25.0 - (-35.0) + 3.0, 15.0)  # Echo at home, #10 FCS benchmark
+    p = win_prob(-25.0 - (-35.0) + 3.0, 15.0)  # Echo at home, #24 FCS benchmark
     assert foxtrot_game["benchmark_win_prob"] == pytest.approx(p)
     m = ok(api, "/matchup?home=alpha&away=echo")
     assert (m["home"]["division"], m["away"]["division"]) == ("fbs", "fcs")

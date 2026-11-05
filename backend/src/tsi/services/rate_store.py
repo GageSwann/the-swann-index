@@ -12,6 +12,7 @@ from tsi.db.models import ModelRun, TeamRating
 from tsi.db.queries.calendar import calendar_week
 from tsi.db.upsert import upsert_rows
 from tsi.model.artifact import ModelArtifact
+from tsi.model.resume import BENCHMARK_RANK, FCS_BENCHMARK_RANK
 from tsi.services.backtest_store import current_git_sha
 from tsi.services.rate import LiveRatings
 
@@ -34,7 +35,10 @@ def save_live_ratings(
                 "season_hfa": live.rankings.ratings.hfa,
                 "predictive_hfa": live.predictive_hfa,
                 "resume_benchmark": live.rankings.benchmark,
-                "fcs_resume_benchmark": live.rankings.fcs_benchmark,  # #10 FCS team (#91)
+                "fcs_resume_benchmark": live.rankings.fcs_benchmark,  # #24 FCS team (#133)
+                # Which ranks those are, so the site names the benchmark this run used.
+                "resume_benchmark_rank": BENCHMARK_RANK,
+                "fcs_resume_benchmark_rank": FCS_BENCHMARK_RANK,
                 "resume_sigma": artifact.sigma_season,  # SOR win-probability spread
                 # Fallback `season` ratings for opponents without a stored row, for the
                 # team page's Résumé breakdown (decision #89): FCS = the pool before

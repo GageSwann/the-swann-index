@@ -40,7 +40,7 @@ class FcsPlayoffInputs:
 def project_fcs_playoff(
     inputs: FcsPlayoffInputs,
     ratings: RatingSet,
-    benchmark: float,  # the #10 FCS team's rating
+    benchmark: float,  # the #24 FCS team's rating (#133)
     season: int,
     sigma: float,
     sim: SimulatedGames,

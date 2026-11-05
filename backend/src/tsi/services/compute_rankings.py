@@ -3,7 +3,7 @@
 (Stored rankings are read for the API by `services/read/rankings.py`.)
 
 Power  = `season` rating (this season's games only; decision #23/#38).
-Résumé = strength of record vs. a typical #12 team (FBS) or #10 team (FCS, #91), with
+Résumé = strength of record vs. a typical #12 team (FBS) or #24 team (FCS, #133), with
 opponents' current ratings. Ranks are within each division; FCS teams are ranked from
 FCS_STATS_FROM, when they are rated individually (decision #109).
 Teams with fewer than 4 games are marked provisional.
@@ -54,7 +54,7 @@ class Rankings:
     benchmark: float  # FBS Résumé benchmark (#12 FBS team's rating)
     teams: list[TeamRanking]  # FBS, in Power order
     names: dict[int, str]
-    fcs_benchmark: float | None = None  # #10 FCS team's rating
+    fcs_benchmark: float | None = None  # #24 FCS team's rating (#133)
     fcs_teams: list[TeamRanking] = field(default_factory=list)  # FCS, in Power order
 
     @property

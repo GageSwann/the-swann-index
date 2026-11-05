@@ -6,7 +6,7 @@ from typing import Literal
 
 from sqlalchemy.orm import Session
 
-from tsi.db.queries.runs import run_and_week_ago
+from tsi.db.queries.runs import run_and_week_ago, run_params
 from tsi.db.queries.sim import StoredSim, stored_sims
 from tsi.db.queries.team_info import (
     Record,
@@ -17,6 +17,7 @@ from tsi.db.queries.team_info import (
     team_refs,
 )
 from tsi.divisions import FCS, RATED_DIVISION
+from tsi.services.read.resume_view import benchmark_ranks
 
 RankingType = Literal["power", "resume"]
 Division = Literal["fbs", "fcs", "all"]  # "all": FBS and FCS on one scale (Power only)
@@ -41,7 +42,7 @@ class RankedTeam:
     provisional: bool  # fewer than 4 games
     rank_power: int | None
     rank_resume: int | None
-    sor: float | None  # strength of record: chance the benchmark (#12 FBS / #10 FCS) matches it
+    sor: float | None  # strength of record: chance the benchmark (#12 FBS / #24 FCS) matches it
     sos: float | None  # strength of schedule: mean current rating of opponents played
     off_rank: int  # offense rating among ranked FBS teams (1 = best)
     def_rank: int  # defense rating (positive = better defense)
@@ -62,6 +63,9 @@ class Rankings:
     type: RankingType
     teams: list[RankedTeam]
     division: Division
+    # The Résumé benchmark this run used for the division: #12 FBS, #24 FCS (#10 before
+    # 2026-11-06, #133). None for "all", which has no Résumé.
+    benchmark_rank: int | None = None
 
 
 def rankings(
@@ -103,6 +107,10 @@ def rankings(
     before = _ranks(previous_rows, key, division)
     off_rank = _rank_by(ranked, lambda r: r.off_rating)
     def_rank = _rank_by(ranked, lambda r: r.def_rating)
+    bench_rank = None
+    if division != "all":
+        fbs_rank, fcs_rank = benchmark_ranks(run_params(session, run.id))
+        bench_rank = fcs_rank if division == FCS else fbs_rank
     return Rankings(
         season=run.season,
         season_type=run.season_type,
@@ -125,6 +133,7 @@ def rankings(
             for r in ranked
         ],
         division=division,
+        benchmark_rank=bench_rank,
     )
 
 

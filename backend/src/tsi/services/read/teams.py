@@ -98,7 +98,7 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     snaps = snapshots_for_games(session, [g.id for g in games])
     division = refs[team_id].division or ""
     rated = rated_individually(division, season)  # FBS, and FCS from 2022 (#109)
-    # Résumé breakdown vs. the team's own division benchmark (#12 FBS, #10 FCS; #114).
+    # Résumé breakdown vs. the team's own division benchmark (#12 FBS, #24 FCS; #114, #133).
     run_ctx = resume_context(session, latest) if latest and rated else None
     ctx = run_ctx.for_division(division) if run_ctx else None
     # FBS and FCS teams (#125); D-II and below aren't simulated.
