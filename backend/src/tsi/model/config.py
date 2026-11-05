@@ -6,9 +6,10 @@ from typing import Any
 from tsi.model.ratings.fit import RatingParams
 from tsi.model.stack import DEFAULT_LAM
 
-MODEL_VERSION = "tsi-v1.4"  # v1.1: season blend + stacked margin; v1.2: + stacked totals;
+MODEL_VERSION = "tsi-v1.5"  # v1.1: season blend + stacked margin; v1.2: + stacked totals;
 # v1.3: FCS teams rated individually from 2022 with an FCS level + FCS priors (#109);
-# v1.4: key-number pricing (#118, #119) + rest / bye / short-week adjustment (#120)
+# v1.4: key-number pricing (#118, #119) + rest / bye / short-week adjustment (#120);
+# v1.5: second-level rushing yards + power success in the stack (#122)
 ESTABLISHED_GAMES = 4  # fewer games played -> provisional rank (doc 04)
 
 

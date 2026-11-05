@@ -57,16 +57,18 @@ def compute_live_ratings(
 
     teams = []
     division_of = {t: RATED_DIVISION for t in live.fbs} | {t: FCS for t in live.fcs}
+
+    def component(metric, team: int) -> TeamRating:
+        return metric.teams.get(team, AVERAGE_TEAM) if metric else AVERAGE_TEAM
+
     for t in [*sorted(live.fbs), *sorted(live.fcs)]:
         signals = TeamSignals(
-            ppd=components.ppd.teams.get(t, AVERAGE_TEAM) if components else AVERAGE_TEAM,
-            success=(
-                components.success.teams.get(t, AVERAGE_TEAM)
-                if components and components.success
-                else AVERAGE_TEAM
-            ),
+            ppd=component(components.ppd if components else None, t),
+            success=component(components.success if components else None, t),
             prior=live.priors.get(t, AVERAGE_TEAM),
             elo_points=(elo.get(t, elo_mean) - elo_mean) / artifact.elo.elo_per_point,
+            second=component(components.second if components else None, t),
+            power=component(components.power if components else None, t),
         )
         n = live.games_played(t)
         rating = predictive_rating(artifact.stack, stage_bucket(n), signals)

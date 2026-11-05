@@ -5,18 +5,26 @@ from tsi.model.ratings.types import TeamRating, matchup_margin
 from tsi.model.stack import StackModel
 from tsi.model.stack_team import TeamSignals, predictive_hfa, predictive_rating
 
-MODEL = StackModel({4: np.array([2.5, 0.3, 0.6, 0.4, 0.25])})  # site, ppd, success, prior, elo
+# site, ppd, success, prior, elo, second, power
+MODEL = StackModel({4: np.array([2.5, 0.3, 0.6, 0.4, 0.25, 0.1, 0.2])})
 ELO_PER_POINT, ELO_HFA = 22.0, 55.0
 
 
-def signals(ppd, sr, prior, elo):
-    return TeamSignals(TeamRating(*ppd), TeamRating(*sr), TeamRating(*prior), elo / ELO_PER_POINT)
+def signals(ppd, sr, prior, elo, second=(0.0, 0.0), power=(0.0, 0.0)):
+    return TeamSignals(
+        TeamRating(*ppd),
+        TeamRating(*sr),
+        TeamRating(*prior),
+        elo / ELO_PER_POINT,
+        TeamRating(*second),
+        TeamRating(*power),
+    )
 
 
 def test_team_ratings_reproduce_the_stack_margin_exactly() -> None:
     home_elo, away_elo = 1620.0, 1480.0
-    home = signals((6.0, 2.0), (4.0, 1.0), (10.0, 3.0), home_elo)
-    away = signals((-1.0, 3.0), (0.5, -2.0), (-2.0, 1.0), away_elo)
+    home = signals((6.0, 2.0), (4.0, 1.0), (10.0, 3.0), home_elo, (3.0, -1.0), (0.5, 0.2))
+    away = signals((-1.0, 3.0), (0.5, -2.0), (-2.0, 1.0), away_elo, (-2.0, 1.5), (0.1, -0.4))
 
     features = (
         1.0,  # home game
@@ -24,6 +32,8 @@ def test_team_ratings_reproduce_the_stack_margin_exactly() -> None:
         matchup_margin(home.success, away.success),
         (home.prior.off + home.prior.defense) - (away.prior.off + away.prior.defense),
         (home_elo - away_elo + ELO_HFA) / ELO_PER_POINT,
+        matchup_margin(home.second, away.second),
+        matchup_margin(home.power, away.power),
     )
     stack_margin = MODEL.predict(4, features)
 

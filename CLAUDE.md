@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 10 complete** (2026-11-04): FCS rated individually from 2022 (model **v1.3**, #109, #110), ranked within its division and published nightly without picks (#111; FCS Book backtest not earned, #112), API `division` switch (#113), FCS Résumé vs. the #10 FCS team (#114), site FBS / FCS / All views (#115). Live picks are FBS-vs-FBS only (#108). Phase 11: key numbers (#118, #119) and rest / bye / short week (model **v1.4**, #120) done; model v2 boosting rejected (#121).
+- **Phase 10 complete** (2026-11-04): FCS rated individually from 2022 (model **v1.3**, #109, #110), ranked within its division and published nightly without picks (#111; FCS Book backtest not earned, #112), API `division` switch (#113), FCS Résumé vs. the #10 FCS team (#114), site FBS / FCS / All views (#115). Live picks are FBS-vs-FBS only (#108). Phase 11: key numbers (#118, #119) and rest / bye / short week (model **v1.4**, #120) done; model v2 boosting rejected (#121); second-level yards + power success (model **v1.5**, #122) done.
 - **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105).
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
@@ -23,7 +23,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#121 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#122 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -44,8 +44,8 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 7. **Market lines are never model inputs.** They are evaluation points, and in the Book they only size edges (#52).
 
 ## Model (doc 04)
-- **Two rating sets (#23, #37, #38):** `season` = this season's games only (0.726·PPD + 0.635·success rate, HFA 3.24) → **Power + Résumé rankings**. `predictive` = **stacked** margin (site, PPD, success, prior, Elo; ridge per season-stage bucket) → **predictions/Book**. Fewer than 4 games = *provisional*.
-- **Components** (`model/ratings/components.py`): opponent-adjusted ridge fits of PPD, success rate, pace (drives) and tempo (plays), each with a `level`. Teams not rated individually pool into FCS (−1, before 2022 only) and lower (−2, D-II and below). EPA is not fitted (#49).
+- **Two rating sets (#23, #37, #38):** `season` = this season's games only (0.726·PPD + 0.635·success rate, HFA 3.24) → **Power + Résumé rankings**. `predictive` = **stacked** margin (site, PPD, success, prior, Elo, second-level yards, power success (v1.5, #122); ridge per season-stage bucket) → **predictions/Book**. Fewer than 4 games = *provisional*.
+- **Components** (`model/ratings/components.py`): opponent-adjusted ridge fits of PPD, success rate, pace (drives), tempo (plays), and (v1.5) second-level yards and power success (`team_game_stats` columns, #122), each with a `level`. Teams not rated individually pool into FCS (−1, before 2022 only) and lower (−2, D-II and below). EPA is not fitted (#49).
 - **Totals (#50):** stacked game total (league level shrunk to last season, PPD/success sums, pace + tempo, prior, last season's pace/tempo). Scores = (total ± margin) / 2.
 - **Rest (v1.4, #120):** after the stack, margin += −0.07 × rest-day gap (±7) + 1.36 × bye (13+ days) − 1.26 × short week (≤5.5 days), home minus away; scheduled games only (not matchups or projected title games). Travel, time zones, altitude and team-specific HFA were rejected.
 - **Key numbers (#118):** spreads, totals and alt ladders are priced from whole-number tables (normal mass × learned weights in the artifact: margin spikes vs. neighbours within 7 at 3/7/10/14, no ties, #119; totals full weights); whole-number lines get `push` and no-push prices. Moneylines, team totals and Book edges stay on the smooth distribution.
@@ -59,7 +59,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 
 ## TSI Book (doc 05)
 - **TSI has no edge against closing lines.** Its spread disagreements don't predict covers (fitted trust k_spread ≈ 0); it *does* predict line moves (positive CLV every season) and beats **opening totals**.
-- **Shrunk edges (#52):** P(cover/over) = Φ(k · (TSI − line)/σ), k learned vs. the median opener: production **k_spread 0.083, k_total 0.308** (v1.4). Moneyline edge = TSI's win-probability *shift* added to the market's no-vig probability (#55); never compare Φ(margin/σ) with ML prices directly. No intercept/base-rate term (#56: it turned the Book into an under-only bettor).
+- **Shrunk edges (#52):** P(cover/over) = Φ(k · (TSI − line)/σ), k learned vs. the median opener: production **k_spread 0.134, k_total 0.308** (v1.5). Moneyline edge = TSI's win-probability *shift* added to the market's no-vig probability (#55); never compare Φ(margin/σ) with ML prices directly. No intercept/base-rate term (#56: it turned the Book into an under-only bettor).
 - **Picks only on FBS-vs-FBS games (#108, #112):** FCS games are published without picks; the FCS Book backtest hasn't earned them (no FCS-vs-FCS openers, no CLV on FCS totals). Revisit after 2026 with live snapshots.
 - **Picks (#54):** ★/★★/★★★ at 1.5/3/5 probability points of edge (ML 3/5/8, EV > 0); flat 1u + ¼ Kelly on 100u (cap 3u). In practice: totals picks, spreads almost never.
 - **Book backtest** (`tsi backtest book`, totals at the median opener, CLV vs. closing consensus): validation 2023–25 **110-68-1, +17.9% ROI, CLV +0.95** (v1.3; v1.2 was 104-75-2, +10.8%); train 2021–22 about break-even. Openers only exist 2021+, so samples are small; CLV is the steadiest signal.
@@ -148,7 +148,7 @@ uv run alembic upgrade head     # apply migrations (uses DATABASE_URL_DIRECT)
 uv run alembic revision --autogenerate -m "msg"   # after changing models; review before applying
 uv run alembic check            # models and DB in sync?
 ```
-Local `backend/.env` targets the Neon **`dev`** branch (a copy of `production`; refresh it with Neon's "Reset from parent"). Production = the `production` branch: never point local tools at it. Ask before applying migrations to any database. Production migrations run through the manual **Migrate production** workflow (`gh workflow run migrate.yml`, optional `-f reload_teams_season=YYYY`; #97): the connection string stays in GitHub secrets.
+Local `backend/.env` targets the Neon **`dev`** branch (a copy of `production`; refresh it with Neon's "Reset from parent"). Production = the `production` branch: never point local tools at it. Ask before applying migrations to any database. Production migrations run through the manual **Migrate production** workflow (`gh workflow run migrate.yml`, optional `-f reload_teams_season=YYYY`, `-f reload_stats_from=YYYY`; #97, #122): the connection string stays in GitHub secrets.
 GitHub: `gh workflow run daily-refresh.yml` triggers the nightly job manually; `gh run list --workflow daily-refresh.yml` shows recent runs.
 Web (run from `web/`; Node 24, npm):
 ```powershell

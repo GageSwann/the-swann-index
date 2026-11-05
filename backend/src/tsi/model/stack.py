@@ -8,6 +8,8 @@ Features (home view):
     success  opponent-adjusted success-rate margin (successful plays)
     prior    preseason prior rating difference (points)
     elo      Elo margin (points; carries information from earlier seasons)
+    second   opponent-adjusted second-level rushing yards margin (v1.5, #122)
+    power    opponent-adjusted short-yardage conversion margin (v1.5, #122)
 The bucket is the fewer games played by the two teams. Early buckets learn to lean
 on the prior and Elo; late buckets lean on this season's stats, so the prior's fade
 is learned rather than hand-set. EPA was tested and dropped (redundant with success
@@ -22,7 +24,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-FEATURES = ("site", "ppd", "success", "prior", "elo")
+FEATURES = ("site", "ppd", "success", "prior", "elo", "second", "power")
 UNPENALIZED = ("site",)
 BUCKET_EDGES = (0, 1, 2, 3, 4, 6, 9)  # bucket i covers edges[i] <= games < edges[i + 1]
 DEFAULT_LAM = 1000.0

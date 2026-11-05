@@ -25,6 +25,8 @@ class Row:
     epa_per_play: float | None = 0.1
     success_rate: float | None = 0.45
     start_time: None = None
+    second_level_yards: float | None = None
+    power_success: float | None = None
     team_div: str = "fbs"
     opp_div: str = "fbs"
     season: int = 2021  # before FCS teams were rated individually (FCS_STATS_FROM)

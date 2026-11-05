@@ -151,5 +151,5 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 - [ ] Live odds + line movement (The Odds API)
 - [x] Team-specific HFA, travel, rest (#120: rest / bye / short-week adjustment adopted, model v1.4; travel, time zones, altitude and team-specific home field tested and rejected)
 - [x] Model v2: gradient-boosted ensemble on top of ratings (#121: tested, rejected: worse than the linear stack out of sample; leftover error has no pattern)
-- [ ] New box-score signals from the cached advanced stats (rush/pass and down splits, explosiveness, line yards, stuff rate), opponent-adjusted, tested one at a time in the stack (#121)
+- [x] New box-score signals from the cached advanced stats (#122: second-level rushing yards + power success adopted, model v1.5: validation 12.390 → 12.349; others rejected)
 - [ ] AI-written game previews

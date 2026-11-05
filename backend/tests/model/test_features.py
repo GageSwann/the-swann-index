@@ -39,8 +39,11 @@ def test_margin_features_are_home_view() -> None:
     side = GameSide(home=1, away=2, neutral=True)
     priors = {1: TeamRating(3.0, 1.0), 2: TeamRating(0.0, 0.0)}
 
-    site, ppd, _, prior, elo = margin_features(side, components(56.0, 5.0), priors, 2.5)
+    site, ppd, _, prior, elo, second, power = margin_features(
+        side, components(56.0, 5.0), priors, 2.5
+    )
 
     assert site == 0.0 and elo == 2.5
     assert ppd == pytest.approx((5.0 - 2.0) - (0.0 - 0.0))
     assert prior == pytest.approx(4.0)
+    assert (second, power) == (0.0, 0.0)  # no second-level / power data in this fit

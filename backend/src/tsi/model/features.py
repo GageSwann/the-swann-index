@@ -27,11 +27,13 @@ def margin_features(
     priors: Mapping[int, TeamRating],
     elo_margin: float,
 ) -> tuple[float, ...]:
-    """(site, ppd, success, prior, elo), home view."""
+    """(site, ppd, success, prior, elo, second, power), home view (model/stack.FEATURES)."""
     prior = _get(priors, side.home).rating - _get(priors, side.away).rating
     ppd = _margin(components.ppd, side) if components else 0.0
     success = _margin(components.success, side) if components else 0.0
-    return (0.0 if side.neutral else 1.0, ppd, success, prior, elo_margin)
+    second = _margin(components.second, side) if components else 0.0
+    power = _margin(components.power, side) if components else 0.0
+    return (0.0 if side.neutral else 1.0, ppd, success, prior, elo_margin, second, power)
 
 
 def total_features(

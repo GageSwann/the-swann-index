@@ -166,6 +166,9 @@ Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI 
 - Hyperparameters (λ, k, w, decay, HFA, σ) are tuned on 2015–2022 and **validated on 2023–2025**. Don't tune on the validation seasons.
 - Every backtest run is saved with its params and git SHA.
 
+## 9c. Second-level yards and power success (v1.5, #122)
+Two more opponent-adjusted components from CFBD's garbage-time-filtered advanced stats feed the predictive stack: **second-level yards** (rushing yards gained 5–10 past the line, per rush; × 38 rushes per game) and **power success** (short-yardage conversion rate; × 8 plays per game). Validation 12.390 → 12.349, train 12.895 → 12.891. Also screened and rejected: line yards, stuff rate, open-field yards, explosiveness, and rush/pass and standard/passing-down success rates.
+
 ## 9b. Rest, byes and short weeks (v1.4, #120)
 A global adjustment to the predicted margin after the stack: `rest −0.07 × clip(home − away rest days, ±7) + 1.36 × bye − 1.26 × short week` (home minus away flags; bye = 13+ days since the last game, short = 5.5 or fewer). Validation 12.394 → 12.390, train 12.900 → 12.895. Travel distance, time zones, altitude and team-specific home field were screened and did not help out of sample.
 

@@ -44,6 +44,10 @@ class StatRow(RatingRow, Protocol):
     def success_rate(self) -> float | None: ...
     @property
     def start_time(self) -> datetime | None: ...
+    @property
+    def second_level_yards(self) -> float | None: ...
+    @property
+    def power_success(self) -> float | None: ...
 
 
 @dataclass(frozen=True)
@@ -60,6 +64,10 @@ class Components:
     pace: MetricRatings  # drives per team-game
     tempo: MetricRatings | None  # plays per team-game (None when no play counts yet)
     games: dict[int, int]  # rated team id -> games counted (FBS, and FCS from 2022)
+    # Model v1.5 (#122): rushing yards 5-10 past the line (per rush, x rushes per game) and
+    # short-yardage conversion rate (x short-yardage plays per game). None without data.
+    second: MetricRatings | None = None
+    power: MetricRatings | None = None
 
 
 def fit_components(rows: Sequence[StatRow], lam: float) -> Components | None:
@@ -91,7 +99,30 @@ def fit_components(rows: Sequence[StatRow], lam: float) -> Components | None:
             success = _fit_metric(
                 matchups.subset(with_sr), rate[with_sr], plays[with_sr], lam, plays_pg
             )
-    return Components(ppd, success, pace, tempo, _games_played(matchups))
+    second = _fit_rate(usable, matchups, plays, "second_level_yards", SECOND_PER_GAME, lam)
+    power = _fit_rate(usable, matchups, plays, "power_success", POWER_PER_GAME, lam)
+    return Components(ppd, success, pace, tempo, _games_played(matchups), second, power)
+
+
+SECOND_PER_GAME = 38.0  # rushes per team-game: second-level yards per rush -> per game
+POWER_PER_GAME = 8.0  # short-yardage plays per team-game
+MIN_ROWS = 50  # fewer team-games with the stat: no rating (early season, old data)
+
+
+def _fit_rate(
+    usable: Sequence[StatRow],
+    matchups: Matchups,
+    plays: NDArray[np.float64],
+    field: str,
+    per_game: float,
+    lam: float,
+) -> MetricRatings | None:
+    """A per-play stat, weighted by plays, opponent-adjusted like success rate."""
+    values = np.array([np.nan if (v := getattr(r, field)) is None else v for r in usable])
+    keep = ~np.isnan(values) & (plays > 0)
+    if keep.sum() < MIN_ROWS:
+        return None
+    return _fit_metric(matchups.subset(keep), values[keep], plays[keep], lam, per_game)
 
 
 def _fit_metric(

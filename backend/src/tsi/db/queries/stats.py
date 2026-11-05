@@ -26,6 +26,8 @@ class OffenseRow:
     plays: int | None
     epa_per_play: float | None  # None when CFBD has no advanced stats for the game
     success_rate: float | None
+    second_level_yards: float | None = None  # rushing yards 5-10 past the line, per rush (#122)
+    power_success: float | None = None  # short-yardage conversion rate (#122)
 
 
 def offense_rows(session: Session, first_season: int, last_season: int) -> list[OffenseRow]:
@@ -48,6 +50,8 @@ def offense_rows(session: Session, first_season: int, last_season: int) -> list[
             TeamGameStats.plays,
             TeamGameStats.epa_per_play,
             TeamGameStats.success_rate,
+            TeamGameStats.second_level_yards,
+            TeamGameStats.power_success,
         )
         .join(Game, Game.id == TeamGameStats.game_id)
         .join(team_ts, (team_ts.team_id == TeamGameStats.team_id) & (team_ts.season == Game.season))

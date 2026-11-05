@@ -47,3 +47,18 @@ def test_no_play_counts_means_no_tempo() -> None:
     components = fit_components(rows, lam=1.0)
 
     assert components.tempo is None and components.success is None
+
+
+def test_second_level_and_power_ratings_need_enough_data() -> None:
+    from dataclasses import replace
+
+    rows = round_robin({1: 6, 2: 0, 3: -6}, rounds=10)  # 120 team-games
+    # Team 1's offense gains more second-level yards; nobody records power success.
+    rows = [replace(r, second_level_yards=1.4 if r.team_id == 1 else 1.0) for r in rows]
+
+    components = fit_components(rows, lam=0.1)
+
+    second = components.second.teams
+    assert second[1].off > second[2].off and second[1].off > second[3].off
+    assert components.power is None  # no data: no rating, the stack input is 0
+    assert fit_components(rows[:20], lam=0.1).second is None  # too few team-games

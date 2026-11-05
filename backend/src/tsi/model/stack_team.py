@@ -22,6 +22,8 @@ class TeamSignals:
     success: TeamRating
     prior: TeamRating
     elo_points: float  # (Elo rating - FBS mean) / Elo per point
+    second: TeamRating = TeamRating(0.0, 0.0)  # v1.5 (#122)
+    power: TeamRating = TeamRating(0.0, 0.0)
 
 
 def _coefs(model: StackModel, bucket: int) -> dict[str, float]:
@@ -38,10 +40,14 @@ def predictive_rating(model: StackModel, bucket: int, s: TeamSignals) -> TeamRat
         off=c["ppd"] * s.ppd.off
         + c["success"] * s.success.off
         + c["prior"] * s.prior.off
+        + c["second"] * s.second.off
+        + c["power"] * s.power.off
         + half_elo,
         defense=c["ppd"] * s.ppd.defense
         + c["success"] * s.success.defense
         + c["prior"] * s.prior.defense
+        + c["second"] * s.second.defense
+        + c["power"] * s.power.defense
         + half_elo,
     )
 
