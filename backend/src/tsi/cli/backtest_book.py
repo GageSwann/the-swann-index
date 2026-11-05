@@ -42,8 +42,9 @@ def book(
             f"\nGames with an FCS team, {fcs.label}: k spread {k.k_spread:.3f}, "
             f"k total {k.k_total:.3f} (not live: FCS picks are off)"
         )
+        width = max((len(r.label) for r in fcs.records), default=0) + 2
         for r in fcs.records:
-            typer.secho(_row(r, width=26), bold=r.tier == 0)
+            typer.secho(_row(r, width=width), bold=r.tier == 0)
 
 
 def _row(r: BookRecord, width: int = 20) -> str:
