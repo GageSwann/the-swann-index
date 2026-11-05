@@ -145,7 +145,7 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 ✅ **Phase 10 complete (2026-11-04):** FCS teams rated individually from 2022 (model v1.3), ranked within their division nightly, FCS games published (no picks; FCS Book backtest not earned yet), and shown on the site with FBS / FCS / All views.
 
 ## Phase 11: Stretch
-- [ ] FCS season simulation: projected wins, conference titles, the 24-team FCS playoff (moved from Phase 10, #107)
+- [x] FCS season simulation: projected wins, conference titles, the 24-team FCS playoff (moved from Phase 10, #107; #125: one simulation for both divisions, FCS champions from the standings, 24-team bracket by the FCS Résumé, which picked 88/96 real playoff teams 2022–25; `/playoff/fcs`)
 - [x] Key numbers & push probabilities (#118: whole-number margin/total tables with learned key-number weights instead of a Monte Carlo; margin log loss 4.168 → 4.027 on validation; pushes priced on whole-number lines; picks unchanged)
 - [ ] First-half markets
 - [ ] Live odds + line movement (The Odds API)

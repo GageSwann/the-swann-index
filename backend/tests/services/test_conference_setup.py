@@ -56,3 +56,29 @@ def test_unplayed_past_games_dont_count() -> None:
     confs = build([row(1, 10, 11, days=-3)])  # kicked off, never completed (postponed)
 
     assert confs["Sun Belt"].games == ()
+
+
+def test_fcs_conferences_play_a_title_game_only_when_named() -> None:
+    members = [
+        Member(40, "MVFC", None, "fcs"),
+        Member(41, "MVFC", None, "fcs"),
+        Member(50, "SWAC", "East", "fcs"),
+        Member(51, "SWAC", "West", "fcs"),
+        Member(60, "FCS Independents", None, "fcs"),
+    ]
+    index = {t: i for i, t in enumerate([40, 41, 50, 51, 60])}
+    games = [
+        # An FCS playoff game between conference mates is not a title game (#125).
+        row(1, 40, 41, days=20, conf=False, notes="FCS Championship - Second Round"),
+        row(2, 40, 41, 24, 17),
+    ]
+
+    confs = {
+        c.name: c
+        for c in build_conferences(members, games, index, {}, lambda a, b: 0.0, NOW, ("SWAC",))
+    }
+
+    assert set(confs) == {"MVFC", "SWAC"}
+    assert not confs["MVFC"].plays_title_game and confs["MVFC"].title_game is None
+    assert confs["MVFC"].games == (ConferenceGame(0, 1, home_won=True),)
+    assert confs["SWAC"].plays_title_game

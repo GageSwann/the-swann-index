@@ -16,23 +16,26 @@ app = typer.Typer(help="Season simulation.", no_args_is_help=True)
 def season(
     sims: int = typer.Option(DEFAULT_SIMS, help="Simulated seasons."),
     top: int = typer.Option(25, help="Teams to show (most projected wins first); 0 = all."),
+    division: str = typer.Option("fbs", help="fbs (CFP odds) or fcs (FCS playoff odds)."),
 ) -> None:
-    """Projected wins, conference title and playoff odds for every FBS team (read-only)."""
+    """Projected wins, conference title and playoff odds for every rated team (read-only)."""
     with db_runtime() as sessions, sessions() as session:
         projection = project_season(session, datetime.now(UTC), load_artifact(), sims)
-    _print(projection, top)
+    _print(projection, top, division)
 
 
-def _print(p: SeasonProjection, top: int) -> None:
+def _print(p: SeasonProjection, top: int, division: str) -> None:
     typer.echo(
         f"{p.season} regular season as of week {p.week}: {p.sims:,} simulations, "
         f"rating uncertainty {p.tau:.1f} pts\n"
     )
     typer.echo(
         f"{'Team':<22}{'Conference':<19}{'now':>6}{'left':>5}{'proj W':>8}{'80% range':>11}"
-        f"{'win out':>9}{'in CCG':>8}{'champ':>8}{'CFP':>8}{'bye':>8}{'title':>8}"
+        f"{'win out':>9}{'in CCG':>8}{'champ':>8}"
+        f"{'CFP' if division == 'fbs' else 'playoff':>8}{'bye':>8}{'title':>8}"
     )
-    for t in p.teams[: top or None]:
+    teams = [t for t in p.teams if t.division == division]
+    for t in teams[: top or None]:
         typer.echo(_row(t, p.names.get(t.team_id, str(t.team_id))))
 
 

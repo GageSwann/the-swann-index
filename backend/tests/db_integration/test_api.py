@@ -88,7 +88,7 @@ def test_team_list_and_profile(api: TestClient) -> None:
     )
     assert (proj["title_game_prob"], proj["conference_title_prob"]) == (0.5, 0.25)
     assert (proj["playoff_prob"], proj["champion_prob"]) == (0.9, pytest.approx(0.18))
-    assert ok(api, "/teams/echo")["projection"] is None  # FCS: not simulated
+    assert ok(api, "/teams/echo")["projection"]["expected_wins"] == 8.5  # FCS too (#125)
 
 
 def test_team_resume_breakdown(api: TestClient) -> None:
@@ -203,6 +203,27 @@ def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
     assert [t["team"]["school"] for t in result["projected"]][0] == "Alpha"
     assert "Charlie" not in [t["team"]["school"] for t in result["projected"]]
     assert api.get("/playoff?season=2015").status_code == 404
+    assert len(result["rounds"]) == 4 and result["rounds"][0]["games"][0] == [
+        {"seed": 5, "game": None},
+        {"seed": 12, "game": None},
+    ]
+    assert (result["division"], result["field_size"], result["byes"]) == ("fbs", 12, 4)
+
+
+def test_fcs_playoff_odds(api: TestClient) -> None:
+    result = ok(api, "/playoff?division=fcs")
+
+    assert [t["team"]["school"] for t in result["teams"]] == ["Echo", "Foxtrot"]
+    assert (result["division"], result["field_size"], result["byes"]) == ("fcs", 24, 8)
+    assert result["format"] is None
+    assert [r["name"] for r in result["rounds"]] == [
+        "First round", "Second round", "Quarterfinals", "Semifinals", "Championship",
+    ]  # fmt: skip
+    assert result["rounds"][1]["games"][0] == [{"seed": 1, "game": None}, {"seed": None, "game": 7}]
+    assert [t["team"]["school"] for t in result["projected"]] == ["Echo", "Foxtrot"]
+    assert api.get("/playoff?division=all").status_code == 422
+    echo = ok(api, "/teams/echo")["projection"]
+    assert (echo["playoff_prob"], echo["title_game_prob"]) == (0.8, None)
 
 
 def test_rankings_by_division(api: TestClient) -> None:
@@ -235,7 +256,7 @@ def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
 
     assert (echo["ratings"]["rating"], echo["ratings"]["rank_power"]) == (-30.0, 1)
     assert len(echo["history"]) == 1  # FCS teams are stored from the week-2 run on
-    assert echo["projection"] is None  # the season sim is FBS only
+    assert echo["projection"]["conference_title_prob"] == 0.6  # FCS teams are simulated
     # Résumé vs. the #10 FCS team (#114); Echo-Foxtrot is upcoming, so nothing counts yet.
     assert (echo["resume"]["benchmark_rating"], echo["resume"]["games"]) == (-25.0, 0)
     (foxtrot_game,) = echo["schedule"]

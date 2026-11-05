@@ -5,7 +5,8 @@ plays in divisions (sim/standings.py). The title game is at a neutral site: its 
 margin comes from the published model (the caller passes a matrix of neutral-site
 margins), plus both teams' rating shifts and game noise from the same simulation.
 Once the real title game is on the schedule, its finalists are fixed and its winner
-comes from that game instead.
+comes from that game instead. Conferences without a title game (most of the FCS, #125)
+are won by the top of the standings, with the same tiebreakers.
 """
 
 from collections.abc import Sequence
@@ -25,13 +26,15 @@ class Conference:
     neutral_margin: np.ndarray  # (k, k): mean margin of i vs j at a neutral site
     divisions: tuple[tuple[int, ...], ...] | None = None  # local indexes per division
     title_game: ConferenceGame | None = None  # once scheduled (local indexes)
+    plays_title_game: bool = True  # False: the standings leader is the champion
 
 
 @dataclass(frozen=True)
 class TitleResults:
-    finalists: np.ndarray  # (sims, 2) simulation team indexes
+    finalists: np.ndarray | None  # (sims, 2) simulation team indexes; None: no title game
     champion: np.ndarray  # (sims,) simulation team index
     added_game: bool  # True when the title game was simulated here (not on the schedule)
+    standings: np.ndarray | None = None  # (sims, k) best first, when there's no title game
 
 
 def simulate_title(conf: Conference, sim: SimulatedGames) -> TitleResults:
@@ -48,6 +51,9 @@ def simulate_title(conf: Conference, sim: SimulatedGames) -> TitleResults:
     wins = head_to_head(conf.games, sim.home_wins, k)
     others = (conf.neutral_margin.sum(1) / max(k - 1, 1))[None, :]  # avg margin vs the rest
     strength = others + shift
+    if not conf.plays_title_game:
+        order = teams[rank(wins, strength, np.arange(k))]
+        return TitleResults(None, order[:, 0], added_game=False, standings=order)
     if conf.divisions:
         a, b = (rank(wins, strength, np.array(d))[:, 0] for d in conf.divisions)
     else:
@@ -64,11 +70,16 @@ def simulate_title(conf: Conference, sim: SimulatedGames) -> TitleResults:
     return TitleResults(teams[np.stack([a, b], axis=1)], teams[champion], added_game=True)
 
 
-def title_odds(results: TitleResults, team_index: Sequence[int]) -> dict[int, tuple[float, float]]:
-    """team index -> (P(plays in the title game), P(wins the conference))."""
+def title_odds(
+    results: TitleResults, team_index: Sequence[int]
+) -> dict[int, tuple[float | None, float]]:
+    """team index -> (P(plays in the title game) or None without one, P(wins the conference))."""
     sims = len(results.champion)
-    out = {}
+    out: dict[int, tuple[float | None, float]] = {}
     for t in team_index:
-        finalist = (results.finalists == t).any(axis=1).sum() / sims
-        out[t] = (float(finalist), float((results.champion == t).sum() / sims))
+        champion = float((results.champion == t).sum() / sims)
+        if results.finalists is None:
+            out[t] = (None, champion)
+        else:
+            out[t] = (float((results.finalists == t).any(axis=1).sum() / sims), champion)
     return out

@@ -134,6 +134,9 @@ The forecasts use the production artifact, so the stack weights are in-sample fo
 - **Title game:** neutral site; mean margin from the published model (antisymmetric: A vs B = −(B vs A), checked over 435 pairs), plus both teams' shifts and game noise from the same simulation. The champion gets the win, so projected wins include it. Once the real title game is on the schedule (CFBD marks it only in `notes`; 2025's weren't flagged as conference games), its finalists are fixed and it is simulated like any remaining game.
 - Checks on dev (week 9, 40k sims): per conference, P(in title game) sums to 2.0000 and P(champion) to 1.0000; expected wins = wins + Σ published win probabilities + P(champion) within 0.014.
 
+### 7.5 FCS season and playoff (#125)
+FCS teams run in the same simulation. Conference champions come from the simulated standings (only the SWAC plays a title game). The 24-team FCS playoff (`sim/fcs_format.py`): automatic bids for the Big Sky, CAA, Ivy, MVFC, NEC, OVC, Patriot, Pioneer, Southern, Southland and UAC champions (the best-placed eligible team if the champion can't go), at-large by the simulated FCS Résumé, the top 8 seeded with byes and hosting until a neutral-site final; SWAC and MEAC don't take part; teams in their first four FCS seasons after D-II/III and teams about to move to FBS are ineligible. As of selection day 2022–25 the FCS Résumé picked 88 of the 96 real playoff teams (Power 73). The FBS τ fits FCS teams too (× 1.0 best on FCS win totals). Odds stop once the real field is scheduled.
+
 ### 7.4 Playoff odds (#100)
 In every simulated season (regular season only; once the real field is set, the projection stops):
 1. **Committee stand-in = the Résumé ranking** on each team's simulated final record: SOR from a per-team lookup table over its full regular schedule (opponents' current ratings), plus the simulated conference title game (`sim/resume_sim.py`); ties broken like the stored ranking (more wins, then rating).

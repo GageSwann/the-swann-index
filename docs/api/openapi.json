@@ -545,6 +545,7 @@
         "type": "object"
       },
       "BracketFormat": {
+        "description": "The CFP bracket's old description (FBS only); `Playoff.rounds` replaces it.",
         "properties": {
           "byes": {
             "title": "Byes",
@@ -593,6 +594,75 @@
           "semifinals"
         ],
         "title": "BracketFormat",
+        "type": "object"
+      },
+      "BracketRound": {
+        "properties": {
+          "advance": {
+            "title": "Advance",
+            "type": "string"
+          },
+          "games": {
+            "items": {
+              "items": {
+                "$ref": "#/components/schemas/BracketSlot"
+              },
+              "type": "array"
+            },
+            "title": "Games",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "name",
+          "note",
+          "advance",
+          "games"
+        ],
+        "title": "BracketRound",
+        "type": "object"
+      },
+      "BracketSlot": {
+        "properties": {
+          "game": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Game"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          }
+        },
+        "title": "BracketSlot",
         "type": "object"
       },
       "CalibrationBin": {
@@ -1511,14 +1581,40 @@
             "title": "As Of",
             "type": "string"
           },
+          "byes": {
+            "title": "Byes",
+            "type": "integer"
+          },
+          "division": {
+            "title": "Division",
+            "type": "string"
+          },
+          "field_size": {
+            "title": "Field Size",
+            "type": "integer"
+          },
           "format": {
-            "$ref": "#/components/schemas/BracketFormat"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BracketFormat"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "projected": {
             "items": {
               "$ref": "#/components/schemas/PlayoffTeam"
             },
             "title": "Projected",
+            "type": "array"
+          },
+          "rounds": {
+            "items": {
+              "$ref": "#/components/schemas/BracketRound"
+            },
+            "title": "Rounds",
             "type": "array"
           },
           "season": {
@@ -1553,6 +1649,10 @@
           "week",
           "as_of",
           "sims",
+          "division",
+          "field_size",
+          "byes",
+          "rounds",
           "format",
           "projected",
           "teams"
@@ -3204,7 +3304,7 @@
     },
     "/playoff": {
       "get": {
-        "description": "Playoff odds, fair futures odds and a projected bracket (regular season only).",
+        "description": "Playoff odds, fair futures odds and a projected bracket (regular season only):\nthe College Football Playoff (`fbs`) or the 24-team FCS playoff (`fcs`).",
         "operationId": "get_playoff",
         "parameters": [
           {
@@ -3221,6 +3321,20 @@
                 }
               ],
               "title": "Season"
+            }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs"
+              ],
+              "title": "Division",
+              "type": "string"
             }
           }
         ],

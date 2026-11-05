@@ -82,3 +82,15 @@ def test_title_odds_add_up() -> None:
     assert sum(f for f, _ in odds.values()) == pytest.approx(2.0)
     assert sum(c for _, c in odds.values()) == pytest.approx(1.0)
     assert odds[0][1] > odds[2][1]
+
+
+def test_without_a_title_game_the_standings_leader_is_champion() -> None:
+    games = (finished(0, 1, False), finished(0, 2, True), finished(1, 2, True))  # 1 is 2-0
+    conf = Conference("C", (10, 11, 12), games, np.zeros((3, 3)), plays_title_game=False)
+
+    res = simulate_title(conf, sim_of([[0.0]] * 3, n_teams=13))
+
+    assert not res.added_game and res.finalists is None
+    assert res.champion.tolist() == [11] * 3
+    assert res.standings.tolist() == [[11, 10, 12]] * 3
+    assert title_odds(res, [10, 11]) == {10: (None, 0.0), 11: (None, 1.0)}

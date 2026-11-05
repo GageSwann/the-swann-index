@@ -3,20 +3,22 @@
 Standings games: conference games between two members, finished (result) or still to
 play (a column of the simulated margins). A game billed as a championship between two
 members is the title game: once scheduled it decides the champion. Divisions come
-from `team_seasons.conference_division` (only the Sun Belt has them in 2026).
+from `team_seasons.conference_division` (only the Sun Belt has them in 2026). FBS
+conferences play a title game; FCS conferences only when named (#125: the SWAC).
 """
 
 from collections import defaultdict
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Collection, Sequence
 from datetime import datetime
 
 import numpy as np
 
 from tsi.db.queries.conference import ConferenceGameRow, Member
+from tsi.divisions import RATED_DIVISION
 from tsi.sim.conference import Conference
 from tsi.sim.standings import ConferenceGame
 
-NO_TITLE_GAME = frozenset({"FBS Independents"})
+NO_CHAMPION = frozenset({"FBS Independents", "FCS Independents"})
 
 NeutralMargin = Callable[[int, int], float]  # (team a, team b) -> a's mean margin, neutral site
 
@@ -28,10 +30,11 @@ def build_conferences(
     column_of: dict[int, int],  # remaining game id -> simulated column
     neutral: NeutralMargin,
     now: datetime,
+    fcs_title_games: Collection[str] = (),
 ) -> list[Conference]:
     by_conf: dict[str, list[Member]] = defaultdict(list)
     for m in members:
-        if m.conference and m.conference not in NO_TITLE_GAME:
+        if m.conference and m.conference not in NO_CHAMPION:
             by_conf[m.conference].append(m)
     return [
         _conference(
@@ -42,6 +45,8 @@ def build_conferences(
             column_of,
             neutral,
             now,
+            plays_title_game=name in fcs_title_games
+            or all(m.division == RATED_DIVISION for m in by_conf[name]),
         )
         for name in sorted(by_conf)
     ]
@@ -55,6 +60,7 @@ def _conference(
     column_of: dict[int, int],
     neutral: NeutralMargin,
     now: datetime,
+    plays_title_game: bool = True,
 ) -> Conference:
     ids = [m.team_id for m in members]
     local = {t: i for i, t in enumerate(ids)}
@@ -77,6 +83,7 @@ def _conference(
         neutral_margin=_margins(ids, neutral),
         divisions=_divisions(members),
         title_game=title,
+        plays_title_game=plays_title_game,
     )
 
 

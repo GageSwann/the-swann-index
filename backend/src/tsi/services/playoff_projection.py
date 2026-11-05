@@ -13,22 +13,22 @@ import numpy as np
 
 from tsi.db.queries.results import GameResult
 from tsi.db.queries.schedule import UpcomingGame
-from tsi.model.ratings.probability import win_prob
+from tsi.divisions import RATED_DIVISION
 from tsi.services.compute_rankings import Rankings
+from tsi.services.playoff_resume import DivisionResume, simulated_order
 from tsi.sim.bracket import MeanMargin, play_bracket
 from tsi.sim.cfp import FieldInputs, seeds
 from tsi.sim.cfp_format import CfpFormat
 from tsi.sim.conference import TitleResults
-from tsi.sim.resume_sim import resume_order, simulated_sor, sor_table
 from tsi.sim.season import SimulatedGames
 
 
 @dataclass(frozen=True)
 class TeamPlayoff:
     make: float  # P(in the field)
-    bye: float  # P(a top-four seed)
-    seed_dist: list[float]  # P(seed = s), s = 1..field size
-    quarterfinal: float  # P(reaches the quarterfinals: a bye or a first-round win)
+    bye: float  # P(a first-round bye: a top-4 CFP seed, a top-8 FCS seed)
+    seed_dist: list[float]  # P(seed = s): s = 1..12 (CFP), 1..8 (FCS: the seeded teams)
+    quarterfinal: float  # P(reaches the last eight)
     semifinal: float
     final: float
     champion: float
@@ -55,39 +55,15 @@ def project_playoff(
 ) -> dict[int, TeamPlayoff]:
     index = {t: i for i, t in enumerate(inputs.fbs)}
     n = len(inputs.fbs)
-    benchmark, hfa = rankings.benchmark, rankings.ratings.hfa
-
-    def p_vs(opp: int, div: str, site: int) -> float:
-        rating = rankings.ratings.get(opp, div, rankings.season).rating
-        return win_prob(benchmark - rating + site * hfa, sigma)
-
-    # Same games as the stored SOR (services/compute_rankings.py): ties don't count.
-    games = [g for g in inputs.played if g.margin != 0] + list(inputs.remaining)
-    probs: list[list[float]] = [[] for _ in range(n)]
-    for g in games:
-        for team, opp, opp_div, site in (
-            (g.home_id, g.away_id, g.away_div, 0 if g.neutral else 1),
-            (g.away_id, g.home_id, g.home_div, 0 if g.neutral else -1),
-        ):
-            if team in index:
-                probs[index[team]].append(p_vs(opp, opp_div, site))
-    tables = [sor_table(p) for p in probs]
-
-    season_rating = np.array(
-        [rankings.ratings.get(t, "fbs", rankings.season).rating for t in inputs.fbs]
+    order = simulated_order(
+        DivisionResume(inputs.fbs, 0, RATED_DIVISION, rankings.benchmark, rankings.season),
+        rankings.ratings,
+        sigma,
+        inputs.played,
+        inputs.remaining,
+        inputs.wins,
+        inputs.titles.values(),
     )
-    neutral_p = np.array([win_prob(benchmark - r, sigma) for r in season_rating])
-    title_p = np.full(inputs.wins.shape, np.nan)  # benchmark's chance in a title game
-    rows = np.arange(inputs.wins.shape[0])
-    for result in inputs.titles.values():
-        if not result.added_game:
-            continue  # a scheduled title game is already in the schedules
-        a, b = result.finalists[:, 0], result.finalists[:, 1]
-        title_p[rows, a] = neutral_p[b]
-        title_p[rows, b] = neutral_p[a]
-
-    sor = simulated_sor(tables, inputs.wins, title_p)
-    order = resume_order(sor, inputs.wins, season_rating)
 
     champs = [inputs.titles[c].champion for c in fmt.champion_bids if c in inputs.titles]
     group = np.array([inputs.conference_of.get(t) in fmt.group_bid_conferences for t in inputs.fbs])

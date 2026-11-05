@@ -226,6 +226,26 @@ def _runs(session) -> None:
                 champion_prob=make * 0.2,
             )
         )
+    # FCS teams are simulated too, with FCS playoff odds (#125): never on the CFP page.
+    for t, make in ((5, 0.8), (6, 0.3)):
+        session.add(
+            SimResult(
+                run_id=week2.id,
+                team_id=t,
+                expected_wins=8.5,
+                win_dist=[0.0] * 8 + [0.5, 0.5],
+                win_out_prob=0.5,
+                title_game_prob=None,  # no FCS title game
+                conference_title_prob=0.6,
+                playoff_prob=make,
+                bye_prob=make / 2,
+                seed_dist=[make / 2] + [0.0] * 7,
+                quarterfinal_prob=make / 2,
+                semifinal_prob=make / 4,
+                final_prob=make / 8,
+                champion_prob=make / 16,
+            )
+        )
     week1_at = datetime(2026, 10, 17, 10, tzinfo=UTC)
     raw_101 = _snapshot(publish.id, 101, week1_at, -6.0, 52.0)
     snap_101 = _snapshot(publish.id, 101, week1_at, -8.0, 50.0, adjustment_ids=[2])

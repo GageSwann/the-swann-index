@@ -1,5 +1,6 @@
 from tsi.sim.cfp_format import FORMAT_2026
-from tsi.sim.projected_field import OddsRow, projected_field
+from tsi.sim.fcs_format import FCS_FORMAT_2026
+from tsi.sim.projected_field import OddsRow, projected_fcs_field, projected_field
 
 
 def row(tid, conf, make, title=None, mean_seed=6.0, slug=None) -> OddsRow:
@@ -28,3 +29,32 @@ def test_projected_field_follows_the_bid_rules() -> None:
     assert 24 not in ids
     assert ids[0] == 0  # seeds by average seed
     assert [r.mean_seed for r in field] == sorted(r.mean_seed for r in field)
+
+
+def test_projected_fcs_field_takes_bid_holders_then_seeds_the_likeliest() -> None:
+    fmt = FCS_FORMAT_2026
+    # 30 teams in "Other" with falling odds; a long-shot champion of each auto-bid conference.
+    rows = [
+        OddsRow(
+            i,
+            f"t{i}",
+            "Other",
+            1.0 - i / 40,
+            None,
+            [0.9 - i / 40] + [0.0] * 7 if i < 12 else [0.0] * 8,
+        )
+        for i in range(30)
+    ]
+    champs = [
+        OddsRow(100 + k, f"c{k}", conf, 0.4, 0.5, [0.0] * 8)
+        for k, conf in enumerate(fmt.champion_bids)
+    ]
+    ineligible_champ = OddsRow(200, "x", "UAC", 0.0, 0.9, [0.0] * 8)  # can't go: no chance
+
+    field = projected_fcs_field(rows + champs + [ineligible_champ], fmt)
+
+    ids = [r.team_id for r in field]
+    assert len(ids) == 24 and 200 not in ids
+    assert set(ids) >= {100 + k for k in range(len(fmt.champion_bids))}
+    assert ids[:8] == list(range(8))  # the eight likeliest to be seeded
+    assert ids[8:11] == [8, 9, 10]  # then at-large teams by playoff odds
