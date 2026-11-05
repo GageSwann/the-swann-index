@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from tsi.db.queries.schedule import UpcomingGame
 from tsi.model.adjust import GameAdjustment, adjust_distribution, game_adjustment
 from tsi.model.artifact import ModelArtifact
+from tsi.model.cross_division import is_cross_division
 from tsi.model.distribution import ScoreDistribution
 from tsi.model.features import GameSide, margin_features, total_features
 from tsi.model.ratings.design import rated_id
@@ -62,6 +63,9 @@ def forecast_game(
     total = artifact.totals.predict(
         bucket, total_features(side, live.components, live.last_components, live.priors)
     )
+    if is_cross_division(g.home_div, g.away_div, g.season):  # FBS vs. FCS (#124)
+        margin *= artifact.cross_division.scale(bucket)
+        total += artifact.cross_division.total
     raw = artifact.distribution.for_game(margin, total)
     adjustment = game_adjustment(g.home_id, g.away_id, g.start_time, live.adjustments)
     if adjustment is None:

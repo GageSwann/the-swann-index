@@ -169,6 +169,9 @@ Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI 
 ## 9c. Second-level yards and power success (v1.5, #122)
 Two more opponent-adjusted components from CFBD's garbage-time-filtered advanced stats feed the predictive stack: **second-level yards** (rushing yards gained 5–10 past the line, per rush; × 38 rushes per game) and **power success** (short-yardage conversion rate; × 8 plays per game). Validation 12.390 → 12.349, train 12.895 → 12.891. Also screened and rejected: line yards, stuff rate, open-field yards, explosiveness, and rush/pass and standard/passing-down success rates.
 
+## 9d. FBS vs. FCS games (v1.6, #124)
+The stacks learn from FBS-vs-FBS games only, and on FBS-vs-FCS games they overshoot: the FBS team was favored ~30% too much out of sample, most of all early in the season. After the stack and the rest adjustment, a game between an FBS team and an individually rated FCS team gets `margin × 0.745` (either team has played fewer than two games) or `× 0.930` (later), and `total + 4.1` (those totals ran low every season). Validation (2023–25, 347 games): margin MAE 14.34 → 12.56 (close 11.80), totals 12.62 → 12.31. Other games are untouched.
+
 ## 9b. Rest, byes and short weeks (v1.4, #120)
 A global adjustment to the predicted margin after the stack: `rest −0.07 × clip(home − away rest days, ±7) + 1.36 × bye − 1.26 × short week` (home minus away flags; bye = 13+ days since the last game, short = 5.5 or fewer). Validation 12.394 → 12.390, train 12.900 → 12.895. Travel distance, time zones, altitude and team-specific home field were screened and did not help out of sample.
 

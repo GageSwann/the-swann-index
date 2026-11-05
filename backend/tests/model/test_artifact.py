@@ -4,6 +4,7 @@ import numpy as np
 
 from tsi.book.edges import EdgeShrink
 from tsi.model.artifact import ModelArtifact, load_artifact, save_artifact
+from tsi.model.cross_division import CrossDivision
 from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
 from tsi.model.fcs_prior import FcsPrior
@@ -34,6 +35,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
         sigma_season=15.6,
         key_numbers=KeyNumbers((0.0, 0.7, 0.6, 2.3) + (1.0,) * 57, (1.0,) * 161),
         situational=Situational((-0.07, 1.36, -1.26)),
+        cross_division=CrossDivision(0.75, 0.93, 4.1),
     )
     path = tmp_path / "artifact.json"
 
@@ -47,6 +49,7 @@ def test_artifact_round_trips_through_json(tmp_path: Path) -> None:
     assert loaded.fcs_prior == FcsPrior(0.59, 0.61)
     assert loaded.key_numbers == artifact.key_numbers
     assert loaded.situational == Situational((-0.07, 1.36, -1.26))
+    assert loaded.cross_division == CrossDivision(0.75, 0.93, 4.1)
     np.testing.assert_allclose(loaded.stack.coefs[6], artifact.stack.coefs[6])
     np.testing.assert_allclose(loaded.totals.coefs[0], artifact.totals.coefs[0])
     np.testing.assert_allclose(loaded.prior.coefs[("off", ("last", "talent"))], [-8.0, 0.4, 0.01])

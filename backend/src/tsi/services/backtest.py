@@ -11,6 +11,7 @@ from collections.abc import Sequence
 from tsi.backtest import key_numbers_eval
 from tsi.backtest.ats import ats_record
 from tsi.backtest.calibration import calibration_table
+from tsi.backtest.cross_division_fit import apply_cross_division
 from tsi.backtest.evaluate import ScoredGame, summarize
 from tsi.backtest.market_calibration import line_check
 from tsi.backtest.situational_fit import apply_situational
@@ -57,6 +58,8 @@ def run_backtest(data: BacktestData, config: ModelConfig | None = None) -> Backt
     picks = stacked_picks(picks, config.stack_lam, fit_on=lambda p: p.game.fbs_vs_fbs)
     if config.situational:  # rest, byes, short weeks (#120)
         picks, _ = apply_situational(picks, TRAIN, fit_on=lambda p: p.game.fbs_vs_fbs)
+    if config.cross_division:  # FBS-vs-FCS margin scale (#124)
+        picks, _ = apply_cross_division(picks, TRAIN)
     fcs_picks = [p for p in picks if not p.game.fbs_vs_fbs]
     picks = [p for p in picks if p.game.fbs_vs_fbs]
     sigmas = {

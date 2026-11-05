@@ -15,6 +15,7 @@ from typing import Any
 import numpy as np
 
 from tsi.book.edges import EdgeShrink
+from tsi.model.cross_division import CrossDivision
 from tsi.model.distribution import DistributionParams
 from tsi.model.elo import EloParams
 from tsi.model.fcs_prior import FcsPrior
@@ -43,6 +44,7 @@ class ModelArtifact:
     sigma_season: float
     key_numbers: KeyNumbers  # whole-number margin/total weights for pricing (#118)
     situational: Situational  # rest / bye / short-week margin adjustment (#120)
+    cross_division: CrossDivision = CrossDivision()  # FBS-vs-FCS margin scale (#124)
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -65,6 +67,7 @@ class ModelArtifact:
                 "total": [round(w, 6) for w in self.key_numbers.total],
             },
             "situational": dict(zip(SITUATIONAL_FEATURES, self.situational.coefs, strict=True)),
+            "cross_division": asdict(self.cross_division),
         }
 
     @classmethod
@@ -91,6 +94,7 @@ class ModelArtifact:
             situational=Situational(
                 tuple(float(data["situational"][f]) for f in SITUATIONAL_FEATURES)
             ),
+            cross_division=CrossDivision(**data.get("cross_division", {})),
         )
 
 

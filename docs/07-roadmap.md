@@ -153,3 +153,4 @@ Scoped 2026-11-03 (decision #107). **No backfill or new CFBD calls needed:** eve
 - [x] Model v2: gradient-boosted ensemble on top of ratings (#121: tested, rejected: worse than the linear stack out of sample; leftover error has no pattern)
 - [x] New box-score signals from the cached advanced stats (#122: second-level rushing yards + power success adopted, model v1.5: validation 12.390 → 12.349; others rejected)
 - [ ] AI-written game previews
+- [x] Found while scoping the FCS sim: FBS-vs-FCS margins overshot by ~30% and totals ran low (#124: margin scale + total offset, model v1.6; validation margin MAE 14.34 → 12.56, totals 12.62 → 12.31)
