@@ -1,7 +1,7 @@
 """FCS playoff field and bracket in every simulated season (decision #125).
 
 Field: the auto-bid holders, then the best-ranked eligible teams (the committee stand-in's
-order) until 24; positions follow that order, so positions 1-8 are the seeds. Bracket
+order) until 24; positions follow that order, so positions 1-16 are the seeds. Bracket
 (sim/fcs_format.py): seeded and better-placed teams host until the neutral-site final.
 Game means come from the published model (the caller's `mean_margin`, cached per
 pairing) plus both teams' shifts from the same simulation and fresh game noise.
@@ -40,7 +40,7 @@ def fcs_field(
 @dataclass(frozen=True)
 class FcsBracket:
     field: np.ndarray  # (sims, 24) team per position
-    second_round: np.ndarray  # (sims, 16) teams that reach it (8 seeds + 8 winners)
+    second_round: np.ndarray  # (sims, 16) teams that reach it (8 byes + 8 winners)
     quarterfinalists: np.ndarray  # (sims, 8)
     semifinalists: np.ndarray  # (sims, 4)
     finalists: np.ndarray  # (sims, 2)

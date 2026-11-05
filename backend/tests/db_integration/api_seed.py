@@ -239,7 +239,7 @@ def _runs(session) -> None:
                 conference_title_prob=0.6,
                 playoff_prob=make,
                 bye_prob=make / 2,
-                seed_dist=[make / 2] + [0.0] * 7,
+                seed_dist=[make / 2] + [0.0] * 15,
                 quarterfinal_prob=make / 2,
                 semifinal_prob=make / 4,
                 final_prob=make / 8,

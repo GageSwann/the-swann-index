@@ -1621,6 +1621,10 @@
             "title": "Season",
             "type": "integer"
           },
+          "seeds": {
+            "title": "Seeds",
+            "type": "integer"
+          },
           "sims": {
             "anyOf": [
               {
@@ -1651,6 +1655,7 @@
           "sims",
           "division",
           "field_size",
+          "seeds",
           "byes",
           "rounds",
           "format",

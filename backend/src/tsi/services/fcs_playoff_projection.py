@@ -3,7 +3,7 @@
 In every simulated season: the FCS Résumé order from each team's final record (the
 committee stand-in, services/playoff_resume.py; it picked 88 of the 96 real fields'
 teams in 2022-25), the automatic bids (each auto-bid conference's best-placed eligible
-team), at-large bids by that order, and the 24-team bracket (sim/fcs_playoff.py).
+team), at-large bids by that order, 16 seeds, and the 24-team bracket (sim/fcs_playoff.py).
 Regular season only, and only until the real field is set.
 """
 
@@ -97,7 +97,7 @@ def _odds(i: int, b: FcsBracket, fmt: FcsFormat) -> TeamPlayoff:
     seed_dist = [float((b.field[:, s] == i).mean()) for s in range(fmt.seeds)]
     return TeamPlayoff(
         make=float((b.field == i).any(axis=1).mean()),
-        bye=float(sum(seed_dist)),
+        bye=float(sum(seed_dist[: fmt.byes])),
         seed_dist=seed_dist,
         quarterfinal=float((b.quarterfinalists == i).any(axis=1).mean()),
         semifinal=float((b.semifinalists == i).any(axis=1).mean()),

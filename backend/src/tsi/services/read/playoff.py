@@ -42,7 +42,7 @@ class PlayoffTeam:
     rank_resume: int | None  # today's Résumé rank (the committee stand-in)
     playoff_prob: float
     bye_prob: float
-    seed_dist: list[float]  # P(seed = 1..12) for the CFP; P(seed = 1..8) for FCS
+    seed_dist: list[float]  # P(seed = 1..12) for the CFP; P(seed = 1..16) for FCS
     quarterfinal_prob: float
     semifinal_prob: float
     final_prob: float
@@ -70,6 +70,7 @@ class Playoff:
     sims: int | None
     division: str  # fbs (the CFP) / fcs (the FCS playoff)
     field_size: int
+    seeds: int  # seeded teams (12 CFP, 16 FCS); the rest are placed by rank
     byes: int  # seeds that skip the first round
     rounds: list[BracketRound]  # the bracket, first round first
     format: BracketFormat | None  # FBS only; superseded by field_size / byes / rounds
@@ -119,7 +120,8 @@ def playoff(
         sims=run_params(session, run.id).get("sim", {}).get("sims"),
         division=division,
         field_size=fcs_fmt.field_size if fcs else fmt.field_size,
-        byes=fcs_fmt.seeds if fcs else fmt.byes,
+        seeds=fcs_fmt.seeds if fcs else fmt.field_size,
+        byes=fcs_fmt.byes if fcs else fmt.byes,
         rounds=fcs_rounds(fcs_fmt) if fcs else cfp_rounds(fmt),
         format=None
         if fcs

@@ -215,6 +215,7 @@ def test_fcs_playoff_odds(api: TestClient) -> None:
 
     assert [t["team"]["school"] for t in result["teams"]] == ["Echo", "Foxtrot"]
     assert (result["division"], result["field_size"], result["byes"]) == ("fcs", 24, 8)
+    assert result["seeds"] == 16 and result["rounds"][0]["games"][0][0] == {"seed": 9, "game": None}
     assert result["format"] is None
     assert [r["name"] for r in result["rounds"]] == [
         "First round", "Second round", "Quarterfinals", "Semifinals", "Championship",

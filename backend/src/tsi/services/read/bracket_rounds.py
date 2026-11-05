@@ -57,11 +57,11 @@ def cfp_rounds(fmt: CfpFormat) -> list[BracketRound]:
 def fcs_rounds(fmt: FcsFormat) -> list[BracketRound]:
     return [
         BracketRound(
-            "First round", "At the better-placed team", "quarterfinal_prob", _seeds(fmt.first_round)
+            "First round", "At the seeded team", "quarterfinal_prob", _seeds(fmt.first_round)
         ),
         BracketRound(
             "Second round",
-            "At the seeded team",
+            "At the higher seed",
             "quarterfinal_prob",
             [[BracketSlot(seed=s), BracketSlot(game=g)] for s, g in fmt.second_round],
         ),

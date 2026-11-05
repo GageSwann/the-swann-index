@@ -59,7 +59,7 @@ def projected_field(rows: Sequence[OddsRow], fmt: CfpFormat) -> list[OddsRow]:
 
 def projected_fcs_field(rows: Sequence[OddsRow], fmt: FcsFormat) -> list[OddsRow]:
     """The projected FCS field by position: each auto-bid conference's likeliest champion
-    that can go, then at-large teams by playoff odds; the 8 likeliest to be seeded are the
+    that can go, then at-large teams by playoff odds; the 16 likeliest to be seeded are the
     seeds (ordered by their average seed), the rest follow by playoff odds."""
     by_odds = sorted(
         (r for r in rows if r.playoff_prob > 0), key=lambda r: (-r.playoff_prob, r.team_id)

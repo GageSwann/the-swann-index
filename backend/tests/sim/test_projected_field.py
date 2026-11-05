@@ -41,20 +41,20 @@ def test_projected_fcs_field_takes_bid_holders_then_seeds_the_likeliest() -> Non
             "Other",
             1.0 - i / 40,
             None,
-            [0.9 - i / 40] + [0.0] * 7 if i < 12 else [0.0] * 8,
+            [0.9 - i / 40] + [0.0] * 15 if i < 12 else [0.0] * 16,
         )
         for i in range(30)
     ]
     champs = [
-        OddsRow(100 + k, f"c{k}", conf, 0.4, 0.5, [0.0] * 8)
+        OddsRow(100 + k, f"c{k}", conf, 0.4, 0.5, [0.0] * 16)
         for k, conf in enumerate(fmt.champion_bids)
     ]
-    ineligible_champ = OddsRow(200, "x", "UAC", 0.0, 0.9, [0.0] * 8)  # can't go: no chance
+    ineligible_champ = OddsRow(200, "x", "UAC", 0.0, 0.9, [0.0] * 16)  # can't go: no chance
 
     field = projected_fcs_field(rows + champs + [ineligible_champ], fmt)
 
     ids = [r.team_id for r in field]
     assert len(ids) == 24 and 200 not in ids
     assert set(ids) >= {100 + k for k in range(len(fmt.champion_bids))}
-    assert ids[:8] == list(range(8))  # the eight likeliest to be seeded
-    assert ids[8:11] == [8, 9, 10]  # then at-large teams by playoff odds
+    assert ids[:12] == list(range(12))  # the likeliest to be seeded, by average seed
+    assert set(ids[16:]) < {100 + k for k in range(11)}  # unseeded: long-shot champions

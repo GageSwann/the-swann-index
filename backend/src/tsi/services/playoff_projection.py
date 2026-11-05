@@ -27,7 +27,7 @@ from tsi.sim.season import SimulatedGames
 class TeamPlayoff:
     make: float  # P(in the field)
     bye: float  # P(a first-round bye: a top-4 CFP seed, a top-8 FCS seed)
-    seed_dist: list[float]  # P(seed = s): s = 1..12 (CFP), 1..8 (FCS: the seeded teams)
+    seed_dist: list[float]  # P(seed = s): s = 1..12 (CFP), 1..16 (FCS: the seeded teams)
     quarterfinal: float  # P(reaches the last eight)
     semifinal: float
     final: float
