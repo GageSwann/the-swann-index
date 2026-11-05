@@ -69,4 +69,6 @@ def test_each_division_is_ranked_on_its_own(sessions) -> None:
     # Predictive ranks within each division: 701 (-26) edges 700 (-27) among FCS teams.
     assert [rows[(t, "predictive")].rank_power for t in (1, 700, 701)] == [1, 2, 1]
     assert params["fcs_resume_benchmark"] == -33.0
+    # The run names the ranks it measured against, so the site can say so (#133).
+    assert (params["resume_benchmark_rank"], params["fcs_resume_benchmark_rank"]) == (12, 24)
     assert params["pooled_season_ratings"] == {"fcs": pytest.approx(-35.0), "lower": -50.0}

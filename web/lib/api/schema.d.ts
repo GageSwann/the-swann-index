@@ -801,6 +801,8 @@ export interface components {
              * Format: date-time
              */
             as_of: string;
+            /** Benchmark Rank */
+            benchmark_rank?: number | null;
             /**
              * Division
              * @enum {string}
@@ -862,6 +864,8 @@ export interface components {
         ResumeSummary: {
             /** Benchmark Expected Wins */
             benchmark_expected_wins: number | null;
+            /** Benchmark Rank */
+            benchmark_rank: number;
             /** Benchmark Rating */
             benchmark_rating: number;
             /** Games */
