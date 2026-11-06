@@ -156,10 +156,12 @@
   }
 
   /* A table row whose left edge lights up on hover (in the row's team color). */
-  .tsi-row-light > td:first-child {
+  .tsi-row-light > td:first-child,
+  li.tsi-row-light {
     transition: box-shadow 160ms;
   }
-  .tsi-row-light:hover > td:first-child {
+  .tsi-row-light:hover > td:first-child,
+  li.tsi-row-light:hover {
     box-shadow:
       inset 3px 0 0 var(--light),
       inset 16px 0 14px -12px color-mix(in oklab, var(--light) 55%, transparent);

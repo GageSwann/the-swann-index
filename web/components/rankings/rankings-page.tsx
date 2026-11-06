@@ -7,7 +7,7 @@ import { formatShortDay, formatUpdated } from "@/lib/format/time"
 import { RankingsView } from "./rankings-view"
 
 const RANKINGS_HREF: Record<DivisionView, string> = {
-  fbs: "/",
+  fbs: "/rankings",
   fcs: "/rankings/fcs",
   all: "/rankings/all",
 }

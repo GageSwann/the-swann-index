@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils"
 
 const LINKS = [
   {
-    href: "/",
+    href: "/rankings",
     label: "Rankings",
-    match: (p: string) => p === "/" || p.startsWith("/rankings"),
+    match: (p: string) => p.startsWith("/rankings"),
   },
   { href: "/week", label: "This week", match: (p: string) => p.startsWith("/week") },
   { href: "/playoff", label: "Playoff", match: (p: string) => p.startsWith("/playoff") },

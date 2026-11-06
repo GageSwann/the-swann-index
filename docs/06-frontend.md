@@ -46,7 +46,8 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 
 | Route | Page |
 |---|---|
-| `/` | **Rankings** (Power/Résumé toggle), FBS |
+| `/` | **Home** (13.4, #141): FBS and FCS games of the week, FBS and FCS Top 25 rails, one Power/Résumé toggle |
+| `/rankings` | **Rankings** (Power/Résumé toggle), FBS (was `/` until 13.4) |
 | `/rankings/fcs`, `/rankings/all` | FCS rankings; FBS and FCS on one scale (Power only) (#115) |
 | `/week` → `/week/[season]/[week]` | **Matchup board** for the week (defaults to current week), games with an FBS team |
 | `/week/[season]/[week]/fcs`, `…/all` | the same board for games with an FCS team, or either (#115) |
@@ -102,6 +103,12 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 
 ### Matchup `/matchup`
 - **Built (decision #85):** pick any two FBS teams (away/home, neutral-site checkbox) in a plain GET form grouped by conference: works without JavaScript, and results are shareable URLs (`/matchup?away=auburn&home=alabama&neutral=1`); "Swap home and away" is a link. Result: the shared `ScoreBoard` (projected score, win probability), TSI's line (no Vegas column: books only post scheduled games), the margin chart (from `sigma_margin`), alternate spread/total ladders and the tale of the tape. Labeled hypothetical: not saved or graded. Empty state suggests three top-6 pairings on neutral fields; same team twice or an unknown slug get a plain message.
+
+### Home `/` (Phase 13.4, #141, built 2026-11-06)
+- **Layout:** desktop (`lg`+): FBS Top 25 rail left, FCS Top 25 rail right (15.5 rem, 18 rem from `xl`), the two games of the week stacked in the middle (FBS first, larger). Phones and tablets: games first, then the two rails (side by side from `sm`). One **Power / Résumé** toggle (`Segmented`) switches the rails and the picks (`components/home/`).
+- **Game card** (`game-of-week.tsx`): kickoff (ET, formatted on the server), both teams with their current rank in the chosen ranking and record, TSI's projected score (its own row, so the scores line up when a name wraps; the final score once played, with TSI's projection in the caption), win-probability bar, TSI's line next to Vegas, a plain-language "why this game" (ranks, TSI's win chance, and the stakes: "A win would raise X's playoff chances by N points and Y's by M", swings under 5 points left out), and a link to the game center. Both cards carry the **border light** in the two teams' colors (#137). Before the first pick a card says picks come with Sunday's rankings.
+- **Rails** (`rankings-rail.tsx`): rank, logo on a white tile (dark logos vanish on black), school, record, movement since the Sunday poll (hidden while a division has no previous poll, so FCS doesn't say "new" 25 times); rows light in the team's color on hover (`li.tsi-row-light`).
+- **Picks** come from `/games-of-week` (stored by the nightly run, held all week; doc 05 §7.0, decision #141).
 
 ### TSI Book and Model pages: removed (Phase 13.3, #139)
 The Book is owner-only and there is no public Model or "How TSI works" page (#127). `/book` and `/model` are gone (404), with their nav links, sitemap entries, components and charts; the API serves the ledger and the report card only with the owner's key. Their specs and build notes (#75, #76) are in git history.

@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const week = `/week/${meta.season}/${Math.max(1, meta.week)}`
   const pages = [
     "",
+    "/rankings",
     "/rankings/fcs",
     "/rankings/all",
     "/week",

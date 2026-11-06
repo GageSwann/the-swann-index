@@ -6,6 +6,7 @@ import { apiClient, orNull, required } from "./client"
 import * as tags from "./tags"
 import type {
   GameCenter,
+  GamesOfWeek,
   Matchup,
   Meta,
   Playoff,
@@ -78,6 +79,14 @@ export async function getWeekGames(
     params: { path: { season, week }, query: { season_type: seasonType, division } },
   })
   return required(`/weeks/${season}/${week}/games`, result)
+}
+
+/** This poll week's games of the week (picked with Sunday's rankings, held all week). */
+export async function getGamesOfWeek(): Promise<GamesOfWeek> {
+  "use cache"
+  cacheLife("tsi")
+  cacheTag(tags.ALL)
+  return required("/games-of-week", await apiClient().GET("/games-of-week"))
 }
 
 export async function getGame(id: number): Promise<GameCenter | null> {

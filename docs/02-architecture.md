@@ -93,6 +93,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | `picks` | prediction_id, market (spread/total/ml), side, line_taken, odds_taken, edge, tier (1–3), stake_units, kelly_units, closing_line, closing_odds, result, units_won, graded_at |
 | `adjustments` | id, season, team_id, off_points, def_points, reason, starts_at, ends_at (null = rest of season), expired_at, created_at. Covers the team's games kicking off in [starts_at, ends_at); never deleted (decision #103) |
 | `sim_results` | run_id (the nightly rating run whose inputs it used), team_id, expected_wins, win_dist (double[]), win_out_prob, title_game_prob, conference_title_prob (null for independents), playoff_prob, bye_prob, seed_dist (double[12]), quarterfinal/semifinal/final/champion_prob (null outside the regular season, #101). Settings in that run's `params.sim` (#98) |
+| `games_of_week` | poll_date (the poll week's Sunday, Eastern), division, ranking_type (unique together), season, game_id, picked_at, score with its parts (quality, closeness, stakes), both teams' ranks and playoff/title swings; written once per poll week by the nightly run, never updated (#141) |
 
 ## API (read-only, v1)
 
@@ -107,6 +108,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | GET | `/book/ledger?season` | picks + running record, ROI, CLV; **owner-only** (#139): answers only `Authorization: Bearer <OWNER_API_KEY>`, else the same 404 as an unknown path; left out of the public spec; `Cache-Control: no-store` |
 | GET | `/model/report?season` | latest saved backtest (headline metrics + report tables: accuracy by season/period, calibration, ATS, totals, Book record/calibration/units), model version history, live accuracy (#76); owner-only like the ledger |
 | GET | `/matchup?home&away&neutral` | on-demand hypothetical prediction |
+| GET | `/games-of-week` | this poll week's FBS and FCS games of the week for Power and Résumé, each with the week board's game entry, the score's parts and both teams' swings; empty before the first pick (#141) |
 | GET | `/playoff?season` | playoff odds per team (field, bye, rounds, title, fair odds), projected bracket, the format's pairings (#101; 404 outside the regular season) |
 
 Responses are Pydantic-validated **frozen dataclasses** defined once in `services/read/` (one module per resource); FastAPI builds the OpenAPI schema from them, and the spec generates TypeScript types for `web/lib/api.ts`. Routers (`api/routers/`) are thin. Run locally with `tsi serve` (docs at `/docs`). The spec is committed at `docs/api/openapi.json` (`tsi openapi`; a test fails if it's stale); operation ids are the router function names (`get_rankings`, `get_week_games`, ...).
