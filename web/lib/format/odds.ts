@@ -29,3 +29,10 @@ export function teamSpread(spread: number): string {
 export function totalLine(total: number): string {
   return Number.isInteger(total * 2) ? total.toFixed(1) : total.toFixed(2)
 }
+
+/** The favorite's moneyline: "ND −144" (the shorter price; home on a tie). */
+export function favoriteMoneyline(home: TeamRef, away: TeamRef, homeMl: number, awayMl: number) {
+  const homeFav = homeMl <= awayMl
+  const team = homeFav ? home : away
+  return `${team.abbreviation ?? team.school} ${american(homeFav ? homeMl : awayMl)}`
+}

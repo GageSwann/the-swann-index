@@ -5,7 +5,7 @@ import { TeamLink } from "@/components/team/team-link"
 import type { GameSummary, TeamRef } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { points } from "@/lib/format/numbers"
-import { american, favoriteLine, totalLine } from "@/lib/format/odds"
+import { favoriteLine, favoriteMoneyline, totalLine } from "@/lib/format/odds"
 import { formatKickoff } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
 
@@ -186,10 +186,4 @@ function LineRow({ label, tsi, market }: { label: string; tsi: string; market: s
       <td className="py-1 text-right">{market ?? "—"}</td>
     </tr>
   )
-}
-
-function favoriteMoneyline(home: TeamRef, away: TeamRef, homeMl: number, awayMl: number) {
-  const homeFav = homeMl <= awayMl
-  const team = homeFav ? home : away
-  return `${team.abbreviation ?? team.school} ${american(homeFav ? homeMl : awayMl)}`
 }

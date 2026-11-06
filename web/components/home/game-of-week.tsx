@@ -5,7 +5,7 @@ import { TeamLogo } from "@/components/team/team-logo"
 import type { GameOfWeekView, RankedTeam, TeamRef } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { points, record } from "@/lib/format/numbers"
-import { favoriteLine } from "@/lib/format/odds"
+import { favoriteLine, favoriteMoneyline } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -90,10 +90,14 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
 
         {/* TSI's lines only (owner): no Vegas line or explanation on the home page. */}
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-          <dt className="text-muted-foreground">TSI spread</dt>
+          <dt className="text-muted-foreground">TSI Spread</dt>
           <dd className="text-right">{favoriteLine(p.spread, game.home, game.away)}</dd>
-          <dt className="text-muted-foreground">TSI total</dt>
+          <dt className="text-muted-foreground">TSI Total</dt>
           <dd className="text-right">{p.total.toFixed(1)}</dd>
+          <dt className="text-muted-foreground">TSI Moneyline</dt>
+          <dd className="text-right">
+            {favoriteMoneyline(game.home, game.away, p.fair_home_ml, p.fair_away_ml)}
+          </dd>
         </dl>
       </div>
     </section>
