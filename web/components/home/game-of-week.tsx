@@ -59,7 +59,18 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
           aria-label={`Game center: ${matchup}`}
           className="absolute inset-0 rounded-md"
         />
-        {when && <p className="text-sm text-muted-foreground">{final ? `Final. ${when}` : when}</p>}
+        {/* The big numbers are TSI's prediction until the game is played (owner): say so. */}
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">{when}</p>
+          <span
+            className={cn(
+              "shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+              final ? "border-foreground text-foreground" : "border-border text-muted-foreground",
+            )}
+          >
+            {final ? "Final" : "Predicted Score"}
+          </span>
+        </div>
 
         {/* Logos above the names give each name the column's full width; the scores share
             one row, so they line up even if a long name wraps. */}
@@ -88,16 +99,21 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
           )}
         </div>
 
-        {/* TSI's lines only (owner): no Vegas line or explanation on the home page. */}
-        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-          <dt className="text-muted-foreground">TSI Spread</dt>
-          <dd className="text-right">{favoriteLine(p.spread, game.home, game.away)}</dd>
-          <dt className="text-muted-foreground">TSI Total</dt>
-          <dd className="text-right">{p.total.toFixed(1)}</dd>
-          <dt className="text-muted-foreground">TSI Moneyline</dt>
-          <dd className="text-right">
-            {favoriteMoneyline(game.home, game.away, p.fair_home_ml, p.fair_away_ml)}
-          </dd>
+        {/* TSI's lines only (owner): a stat strip, each label right above its value. */}
+        <dl className="grid grid-cols-3 divide-x divide-border rounded-md border border-border">
+          {[
+            ["TSI Spread", favoriteLine(p.spread, game.home, game.away)],
+            ["TSI Total", p.total.toFixed(1)],
+            [
+              "TSI Moneyline",
+              favoriteMoneyline(game.home, game.away, p.fair_home_ml, p.fair_away_ml),
+            ],
+          ].map(([label, value]) => (
+            <div key={label} className="flex flex-col items-center gap-0.5 px-2 py-2.5 text-center">
+              <dt className="text-xs text-muted-foreground">{label}</dt>
+              <dd className="text-base font-semibold">{value}</dd>
+            </div>
+          ))}
         </dl>
       </div>
     </section>
