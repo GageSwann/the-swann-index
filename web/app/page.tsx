@@ -50,10 +50,8 @@ export default async function HomePage() {
 
   return (
     <>
-      <PageHeading title="Games of the week">
-        Week {meta.week}, {meta.season}: the games TSI picked to watch, and the Top 25 in FBS and
-        FCS.
-      </PageHeading>
+      {/* No visible heading (owner): the page opens on the ranking switch and the games. */}
+      <h1 className="sr-only">The Swann Index: games of the week and Top 25</h1>
       <HomeView rails={rails} picks={picks} />
     </>
   )
