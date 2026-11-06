@@ -2,7 +2,6 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
-import { BorderLightRings, borderLightVars } from "@/components/ui/border-light"
 import type { GameOfWeekView, RankedTeam, RankingType, TeamRef } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { chance, points, record } from "@/lib/format/numbers"
@@ -24,8 +23,7 @@ const TITLE: Record<Division, string> = {
 }
 
 /**
- * One game of the week: the page's focal point, so it carries the border light in both
- * teams' colors (#137). Ranks shown are the chosen ranking's (Power or Résumé), as of now.
+ * One game of the week. Ranks shown are the chosen ranking's (Power or Résumé), as of now.
  * Once the game is played it shows the final score next to TSI's projection.
  */
 export function GameOfWeekCard({ pick, teams, division, type, when, size }: Props) {
@@ -57,11 +55,15 @@ export function GameOfWeekCard({ pick, teams, division, type, when, size }: Prop
   return (
     <section aria-labelledby={headingId} className="min-w-0 space-y-2">
       {heading}
-      <div
-        className="tsi-border-light space-y-5 rounded-md border border-border bg-card p-5 sm:p-6"
-        style={borderLightVars(game.away, game.home)}
-      >
-        <BorderLightRings />
+      {/* The whole card opens the game center (like a Top 25 row opens a team), except the
+          team names, which sit above the card's link and open the team pages. On hover it
+          lights in plain white/black (the page's light), not a team's color. */}
+      <div className="tsi-lit-hover relative space-y-5 rounded-md border border-border bg-card p-5 sm:p-6">
+        <Link
+          href={`/games/${game.id}`}
+          aria-label={`Game center: ${game.away.school} ${game.neutral ? "vs" : "at"} ${game.home.school}`}
+          className="absolute inset-0 rounded-md"
+        />
         {when && <p className="text-sm text-muted-foreground">{when}</p>}
 
         {/* Two rows, so the scores line up even when one team's name wraps. */}
@@ -97,13 +99,6 @@ export function GameOfWeekCard({ pick, teams, division, type, when, size }: Prop
         </dl>
 
         <p className="max-w-[65ch] text-sm">{whyThisGame(pick, row, type)}</p>
-
-        <Link
-          href={`/games/${game.id}`}
-          className="inline-flex min-h-8 items-center text-sm underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
-        >
-          Game center
-        </Link>
       </div>
     </section>
   )
@@ -126,7 +121,7 @@ function Side({
       <Link
         href={`/teams/${team.slug}`}
         className={cn(
-          "flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3",
+          "relative z-10 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3",
           alignEnd ? "items-end sm:flex-row-reverse" : "items-start",
         )}
       >
