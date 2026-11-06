@@ -276,7 +276,7 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
   - *Done when:* no 2026 team page or week board shows dashes where TSI numbers belong; the replay reproduces the backtest's features for those games (parity check); the published-snapshot tables are untouched.
 
 **Operations (found 2026-11-06, #140): Neon network transfer**
-- [ ] Local Postgres copy of the data on the home PC; backtests, experiments and refits run against it. Build it with `tsi ingest season --season 2014 --through 2026` against local Postgres from the CFBD disk cache (no Neon reads; finished seasons cost no CFBD calls), not `pg_dump` (reads the whole database out of Neon). Live-only tables (snapshots, picks, model runs) don't come along; backtests don't need them.
+- [ ] Local Postgres copy of the data on the home PC; backtests, experiments and refits run against it. Build it with one `pg_dump` of `dev` restored locally: the database is ~63 MB, so a dump costs about that much transfer (~1–2% of the allowance) and brings every table, live snapshots and picks included. Re-ingesting from the CFBD disk cache (`tsi ingest season --season 2014 --through 2026` against local Postgres) costs no transfer but leaves out the live-only tables.
 - [ ] Transfer meter: log how much the nightly job and the API read per run or request. Neon gives no per-query bytes; per-branch totals come from the branch details API (`data_transfer_bytes`) and the heaviest queries from `pg_stat_statements` (rows per call; cleared whenever the compute scales to zero).
 - [ ] "Save backtest to production" without reading the history from production (compute from a copy; upload only the saved run).
 - [ ] Cut reads per site build or nightly run if the meter shows they matter.
