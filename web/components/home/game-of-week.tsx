@@ -31,13 +31,18 @@ const TITLE: Record<Division, string> = {
 export function GameOfWeekCard({ pick, teams, division, type, when, size }: Props) {
   const headingId = `gotw-${division}`
   const p = pick?.game.prediction
+  // The title sits above the card, like the Top 25 lists' titles, so the card's top edge
+  // lines up with theirs.
+  const heading = (
+    <h2 id={headingId} className="text-lg font-semibold font-stretch-condensed">
+      {TITLE[division]}
+    </h2>
+  )
   if (!pick || !p) {
     return (
-      <section aria-labelledby={headingId} className="rounded-md border border-border bg-card p-5">
-        <h2 id={headingId} className="text-lg font-semibold font-stretch-condensed">
-          {TITLE[division]}
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+      <section aria-labelledby={headingId} className="min-w-0 space-y-2">
+        {heading}
+        <p className="rounded-md border border-border bg-card p-5 text-sm text-muted-foreground">
           Picked each Sunday with the new rankings, from the coming week&apos;s games. Check back
           after Sunday&apos;s update.
         </p>
@@ -50,62 +55,56 @@ export function GameOfWeekCard({ pick, teams, division, type, when, size }: Prop
   const row = new Map(teams.map((t) => [t.team.id, t]))
   const final = game.result?.final ? game.result : null
   return (
-    <section
-      aria-labelledby={headingId}
-      className="tsi-border-light space-y-5 rounded-md border border-border bg-card p-5 sm:p-6"
-      style={borderLightVars(game.away, game.home)}
-    >
-      <BorderLightRings />
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2
-          id={headingId}
-          className={cn("font-semibold font-stretch-condensed", lead ? "text-2xl" : "text-xl")}
-        >
-          {TITLE[division]}
-        </h2>
-        {when && <p className="text-sm text-muted-foreground">{when}</p>}
-      </div>
-
-      {/* Two rows, so the scores line up even when one team's name wraps. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 sm:gap-x-6">
-        <Side team={game.away} row={row.get(game.away.id) ?? null} lead={lead} />
-        <span className="mt-4 text-sm text-muted-foreground">{game.neutral ? "vs" : "at"}</span>
-        <Side team={game.home} row={row.get(game.home.id) ?? null} lead={lead} alignEnd />
-        <Score value={final ? final.away_points : p.proj_away} lead={lead} />
-        <span aria-hidden />
-        <Score value={final ? final.home_points : p.proj_home} lead={lead} alignEnd />
-      </div>
-
-      <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          {final
-            ? `Final. TSI projected ${points(p.proj_away)}–${points(p.proj_home)} with these win chances.`
-            : "TSI's projected score and win chance"}
-        </p>
-        <WinProbBar homeProb={p.home_win_prob} home={game.home} away={game.away} />
-      </div>
-
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:max-w-md">
-        <dt className="text-muted-foreground">TSI line</dt>
-        <dd className="text-right">
-          {favoriteLine(p.spread, game.home, game.away)}, total {p.total.toFixed(1)}
-        </dd>
-        <dt className="text-muted-foreground">Vegas</dt>
-        <dd className="text-right">
-          {m?.spread != null && m.total != null
-            ? `${favoriteLine(m.spread, game.home, game.away)}, total ${totalLine(m.total)}`
-            : "No line yet"}
-        </dd>
-      </dl>
-
-      <p className="max-w-[65ch] text-sm">{whyThisGame(pick, row, type)}</p>
-
-      <Link
-        href={`/games/${game.id}`}
-        className="inline-flex min-h-8 items-center text-sm underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
+    <section aria-labelledby={headingId} className="min-w-0 space-y-2">
+      {heading}
+      <div
+        className="tsi-border-light space-y-5 rounded-md border border-border bg-card p-5 sm:p-6"
+        style={borderLightVars(game.away, game.home)}
       >
-        Game center
-      </Link>
+        <BorderLightRings />
+        {when && <p className="text-sm text-muted-foreground">{when}</p>}
+
+        {/* Two rows, so the scores line up even when one team's name wraps. */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 sm:gap-x-6">
+          <Side team={game.away} row={row.get(game.away.id) ?? null} lead={lead} />
+          <span className="mt-4 text-sm text-muted-foreground">{game.neutral ? "vs" : "at"}</span>
+          <Side team={game.home} row={row.get(game.home.id) ?? null} lead={lead} alignEnd />
+          <Score value={final ? final.away_points : p.proj_away} lead={lead} />
+          <span aria-hidden />
+          <Score value={final ? final.home_points : p.proj_home} lead={lead} alignEnd />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            {final
+              ? `Final. TSI projected ${points(p.proj_away)}–${points(p.proj_home)} with these win chances.`
+              : "TSI's projected score and win chance"}
+          </p>
+          <WinProbBar homeProb={p.home_win_prob} home={game.home} away={game.away} />
+        </div>
+
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:max-w-md">
+          <dt className="text-muted-foreground">TSI line</dt>
+          <dd className="text-right">
+            {favoriteLine(p.spread, game.home, game.away)}, total {p.total.toFixed(1)}
+          </dd>
+          <dt className="text-muted-foreground">Vegas</dt>
+          <dd className="text-right">
+            {m?.spread != null && m.total != null
+              ? `${favoriteLine(m.spread, game.home, game.away)}, total ${totalLine(m.total)}`
+              : "No line yet"}
+          </dd>
+        </dl>
+
+        <p className="max-w-[65ch] text-sm">{whyThisGame(pick, row, type)}</p>
+
+        <Link
+          href={`/games/${game.id}`}
+          className="inline-flex min-h-8 items-center text-sm underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
+        >
+          Game center
+        </Link>
+      </div>
     </section>
   )
 }
