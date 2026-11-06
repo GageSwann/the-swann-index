@@ -3,9 +3,9 @@ import { Suspense } from "react"
 
 import { PageHeading } from "@/components/layout/page-heading"
 import { MatchupView } from "@/components/matchup/matchup-view"
+import { points } from "@/lib/format/numbers"
 import { matchupQuery, pricedMatchup, readPick } from "@/lib/matchup"
 import { pageMeta } from "@/lib/metadata"
-import { points } from "@/lib/format/numbers"
 
 type Props = PageProps<"/matchup">
 

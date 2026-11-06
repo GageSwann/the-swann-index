@@ -7,7 +7,7 @@ import type { Rankings } from "@/lib/api/types"
 export type BoardRank = { rank: number; fcs?: boolean }
 export type BoardRanks = Record<number, BoardRank>
 
-export const TOP = 25
+const TOP = 25
 
 /** Team id -> rank from one division's rankings (`fcs`: mark them as FCS ranks). */
 export function boardRanks(rankings: Rankings | null, fcs = false): BoardRanks {

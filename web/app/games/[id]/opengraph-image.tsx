@@ -1,8 +1,8 @@
 import { getGame } from "@/lib/api/queries"
+import { points } from "@/lib/format/numbers"
 import { formatDay } from "@/lib/format/time"
 import { OG_SIZE, ogImage, ogMessage } from "@/lib/og/frame"
 import { TwoTeamCard } from "@/lib/og/two-team-card"
-import { points } from "@/lib/format/numbers"
 
 export const alt = "TSI's projected score and win probability for this game"
 export const size = OG_SIZE

@@ -43,7 +43,7 @@ export async function RankingsPage({ division }: { division: DivisionView }) {
     )
   }
 
-  // Movement compares with the latest Sunday poll before this run (Phase 12.5, #126).
+  // Movement compares with the latest Sunday poll before this run (Phase 12.5, #134).
   const since = power.previous_as_of ? formatShortDay(power.previous_as_of) : null
 
   return (

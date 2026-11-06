@@ -55,7 +55,9 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
     # Added innermost first: caching sees the uncompressed JSON (ETag), gzip compresses
     # it, and CORS (outermost) answers preflight requests before anything else runs.
     app.add_middleware(CachingMiddleware)
-    app.add_middleware(GZipMiddleware, minimum_size=1000)
+    # Level 1, not Starlette's 9: about a quarter of the CPU (Render has 0.1 CPU) for
+    # responses ~25% larger, e.g. all-division rankings 45 KB instead of 35 KB.
+    app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=1)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,

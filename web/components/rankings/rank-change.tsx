@@ -1,4 +1,4 @@
-/** Movement over the past week (decision #79): ▲ up, ▼ down, – no change, "new" if unranked. */
+/** Movement since the latest Sunday poll (#134): ▲ up, ▼ down, – no change, "new" if unranked. */
 export function RankChange({ rank, previous }: { rank: number; previous: number | null }) {
   if (previous === null) {
     return <span className="text-xs text-muted-foreground">new</span>

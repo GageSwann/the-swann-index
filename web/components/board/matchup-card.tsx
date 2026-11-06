@@ -3,14 +3,14 @@ import Link from "next/link"
 import { AdjustedNote } from "@/components/game/adjusted-note"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameSummary, TeamRef } from "@/lib/api/types"
+import { points } from "@/lib/format/numbers"
 import { american, favoriteLine, totalLine } from "@/lib/format/odds"
 import { formatKickoff } from "@/lib/format/time"
+import { cn } from "@/lib/utils"
 
 import { type BoardRank, type BoardRanks, shownRank } from "./board-ranks"
 import { PickBadge } from "./pick-badge"
 import { WinProbBar } from "./win-prob-bar"
-import { points } from "@/lib/format/numbers"
-import { cn } from "@/lib/utils"
 
 type Props = { game: GameSummary; ranks: BoardRanks }
 

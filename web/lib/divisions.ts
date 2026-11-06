@@ -15,7 +15,7 @@ export function teamDivision(team: Pick<TeamRef, "division">): Division {
 }
 
 /** Today's Résumé benchmark ranks: a typical #12 FBS team, or #24 FCS team (#24, #133). */
-export const BENCHMARK_RANK: Record<Division, number> = { fbs: 12, fcs: 24 }
+const BENCHMARK_RANK: Record<Division, number> = { fbs: 12, fcs: 24 }
 
 /**
  * The Résumé benchmark team, "#12 team" or "#24 FCS team". Pass the API's

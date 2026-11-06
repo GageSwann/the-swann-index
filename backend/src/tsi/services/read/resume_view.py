@@ -84,6 +84,7 @@ def resume_context(session: Session, run: RunInfo) -> ResumeContext:
     benchmark = params.get("resume_benchmark")
     if benchmark is None:
         benchmark = benchmark_rating([r.rating for r in rows])
+    fbs_rank, fcs_rank = benchmark_ranks(params)
     return ResumeContext(
         run_at=run.run_at,
         benchmark=float(benchmark),
@@ -93,8 +94,8 @@ def resume_context(session: Session, run: RunInfo) -> ResumeContext:
         season=season,
         pooled=params.get("pooled_season_ratings"),  # saved from 2026-10-28 (#89)
         fcs_benchmark=params.get("fcs_resume_benchmark"),  # saved from 2026-11-04 (#111)
-        benchmark_rank=benchmark_ranks(params)[0],
-        fcs_benchmark_rank=benchmark_ranks(params)[1],
+        benchmark_rank=fbs_rank,
+        fcs_benchmark_rank=fcs_rank,
     )
 
 
@@ -110,13 +111,11 @@ def benchmark_ranks(params: dict[str, Any]) -> tuple[int, int]:
 def game_difficulty(
     ctx: ResumeContext, g: GameRow, team_id: int, opponent: TeamRef
 ) -> GameDifficulty:
-    home = g.home_id == team_id
-    site = 0 if g.neutral else (1 if home else -1)
     rating, rank = _opponent_rating(ctx, opponent)
     prob = (
         None
         if rating is None or ctx.hfa is None
-        else win_prob(ctx.benchmark - rating + site * ctx.hfa, ctx.sigma)
+        else win_prob(ctx.benchmark - rating + _site(g, team_id) * ctx.hfa, ctx.sigma)
     )
     decided = (
         g.completed
@@ -156,18 +155,21 @@ def recomputed_sor(
     counted game's difficulty is unknown."""
     counted: list[ScheduleGame] = []
     for g in games:
-        home = g.home_id == team_id
         d = game_difficulty(ctx, g, team_id, _opponent(g, team_id, refs))
         if not d.in_resume:
             continue
         if d.opponent_rating is None or ctx.hfa is None:
             return None
-        won = (g.home_points > g.away_points) == home  # type: ignore[operator]
-        site = 0 if g.neutral else (1 if home else -1)
-        counted.append(ScheduleGame(d.opponent_rating, site, won))
+        won = (g.home_points > g.away_points) == (g.home_id == team_id)  # type: ignore[operator]
+        counted.append(ScheduleGame(d.opponent_rating, _site(g, team_id), won))
     if ctx.hfa is None:
         return None
     return strength_of_record(counted, ctx.benchmark, ctx.hfa, ctx.sigma).sor
+
+
+def _site(g: GameRow, team_id: int) -> int:
+    """+1 at home, -1 away, 0 neutral, from the team's side."""
+    return 0 if g.neutral else (1 if g.home_id == team_id else -1)
 
 
 def _opponent(g: GameRow, team_id: int, refs: dict[int, TeamRef]) -> TeamRef:

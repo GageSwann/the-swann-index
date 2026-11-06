@@ -1,8 +1,8 @@
 import type { GameSummary, TeamProfile } from "@/lib/api/types"
+import { points } from "@/lib/format/numbers"
 import { formatDay, formatKickoff } from "@/lib/format/time"
 
 import { ScoreBoard } from "./score-board"
-import { points } from "@/lib/format/numbers"
 
 type Props = { game: GameSummary; home: TeamProfile | null; away: TeamProfile | null }
 
