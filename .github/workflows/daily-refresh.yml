@@ -99,7 +99,7 @@ jobs:
           # ~1 s while it builds. Visit the main pages and both Top 25s' team pages now, one at
           # a time (Render's free tier refuses bursts), so readers get them ready-made.
           WEEK=$(curl -fsS --max-time 60 "$API_URL/meta/current" | jq -r '"\(.season)/\([.week, 1] | max)"')
-          PAGES="/ /week /book /model /playoff /playoff/fcs /rankings/fcs /rankings/all /week/$WEEK/fcs /week/$WEEK/all"
+          PAGES="/ /rankings /week /playoff /playoff/fcs /rankings/fcs /rankings/all /week/$WEEK/fcs /week/$WEEK/all"
           for division in fbs fcs; do
             TEAMS=$(curl -fsS --max-time 60 "$API_URL/rankings?type=power&division=$division" | jq -r '.teams[:25][].team.slug')
             for slug in $TEAMS; do PAGES="$PAGES /teams/$slug"; done
