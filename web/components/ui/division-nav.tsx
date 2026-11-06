@@ -28,7 +28,7 @@ export function DivisionNav<V extends DivisionView>({
           className={cn(
             "rounded-sm px-3 py-1 text-sm font-medium",
             d === current
-              ? "bg-primary text-primary-foreground"
+              ? "tsi-lit bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >

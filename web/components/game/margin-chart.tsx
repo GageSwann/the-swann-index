@@ -91,6 +91,7 @@ export function MarginChart({ home, away, margin, sigma, marketSpread, ladder }:
                   x={-marketSpread}
                   stroke={theme.text}
                   strokeWidth={1}
+                  strokeDasharray="4 3"
                   label={{ value: "Vegas", position: "top", fill: theme.text, fontSize: 12 }}
                 />
               )}

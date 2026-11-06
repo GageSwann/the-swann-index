@@ -6,8 +6,9 @@ import { MainNav } from "./main-nav"
 import { ThemeToggle } from "./theme-toggle"
 
 /**
- * The "score bug": an amber TSI block, the season/week in play, the nav, and a thin
- * amber rule underneath. This strip is the site's one bold element; pages stay quiet.
+ * The "score bug": the TSI block, the season/week in play, the nav, and a 2 px rule
+ * underneath (white or black; a team page's color on team pages, `.tsi-header`). This
+ * strip is the site's one bold element; pages stay quiet.
  */
 export async function SiteHeader() {
   const meta = await getMeta().catch(() => null)
@@ -21,10 +22,10 @@ export async function SiteHeader() {
           : `Preseason ${meta.season}`
 
   return (
-    <header className="border-b-2 border-primary bg-card">
+    <header className="tsi-header border-b-2 bg-card">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5" aria-label="The Swann Index, home">
-          <span className="rounded-sm bg-primary px-1.5 py-0.5 text-xl leading-none font-extrabold text-primary-foreground font-stretch-condensed">
+          <span className="rounded-sm bg-primary px-1.5 py-0.5 text-xl leading-none font-bold text-primary-foreground font-stretch-condensed">
             TSI
           </span>
           <span className="text-lg leading-none font-semibold font-stretch-semi-condensed">

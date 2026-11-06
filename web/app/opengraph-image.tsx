@@ -42,12 +42,12 @@ export default async function Image() {
               display: "flex",
               alignItems: "center",
               gap: 22,
-              background: OG.sideline,
+              background: OG.panel,
               borderRadius: 10,
               padding: "10px 22px",
             }}
           >
-            <Display size={40} style={{ width: 44, color: OG.amber }}>
+            <Display size={40} style={{ width: 44, color: OG.white }}>
               {t.rank}
             </Display>
             <OgLogo src={t.team.logo_url} size={52} />

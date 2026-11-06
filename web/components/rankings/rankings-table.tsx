@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 
 import type { RankedTeam } from "@/lib/api/types"
+import { teamColorVars } from "@/lib/format/color"
 import { cn } from "@/lib/utils"
 
 import { columns, features, HEADER_HELP } from "./rankings-columns"
@@ -99,7 +100,9 @@ export function RankingsTable({
                   router.push(`/teams/${row.original.team.slug}`)
                 }
               }}
-              className="group cursor-pointer border-b border-border last:border-0"
+              // Hover lights the row's left edge in the team's color (#137).
+              className="group tsi-team-light tsi-row-light cursor-pointer border-b border-border last:border-0"
+              style={teamColorVars(row.original.team)}
             >
               {row.getAllCells().map((cell) => (
                 <td

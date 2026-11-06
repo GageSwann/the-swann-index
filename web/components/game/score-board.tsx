@@ -3,6 +3,7 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
+import { BorderLightRings, borderLightVars } from "@/components/ui/border-light"
 import type { TeamProfile, TeamRef } from "@/lib/api/types"
 import { points, record } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
@@ -20,11 +21,17 @@ type Props = {
 
 /**
  * The scoreboard panel shared by the game center and the matchup tool: both teams with
- * records and ranks, the score (projected or final), and the win-probability bar.
+ * records and ranks, the score (projected or final), and the win-probability bar. It is
+ * the page's focal point, so it carries the border light in both teams' colors (#137).
  */
 export function ScoreBoard({ away, home, neutral, context, note, homeWinProb }: Props) {
   return (
-    <section aria-label="Matchup" className="space-y-5 rounded-md border border-border bg-card p-5">
+    <section
+      aria-label="Matchup"
+      className="tsi-border-light space-y-5 rounded-md border border-border bg-card p-5"
+      style={borderLightVars(away.team, home.team)}
+    >
+      <BorderLightRings />
       <p className="text-sm text-muted-foreground">{context}</p>
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 sm:gap-6">
         <TeamScore side={away} />

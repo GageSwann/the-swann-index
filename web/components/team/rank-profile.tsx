@@ -35,7 +35,7 @@ export function RankProfile({
             <span aria-hidden className="h-2.5 rounded-full bg-muted">
               {r.rank != null && (
                 <span
-                  className="block h-full rounded-full bg-primary"
+                  className="block h-full rounded-full bg-(--light)"
                   style={{ width: `${(100 * (count - r.rank + 1)) / count}%` }}
                 />
               )}

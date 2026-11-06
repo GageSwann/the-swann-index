@@ -6,18 +6,20 @@ import { useSyncExternalStore } from "react"
 // Concrete chart colors per theme, mirroring the tokens in app/globals.css (SVG strokes
 // need real colors). Keep the two in sync.
 const TOKENS = {
+  // The brand has no hue (#137): TSI's own series are drawn in the text color, solid,
+  // and other series are told apart by dash pattern and tone.
   dark: {
-    accent: "#f2b33d",
-    text: "#e6edf2",
-    muted: "#93a6b5",
-    grid: "#2a3c4b",
-    surface: "#162532",
+    accent: "#f5f5f3",
+    text: "#f5f5f3",
+    muted: "#9a9a9f",
+    grid: "#2b2b2e",
+    surface: "#0e0e0f",
   },
   light: {
-    accent: "#9a6400",
-    text: "#13212c",
-    muted: "#4e6170",
-    grid: "#cfd9e1",
+    accent: "#0a0a0a",
+    text: "#0a0a0a",
+    muted: "#5a5a60",
+    grid: "#d4d4d6",
     surface: "#ffffff",
   },
 }

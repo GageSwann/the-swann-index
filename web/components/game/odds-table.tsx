@@ -16,7 +16,7 @@ type Props = { title: string; rows: MarketRow[]; vegas: boolean; note?: ReactNod
 
 /**
  * Markets side by side: TSI's fair price (no vig), the TSI Book's price (with vig) and,
- * for scheduled games, the market consensus. A TSI play is outlined in amber. A table
+ * for scheduled games, the market consensus. A TSI play is outlined. A table
  * from `sm` up; on phones each market is its own block so nothing scrolls sideways.
  */
 export function OddsTable({ title, rows, vegas, note }: Props) {

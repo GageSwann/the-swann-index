@@ -50,7 +50,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           {stats.map(([label, value]) => (
             <div key={label} style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", fontSize: 26, color: OG.muted }}>{label}</div>
-              <Display size={72} style={{ color: label === "Power" ? OG.amber : OG.chalk }}>
+              <Display size={72} style={{ color: label === "Power" ? OG.white : OG.white }}>
                 {value}
               </Display>
             </div>

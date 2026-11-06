@@ -19,7 +19,7 @@ export function TeamLink({ team }: { team: TeamRef }) {
         className="h-5 w-0.75 shrink-0 rounded-full bg-[var(--team-light)] dark:bg-[var(--team-dark)]"
         style={teamColorVars(team)}
       />
-      {/* Logos sit on a light chip so dark marks (navy, black, purple) stay visible at night. */}
+      {/* Logos sit on a light chip so dark marks (navy, black, purple) stay visible on black. */}
       <span className="flex size-6.5 shrink-0 items-center justify-center rounded-sm bg-white">
         {team.logo_url && (
           <Image

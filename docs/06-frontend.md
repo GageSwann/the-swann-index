@@ -9,11 +9,38 @@
 - Every number links to where it came from (e.g. a rating links to the team page, a line to the game center).
 - Footer on every page: "Model updated {time} · TSI {version}".
 
-### Design system (decision #69)
-- **Palette, a stadium at night** (`web/app/globals.css`): Night `#0E1923` background, Sideline `#162532` panels, Hashmark `#2A3C4B` lines, Chalk `#E6EDF2` text, **Scoreboard amber `#F2B33D`** as the single brand accent (header rule, active nav, key numbers). Up `#3CC2A9` / Down `#F07A6A` for movement and edges. Light "press box" theme: `#F2F5F7` / ink `#13212C`, amber deepened to `#9A6400` for contrast. Team colors are the other source of color.
-- **Type:** one family, Archivo (variable, width axis): condensed widths (`font-stretch-condensed`) for page titles, team names and big numerals; normal width for reading; tabular figures everywhere. No monospace data labels, no all-caps eyebrows.
-- **Layout:** the "score bug" header (amber TSI block, wordmark, week context, nav, theme toggle, 2 px amber rule) is the one bold element; content left-aligned, max ~1150 px; flat panels with 1 px rules and a 4 px radius, no shadows or gradient washes. On phones the nav becomes its own scrollable row (no hamburger).
+### Design system (decision #69; palette, type and lighting replaced by #137)
+- **Palette, the black swan and the white swan** (`web/app/globals.css`, #137): the brand has no hue. Dark ("black swan", default): `#000000` background, `#0E0E0F` panels, `#2B2B2E` lines, `#F5F5F3` text, `#9A9A9F` muted text. Light ("white swan"): `#F4F4F4` background, `#FFFFFF` panels, `#D4D4D6` lines, `#0A0A0A` text, `#5A5A60` muted text. `--primary` (TSI block, header rule, selected tab, focus ring) is the text color: white on black, black on white. Up `#3CC2A9` / Down `#F07A6A` (light `#11806B` / `#C2412F`) for movement and edges. **Team colors are the only color.** Text links are underlined (they can't rely on an accent color).
+- **Type:** one family, **Instrument Sans** (#137, replaces Archivo; variable, width axis 75–100, weights 400–700): condensed widths (`font-stretch-condensed`) for page titles, team names and big numerals; normal width for reading; tabular figures everywhere (plain zeros: Mona Sans was tried and rejected for its slashed tabular zero). No monospace data labels, no all-caps eyebrows. Link-preview images use static instances in `web/assets/fonts` (Medium, Condensed Bold; SIL OFL).
+- **Layout:** the "score bug" header (TSI block, wordmark, week context, nav, theme toggle, 2 px rule) is the one bold element; content left-aligned, max ~1150 px; flat panels with 1 px rules and a 4 px radius, no gradient washes. Light (below) is the only shadow. On phones the nav becomes its own scrollable row (no hamburger).
 - **Shell:** `components/layout/` (`SiteHeader`, `MainNav`, `ThemeToggle`, `ThemeProvider`, `PageHeading`, `UpdatedFooter`); times in US Eastern, formatted on the server (`lib/format/time.ts`); skip link, visible focus rings, reduced motion respected. Header/footer degrade to a plain message if the API is down.
+
+### Lighting (Phase 13.1, built 2026-11-06, #137)
+The owner's brief: how light behaves, not a retro neon theme. Glows and a light that runs around a border, used only on interactive states and focal points, CSS only, off under reduced motion, designed in **both** themes (#127). Specimen used for the review: https://claude.ai/artifact/RMpPsdcoSHJwNfkUXcB4LU (round 2; hover sweeps from round 1 were dropped by the owner).
+
+**Light comes from the teams.** `--light` is the glow's color: plain white light at night and ink by day, and a team's contrast-checked color wherever a team is in view (`.tsi-team-light` on an element carrying `teamColorVars`; a team page sets `--page-team-dark` / `--page-team-light` on `:root` through `components/team/page-team-light.tsx`). Glows fall slightly downward, as if lit from above, everywhere.
+
+| Effect | Dark | Light (designed separately) |
+|---|---|---|
+| **Glow** (`.tsi-lit`, `.tsi-lit-hover`, `.tsi-glow-below`) | Bloom: 1 px rim ~70%, 6 px glow ~40%, 22 px glow ~18%, offset 2–4 px down | A 1 px rim in the full color plus light cast below (0 6 px 16 px, −6 px spread, ~60%): bloom can't show on white |
+| **Border light** (`.tsi-border-light` + `components/ui/border-light.tsx`) | Two arcs, one per team color, run around the border in 7 s, with a blurred copy behind as bloom | Thicker arcs (2.5 px), no bloom |
+
+| Where | Light | Color |
+|---|---|---|
+| Header rule (`.tsi-header`) | Bloom under the rule at night | White/black; the team's color on team pages (both themes) |
+| Selected main-nav item (`.tsi-nav-active`) | Underline glows | Page light |
+| Selected toggles (`Segmented`, `DivisionNav`) | Still glow; the pill stays black/white so text never sits on a team color | Page light |
+| Keyboard focus | Outline unchanged, glow behind it | Page light |
+| Rankings rows (`.tsi-row-light`) | Left edge lights **on hover only**, #1 included (owner: no permanent effect on #1) | That team's color |
+| Matchup cards (This week) | Border + glow on hover | The team TSI favors; neutral without a prediction |
+| Win-probability bars | Each side glows, still | Its team's color |
+| Team page | Header rule, header band glow, profile and win-total bars, focus and toggles | The team's color |
+| Rating trend chart | The latest point glows | The series' team color |
+| **Border light** | The scoreboard of the game center and the matchup tool (shared `ScoreBoard`); planned: games of the week (13.4), projected champion (13.6, with its path lit) | The two teams' colors |
+
+**Rules:** no glowing text (`text-shadow`); no new hues (black, white, neutrals, team colors mixed with transparency); contrast checked with the light on; glows are static (a 160 ms fade on hover), and the border light is the only animation, on a page's focal point only. Under `prefers-reduced-motion` the border light's animation is removed (not shortened by the global 0.01 ms rule, which would flicker) and it becomes a still two-color border. The rings sit outside Tailwind's layers for one rule (`margin: 0`), so a panel's `space-y-*` can't shorten them. Performance: the arc rotates a conic gradient through the registered `@property --tsi-angle`; box-shadows never animate.
+
+**Checked (2026-11-06, local site on the live API):** rankings, This week, team page, game center and matchup tool in both themes at 1440 and 390 px (screenshots); reduced motion turns the border light still; `npm run check` clean.
 
 ## Routes
 
@@ -82,7 +109,7 @@
 - KPI tiles: record (ATS / O/U / ML), units, ROI, avg CLV.
 - Cumulative units line chart; record by ★ tier.
 - Pick history table with filters (season, market, tier, result).
-- **Built (decision #75):** season record panel (W-L-P, units flat + ¼ Kelly, ROI, CLV with beat-the-close share, one line per market), units-over-time chart (flat solid amber, ¼ Kelly dashed), record by market then ★ tier, pick history (market / tier / result filters; table from `sm`, stacked rows on phones; open → locked → graded status), and a short "how the Book picks" list. Before any pick is graded it shows "No graded picks yet" and the open picks. No season filter yet (2026 is the only live season); the backtest Book record belongs on the Model page.
+- **Built (decision #75):** season record panel (W-L-P, units flat + ¼ Kelly, ROI, CLV with beat-the-close share, one line per market), units-over-time chart (flat solid, ¼ Kelly dashed), record by market then ★ tier, pick history (market / tier / result filters; table from `sm`, stacked rows on phones; open → locked → graded status), and a short "how the Book picks" list. Before any pick is graded it shows "No graded picks yet" and the open picks. No season filter yet (2026 is the only live season); the backtest Book record belongs on the Model page.
 
 ### Model `/model`
 - Plain-English methodology (based on docs 04/05), with formulas.

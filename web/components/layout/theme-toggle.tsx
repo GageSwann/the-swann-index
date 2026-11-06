@@ -3,7 +3,7 @@
 import { MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-/** Switches between the night (dark) and press-box (light) themes. */
+/** Switches between the black swan (dark) and white swan (light) themes. */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   const next = resolvedTheme === "light" ? "dark" : "light"

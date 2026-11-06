@@ -13,7 +13,7 @@ const SERIES: LineSeries[] = [
 ]
 
 /**
- * Running profit after each game day: flat stakes (solid amber) and ¼ Kelly (dashed).
+ * Running profit after each game day: flat stakes (solid) and ¼ Kelly (dashed).
  * Within one season the axis shows days; across seasons, one tick per year.
  */
 export function UnitsChart({ points }: { points: UnitsPoint[] }) {

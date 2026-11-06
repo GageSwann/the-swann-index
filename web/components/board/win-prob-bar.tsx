@@ -1,7 +1,8 @@
 import type { TeamRef } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 
-const SEGMENT = "h-full bg-[var(--team-light)] dark:bg-[var(--team-dark)]"
+// Each side is its team's color and casts light in it (#137); not clipped, so the glow shows.
+const SEGMENT = "tsi-team-light tsi-glow-below h-full rounded-full bg-(--light)"
 
 /**
  * Away share on the left, home on the right, in each team's color (contrast-checked per
@@ -21,7 +22,7 @@ export function WinProbBar({
   return (
     <div className="space-y-1">
       <div
-        className="flex h-2 gap-0.5 overflow-hidden rounded-full"
+        className="flex h-2 gap-0.5"
         role="img"
         aria-label={`Win probability: ${away.school} ${awayPct}%, ${home.school} ${homePct}%`}
       >

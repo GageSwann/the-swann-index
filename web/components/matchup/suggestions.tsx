@@ -19,7 +19,7 @@ export function Suggestions({ top }: { top: RankedTeam[] }) {
           <li key={`${a.team.slug}-${b.team.slug}`}>
             <Link
               href={`/matchup?${matchupQuery({ away: b.team.slug, home: a.team.slug, neutral: true })}`}
-              className="inline-flex min-h-8 items-center text-primary underline-offset-4 hover:underline"
+              className="inline-flex min-h-8 items-center underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
             >
               #{b.rank} {b.team.school} vs #{a.rank} {a.team.school}, neutral site
             </Link>

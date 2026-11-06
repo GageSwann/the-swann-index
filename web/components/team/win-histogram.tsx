@@ -32,7 +32,7 @@ export function WinHistogram({ dist, school }: { dist: number[]; school: string 
               <span className="text-xs text-muted-foreground tabular-nums">{chance(p)}</span>
             )}
             <div
-              className="w-full max-w-12 rounded-t-sm bg-primary"
+              className="w-full max-w-12 rounded-t-sm bg-(--light)"
               style={{ height: `${(p / top) * 80}%` }}
             />
           </div>

@@ -6,8 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-archivo);
-  --font-heading: var(--font-archivo);
+  --font-sans: var(--font-instrument);
+  --font-heading: var(--font-instrument);
   --color-up: var(--up);
   --color-down: var(--down);
   --color-ring: var(--ring);
@@ -25,42 +25,49 @@
 }
 
 /*
- * Palette: a stadium at night. Night sky background, sideline panels, hashmark
- * lines, chalk text, and one brand accent, scoreboard amber, used sparingly.
- * Team colors are the other source of color. Up/down mark movement and edges.
+ * Palette: the black swan and the white swan (decision #137, replaces #69's amber).
+ * The brand has no hue: black, white and neutrals. Team colors are the only color,
+ * and up/down mark movement and edges.
+ *
+ * Light (doc 06, "Palette and lighting"): `--light` is the color of the glow. It is
+ * plain white light at night and ink by day, and takes a team's color wherever a team
+ * is in view (`.tsi-team-light` on an element with `teamColorVars`, or a team page
+ * setting `--page-team-*` on :root through `<PageTeamLight>`).
  */
 
-/* Light ("press box") */
+/* Light ("white swan") */
 :root {
   --radius: 0.25rem;
-  --background: #f2f5f7;
-  --foreground: #13212c;
+  --background: #f4f4f4;
+  --foreground: #0a0a0a;
   --card: #ffffff;
   --popover: #ffffff;
-  --primary: #9a6400;
+  --primary: #0a0a0a;
   --primary-foreground: #ffffff;
-  --muted: #e3e9ee;
-  --muted-foreground: #4e6170;
-  --border: #cfd9e1;
-  --ring: #9a6400;
+  --muted: #eaeaea;
+  --muted-foreground: #5a5a60;
+  --border: #d4d4d6;
+  --ring: #0a0a0a;
   --up: #11806b;
   --down: #c2412f;
+  --light: var(--page-team-light, #0a0a0a);
 }
 
-/* Dark ("night game", default) */
+/* Dark ("black swan", default) */
 .dark {
-  --background: #0e1923;
-  --foreground: #e6edf2;
-  --card: #162532;
-  --popover: #162532;
-  --primary: #f2b33d;
-  --primary-foreground: #0e1923;
-  --muted: #1d2f3d;
-  --muted-foreground: #93a6b5;
-  --border: #2a3c4b;
-  --ring: #f2b33d;
+  --background: #000000;
+  --foreground: #f5f5f3;
+  --card: #0e0e0f;
+  --popover: #0e0e0f;
+  --primary: #f5f5f3;
+  --primary-foreground: #000000;
+  --muted: #18181a;
+  --muted-foreground: #9a9a9f;
+  --border: #2b2b2e;
+  --ring: #f5f5f3;
   --up: #3cc2a9;
   --down: #f07a6a;
+  --light: var(--page-team-dark, #ffffff);
 }
 
 @layer base {
@@ -77,8 +84,165 @@
   body {
     @apply bg-background text-foreground tabular-nums;
   }
+  /* The outline never changes (contrast-checked); light is added behind it. */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
+    box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--light) 70%, transparent);
+  }
+  .dark :focus-visible {
+    box-shadow: 0 2px 16px color-mix(in oklab, var(--light) 45%, transparent);
+  }
+}
+
+/*
+ * Lighting kit (Phase 13.1, decision #137). Glows fall slightly downward, as if lit
+ * from above, and never animate. Dark spreads light outward (bloom); light mode can't
+ * bloom on white, so it uses a rim plus light cast below. Text never glows.
+ */
+@layer components {
+  /* A team's color becomes the light (with `teamColorVars` on the same element). */
+  .tsi-team-light {
+    --light: var(--team-light);
+  }
+  .dark .tsi-team-light {
+    --light: var(--team-dark);
+  }
+
+  /* Glow: always on (a selected tab or toggle). */
+  .tsi-lit,
+  .tsi-lit-hover:hover {
+    box-shadow:
+      0 0 0 1px var(--light),
+      0 6px 16px -6px color-mix(in oklab, var(--light) 60%, transparent);
+  }
+  .dark .tsi-lit,
+  .dark .tsi-lit-hover:hover {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--light) 70%, transparent),
+      0 2px 6px color-mix(in oklab, var(--light) 40%, transparent),
+      0 4px 22px color-mix(in oklab, var(--light) 18%, transparent);
+  }
+  /* Glow on hover only (cards that open a page). */
+  .tsi-lit-hover {
+    transition:
+      box-shadow 160ms,
+      border-color 160ms;
+  }
+  .tsi-lit-hover:hover {
+    border-color: var(--light);
+  }
+
+  /* The selected main-nav item: its underline glows like an LED strip. */
+  .tsi-nav-active {
+    box-shadow:
+      inset 0 -2px 0 var(--primary),
+      0 8px 8px -8px color-mix(in oklab, var(--light) 70%, transparent);
+  }
+  .dark .tsi-nav-active {
+    box-shadow:
+      inset 0 -2px 0 var(--primary),
+      0 9px 10px -9px color-mix(in oklab, var(--light) 90%, transparent);
+  }
+
+  /* The header rule: white or black, the team's color on a team page; blooms at night. */
+  .tsi-header {
+    border-bottom-color: var(--page-team-light, var(--primary));
+    box-shadow: 0 6px 12px -8px
+      color-mix(in oklab, var(--page-team-light, transparent) 70%, transparent);
+  }
+  .dark .tsi-header {
+    border-bottom-color: var(--page-team-dark, var(--primary));
+    box-shadow: 0 3px 16px -4px color-mix(in oklab, var(--light) 45%, transparent);
+  }
+
+  /* A table row whose left edge lights up on hover (in the row's team color). */
+  .tsi-row-light > td:first-child {
+    transition: box-shadow 160ms;
+  }
+  .tsi-row-light:hover > td:first-child {
+    box-shadow:
+      inset 3px 0 0 var(--light),
+      inset 16px 0 14px -12px color-mix(in oklab, var(--light) 55%, transparent);
+  }
+
+  /* A solid bar of the light's color that casts its light (team band, win bars). */
+  .tsi-glow-below {
+    box-shadow: 0 4px 9px -3px color-mix(in oklab, var(--light) 65%, transparent);
+  }
+  .dark .tsi-glow-below {
+    box-shadow: 0 2px 10px color-mix(in oklab, var(--light) 60%, transparent);
+  }
+
+  /*
+   * Border light: two arcs, one per team color, run around the border. Only on a page's
+   * focal point (components/ui/border-light.tsx renders the rings). Dark adds a blurred
+   * copy as bloom; light mode uses thicker arcs instead.
+   */
+  .tsi-border-light {
+    position: relative;
+    isolation: isolate;
+    --bl-1: var(--bl-1-light);
+    --bl-2: var(--bl-2-light);
+  }
+  .dark .tsi-border-light {
+    --bl-1: var(--bl-1-dark);
+    --bl-2: var(--bl-2-dark);
+  }
+  .tsi-ring {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    --ring-w: 2.5px;
+  }
+  .dark .tsi-ring {
+    --ring-w: 1.5px;
+  }
+  .tsi-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: var(--ring-w);
+    background: conic-gradient(
+      from var(--tsi-angle),
+      transparent 0 46%,
+      var(--bl-1) 56% 62%,
+      transparent 72% 80%,
+      var(--bl-2) 88% 94%,
+      transparent 100%
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    animation: tsi-spin 7s linear infinite;
+  }
+  .tsi-ring-bloom {
+    display: none;
+  }
+  .dark .tsi-ring-bloom {
+    display: block;
+    filter: blur(7px);
+    opacity: 0.9;
+    --ring-w: 3px;
+  }
+}
+
+/* Outside the layers on purpose: a panel's `space-y-*` would otherwise put a margin on the
+   absolutely placed rings and cut the border light short. */
+.tsi-ring {
+  margin: 0;
+}
+
+@property --tsi-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes tsi-spin {
+  to {
+    --tsi-angle: 360deg;
   }
 }
 
@@ -88,5 +252,11 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+  /* Removed, not shortened: an infinite 0.01 ms animation would flicker. The border
+     light becomes a still two-color border. */
+  .tsi-ring::before {
+    animation: none !important;
+    background: linear-gradient(90deg, var(--bl-1), var(--bl-2));
   }
 }

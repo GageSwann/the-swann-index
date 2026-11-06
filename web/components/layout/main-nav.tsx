@@ -32,7 +32,7 @@ export function MainNav() {
             className={cn(
               "shrink-0 rounded-sm px-2.5 py-1.5 text-sm font-medium whitespace-nowrap",
               active
-                ? "text-primary shadow-[inset_0_-2px_0_var(--primary)]"
+                ? "tsi-nav-active font-semibold text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

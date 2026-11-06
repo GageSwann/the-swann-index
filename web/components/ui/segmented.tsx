@@ -29,7 +29,7 @@ export function Segmented<T extends string>({
           className={cn(
             "rounded-sm px-3 py-1 text-sm font-medium",
             value === o.value
-              ? "bg-primary text-primary-foreground"
+              ? "tsi-lit bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground",
           )}
         >

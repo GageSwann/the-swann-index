@@ -10,7 +10,7 @@ import { Stat } from "@/components/ui/stat"
 
 /**
  * Team identity and its headline numbers. A solid band in the team's (contrast-checked)
- * color tops the panel: flat like the rest of the design, no gradients.
+ * color tops the panel and casts light in that color (#137); no gradients.
  */
 export function TeamHeader({ profile }: { profile: TeamProfile }) {
   const { team, ratings: r } = profile
@@ -38,7 +38,7 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
       className="overflow-hidden rounded-md border border-border bg-card"
       style={teamColorVars(team)}
     >
-      <div aria-hidden className="h-2 bg-[var(--team-light)] dark:bg-[var(--team-dark)]" />
+      <div aria-hidden className="tsi-team-light tsi-glow-below h-2 bg-(--light)" />
       <div className="space-y-5 p-5">
         <div className="flex items-center gap-4">
           <span className="flex size-16 shrink-0 items-center justify-center rounded-md bg-white sm:size-20">

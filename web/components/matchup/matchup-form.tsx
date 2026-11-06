@@ -52,7 +52,10 @@ export function MatchupForm({ teams, pick }: Props) {
           Predict
         </button>
         {swap && (
-          <Link href={swap} className="text-sm text-primary underline-offset-4 hover:underline">
+          <Link
+            href={swap}
+            className="text-sm underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
+          >
             Swap home and away
           </Link>
         )}

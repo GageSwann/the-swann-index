@@ -8,6 +8,7 @@ import { ProjectionCard } from "@/components/team/projection-card"
 import { RankProfile } from "@/components/team/rank-profile"
 import { ResumeCard } from "@/components/team/resume-card"
 import { ScheduleTable } from "@/components/team/schedule-table"
+import { PageTeamLight } from "@/components/team/page-team-light"
 import { TeamHeader } from "@/components/team/team-header"
 import { getRankings, getTeam } from "@/lib/api/queries"
 import { publishedScheduleOdds, scheduleOdds } from "@/lib/api/schedule-odds"
@@ -61,6 +62,7 @@ async function TeamView({ params }: Props) {
 
   return (
     <div className="space-y-10">
+      <PageTeamLight team={profile.team} />
       <TeamHeader profile={profile} />
       {row && <RankProfile row={row} count={ranked.length} division={division} />}
       <ProjectionCard profile={profile} />

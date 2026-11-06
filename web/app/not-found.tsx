@@ -6,7 +6,10 @@ export default function NotFound() {
   return (
     <PageHeading title="Page not found">
       There&apos;s no page at this address. Check the link, or go to the{" "}
-      <Link href="/" className="text-primary underline underline-offset-4">
+      <Link
+        href="/"
+        className="underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
+      >
         power rankings
       </Link>
       .

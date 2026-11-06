@@ -3,6 +3,7 @@ import Link from "next/link"
 import { AdjustedNote } from "@/components/game/adjusted-note"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameSummary, TeamRef } from "@/lib/api/types"
+import { teamColorVars } from "@/lib/format/color"
 import { points } from "@/lib/format/numbers"
 import { american, favoriteLine, totalLine } from "@/lib/format/odds"
 import { formatKickoff } from "@/lib/format/time"
@@ -23,9 +24,18 @@ export function MatchupCard({ game, ranks }: Props) {
   const awayRank = shownRank(ranks[game.away.id])
   const homeRank = shownRank(ranks[game.home.id])
   const wide = !!(awayRank?.fcs || homeRank?.fcs) // both rows make room, names stay aligned
+  // Hover lights the card in the color of the team TSI favors (#137); neutral light
+  // when there's no prediction.
+  const favorite = p ? (p.home_win_prob >= 0.5 ? game.home : game.away) : null
 
   return (
-    <article className="flex flex-col gap-3 rounded-md border border-border bg-card p-4">
+    <article
+      className={cn(
+        "tsi-lit-hover flex flex-col gap-3 rounded-md border border-border bg-card p-4",
+        favorite && "tsi-team-light",
+      )}
+      style={favorite ? teamColorVars(favorite) : undefined}
+    >
       <header className="flex items-baseline justify-between gap-2 text-sm text-muted-foreground">
         <span>
           {formatKickoff(game.kickoff, game.kickoff_tbd)}
@@ -110,7 +120,7 @@ export function MatchupCard({ game, ranks }: Props) {
 
       <Link
         href={`/games/${game.id}`}
-        className="mt-auto inline-flex min-h-8 items-center self-start text-sm text-primary underline-offset-4 hover:underline"
+        className="mt-auto inline-flex min-h-8 items-center self-start text-sm underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
       >
         Game center
       </Link>

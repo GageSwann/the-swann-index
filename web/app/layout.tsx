@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Archivo } from "next/font/google"
+import { Instrument_Sans } from "next/font/google"
 
 import { SiteHeader } from "@/components/layout/site-header"
 import { ThemeProvider } from "@/components/layout/theme-provider"
@@ -8,10 +8,11 @@ import { ALLOW_INDEXING, SITE_NAME, SITE_URL } from "@/lib/site"
 
 import "./globals.css"
 
-// One family, two voices: condensed widths for broadcast-style names and numerals,
-// normal width for reading. Variable font with the width axis.
-const archivo = Archivo({
-  variable: "--font-archivo",
+// One family, two voices (decision #137): condensed widths for broadcast-style names
+// and numerals, normal width for reading. Variable font with the width axis (75-100);
+// its tabular figures are plain (no slashed zero), and weights run 400-700.
+const instrument = Instrument_Sans({
+  variable: "--font-instrument",
   subsets: ["latin"],
   axes: ["wdth"],
 })
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${archivo.variable} dark h-full`} suppressHydrationWarning>
+    <html lang="en" className={`${instrument.variable} dark h-full`} suppressHydrationWarning>
       <body className="flex min-h-full flex-col antialiased">
         <ThemeProvider>
           <a

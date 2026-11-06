@@ -214,7 +214,7 @@ Found by the owner on the live site. Ordered by impact: the first two cause most
 Starts after Phase 12. A full redesign of the public site; the Book becomes the owner's private tool. Design work uses the `frontend-design` skill (plan → review against the brief → build → screenshot critique), charts the `dataviz` skill, checks the `webapp-testing` skill at desktop and 360/390 px, and keeps Lighthouse ≥ 90 (#87).
 
 **Look and feel**
-- [ ] **13.1 Neon-inspired lighting, used sparingly.**
+- [x] **13.1 Neon-inspired lighting, used sparingly.** (#137, built 2026-11-06 after two specimen rounds: black-and-white palette ("black swan" / "white swan"), Instrument Sans, team-colored glows and a border light on the scoreboard; sweeps dropped, #1 lit on hover only; games of the week and the champion path get their light in 13.4 / 13.6)
   - *Brief:* the behavior of light, not a retro neon theme:
     - soft layered glows and bloom around key elements;
     - light sweeps across buttons and cards on hover;
