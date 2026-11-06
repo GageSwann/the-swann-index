@@ -106,7 +106,7 @@ Using the same game distributions plus **rating uncertainty**:
 - Futures-style fair odds (e.g. "TSI fair odds to win the national title: +450")
 
 ### 7.0 Stakes of single games (#141)
-For each game in the next 8 days between two rated teams, the sim also reports what a win is worth (`sim/stakes.py`): across the simulated seasons, P(in the playoff field | win) − P(… | loss), and the same for the conference title, per team. No extra simulations: the field per simulated season comes out of the playoff projection (`PlayoffProjection.field`). Used only for the games of the week; a failure there is logged and the sim is still saved.
+For each game in the next 8 days between two rated teams, the sim also reports what a win is worth (`sim/stakes.py`): across the simulated seasons, P(in the playoff field | win) − P(… | loss), and the same for the conference title, per team. No extra simulations: the field per simulated season comes out of the playoff projection (`PlayoffProjection.field`). Used only to explain the games of the week on the site (they are picked by ranks, #142); a failure there is logged and the sim is still saved.
 
 ### 7.1 Rating uncertainty (#94)
 Every remaining regular-season game gets the published forecast (`services/predict.py`: same model, same mean margin, σ_margin 15.4). A simulated season (`sim/season.py`, 10,000 by default, fixed seed) draws one shift per team, d ~ N(0, τ), kept for all of its remaining games:

@@ -2,15 +2,13 @@
 
 Picked once per poll week, from the first nightly run on or after Sunday (Eastern), and
 held until the next Sunday (#126, #127): the coming games through the next Sunday, between
-two teams of the division, scored on
+two teams of the division.
 
-- quality: both teams' ranks in the chosen ranking (Power or Résumé), so a weak team
-  pulls the score down;
-- closeness: TSI's win probability near 50%;
-- stakes: how much a win instead of a loss moves both teams' playoff and conference-title
-  odds, read from the season simulation (sim/stakes.py).
-
-The weights are a first guess, not yet tuned on past seasons (roadmap 13.4). Pure: the
+The pick comes from the chosen ranking (Power or Résumé) alone (owner, 2026-11-06): the best
+game is the one whose **lower-ranked team is ranked highest** (#3 vs #6 beats #1 vs #10:
+a weak team pulls a game down), then the better top team, then the closer game by TSI's
+win probability. The season sim's stakes are stored with the pick to explain it on the
+site ("a win would raise X's playoff chances by N points"), but don't decide it. Pure: the
 nightly run supplies the forecasts, rankings and stakes and stores the picks.
 """
 
@@ -25,8 +23,8 @@ from tsi.services.predict import GameForecast
 from tsi.sim.stakes import GameStakes, stakes_value
 
 EASTERN = ZoneInfo("America/New_York")
-WEIGHTS = {"quality": 0.5, "closeness": 0.25, "stakes": 0.25}  # untuned (#141)
 RANKED = 25
+UNRANKED = 10_000  # a team missing from the ranking sorts after every ranked one
 DIVISIONS = (RATED_DIVISION, FCS)
 RANKING_TYPES = ("power", "resume")
 
@@ -36,10 +34,10 @@ class GameOfWeekPick:
     division: str  # fbs / fcs
     ranking_type: str  # power / resume
     game_id: int
-    score: float
-    quality: float  # 0..1
-    closeness: float  # 0..1
-    stakes: float  # 0..1
+    score: float  # the lower-ranked team's rank value (= quality); the pick sorts on ranks
+    quality: float  # 0..1: the lower-ranked team's rank (#1 -> 1, #25 -> 0.04, beyond -> 0)
+    closeness: float  # 0..1: TSI's win probability near 50% (tie-break)
+    stakes: float  # 0..1: playoff and title odds riding on it (shown, not used to pick)
     home_rank: int | None  # in the chosen ranking, within the division
     away_rank: int | None
     home_playoff_swing: float | None  # P(field | win) - P(field | loss)
@@ -82,8 +80,14 @@ def pick_games_of_week(
             ranks = _ranks(rows, kind)
             scored = [_score(f, division, kind, ranks, stakes.get(f.game.id)) for f in candidates]
             if scored:
-                picks.append(max(scored, key=lambda p: (p.score, -p.game_id)))
+                picks.append(min(scored, key=_order))
     return picks
+
+
+def _order(p: GameOfWeekPick) -> tuple[int, int, float, int]:
+    """Best first: the lower-ranked team's rank, the higher-ranked team's, then closeness."""
+    home, away = p.home_rank or UNRANKED, p.away_rank or UNRANKED
+    return (max(home, away), min(home, away), -p.closeness, p.game_id)
 
 
 def _ranks(rows: Sequence[TeamRanking], kind: str) -> dict[int, int]:
@@ -99,13 +103,12 @@ def _score(
 ) -> GameOfWeekPick:
     g = f.game
     home_rank, away_rank = ranks.get(g.home_id), ranks.get(g.away_id)
-    quality = (_rank_value(home_rank) + _rank_value(away_rank)) / 2
+    worse = max(home_rank or UNRANKED, away_rank or UNRANKED)
+    quality = _rank_value(worse)
     p = f.distribution.home_win_prob
     closeness = 1 - abs(2 * p - 1)
     worth = 0.0 if stakes is None else (stakes_value(stakes.home) + stakes_value(stakes.away)) / 2
-    score = (
-        WEIGHTS["quality"] * quality + WEIGHTS["closeness"] * closeness + WEIGHTS["stakes"] * worth
-    )
+    score = quality
     return GameOfWeekPick(
         division=division,
         ranking_type=kind,
@@ -123,6 +126,6 @@ def _score(
     )
 
 
-def _rank_value(rank: int | None) -> float:
+def _rank_value(rank: int) -> float:
     """#1 -> 1, #25 -> 0.04, outside the Top 25 -> 0."""
-    return 0.0 if rank is None else max(0, RANKED + 1 - rank) / RANKED
+    return max(0, RANKED + 1 - rank) / RANKED

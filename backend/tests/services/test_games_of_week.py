@@ -73,13 +73,27 @@ def test_picks_one_game_per_division_and_ranking() -> None:
     }
 
 
-def test_stakes_can_decide_between_similar_games() -> None:
-    games = [forecast(100, 1, 2, 1.0), forecast(101, 2, 1, 1.0)]  # identical but for stakes
-    big = GameStakes(TeamStakes(0.4, 0.3), TeamStakes(0.5, None))
-    (fbs_power, *_) = pick_games_of_week(games, RANKINGS, {101: big}, NOW)
-    assert fbs_power.game_id == 101
-    assert fbs_power.home_playoff_swing == 0.4 and fbs_power.away_title_swing is None
-    assert fbs_power.stakes == pytest.approx((0.55 + 0.5) / 2)
+def test_the_game_with_the_best_lower_ranked_team_wins() -> None:
+    # The owner's example (Résumé): #3 vs #6 beats #1 vs #10; Power: #1 vs #5 beats #9 vs #29.
+    rankings = Rankings(
+        season=2026,
+        as_of=NOW,
+        ratings=None,  # type: ignore[arg-type]
+        benchmark=0.0,
+        teams=[ranked(1, 1, 1), ranked(10, 5, 10), ranked(3, 9, 3), ranked(6, 29, 6)],
+        names={},
+    )
+    games = [forecast(100, 1, 10, 0.0), forecast(101, 3, 6, 9.0)]  # 101 lopsided: ranks decide
+    picks = {p.ranking_type: p.game_id for p in pick_games_of_week(games, rankings, {}, NOW)}
+    assert picks == {"power": 100, "resume": 101}
+
+
+def test_closeness_breaks_a_tie_in_ranks_and_stakes_dont_decide() -> None:
+    games = [forecast(100, 1, 2, 10.0), forecast(101, 2, 1, 1.0)]  # same two teams
+    big = GameStakes(TeamStakes(0.9, 0.9), TeamStakes(0.9, None))
+    (fbs_power, *_) = pick_games_of_week(games, RANKINGS, {100: big}, NOW)
+    assert fbs_power.game_id == 101  # closer game, despite 100's stakes
+    assert fbs_power.home_playoff_swing is None  # stakes are stored for the pick only
 
 
 def test_only_games_before_the_end_of_the_next_sunday() -> None:
