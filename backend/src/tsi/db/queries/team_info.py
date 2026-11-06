@@ -5,11 +5,12 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import func, select, union_all
+from sqlalchemy import Row, func, select, union_all
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, Team, TeamRating, TeamSeason
 from tsi.db.queries.filters import one_of
+from tsi.team_colors import corrected_colors
 
 
 @dataclass(frozen=True)
@@ -71,7 +72,16 @@ def team_refs(
         query = query.where(one_of(Team.id, team_ids))
     if division is not None:
         query = query.where(TeamSeason.division == division)
-    return {row[0]: TeamRef(*row) for row in session.execute(query)}
+    return {row[0]: _team_ref(row) for row in session.execute(query)}
+
+
+def _team_ref(row: Row[tuple]) -> TeamRef:
+    """A TeamRef with CFBD's colors corrected where they are wrong (`tsi.team_colors`)."""
+    team_id, slug, school, abbreviation, mascot, color, alt, logo, conference, division = row
+    color, alt = corrected_colors(team_id, color, alt)
+    return TeamRef(
+        team_id, slug, school, abbreviation, mascot, color, alt, logo, conference, division
+    )
 
 
 def team_id_by_slug(session: Session, slug: str) -> int | None:
