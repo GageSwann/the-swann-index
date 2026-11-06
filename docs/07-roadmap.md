@@ -265,7 +265,7 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
 - [ ] **13.10 "TSI's Pick" on This week.** Next to spread, total and moneyline, a small college-football picket sign with a swan logo on the side of the team TSI expects to win (straight up, with its win chance). This is the model's prediction, not a Book bet, so it fits the Book being private (#127). Needs an original swan mark for the sign (SVG, our own artwork, in brand colors), sized for phones. Prototype a few designs and pick one with the owner.
 
 **Data**
-- [ ] **13.8 Fill in all of 2026 before the nightly job started** (owner, #127).
+- [ ] **13.8 Fill in all of 2026 before the nightly job started** (owner, #127). *Neon transfer (#140): run the replay on a local copy and write only its results to Neon.*
   - *Goal:* every table filled from week 1: TSI's line and win chance for every 2026 game, and every team's daily ratings and ranks, exactly as if the model had been running and adjusting itself from week 1.
   - *Plan:* replay the season day by day (each day's 10:00 UTC cutoff, the same live code path, data before the cutoff only), from the first day of the season to the first nightly run. That means storing:
     - a rating run per day (rankings, rating trend, movement);
@@ -274,6 +274,12 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
   - Use the current artifact (the only model there is). Note in decisions that early-2026 numbers come from a model fit through 2025, the same as live.
   - *Rule #2 / #57 still holds:* rebuilt forecasts are stored apart from published snapshots (their own run kind and table or flag), never back-date `published_at`, and their picks are never made or graded. The site shows them like any other number, with a small "rebuilt" footnote marker.
   - *Done when:* no 2026 team page or week board shows dashes where TSI numbers belong; the replay reproduces the backtest's features for those games (parity check); the published-snapshot tables are untouched.
+
+**Operations (found 2026-11-06, #140): Neon network transfer**
+- [ ] Local Postgres copy of the data on the home PC (restore right after the transfer allowance resets); backtests, experiments and refits run against it.
+- [ ] Transfer meter: log how much the nightly job and the API read per run or request.
+- [ ] "Save backtest to production" without reading the history from production (compute from a copy; upload only the saved run).
+- [ ] Cut reads per site build or nightly run if the meter shows they matter.
 
 **Owner's answers (2026-11-05, #127):**
 1. Book data behind a private owner key (more practical than deleting the routes, since the weekly review reads `/book/ledger`).

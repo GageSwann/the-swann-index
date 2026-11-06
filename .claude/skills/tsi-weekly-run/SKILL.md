@@ -160,6 +160,8 @@ cd backend && uv run python -c "import tsi; from sqlalchemy import text; from ts
 `br-long-dust-…` = `dev` (expected locally); `br-purple-frog-…` = `production` (wrong for
 local work: fix `backend/.env`).
 
+**Transfer limit (#140):** every read from any branch counts toward the project's 5 GB a month. Run backtests and experiments on a local copy, not `dev`.
+
 **Refresh `dev` from production:** Neon console → Branches → `dev` → ⋯ → **Reset from
 parent**. The endpoint and connection string stay the same. Restart a running local API
 afterwards.
@@ -196,7 +198,7 @@ $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create
 | `REVALIDATE_TOKEN` | Vercel env; GitHub secret | new token → Vercel → Settings → Environment Variables → edit → **redeploy** (env changes apply to new deployments only); GitHub secret → update. Until both match, the nightly refresh step fails with 401 |
 | `DATABASE_URL` (production) | Render env; GitHub secret | Neon → Roles → reset `neondb_owner` password (this changes **every** branch's string, `dev` too) → copy new pooled strings → Render (Save, rebuild, and deploy), GitHub secret, and the owner's `backend/.env` for `dev` |
 | `CFBD_API_KEY` | GitHub secret; `backend/.env` | new key at collegefootballdata.com → update both |
-| `OWNER_API_KEY` | Render env; the owner's `backend/.env` | new key (≥ 32 random characters, e.g. the generator above) → Render → Environment → edit → Save, rebuild, and deploy → `backend/.env`. Until both match, `/book/*` and `/model/report` answer 404 and the weekly review skips the Book |
+| `OWNER_API_KEY` | Render env; the owner's `backend/.env` on **each** PC (one key, the same value everywhere) | new key (≥ 32 random characters, e.g. the generator above) → Render → Environment → edit → Save, rebuild, and deploy → `backend/.env`. Until both match, `/book/*` and `/model/report` answer 404 and the weekly review skips the Book |
 
 After any rotation, run the daily check (section 1) after the next nightly run, or re-run
 it with the owner's OK.
@@ -213,6 +215,7 @@ it with the owner's OK.
 | Render build fails immediately ("Exited with status 1") | Dockerfile path or a dependency problem | paths in `render.yaml` are relative to `rootDir` (`backend/`); read the build log's last lines |
 | CI fails on `npm run check` with type errors after an API change | generated types out of date | `uv run tsi openapi`, then `npm run api:types` in `web/`, commit both (CLAUDE.md "API changes") |
 | API 500s under load (`QueuePool limit … reached`) | many cold-cache requests at once | in-process caches must be single-flight (CLAUDE.md "Neon latency"); see `services/read/matchup.py` |
+| Neon email "used N% of its 5 GB monthly public network transfer", or API 500s with "exceeded the data transfer quota" | reads out of Neon (any branch) near or over the free allowance (#140) | stop all heavy reads (backtests, experiments, backtest/migrate workflows, backfills); keep the nightly job; check the billing period and daily growth in the Neon console (Billing). Over the limit, the compute stays suspended until the next period or an upgrade |
 | Rankings arrows missing | no rating run ≥ 6 days older (start of a season) | expected; the Δ column hides itself until a week of runs exists |
 
 **CFBD call budget:** the free tier is ~1,000 calls a month; the client refuses past 980

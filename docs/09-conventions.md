@@ -82,6 +82,9 @@ Install command (for the [skills CLI](https://github.com/vercel-labs/skills)), r
 npx skills add anthropics/skills --skill frontend-design --agent claude-code
 ```
 
+## 5b. Database reads cost transfer (#140)
+Neon's free plan allows **5 GB of public network transfer a month for the whole project**, every branch counted; going over suspends the database (and the live API) until the next billing period. Anything that reads the full history (backtests, experiment scripts, refits, replays, backfills, dumps) runs against a **local Postgres copy**, never Neon, and writes only its results back. Check the Neon console's usage before heavy work and ask the owner. Batch pushes: every push rebuilds ~100 site pages from the live API.
+
 ## 6. Model experiments: the playbook (lessons from Phase 11, #118–#125)
 How a model idea gets tested, distilled from what worked and what misled us.
 
