@@ -11,7 +11,9 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(next)}
-      aria-label={`Switch to ${next} theme`}
+      // A fixed label: the server can't know the saved theme, so a "Switch to …" label
+      // didn't match after hydration for anyone on the light theme.
+      aria-label="Switch between dark and light theme"
       className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
     >
       {/* Both icons render; CSS shows the right one, so nothing flips after hydration. */}

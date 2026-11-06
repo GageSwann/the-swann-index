@@ -227,7 +227,7 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
     - focus rings stay visible and contrast-checked;
     - full support in both light and dark mode: every effect designed and checked in each theme (#127).
   - Write the design plan into doc 06 first and review it with the owner before building.
-- [ ] **13.2 Team colors: correct for 2026, and never white (or invisible).**
+- [x] **13.2 Team colors: correct for 2026, and never white (or invisible).** (#138, built 2026-11-06: CFBD 2026 matched production; 26 sourced corrections in `tsi/team_colors.py` (18 brand guides, 8 references); display rule skips white/black/gray and lifts a too-dark or too-light team color to 2.5:1 in its own hue; all 266 FBS + FCS teams checked in both themes on the contact sheet, 0 left gray)
   - *Current:* every team's colors must be its **current (2026) official colors**. Steps:
     - refresh colors and logos from CFBD's 2026 `/teams` (cached; 1–2 calls) and list what changed;
     - spot-check against each school's athletics brand guide wherever CFBD looks stale: recent rebrands, teams that moved up to FBS or FCS, new programs;
