@@ -1,7 +1,7 @@
-import Image from "next/image"
 import Link from "next/link"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
+import { TeamLogo } from "@/components/team/team-logo"
 import type { GameOfWeekView, RankedTeam, RankingType, TeamRef } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { chance, points, record } from "@/lib/format/numbers"
@@ -9,12 +9,12 @@ import { favoriteLine, totalLine } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 
 type Props = {
-  pick: GameOfWeekView | null // this poll week's pick (#141)
+  pick: GameOfWeekView | null // this poll week's pick (#141, #142)
   teams: RankedTeam[] // the chosen ranking now: ranks and records shown
   division: Division
   type: RankingType
-  when: string | null // kickoff, formatted on the server ("Saturday, Nov 7, 3:30 PM ET")
-  size: "lead" | "second"
+  when: string | null // kickoff, formatted on the server ("Saturday, Nov 7, 7:30 PM ET")
+  className?: string
 }
 
 const TITLE: Record<Division, string> = {
@@ -23,82 +23,87 @@ const TITLE: Record<Division, string> = {
 }
 
 /**
- * One game of the week. Ranks shown are the chosen ranking's (Power or Résumé), as of now.
- * Once the game is played it shows the final score next to TSI's projection.
+ * One game of the week. Its title sits above the card, like the Top 25 lists' titles, so
+ * the card lines up with them; the card stretches to fill its column (the home page lines
+ * up the bottoms). The whole card opens the game center, except the team names and logos,
+ * which open the team pages; it lights on hover in the page's plain light (owner).
  */
-export function GameOfWeekCard({ pick, teams, division, type, when, size }: Props) {
+export function GameOfWeekCard({ pick, teams, division, type, when, className }: Props) {
   const headingId = `gotw-${division}`
-  const p = pick?.game.prediction
-  // The title sits above the card, like the Top 25 lists' titles, so the card's top edge
-  // lines up with theirs.
   const heading = (
     <h2 id={headingId} className="text-lg font-semibold font-stretch-condensed">
       {TITLE[division]}
     </h2>
   )
+  const p = pick?.game.prediction
   if (!pick || !p) {
     return (
-      <section aria-labelledby={headingId} className="min-w-0 space-y-2">
+      <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col gap-2", className)}>
         {heading}
-        <p className="rounded-md border border-border bg-card p-5 text-sm text-muted-foreground">
-          Picked each Sunday with the new rankings, from the coming week&apos;s games. Check back
-          after Sunday&apos;s update.
+        <p className="flex-1 rounded-md border border-border bg-card p-5 text-sm text-muted-foreground">
+          The games of the week are chosen each Sunday from the coming week&apos;s schedule, using
+          the new rankings.
         </p>
       </section>
     )
   }
   const { game } = pick
   const m = game.market
-  const lead = size === "lead"
   const row = new Map(teams.map((t) => [t.team.id, t]))
   const final = game.result?.final ? game.result : null
+  const matchup = `${game.away.school} ${game.neutral ? "vs." : "at"} ${game.home.school}`
   return (
-    <section aria-labelledby={headingId} className="min-w-0 space-y-2">
+    <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col gap-2", className)}>
       {heading}
-      {/* The whole card opens the game center (like a Top 25 row opens a team), except the
-          team names, which sit above the card's link and open the team pages. On hover it
-          lights in plain white/black (the page's light), not a team's color. */}
-      <div className="tsi-lit-hover relative space-y-5 rounded-md border border-border bg-card p-5 sm:p-6">
+      <div className="tsi-lit-hover relative flex flex-1 flex-col gap-5 rounded-md border border-border bg-card p-5">
         <Link
           href={`/games/${game.id}`}
-          aria-label={`Game center: ${game.away.school} ${game.neutral ? "vs" : "at"} ${game.home.school}`}
+          aria-label={`Game center: ${matchup}`}
           className="absolute inset-0 rounded-md"
         />
-        {when && <p className="text-sm text-muted-foreground">{when}</p>}
+        {when && <p className="text-sm text-muted-foreground">{final ? `Final. ${when}` : when}</p>}
 
-        {/* Two rows, so the scores line up even when one team's name wraps. */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 sm:gap-x-6">
-          <Side team={game.away} row={row.get(game.away.id) ?? null} lead={lead} />
-          <span className="mt-4 text-sm text-muted-foreground">{game.neutral ? "vs" : "at"}</span>
-          <Side team={game.home} row={row.get(game.home.id) ?? null} lead={lead} alignEnd />
-          <Score value={final ? final.away_points : p.proj_away} lead={lead} />
+        {/* Logos above the names give each name the column's full width; the scores share
+            one row, so they line up even if a long name wraps. */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-4 gap-y-1">
+          <Side team={game.away} row={row.get(game.away.id) ?? null} />
+          <span className="self-center pt-8 text-sm text-muted-foreground">
+            {game.neutral ? "vs." : "at"}
+          </span>
+          <Side team={game.home} row={row.get(game.home.id) ?? null} alignEnd />
+          <Score value={final ? final.away_points : p.proj_away} />
           <span aria-hidden />
-          <Score value={final ? final.home_points : p.proj_home} lead={lead} alignEnd />
+          <Score value={final ? final.home_points : p.proj_home} alignEnd />
         </div>
 
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
+        <div className="space-y-1">
+          <p className="sr-only">
             {final
-              ? `Final. TSI projected ${points(p.proj_away)}–${points(p.proj_home)} with these win chances.`
-              : "TSI's projected score and win chance"}
+              ? "Final score. TSI's win probability before the game:"
+              : "TSI's projected score and win probability:"}
           </p>
           <WinProbBar homeProb={p.home_win_prob} home={game.home} away={game.away} />
+          {final && (
+            <p className="text-xs text-muted-foreground">
+              TSI projected {points(p.proj_away)}–{points(p.proj_home)}.
+            </p>
+          )}
         </div>
 
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:max-w-md">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
           <dt className="text-muted-foreground">TSI line</dt>
           <dd className="text-right">
             {favoriteLine(p.spread, game.home, game.away)}, total {p.total.toFixed(1)}
           </dd>
-          <dt className="text-muted-foreground">Vegas</dt>
+          <dt className="text-muted-foreground">Vegas line</dt>
           <dd className="text-right">
             {m?.spread != null && m.total != null
               ? `${favoriteLine(m.spread, game.home, game.away)}, total ${totalLine(m.total)}`
-              : "No line yet"}
+              : "Not posted yet"}
           </dd>
         </dl>
 
-        <p className="max-w-[65ch] text-sm">{whyThisGame(pick, row, type)}</p>
+        <p className="text-sm">{whyThisGame(pick, row, type)}</p>
       </div>
     </section>
   )
@@ -107,73 +112,48 @@ export function GameOfWeekCard({ pick, teams, division, type, when, size }: Prop
 function Side({
   team,
   row,
-  lead,
   alignEnd = false,
 }: {
   team: TeamRef
   row: RankedTeam | null
-  lead: boolean
   alignEnd?: boolean
 }) {
   const rank = row && row.rank <= 25 ? `#${row.rank} ` : ""
   return (
-    <div className={cn("flex min-w-0 flex-col", alignEnd && "items-end text-right")}>
+    <div
+      className={cn(
+        "flex min-w-0 flex-col gap-2",
+        alignEnd ? "items-end text-right" : "items-start",
+      )}
+    >
+      {/* Above the card's link, so a click here opens the team page. */}
       <Link
         href={`/teams/${team.slug}`}
         className={cn(
-          "relative z-10 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3",
-          alignEnd ? "items-end sm:flex-row-reverse" : "items-start",
+          "group relative z-10 flex min-w-0 flex-col gap-2",
+          alignEnd ? "items-end" : "items-start",
         )}
       >
-        <span
-          className={cn(
-            "flex shrink-0 items-center justify-center rounded-md bg-white",
-            lead ? "size-14" : "size-11",
-          )}
-        >
-          {team.logo_url && (
-            <Image
-              src={team.logo_url}
-              alt=""
-              width={48}
-              height={48}
-              className={cn("object-contain", lead ? "size-12" : "size-9")}
-            />
-          )}
-        </span>
-        <span
-          className={cn(
-            "max-w-full leading-tight font-bold [overflow-wrap:anywhere] font-stretch-condensed hover:underline",
-            lead ? "text-2xl sm:text-4xl" : "text-xl sm:text-3xl",
-          )}
-        >
+        <TeamLogo team={team} size={48} />
+        <span className="max-w-full text-2xl leading-tight font-bold text-balance font-stretch-condensed group-hover:underline">
           <span className="text-muted-foreground">{rank}</span>
           {team.school}
         </span>
       </Link>
       {row && (
-        <p className="mt-1 text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           {record(row.wins, row.losses, row.ties)}
-        </p>
+        </span>
       )}
     </div>
   )
 }
 
-function Score({
-  value,
-  lead,
-  alignEnd = false,
-}: {
-  value: number
-  lead: boolean
-  alignEnd?: boolean
-}) {
+function Score({ value, alignEnd = false }: { value: number; alignEnd?: boolean }) {
   return (
     <p
       className={cn(
-        "font-bold font-stretch-condensed proportional-nums",
-        lead ? "text-5xl sm:text-6xl" : "text-4xl sm:text-5xl",
+        "text-5xl font-bold font-stretch-condensed proportional-nums",
         alignEnd && "text-right",
       )}
     >
@@ -195,9 +175,9 @@ function whyThisGame(
     .filter((r): r is RankedTeam => !!r && r.rank <= 25)
   const who =
     ranked.length === 2
-      ? `Two Top 25 teams in the ${ranking} rankings.`
+      ? `Both teams are in the ${ranking} Top 25.`
       : ranked.length === 1
-        ? `${ranked[0].team.school} is #${ranked[0].rank} in the ${ranking} rankings.`
+        ? `${ranked[0].team.school} is No. ${ranked[0].rank} in the ${ranking} rankings.`
         : ""
   const p = game.prediction!.home_win_prob
   const fav = p >= 0.5 ? game.home : game.away
@@ -205,9 +185,9 @@ function whyThisGame(
   return [who, close, stakesText(pick)].filter(Boolean).join(" ")
 }
 
-const MEANINGFUL = 0.05 // a swing under 5 points isn't worth a sentence
+const MEANINGFUL = 0.05 // a swing under 5 percentage points isn't worth a sentence
 
-/** "A win would raise Notre Dame's playoff chances by 31 points and Miami's by 24." */
+/** "A win would raise Notre Dame's playoff chances by 31 percentage points, and Miami's by 24." */
 function stakesText(pick: GameOfWeekView): string {
   const { game } = pick
   const sides = [
@@ -216,15 +196,15 @@ function stakesText(pick: GameOfWeekView): string {
   ]
   for (const [key, what] of [
     ["playoff", "playoff chances"],
-    ["title", "conference-title chances"],
+    ["title", "chances of winning its conference"],
   ] as const) {
     const big = sides
       .filter((s) => (s[key] ?? 0) >= MEANINGFUL)
       .sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0))
     if (big.length === 0) continue
     const pts = (v: number | null) => Math.round((v ?? 0) * 100)
-    const first = `${big[0].team.school}'s ${what} by ${pts(big[0][key])} points`
-    const second = big[1] ? ` and ${big[1].team.school}'s by ${pts(big[1][key])}` : ""
+    const first = `${big[0].team.school}'s ${what} by ${pts(big[0][key])} percentage points`
+    const second = big[1] ? `, and ${big[1].team.school}'s by ${pts(big[1][key])}` : ""
     return `A win would raise ${first}${second}.`
   }
   return ""

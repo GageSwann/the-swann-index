@@ -1,54 +1,57 @@
-import Image from "next/image"
 import Link from "next/link"
 
 import { RankChange } from "@/components/rankings/rank-change"
+import { TeamLogo } from "@/components/team/team-logo"
 import type { RankedTeam } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { record } from "@/lib/format/numbers"
 
 type Props = {
+  id: string // for the heading
   title: string // "FBS Top 25"
   teams: RankedTeam[] // the chosen ranking (Power or Résumé), in order
   href: string // the full rankings page
-  linkLabel: string
 }
 
-/** A compact Top 25 for the home page's side rails; the full table lives at /rankings. */
-export function RankingsRail({ title, teams, href, linkLabel }: Props) {
+/**
+ * A compact Top 25 for the home page's side rails; the full table lives at /rankings.
+ * The list stretches to its column's height (rows share any extra space evenly), so its
+ * bottom lines up with the games of the week beside it.
+ */
+export function RankingsRail({ id, title, teams, href }: Props) {
   const top = teams.slice(0, 25)
-  const headingId = `rail-${title.replace(/\W+/g, "-").toLowerCase()}`
+  const headingId = `rail-${id}`
   return (
-    <section aria-labelledby={headingId} className="min-w-0 space-y-2">
-      <h2 id={headingId} className="text-lg font-semibold font-stretch-condensed">
-        {title}
-      </h2>
+    <section aria-labelledby={headingId} className="flex h-full min-w-0 flex-col gap-2">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id={headingId} className="text-lg font-semibold font-stretch-condensed">
+          {title}
+        </h2>
+        <Link
+          href={href}
+          className="text-sm text-muted-foreground underline decoration-muted-foreground underline-offset-4 hover:text-foreground hover:decoration-foreground"
+        >
+          Full rankings
+        </Link>
+      </div>
       {top.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No rankings yet.</p>
+        <p className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+          The rankings appear after the first nightly update of the season.
+        </p>
       ) : (
-        <ol className="divide-y divide-border rounded-md border border-border bg-card text-sm">
+        <ol className="flex flex-1 flex-col divide-y divide-border rounded-md border border-border bg-card text-sm">
           {top.map((t) => (
             <li
               key={t.team.id}
-              className="tsi-team-light tsi-row-light group relative"
+              className="tsi-team-light tsi-row-light group flex flex-1"
               style={teamColorVars(t.team)}
             >
               <Link
                 href={`/teams/${t.team.slug}`}
-                className="grid grid-cols-[1.75rem_1.5rem_minmax(0,1fr)_auto_2.25rem] items-center gap-2 px-2.5 py-1.5"
+                className="grid w-full grid-cols-[1.75rem_1.75rem_minmax(0,1fr)_auto_2.25rem] items-center gap-2 px-2.5 py-1.5"
               >
                 <span className="text-right font-semibold">{t.rank}</span>
-                {/* A white tile, as on the scoreboard: dark logos vanish on the black theme. */}
-                <span className="flex size-6 items-center justify-center rounded-sm bg-white">
-                  {t.team.logo_url && (
-                    <Image
-                      src={t.team.logo_url}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="size-5 object-contain"
-                    />
-                  )}
-                </span>
+                <TeamLogo team={t.team} size={22} />
                 <span className="truncate group-hover:underline">{t.team.school}</span>
                 <span className="text-muted-foreground">{record(t.wins, t.losses, t.ties)}</span>
                 <span className="text-right text-xs">
@@ -62,12 +65,6 @@ export function RankingsRail({ title, teams, href, linkLabel }: Props) {
           ))}
         </ol>
       )}
-      <Link
-        href={href}
-        className="inline-flex min-h-8 items-center text-sm underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
-      >
-        {linkLabel}
-      </Link>
     </section>
   )
 }

@@ -1,5 +1,3 @@
-import Image from "next/image"
-
 import type { TeamProfile } from "@/lib/api/types"
 import { rankText, teamDivision } from "@/lib/divisions"
 import { describeAdjustment } from "@/lib/format/adjustments"
@@ -7,6 +5,8 @@ import { teamColorVars } from "@/lib/format/color"
 import { record, signed } from "@/lib/format/numbers"
 import { AdjustedCallout } from "@/components/game/adjusted-note"
 import { Stat } from "@/components/ui/stat"
+
+import { TeamLogo } from "./team-logo"
 
 /**
  * Team identity and its headline numbers. A solid band in the team's (contrast-checked)
@@ -41,18 +41,7 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
       <div aria-hidden className="tsi-team-light tsi-glow-below h-2 bg-(--light)" />
       <div className="space-y-5 p-5">
         <div className="flex items-center gap-4">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-md bg-white sm:size-20">
-            {team.logo_url && (
-              <Image
-                src={team.logo_url}
-                alt=""
-                width={64}
-                height={64}
-                className="size-13 object-contain sm:size-16"
-                priority
-              />
-            )}
-          </span>
+          <TeamLogo team={team} size={72} priority />
           <div className="min-w-0">
             <h1 className="text-4xl leading-tight font-bold font-stretch-condensed sm:text-5xl">
               {team.school}

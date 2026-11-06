@@ -23,7 +23,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#142 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#143 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -98,6 +98,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **Web building blocks:** import charts from `components/charts/lazy.tsx` (lazy, same-height placeholders; #87), never directly. Table headers use `components/ui/head-cell.tsx`; charts take colors from `lib/chart-theme.ts` (`axisStyle`) and share `components/charts/chart-parts.tsx` (caption + legend, tooltip box) and `line-series-chart.tsx`; dates go through `lib/format/time.ts`. `cn` (the `cn` package) merges conflicting Tailwind classes, so `className` overrides win. No shadcn components remain (#77).
 - **Look (#137):** black and white only (`--primary` = text color), team colors are the only color, Instrument Sans (width axis; weights 400–700). Light goes through the kit in `app/globals.css` (doc 06, "Lighting"): `--light` is the glow color (`.tsi-team-light` + `teamColorVars` makes it a team's), `.tsi-lit` / `.tsi-lit-hover` / `.tsi-glow-below`, and the border light (`components/ui/border-light.tsx`) on a page's focal point only. Never `text-shadow`, never a new hue, and design every effect for both themes.
 - **Team colors (#138):** CFBD's colors stay in `teams`; corrections live in `backend/src/tsi/team_colors.py` (with a source per row) and are applied in `team_refs`, so the API serves them. The site picks the shown color per theme in `web/lib/format/color.ts` (never white/black/gray; lifts a too-dark color in its own hue). Check a change on every team with the contact-sheet approach (run the real `color.ts` over all teams with `node`; Node 24 strips the types).
+- **Team logos (#143):** always `components/team/team-logo.tsx` (white tile ringed in the team's color, both themes); never a bare `<Image>` of a logo or a color tick next to a name.
 - **Team page sections** must appear for every ranked team (owner's rule, #90): when an input is missing, show the section with that one value left out, never hide the section.
 - **Page metadata:** use `pageMeta()` from `lib/metadata.ts`; pass `ownImage: true` on routes with an `opengraph-image` file (any `openGraph.images` overrides it). Indexing is off until `ALLOW_INDEXING=1` (#86).
 - **Web data access:** only through `web/lib/api/queries.ts` (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).

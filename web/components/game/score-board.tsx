@@ -1,8 +1,8 @@
-import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
+import { TeamLogo } from "@/components/team/team-logo"
 import { BorderLightRings, borderLightVars } from "@/components/ui/border-light"
 import type { TeamProfile, TeamRef } from "@/lib/api/types"
 import { points, record } from "@/lib/format/numbers"
@@ -67,17 +67,7 @@ function TeamScore({ side, alignEnd = false }: { side: Side; alignEnd?: boolean 
           alignEnd ? "items-end sm:flex-row-reverse" : "items-start",
         )}
       >
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-white">
-          {team.logo_url && (
-            <Image
-              src={team.logo_url}
-              alt=""
-              width={40}
-              height={40}
-              className="size-10 object-contain"
-            />
-          )}
-        </span>
+        <TeamLogo team={team} size={48} />
         <span className="max-w-full text-xl leading-tight font-bold [overflow-wrap:anywhere] font-stretch-condensed hover:underline sm:text-3xl">
           {team.school}
         </span>
