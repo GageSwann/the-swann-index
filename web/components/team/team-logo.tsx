@@ -28,7 +28,7 @@ export function TeamLogo({
       aria-hidden
       className={cn(
         "tsi-team-light inline-flex shrink-0 items-center justify-center bg-white ring-(--light)",
-        size >= 40 ? "rounded-md ring-[3px]" : "rounded-sm ring-2",
+        size >= 40 ? "rounded-md ring-[1.5px]" : "rounded-sm ring-1",
         className,
       )}
       style={{ ...teamColorVars(team), width: size, height: size }}

@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils"
 const TABS: { value: RankingType; label: string; about: string }[] = [
   {
     value: "power",
-    label: "Power rankings",
+    label: "Power Rankings",
     about: "Power ranks teams by how well they have played this season.",
   },
   {
     value: "resume",
-    label: "Résumé rankings",
+    label: "Résumé Rankings",
     about:
       "Résumé ranks teams by what they have accomplished: their record against their schedule.",
   },
@@ -19,8 +19,8 @@ const TABS: { value: RankingType; label: string; about: string }[] = [
 
 /**
  * The home page's one choice: which ranking drives the Top 25 lists and the games of the
- * week. Tabs, like the site's main navigation (the active one underlined), with one
- * sentence on what the active ranking measures.
+ * week. Plain tabs (the active one underlined), with one sentence on what the active
+ * ranking measures.
  */
 export function RankingTabs({
   value,
@@ -43,9 +43,9 @@ export function RankingTabs({
               aria-controls="home-rankings"
               onClick={() => onChange(t.value)}
               className={cn(
-                "-mb-px border-b-2 pb-2.5 text-lg font-semibold font-stretch-condensed transition-colors",
+                "-mb-px border-b-2 pb-2 text-[15px] font-medium transition-colors",
                 on
-                  ? "tsi-nav-active border-transparent text-foreground"
+                  ? "border-foreground text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
@@ -54,7 +54,7 @@ export function RankingTabs({
           )
         })}
       </div>
-      <p className="pb-2.5 text-sm text-muted-foreground" aria-live="polite">
+      <p className="pb-2 text-sm text-muted-foreground" aria-live="polite">
         {active.about}
       </p>
     </div>

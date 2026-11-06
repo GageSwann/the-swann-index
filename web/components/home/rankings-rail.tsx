@@ -31,7 +31,7 @@ export function RankingsRail({ id, title, teams, href }: Props) {
           href={href}
           className="text-sm text-muted-foreground underline decoration-muted-foreground underline-offset-4 hover:text-foreground hover:decoration-foreground"
         >
-          Full rankings
+          Full Rankings
         </Link>
       </div>
       {top.length === 0 ? (
@@ -48,9 +48,9 @@ export function RankingsRail({ id, title, teams, href }: Props) {
             >
               <Link
                 href={`/teams/${t.team.slug}`}
-                className="grid w-full grid-cols-[1.75rem_1.75rem_minmax(0,1fr)_auto_2.25rem] items-center gap-2 px-2.5 py-1.5"
+                className="grid w-full grid-cols-[1.25rem_1.5rem_minmax(0,1fr)_auto_2.25rem] items-center gap-2 px-2.5 py-1.5"
               >
-                <span className="text-right font-semibold">{t.rank}</span>
+                <span className="font-semibold">{t.rank}</span>
                 <TeamLogo team={t.team} size={22} />
                 <span className="truncate group-hover:underline">{t.team.school}</span>
                 <span className="text-muted-foreground">{record(t.wins, t.losses, t.ties)}</span>

@@ -18,8 +18,8 @@ type Props = {
 }
 
 const TITLE: Record<Division, string> = {
-  fbs: "FBS game of the week",
-  fcs: "FCS game of the week",
+  fbs: "FBS Game of the Week",
+  fcs: "FCS Game of the Week",
 }
 
 /**
