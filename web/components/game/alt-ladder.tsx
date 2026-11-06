@@ -1,11 +1,11 @@
-import type { GameMarkets, TeamRef, TwoWay } from "@/lib/api/types"
+import type { FairMarkets, FairTwoWay, TeamRef } from "@/lib/api/types"
 import { percent } from "@/lib/format/numbers"
 import { american, teamSpread, totalLine } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
 
 type Props = {
-  markets: GameMarkets
+  markets: FairMarkets
   home: TeamRef
   marketSpread?: number | null // Vegas lines to highlight; none for hypothetical games
   marketTotal?: number | null
@@ -43,8 +43,8 @@ export function AltLadder({
       </div>
       <p className="text-xs text-muted-foreground">
         Chance from TSI&apos;s score distribution, which puts extra weight on key numbers like 3 and
-        7. On a whole-number line the chance (and price) is for games that don&apos;t land exactly
-        on it; Push is how often one does
+        7. On a whole-number line the chance (and fair price) is for games that don&apos;t land
+        exactly on it; Push is how often one does
         {marketSpread !== null || marketTotal !== null
           ? ". The Vegas line is highlighted (nearest rung)."
           : "."}
@@ -61,7 +61,7 @@ function Ladder({
   highlight,
 }: {
   caption: string
-  rungs: TwoWay[]
+  rungs: FairTwoWay[]
   label: (line: number) => string
   probLabel: string
   highlight: number | null
@@ -83,7 +83,6 @@ function Ladder({
             <HeadCell align="right">{probLabel}</HeadCell>
             {pushes && <HeadCell align="right">Push</HeadCell>}
             <HeadCell align="right">Fair</HeadCell>
-            <HeadCell align="right">TSI Book</HeadCell>
           </tr>
         </thead>
         <tbody>
@@ -106,7 +105,6 @@ function Ladder({
                 </td>
               )}
               <td className="px-3 py-1.5 text-right">{american(r.first.fair)}</td>
-              <td className="px-3 py-1.5 text-right">{american(r.first.book)}</td>
             </tr>
           ))}
         </tbody>

@@ -6,10 +6,8 @@ import { apiClient, orNull, required } from "./client"
 import * as tags from "./tags"
 import type {
   GameCenter,
-  Ledger,
   Matchup,
   Meta,
-  ModelReport,
   Playoff,
   RankingType,
   Rankings,
@@ -90,22 +88,6 @@ export async function getGame(id: number): Promise<GameCenter | null> {
     params: { path: { game_id: id } },
   })
   return orNull(`/games/${id}`, result)
-}
-
-export async function getLedger(season?: number): Promise<Ledger> {
-  "use cache"
-  cacheLife("tsi")
-  cacheTag(tags.ALL, tags.LEDGER)
-  const result = await apiClient().GET("/book/ledger", { params: { query: { season } } })
-  return required("/book/ledger", result)
-}
-
-export async function getModelReport(season?: number): Promise<ModelReport> {
-  "use cache"
-  cacheLife("tsi")
-  cacheTag(tags.ALL, tags.REPORT)
-  const result = await apiClient().GET("/model/report", { params: { query: { season } } })
-  return required("/model/report", result)
 }
 
 /** Hypothetical game; `null` if either slug is unknown. Same teams twice is a caller bug. */

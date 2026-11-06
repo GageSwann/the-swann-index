@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts"
 
-import type { TeamRef, TwoWay } from "@/lib/api/types"
+import type { FairTwoWay, TeamRef } from "@/lib/api/types"
 import { TooltipBox } from "@/components/charts/chart-parts"
 import { axisStyle, useChartTheme } from "@/lib/chart-theme"
 import { percent } from "@/lib/format/numbers"
@@ -23,7 +23,7 @@ type Props = {
   margin: number // TSI mean home margin
   sigma: number // from the published snapshot
   marketSpread: number | null // home view (negative = home favored)
-  ladder: TwoWay[] // API cover probabilities, used for the tooltip
+  ladder: FairTwoWay[] // API cover probabilities, used for the tooltip
 }
 
 /**
@@ -120,7 +120,7 @@ function MarginTip({
   x: number
   homeName: string
   awayName: string
-  ladder: TwoWay[]
+  ladder: FairTwoWay[]
 }) {
   // Home covers spread s when margin > -s, so margin x lines up with the rung s = -x; with
   // half-point lines (e.g. -17.5) it's the tightest rung that margin covers, s = -x + 0.5.

@@ -10,12 +10,11 @@ import { formatKickoff } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
 
 import { type BoardRank, type BoardRanks, shownRank } from "./board-ranks"
-import { PickBadge } from "./pick-badge"
 import { WinProbBar } from "./win-prob-bar"
 
 type Props = { game: GameSummary; ranks: BoardRanks }
 
-/** One game: teams, projected (or final) score, win probability, TSI vs. market, TSI plays. */
+/** One game: teams, projected (or final) score, win probability, TSI vs. market. */
 export function MatchupCard({ game, ranks }: Props) {
   const p = game.prediction
   const m = game.market
@@ -106,9 +105,6 @@ export function MatchupCard({ game, ranks }: Props) {
             </tbody>
           </table>
           <AdjustedNote prediction={p} game={game} />
-          {p.picks.map((pick) => (
-            <PickBadge key={`${pick.market}-${pick.side}`} pick={pick} game={game} />
-          ))}
         </>
       ) : (
         <p className="text-sm text-muted-foreground">

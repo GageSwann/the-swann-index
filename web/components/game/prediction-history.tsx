@@ -27,7 +27,7 @@ export function PredictionHistory({
           ? `TSI's line moved from ${favoriteLine(first.spread, game.home, game.away)} to ${favoriteLine(last.spread, game.home, game.away)}.`
           : history.length > 1
             ? "TSI's line hasn't moved since it was first published."
-            : "Published once. A new snapshot is added whenever the prediction or the Book's picks change."}
+            : "Published once so far."}
       </p>
       <ol className="divide-y divide-border rounded-md border border-border text-sm">
         {history.map((s) => (

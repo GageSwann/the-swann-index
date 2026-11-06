@@ -48,7 +48,6 @@ export async function WeekPage({
         <PageHeading title={`Week ${week}, ${season}`}>
           {isCurrent ? "This week's games. " : ""}TSI&apos;s projected score and win probability for
           every game with {teams}, next to the betting market.
-          {division !== "fbs" && " TSI Plays are FBS-vs-FBS games only."}
         </PageHeading>
         <div className="mb-6 flex flex-wrap items-center gap-3">
           <DivisionNav

@@ -8,18 +8,16 @@ import { formatDay } from "@/lib/format/time"
 import { type BoardRanks, shownRank } from "./board-ranks"
 import { MatchupCard } from "./matchup-card"
 
-type Sort = "kickoff" | "edge" | "closest"
+type Sort = "kickoff" | "closest"
 type Props = { games: GameSummary[]; ranks: BoardRanks }
 
 const SORTS: { value: Sort; label: string }[] = [
   { value: "kickoff", label: "Kickoff" },
-  { value: "edge", label: "Biggest edge" },
   { value: "closest", label: "Closest game" },
 ]
 
 export function BoardView({ games, ranks }: Props) {
   const [top25, setTop25] = useState(false)
-  const [playsOnly, setPlaysOnly] = useState(false)
   const [conference, setConference] = useState("")
   const [sort, setSort] = useState<Sort>("kickoff")
 
@@ -37,18 +35,16 @@ export function BoardView({ games, ranks }: Props) {
     const filtered = games.filter(
       (g) =>
         (!top25 || ranked(g)) &&
-        (!playsOnly || (g.prediction?.picks.length ?? 0) > 0) &&
         (!conference || g.home.conference === conference || g.away.conference === conference),
     )
     if (sort === "kickoff") return filtered
-    return [...filtered].sort((a, b) => sortKey(a, sort) - sortKey(b, sort))
-  }, [games, ranks, top25, playsOnly, conference, sort])
+    return [...filtered].sort((a, b) => sortKey(a) - sortKey(b))
+  }, [games, ranks, top25, conference, sort])
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
         <Check label="Top 25 only" checked={top25} onChange={setTop25} />
-        <Check label="TSI plays only" checked={playsOnly} onChange={setPlaysOnly} />
         <label className="flex items-center gap-2 text-muted-foreground">
           Conference
           <select
@@ -131,11 +127,10 @@ function Check({
   )
 }
 
-function sortKey(g: GameSummary, sort: Sort): number {
+/** Closest game first (games without a prediction last). */
+function sortKey(g: GameSummary): number {
   const p = g.prediction
-  if (p === null) return Number.POSITIVE_INFINITY
-  if (sort === "edge") return -Math.max(-1, ...p.picks.map((pick) => pick.edge))
-  return Math.abs(p.home_win_prob - 0.5) // closest first
+  return p === null ? Number.POSITIVE_INFINITY : Math.abs(p.home_win_prob - 0.5)
 }
 
 function groupByDay(games: GameSummary[]): [string, GameSummary[]][] {

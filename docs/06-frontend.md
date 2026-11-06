@@ -52,8 +52,6 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 | `/week/[season]/[week]/fcs`, `…/all` | the same board for games with an FCS team, or either (#115) |
 | `/games/[id]` | **Game center** |
 | `/teams/[slug]` | **Team page** |
-| `/book` | **TSI Book** ledger |
-| `/model` | **Methodology + report card** |
 | `/matchup` | **Hypothetical matchup tool** (#85) |
 | `/playoff` | **CFP projections + bracket** (#101); `/playoff/fcs`: FCS playoff (#125) |
 | `/conferences/[slug]` | Standings + title odds (later) |
@@ -72,10 +70,10 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 - **Built (decision #70):** Power/Résumé toggle, Top 25 / all, conference filter (client-side over both rankings, rendered once on the server); TanStack Table v9 sorting with a sticky header inside the table's own scroll area; Δ = movement since the latest Sunday poll (`previous_rank` from the last run of the most recent Sunday before the shown run, Eastern time, `previous_as_of`; the intro names its date, e.g. "since Sun, Nov 8"; no Δ column without one; #79, #134), offense/defense ranks (`off_rank`/`def_rank`) from the API; row click and team-name links go to the team page; logos on a light chip so dark marks stay visible.
 
 ### Matchup board `/week/[season]/[week]`
-- Week selector + filters: Top 25 only, conference, "TSI plays only", sort by kickoff / edge / win prob.
-- **Matchup card:** logos & ranks, kickoff/TV, win-probability bar in team colors, projected score, a TSI line vs. market line row (spread, total, ML), edge badge (★ tier) when it's a TSI play.
+- Week selector + filters: Top 25 only, conference, sort by kickoff / closest game (TSI plays and the edge sort were removed with the Book, #139).
+- **Matchup card:** logos & ranks, kickoff/TV, win-probability bar in team colors, projected score, a TSI line vs. market line row (spread, total, ML).
 - After games: final score, ✔/✘ for each market, CLV.
-- **Built (decision #71):** `/week` redirects to the current week; `generateStaticParams` prerenders it and other weeks render on first visit (params awaited inside `<Suspense>`). Filters: Top 25 only, TSI plays only, conference; sort: kickoff (grouped by day), biggest edge, closest game. Card: kickoff (ET), Top-25 ranks, projected score (final score once over, with TSI's projection beside it), win-probability bar, TSI vs. Vegas for spread / total / moneyline (favorite named), ★ play badges with ✔/✘ and CLV once graded. ✔/✘ is shown for official picks only (grading stays in the API). No TV listings (CFBD media not ingested).
+- **Built (decision #71):** `/week` redirects to the current week; `generateStaticParams` prerenders it and other weeks render on first visit (params awaited inside `<Suspense>`). Filters: Top 25 only, conference; sort: kickoff (grouped by day), closest game (TSI plays and biggest edge removed, #139). Card: kickoff (ET), Top-25 ranks, projected score (final score once over, with TSI's projection beside it), win-probability bar, TSI vs. Vegas for spread / total / moneyline (favorite named). No TV listings (CFBD media not ingested).
 - **Ranks in the All view (Phase 12.6, #135):** FBS Top 25 ranks stay plain numbers; FCS Top 25 ranks show as a small muted "FCS 8" chip (`components/board/board-ranks.ts`, `matchup-card.tsx`; muted text on the muted background, 5.3:1 light / 5.5:1 dark), and a card with one widens both rank slots so names stay aligned. "Top 25 only" there keeps games with a Top 25 team of either division.
 - **Team colors** (Phase 13.2, #138) go through `lib/format/color.ts`, per theme via CSS variables (`--team-dark` / `--team-light`) or `teamColor(team, theme)`: never white, black or gray (OKLCH chroma < 0.04 is skipped); the first team color at ≥ 2:1 against that theme's card; else the team's color lightened (dark) or darkened (light) to 2.5:1, same hue; else a neutral (no team needs it in 2026). The colors themselves are CFBD's, with sourced corrections in `backend/src/tsi/team_colors.py` applied by the API. Contact sheet of every team in both themes: https://claude.ai/artifact/NLTUN6CbWTaLSKaj2Mzm81.
 
@@ -87,7 +85,7 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 - **Tale of the tape:** mirrored bar chart of off/def ratings, EPA/play, success rate, explosiveness, pace (ranks shown).
 - **Rating trends:** both teams' TSI rating by week on one chart.
 - **Post-game:** final score, how each market graded, snapshot history ("line moved from X to Y").
-- **Built (decision #72):** this week's games are prerendered and others render on first visit (inside `<Suspense>`; an unknown id streams the not-found page with `noindex`). Sections: score-bug header (final score once over), ★ play badges (✔/✘ once graded), odds board (TSI fair / TSI Book / Vegas, with the play's cell outlined; team totals have no market data yet), margin density with Tie and Vegas lines (whole-point hover; cover chance from the API's alt-spread ladder, never computed in the browser), alt spread and total ladders with the Vegas rung highlighted, tale of the tape (ranks, rating, off/def, SOS, record; the better side bold), rating trends (home solid, away dashed, direct end labels, neutral away color when the team colors look alike) and prediction history. EPA, success rate, explosiveness and pace in the tape wait for an API addition. Games without a snapshot say why (before Oct 20, 2026, or not yet within eight days).
+- **Built (decision #72):** this week's games are prerendered and others render on first visit (inside `<Suspense>`; an unknown id streams the not-found page with `noindex`). Sections: score-bug header (final score once over), odds board (TSI's line with its cover/over chance at the nearest bettable line, next to Vegas; no Book prices or plays since #139; team totals have no market data yet), margin density with Tie and Vegas lines (whole-point hover; cover chance from the API's alt-spread ladder, never computed in the browser), alt spread and total ladders with the Vegas rung highlighted, tale of the tape (ranks, rating, off/def, SOS, record; the better side bold), rating trends (home solid, away dashed, direct end labels, neutral away color when the team colors look alike) and prediction history. EPA, success rate, explosiveness and pace in the tape wait for an API addition. Games without a snapshot say why (before Oct 20, 2026, or not yet within eight days).
 
 ### Team page `/teams/[slug]`
 - Header gradient in team colors, logo, record, Power rank, Résumé rank, rating.
@@ -103,20 +101,10 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 - **FCS (#125, built 2026-11-05):** `/playoff/fcs` (FBS / FCS links under the heading): the 24-team bracket in five rounds (three columns below 1536 px, numbers only for the 16 seeds) and odds with playoff, bye, quarterfinal, semifinal, final and title chances. The bracket is drawn from the API's generic `rounds`. FCS team pages and FCS rankings show projected wins and conference odds.
 
 ### Matchup `/matchup`
-- **Built (decision #85):** pick any two FBS teams (away/home, neutral-site checkbox) in a plain GET form grouped by conference: works without JavaScript, and results are shareable URLs (`/matchup?away=auburn&home=alabama&neutral=1`); "Swap home and away" is a link. Result: the shared `ScoreBoard` (projected score, win probability), TSI's fair and Book prices (no Vegas column: books only post scheduled games), the margin chart (from `sigma_margin`), alternate spread/total ladders and the tale of the tape. Labeled hypothetical: not saved, graded or in the Book. Empty state suggests three top-6 pairings on neutral fields; same team twice or an unknown slug get a plain message.
+- **Built (decision #85):** pick any two FBS teams (away/home, neutral-site checkbox) in a plain GET form grouped by conference: works without JavaScript, and results are shareable URLs (`/matchup?away=auburn&home=alabama&neutral=1`); "Swap home and away" is a link. Result: the shared `ScoreBoard` (projected score, win probability), TSI's line (no Vegas column: books only post scheduled games), the margin chart (from `sigma_margin`), alternate spread/total ladders and the tale of the tape. Labeled hypothetical: not saved or graded. Empty state suggests three top-6 pairings on neutral fields; same team twice or an unknown slug get a plain message.
 
-### TSI Book `/book`
-- KPI tiles: record (ATS / O/U / ML), units, ROI, avg CLV.
-- Cumulative units line chart; record by ★ tier.
-- Pick history table with filters (season, market, tier, result).
-- **Built (decision #75):** season record panel (W-L-P, units flat + ¼ Kelly, ROI, CLV with beat-the-close share, one line per market), units-over-time chart (flat solid, ¼ Kelly dashed), record by market then ★ tier, pick history (market / tier / result filters; table from `sm`, stacked rows on phones; open → locked → graded status), and a short "how the Book picks" list. Before any pick is graded it shows "No graded picks yet" and the open picks. No season filter yet (2026 is the only live season); the backtest Book record belongs on the Model page.
-
-### Model `/model`
-- Plain-English methodology (based on docs 04/05), with formulas.
-- **Report card:** this season + backtest: MAE, straight-up %, ATS %, Brier; vs. closing line, SP+, Elo.
-- Calibration chart (reliability diagram).
-- Model version history.
-- **Built (decision #76):** validation headline (TSI vs. Vegas vs. Elo error, winners), report card by period (live row once games are graded; Games/Elo/Vegas-winners columns hidden on phones), error by season chart (TSI, Vegas, Elo; validation marker; current season marked partial), reliability diagram (dot size = games), spreads vs. the close (ATS by disagreement) and totals accuracy, the Book replayed (record by period and season, cumulative units with one tick per year), plain-English method with the key formulas, and version history. All numbers come from the latest saved `tsi backtest run`. SP+ agreement stays in the CSV export (needs a refit per season plus CFBD data).
+### TSI Book and Model pages: removed (Phase 13.3, #139)
+The Book is owner-only and there is no public Model or "How TSI works" page (#127). `/book` and `/model` are gone (404), with their nav links, sitemap entries, components and charts; the API serves the ledger and the report card only with the owner's key. Their specs and build notes (#75, #76) are in git history.
 
 ## Shared components
 `TeamBadge`, `WinProbBar`, `OddsCell` (American odds formatting), `EdgeBadge`, `RatingDelta`, `StatBar` (mirrored), `TrendChart`, `DistributionChart`, `KpiTile`, `SeasonWeekPicker`, `UpdatedFooter`.

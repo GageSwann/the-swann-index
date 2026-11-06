@@ -1,89 +1,56 @@
 import type { ReactNode } from "react"
 
-import type { GameCenter, GameMarkets, PickView, TeamRef } from "@/lib/api/types"
+import type { FairMarkets, GameCenter, TeamRef } from "@/lib/api/types"
 import { percent } from "@/lib/format/numbers"
-import { american, favoriteLine, totalLine } from "@/lib/format/odds"
+import { american, favoriteLine, teamSpread, totalLine } from "@/lib/format/odds"
 
-/** One market in an odds table: TSI's fair price, the Book's price and (games only) Vegas. */
+/** One market in an odds table: TSI's own line (no vig) and, for games, Vegas. */
 export type MarketRow = {
   label: string
   fair: ReactNode
-  book: ReactNode
   market?: ReactNode | null
-  pick?: PickView
 }
 
 type Priced = {
-  markets: GameMarkets
+  markets: FairMarkets
   home: TeamRef
   away: TeamRef
   projHome: number
   projAway: number
-  picks?: PickView[]
 }
 
-/** TSI's fair and Book prices for spread, total, moneyline and team totals. */
-export function tsiRows({
-  markets,
-  home,
-  away,
-  projHome,
-  projAway,
-  picks = [],
-}: Priced): MarketRow[] {
-  const pickFor = (market: string) => picks.find((x) => x.market === market)
+/**
+ * TSI's lines for spread, total, moneyline and team totals, with TSI's chance at the
+ * nearest bettable line. The Book's prices are owner-only (decision #139).
+ */
+export function tsiRows({ markets, home, away, projHome, projAway }: Priced): MarketRow[] {
   const ml = markets.moneyline
+  const totalAt = totalLine(markets.total.line ?? 0)
   return [
     {
       label: "Spread",
-      pick: pickFor("spread"),
-      fair: favoriteLine(markets.fair_spread, home, away),
-      book: (
-        <Price
-          line={favoriteLine(markets.spread.line ?? 0, home, away, 1)}
-          odds={markets.spread.first.book}
-          note={`${short(home)} covers ${percent(markets.spread.first.prob, 0)}${pushNote(markets.spread.push)}`}
+      fair: (
+        <Line
+          value={favoriteLine(markets.fair_spread, home, away)}
+          note={`${short(home)} ${teamSpread(markets.spread.line ?? 0)} covers ${percent(markets.spread.first.prob, 0)}${pushNote(markets.spread.push)}`}
         />
       ),
     },
     {
       label: "Total",
-      pick: pickFor("total"),
-      fair: markets.fair_total.toFixed(1),
-      book: (
-        <Price
-          line={`O/U ${totalLine(markets.total.line ?? 0)}`}
-          odds={markets.total.first.book}
-          note={`over ${percent(markets.total.first.prob, 0)}${pushNote(markets.total.push)}`}
+      fair: (
+        <Line
+          value={markets.fair_total.toFixed(1)}
+          note={`over ${totalAt} ${percent(markets.total.first.prob, 0)}${pushNote(markets.total.push)}`}
         />
       ),
     },
     {
       label: "Moneyline",
-      pick: pickFor("ml"),
       fair: <TeamPair home={home} away={away} homeOdds={ml.first.fair} awayOdds={ml.second.fair} />,
-      book: <TeamPair home={home} away={away} homeOdds={ml.first.book} awayOdds={ml.second.book} />,
     },
-    {
-      label: `${home.school} points`,
-      fair: projHome.toFixed(1),
-      book: (
-        <Price
-          line={`O/U ${totalLine(markets.home_total.line ?? 0)}`}
-          odds={markets.home_total.first.book}
-        />
-      ),
-    },
-    {
-      label: `${away.school} points`,
-      fair: projAway.toFixed(1),
-      book: (
-        <Price
-          line={`O/U ${totalLine(markets.away_total.line ?? 0)}`}
-          odds={markets.away_total.first.book}
-        />
-      ),
-    },
+    { label: `${home.school} points`, fair: projHome.toFixed(1) },
+    { label: `${away.school} points`, fair: projAway.toFixed(1) },
   ]
 }
 
@@ -102,25 +69,16 @@ export function marketRows(center: GameCenter): MarketRow[] | null {
         <TeamPair home={home} away={away} homeOdds={m.home_ml} awayOdds={m.away_ml} />
       ) : null,
   }
-  const rows = tsiRows({
-    markets,
-    home,
-    away,
-    projHome: p.proj_home,
-    projAway: p.proj_away,
-    picks: p.picks,
-  })
+  const rows = tsiRows({ markets, home, away, projHome: p.proj_home, projAway: p.proj_away })
   return rows.map((r) => ({ ...r, market: vegas[r.label] ?? null }))
 }
 
 const short = (t: TeamRef) => t.abbreviation ?? t.school
 
-function Price({ line, odds, note }: { line: string; odds: number; note?: string }) {
+function Line({ value, note }: { value: string; note?: string }) {
   return (
     <span className="inline-flex flex-col items-end">
-      <span>
-        {line} <span className="text-muted-foreground">{american(odds)}</span>
-      </span>
+      <span>{value}</span>
       {note && <span className="text-xs text-muted-foreground">{note}</span>}
     </span>
   )

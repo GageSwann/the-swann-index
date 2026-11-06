@@ -4,26 +4,6 @@
  */
 
 export interface paths {
-    "/book/ledger": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Ledger
-         * @description TSI Book picks for a season with record, units, ROI and closing line value.
-         */
-        get: operations["get_ledger"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/games/{game_id}": {
         parameters: {
             query?: never;
@@ -76,26 +56,6 @@ export interface paths {
          * @description Current season and week, and when ratings and predictions were last updated.
          */
         get: operations["get_meta"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/model/report": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Model Report
-         * @description Backtest headline metrics plus this season's live accuracy of published predictions.
-         */
-        get: operations["get_model_report"];
         put?: never;
         post?: never;
         delete?: never;
@@ -213,55 +173,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AccuracyRow */
-        AccuracyRow: {
-            /** Elo Mae */
-            elo_mae: number;
-            /** Elo Su */
-            elo_su: number;
-            /** Games */
-            games: number;
-            /** Label */
-            label: string;
-            /** Predictive Brier */
-            predictive_brier: number;
-            /** Predictive Mae */
-            predictive_mae: number;
-            /** Predictive Su */
-            predictive_su: number;
-            /** Season Mae */
-            season_mae: number;
-            /** Vegas Mae */
-            vegas_mae: number;
-            /** Vegas Su */
-            vegas_su: number;
-        };
-        /**
-         * AdjustedScore
-         * @description Raw vs. adjusted over a set of adjusted games (lower error is better).
-         */
-        AdjustedScore: {
-            /** Adjusted Mae */
-            adjusted_mae: number | null;
-            /** Adjusted Su */
-            adjusted_su: number | null;
-            /** Adjusted Total Mae */
-            adjusted_total_mae: number | null;
-            /** Games */
-            games: number;
-            /** Helped */
-            helped: number;
-            /** Hurt */
-            hurt: number;
-            /** Raw Mae */
-            raw_mae: number | null;
-            /** Raw Su */
-            raw_su: number | null;
-            /** Raw Total Mae */
-            raw_total_mae: number | null;
-            /** Same */
-            same: number;
-        };
         /**
          * AdjustmentNote
          * @description A manual adjustment behind an adjusted prediction (decision #103).
@@ -279,124 +190,6 @@ export interface components {
             school: string;
             /** Team Id */
             team_id: number;
-        };
-        /** AdjustmentReport */
-        AdjustmentReport: {
-            /** Adjustments */
-            adjustments: components["schemas"]["AdjustmentScore"][];
-            overall: components["schemas"]["AdjustedScore"];
-        };
-        /** AdjustmentScore */
-        AdjustmentScore: {
-            adjustment: components["schemas"]["AdjustmentNote"];
-            score: components["schemas"]["AdjustedScore"];
-        };
-        /** AtsRow */
-        AtsRow: {
-            /** Bets */
-            bets: number;
-            /** Losses */
-            losses: number;
-            /** Min Edge */
-            min_edge: number;
-            /** Pushes */
-            pushes: number;
-            /** Win Rate */
-            win_rate: number;
-            /** Wins */
-            wins: number;
-        };
-        /** BacktestReport */
-        BacktestReport: {
-            /** Ats */
-            ats: components["schemas"]["AtsRow"][];
-            /** Book */
-            book: components["schemas"]["BookBacktestRow"][];
-            /** Book Calibration */
-            book_calibration: components["schemas"]["BookCalibrationBin"][];
-            /** Book Units */
-            book_units: components["schemas"]["BookUnitsPoint"][];
-            /** By Season */
-            by_season: components["schemas"]["AccuracyRow"][];
-            /** Calibration */
-            calibration: components["schemas"]["CalibrationBin"][];
-            /** Periods */
-            periods: components["schemas"]["AccuracyRow"][];
-            /** Totals */
-            totals: components["schemas"]["TotalsRow"][];
-        };
-        /** BacktestSummary */
-        BacktestSummary: {
-            /** Git Sha */
-            git_sha: string | null;
-            /** Metrics */
-            metrics: {
-                [key: string]: number;
-            };
-            /** Model Version */
-            model_version: string;
-            report: components["schemas"]["BacktestReport"] | null;
-            /**
-             * Run At
-             * Format: date-time
-             */
-            run_at: string;
-        };
-        /** BookBacktestRow */
-        BookBacktestRow: {
-            /** Beat Close */
-            beat_close: number | null;
-            /** Bets */
-            bets: number;
-            /** Clv */
-            clv: number | null;
-            /** Kelly Units */
-            kelly_units: number;
-            /** Losses */
-            losses: number;
-            /** Market */
-            market: string;
-            /** Period */
-            period: string;
-            /** Pushes */
-            pushes: number;
-            /** Roi */
-            roi: number;
-            /** Tier */
-            tier: number;
-            /** Units */
-            units: number;
-            /** Win Rate */
-            win_rate: number;
-            /** Wins */
-            wins: number;
-        };
-        /** BookCalibrationBin */
-        BookCalibrationBin: {
-            /** Bin */
-            bin: string;
-            /** Games */
-            games: number;
-            /** Market */
-            market: string;
-            /** Observed */
-            observed: number;
-            /** Predicted */
-            predicted: number;
-        };
-        /** BookUnitsPoint */
-        BookUnitsPoint: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Kelly Units */
-            kelly_units: number;
-            /** Season */
-            season: number;
-            /** Units */
-            units: number;
         };
         /** BracketRound */
         BracketRound: {
@@ -416,17 +209,6 @@ export interface components {
             /** Seed */
             seed?: number | null;
         };
-        /** CalibrationBin */
-        CalibrationBin: {
-            /** Bin */
-            bin: string;
-            /** Games */
-            games: number;
-            /** Observed */
-            observed: number;
-            /** Predicted */
-            predicted: number;
-        };
         /** ConsensusLine */
         ConsensusLine: {
             /** Away Ml */
@@ -442,6 +224,22 @@ export interface components {
             /** Total */
             total: number | null;
         };
+        /** FairMarkets */
+        FairMarkets: {
+            /** Alt Spreads */
+            alt_spreads: components["schemas"]["FairTwoWay"][];
+            /** Alt Totals */
+            alt_totals: components["schemas"]["FairTwoWay"][];
+            away_total: components["schemas"]["FairTwoWay"];
+            /** Fair Spread */
+            fair_spread: number;
+            /** Fair Total */
+            fair_total: number;
+            home_total: components["schemas"]["FairTwoWay"];
+            moneyline: components["schemas"]["FairTwoWay"];
+            spread: components["schemas"]["FairTwoWay"];
+            total: components["schemas"]["FairTwoWay"];
+        };
         /**
          * FairOdds
          * @description American odds without vig; None when the chance is too close to 0 or 1 to price.
@@ -454,28 +252,31 @@ export interface components {
             /** Title */
             title: number | null;
         };
+        /** FairPrice */
+        FairPrice: {
+            /** Fair */
+            fair: number;
+            /** Prob */
+            prob: number;
+        };
+        /** FairTwoWay */
+        FairTwoWay: {
+            first: components["schemas"]["FairPrice"];
+            /** Line */
+            line: number | null;
+            /**
+             * Push
+             * @default 0
+             */
+            push: number;
+            second: components["schemas"]["FairPrice"];
+        };
         /** GameCenter */
         GameCenter: {
             game: components["schemas"]["GameSummary"];
             /** History */
             history: components["schemas"]["SnapshotPoint"][];
-            markets: components["schemas"]["GameMarkets"] | null;
-        };
-        /** GameMarkets */
-        GameMarkets: {
-            /** Alt Spreads */
-            alt_spreads: components["schemas"]["TwoWay"][];
-            /** Alt Totals */
-            alt_totals: components["schemas"]["TwoWay"][];
-            away_total: components["schemas"]["TwoWay"];
-            /** Fair Spread */
-            fair_spread: number;
-            /** Fair Total */
-            fair_total: number;
-            home_total: components["schemas"]["TwoWay"];
-            moneyline: components["schemas"]["TwoWay"];
-            spread: components["schemas"]["TwoWay"];
-            total: components["schemas"]["TwoWay"];
+            markets: components["schemas"]["FairMarkets"] | null;
         };
         /** GameSummary */
         GameSummary: {
@@ -508,68 +309,6 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
-        /** Ledger */
-        Ledger: {
-            /** Cumulative */
-            cumulative: components["schemas"]["UnitsPoint"][];
-            /** Picks */
-            picks: components["schemas"]["LedgerPick"][];
-            /** Records */
-            records: components["schemas"]["LedgerRecord"][];
-            /** Season */
-            season: number;
-        };
-        /** LedgerPick */
-        LedgerPick: {
-            away: components["schemas"]["TeamRef"];
-            /** Game Id */
-            game_id: number;
-            home: components["schemas"]["TeamRef"];
-            /** Kickoff */
-            kickoff: string | null;
-            pick: components["schemas"]["PickView"];
-            /**
-             * Published At
-             * Format: date-time
-             */
-            published_at: string;
-            /** Status */
-            status: string;
-        };
-        /** LedgerRecord */
-        LedgerRecord: {
-            /** Beat Close */
-            beat_close: number | null;
-            /** Clv */
-            clv: number | null;
-            /** Kelly Units */
-            kelly_units: number;
-            /** Losses */
-            losses: number;
-            /** Market */
-            market: string;
-            /** Pushes */
-            pushes: number;
-            /** Roi */
-            roi: number;
-            /** Tier */
-            tier: number;
-            /** Units */
-            units: number;
-            /** Wins */
-            wins: number;
-        };
-        /** LiveAccuracy */
-        LiveAccuracy: {
-            /** Games */
-            games: number;
-            /** Mae */
-            mae: number | null;
-            /** Market Mae */
-            market_mae: number | null;
-            /** Su Accuracy */
-            su_accuracy: number | null;
-        };
         /** Matchup */
         Matchup: {
             /**
@@ -581,7 +320,7 @@ export interface components {
             home: components["schemas"]["TeamRef"];
             /** Home Win Prob */
             home_win_prob: number;
-            markets: components["schemas"]["GameMarkets"];
+            markets: components["schemas"]["FairMarkets"];
             /** Neutral */
             neutral: boolean;
             /** Proj Away */
@@ -611,63 +350,6 @@ export interface components {
             season_type: string;
             /** Week */
             week: number;
-        };
-        /** ModelReport */
-        ModelReport: {
-            adjustments: components["schemas"]["AdjustmentReport"];
-            backtest: components["schemas"]["BacktestSummary"] | null;
-            live: components["schemas"]["LiveAccuracy"];
-            /** Season */
-            season: number;
-            /** Versions */
-            versions: components["schemas"]["ModelVersion"][];
-        };
-        /** ModelVersion */
-        ModelVersion: {
-            /** Git Sha */
-            git_sha: string | null;
-            /** Model Version */
-            model_version: string;
-            /**
-             * Run At
-             * Format: date-time
-             */
-            run_at: string;
-            /** Validate Mae */
-            validate_mae: number | null;
-            /** Validate Market Mae */
-            validate_market_mae: number | null;
-            /** Validate Su */
-            validate_su: number | null;
-        };
-        /** PickView */
-        PickView: {
-            /** Closing Line */
-            closing_line: number | null;
-            /** Closing Odds */
-            closing_odds: number | null;
-            /** Clv */
-            clv: number | null;
-            /** Edge */
-            edge: number;
-            /** Kelly Units */
-            kelly_units: number | null;
-            /** Line */
-            line: number | null;
-            /** Market */
-            market: string;
-            /** Odds */
-            odds: number;
-            /** Result */
-            result: string | null;
-            /** Side */
-            side: string;
-            /** Stake Units */
-            stake_units: number;
-            /** Tier */
-            tier: number;
-            /** Units Won */
-            units_won: number | null;
         };
         /** Playoff */
         Playoff: {
@@ -723,15 +405,6 @@ export interface components {
             team: components["schemas"]["TeamRef"];
             /** Wins */
             wins: number;
-        };
-        /** Price */
-        Price: {
-            /** Book */
-            book: number;
-            /** Fair */
-            fair: number;
-            /** Prob */
-            prob: number;
         };
         /** Projection */
         Projection: {
@@ -941,18 +614,6 @@ export interface components {
             adjusted: boolean;
             /** Adjustments */
             adjustments: components["schemas"]["AdjustmentNote"][];
-            /** Book Away Ml */
-            book_away_ml: number;
-            /** Book Home Ml */
-            book_home_ml: number;
-            /** Book Over Odds */
-            book_over_odds: number;
-            /** Book Spread Away Odds */
-            book_spread_away_odds: number;
-            /** Book Spread Home Odds */
-            book_spread_home_odds: number;
-            /** Book Under Odds */
-            book_under_odds: number;
             /** Fair Away Ml */
             fair_away_ml: number;
             /** Fair Home Ml */
@@ -961,8 +622,6 @@ export interface components {
             home_win_prob: number;
             /** Locked */
             locked: boolean;
-            /** Picks */
-            picks: components["schemas"]["PickView"][];
             /** Proj Away */
             proj_away: number;
             /** Proj Home */
@@ -1053,45 +712,6 @@ export interface components {
             /** Slug */
             slug: string;
         };
-        /** TotalsRow */
-        TotalsRow: {
-            /** Bias */
-            bias: number;
-            /** Games */
-            games: number;
-            /** Ou Vs Close */
-            ou_vs_close: number;
-            /** Period */
-            period: string;
-            /** Tsi Mae */
-            tsi_mae: number;
-            /** Vegas Mae */
-            vegas_mae: number;
-        };
-        /** TwoWay */
-        TwoWay: {
-            first: components["schemas"]["Price"];
-            /** Line */
-            line: number | null;
-            /**
-             * Push
-             * @default 0
-             */
-            push: number;
-            second: components["schemas"]["Price"];
-        };
-        /** UnitsPoint */
-        UnitsPoint: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Kelly Units */
-            kelly_units: number;
-            /** Units */
-            units: number;
-        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -1125,37 +745,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get_ledger: {
-        parameters: {
-            query?: {
-                season?: number | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Ledger"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     get_game: {
         parameters: {
             query?: never;
@@ -1236,37 +825,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Meta"];
-                };
-            };
-        };
-    };
-    get_model_report: {
-        parameters: {
-            query?: {
-                season?: number | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ModelReport"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

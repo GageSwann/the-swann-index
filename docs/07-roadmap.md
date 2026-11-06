@@ -236,7 +236,7 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
   - *Done when:* every FBS and FCS team is checked in both themes (a contact sheet of all teams' chips, light and dark), no white or invisible colors remain, and every override is sourced.
 
 **Pages**
-- [ ] **13.3 Remove the TSI Book and Model pages; the Book becomes owner-only** (owner, #127).
+- [x] **13.3 Remove the TSI Book and Model pages; the Book becomes owner-only** (owner, #127). (#139, built 2026-11-06: `/book/*` and `/model/report` need `OWNER_API_KEY`, 404 otherwise and out of the public spec; public responses carry no picks or Book prices; Book and Model pages, plays filter, edge sort and pick badges removed; weekly review reads the ledger with the key)
   - *Site:* remove the Book and Model pages, their nav links and link previews, and the TSI plays on This week (13.5). No "How TSI works" page.
   - *API:* `/book/*` and `/model/report` answer only requests carrying the owner's key (an `Authorization` header checked against an `OWNER_API_KEY` environment variable on Render). The key lives in Render's settings and the owner's local `.env` (used by the weekly review script, which reads `/book/ledger`), never in the code or the site; wrong or missing key → 404.
   - Any pick or Book data inside public responses (week board, game pages) is removed from those responses.

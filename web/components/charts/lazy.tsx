@@ -23,18 +23,3 @@ export const RatingTrendChart = dynamic(
   () => import("@/components/charts/rating-trend-chart").then((m) => m.RatingTrendChart),
   { ssr: false, loading: placeholder("h-[276px] sm:h-[260px]") },
 )
-
-export const UnitsChart = dynamic(
-  () => import("@/components/book/units-chart").then((m) => m.UnitsChart),
-  { ssr: false, loading: placeholder("h-[316px] sm:h-[292px]") },
-)
-
-export const SeasonChart = dynamic(
-  () => import("@/components/model/season-chart").then((m) => m.SeasonChart),
-  { ssr: false, loading: placeholder("h-[340px] sm:h-[316px]") },
-)
-
-export const CalibrationChart = dynamic(
-  () => import("@/components/model/calibration-chart").then((m) => m.CalibrationChart),
-  { ssr: false, loading: placeholder("aspect-square max-h-[380px] w-full max-w-sm") },
-)

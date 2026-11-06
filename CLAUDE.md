@@ -3,7 +3,7 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views.
 
 ## Status
-- **Phase 10 complete** (2026-11-04): FCS rated individually from 2022 (model **v1.3**, #109, #110), ranked within its division and published nightly without picks (#111; FCS Book backtest not earned, #112), API `division` switch (#113), FCS Résumé vs. the #10 FCS team (#114), site FBS / FCS / All views (#115). Live picks are FBS-vs-FBS only (#108). **Phase 11 complete** (2026-11-05; first-half markets, live odds and AI previews dropped, #128, #130): key numbers (#118, #119) and rest / bye / short week (model **v1.4**, #120) done; model v2 boosting rejected (#121); second-level yards + power success (model **v1.5**, #122) done; the same signals in the totals stack rejected (#123); FBS-vs-FCS margin scale + total offset (model **v1.6**, #124); FCS season sim + 24-team FCS playoff (#125). Phase 12: no negative scores (model **v1.7**, #132); FCS Résumé vs. #24 (#133). **Phase 13 started** (2026-11-06): 13.1 black-and-white palette, Instrument Sans, team-colored lighting (#137). 13.2 team colors: sourced corrections + never white/black/gray (#138).
+- **Phase 10 complete** (2026-11-04): FCS rated individually from 2022 (model **v1.3**, #109, #110), ranked within its division and published nightly without picks (#111; FCS Book backtest not earned, #112), API `division` switch (#113), FCS Résumé vs. the #10 FCS team (#114), site FBS / FCS / All views (#115). Live picks are FBS-vs-FBS only (#108). **Phase 11 complete** (2026-11-05; first-half markets, live odds and AI previews dropped, #128, #130): key numbers (#118, #119) and rest / bye / short week (model **v1.4**, #120) done; model v2 boosting rejected (#121); second-level yards + power success (model **v1.5**, #122) done; the same signals in the totals stack rejected (#123); FBS-vs-FCS margin scale + total offset (model **v1.6**, #124); FCS season sim + 24-team FCS playoff (#125). Phase 12: no negative scores (model **v1.7**, #132); FCS Résumé vs. #24 (#133). **Phase 13 started** (2026-11-06): 13.1 black-and-white palette, Instrument Sans, team-colored lighting (#137). 13.2 team colors: sourced corrections + never white/black/gray (#138). 13.3 the Book is owner-only: Book and Model pages removed, `/book/*` and `/model/report` need `OWNER_API_KEY` (#139).
 - **Phase 9 complete** (2026-11-03): `adjustments` table + `tsi adjust add/list/expire` (#103); raw vs. adjusted predictions stored and shown (#104); report card of adjusted vs. raw on the Model page and `tsi adjust report` (#105).
 - **Phase 0–1 complete** (2026-10-14): 2014–2026 loaded into Neon (it turned out to be the `production` branch; see #82).
 - **Phase 2 complete:** model **v1.2**. Rankings = learned PPD+success blend (val MAE 13.37); predictions = stacked margin (**val 12.40 vs. Vegas 12.00, SU 71.7%**); stacked totals (val 12.87 vs. 12.68); Résumé/SOS; report card published (private artifact `AEndkhJAt49YQNJcWC2i7v`, refresh with `tsi backtest export`; last refreshed 2026-10-20).
@@ -23,7 +23,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - `docs/03-data-sources.md`: CFBD endpoints, caching/freshness, call budget, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model and Book math, with backtest results
 - `docs/06-frontend.md`: page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#138 so far)
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#139 so far)
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -61,6 +61,7 @@ The plan lives in `docs/`. Before starting work, read the roadmap and the doc fo
 - **New FBS teams in 2026:** North Dakota State (Mountain West) and Sacramento State (MAC) are FBS this season and rated individually; don't mistake them for pooled FCS teams.
 
 ## TSI Book (doc 05)
+- **Owner-only (#139):** the site has no Book or Model page; public responses carry no picks or Book prices (game center and matchup markets are `FairMarkets`). `/book/ledger` and `/model/report` answer only `Authorization: Bearer <OWNER_API_KEY>` (`api/deps.require_owner`, constant-time compare; else 404, not in the public spec, `no-store`). The key lives in Render's env and the owner's `backend/.env`, never in code or the site. Picks are still published and graded nightly.
 - **TSI has no edge against closing lines.** Its spread disagreements don't predict covers (fitted trust k_spread ≈ 0); it *does* predict line moves (positive CLV every season) and beats **opening totals**.
 - **Shrunk edges (#52):** P(cover/over) = Φ(k · (TSI − line)/σ), k learned vs. the median opener: production **k_spread 0.134, k_total 0.308** (v1.5). Moneyline edge = TSI's win-probability *shift* added to the market's no-vig probability (#55); never compare Φ(margin/σ) with ML prices directly. No intercept/base-rate term (#56: it turned the Book into an under-only bettor).
 - **Picks only on FBS-vs-FBS games (#108, #112):** FCS games are published without picks; the FCS Book backtest hasn't earned them (no FCS-vs-FCS openers, no CLV on FCS totals). Revisit after 2026 with live snapshots.
@@ -145,7 +146,7 @@ uv run tsi sim season           # projected wins, win out, conference title and 
 uv run tsi adjust add TEAM --off -4 --reason "QB out"   # manual adjustment (--def, --from/--through YYYY-MM-DD); `adjust list [--all]`, `adjust expire N`, `adjust report` (raw vs. adjusted accuracy)
 
 # Operations (production; see the tsi-weekly-run skill)
-python ../.claude/skills/tsi-weekly-run/scripts/weekly_review.py   # weekly review from the public API (--week N, --api URL)
+python ../.claude/skills/tsi-weekly-run/scripts/weekly_review.py   # weekly review (Book sections need OWNER_API_KEY) (--week N, --api URL)
 
 # Data
 uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)

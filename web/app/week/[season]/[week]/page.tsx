@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { season, week } = await params
   return pageMeta({
     title: `Week ${week}, ${season}`,
-    description: `TSI's projected scores and win probabilities for every week ${week} game, next to the betting market, with this week's TSI plays.`,
+    description: `TSI's projected scores and win probabilities for every week ${week} game, next to the betting market.`,
   })
 }
 

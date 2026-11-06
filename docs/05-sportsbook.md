@@ -78,7 +78,8 @@ CLV is the best long-run skill signal. If TSI consistently beats the closing lin
 
 **FCS (#108, #112):** the live Book picks FBS-vs-FBS games only. `tsi backtest book` also replays the rules on games with an FCS team (report only). Validation 2023–25: CFBD has openers for only ~5% of FCS-vs-FCS games, so those can't be judged; FCS totals went 30-23 but with CLV −0.03 (28% beat the close), i.e. no real signal; FBS-vs-FCS spreads with an FCS-fit trust factor went 84-69 (+4.8%, CLV +0.91) on a trust fit from one season. FCS picks stay off until live 2026 snapshots can be graded.
 
-## 6. TSI Book ledger (what the site shows)
+## 6. TSI Book ledger (owner-only since #139)
+The site no longer shows the Book (Phase 13.3): the ledger is served only to the owner (`/book/ledger` with `OWNER_API_KEY`) and read by the weekly review. It holds:
 - Season and all-time record: ATS, O/U, ML, by ★ tier
 - Units won, ROI, cumulative units chart
 - Average CLV, % of picks that beat the close

@@ -67,9 +67,9 @@ export async function MatchupView({ pick }: { pick: MatchupPick }) {
       <AltLadder markets={matchup.markets} home={matchup.home} />
       {homeProfile && awayProfile && <TaleOfTape home={homeProfile} away={awayProfile} />}
       <p className="max-w-[70ch] text-sm text-muted-foreground">
-        This is a what-if, not a published prediction: it isn&apos;t saved, graded or part of the
-        TSI Book. It uses the same model as the weekly predictions with today&apos;s ratings, so
-        early-season matchups lean on preseason expectations.
+        This is a what-if, not a published prediction: it isn&apos;t saved or graded. It uses the
+        same model as the weekly predictions with today&apos;s ratings, so early-season matchups
+        lean on preseason expectations.
       </p>
     </>
   )

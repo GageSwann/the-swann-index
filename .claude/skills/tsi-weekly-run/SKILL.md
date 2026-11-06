@@ -103,7 +103,9 @@ python .claude/skills/tsi-weekly-run/scripts/weekly_review.py --week 9   # a spe
 python .claude/skills/tsi-weekly-run/scripts/weekly_review.py --api http://127.0.0.1:8000  # local dev API
 ```
 
-It reads only the public API (no secrets) and prints Markdown: data freshness, the TSI
+It reads the public API plus the owner-only `/book/ledger` (decision #139), with the key
+from `OWNER_API_KEY` (environment or `backend/.env`; never printed). Without the key it
+skips the Book sections and says so. It prints Markdown: data freshness, the TSI
 Book (season and the week's graded picks with CLV), the week's prediction accuracy vs.
 the closing line, Power rankings with weekly movement, and next week's ranked games,
 plays and biggest disagreements with Vegas.
@@ -114,7 +116,7 @@ How to read it, so one week isn't over-interpreted:
   average CLV (lines moving toward TSI after it bets) is what the backtest showed every
   season. A run of negative-CLV weeks is the real warning sign.
 - **Margin error:** the backtest gap to the closing line is ~0.4 points. Single weeks
-  swing (week 8 was 1.0); look at the season-to-date row on the Model page.
+  swing (week 8 was 1.0); look at the season-to-date row of `/model/report` (owner-only: `curl -H "Authorization: Bearer $OWNER_API_KEY" …/model/report`).
 - **TSI's side vs. the closing spread** hovers near 50% by design (no spread edge), which
   is why the Book almost never bets spreads. Far below 50% for several weeks would be
   worth investigating; one bad week is not.
@@ -194,6 +196,7 @@ $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create
 | `REVALIDATE_TOKEN` | Vercel env; GitHub secret | new token → Vercel → Settings → Environment Variables → edit → **redeploy** (env changes apply to new deployments only); GitHub secret → update. Until both match, the nightly refresh step fails with 401 |
 | `DATABASE_URL` (production) | Render env; GitHub secret | Neon → Roles → reset `neondb_owner` password (this changes **every** branch's string, `dev` too) → copy new pooled strings → Render (Save, rebuild, and deploy), GitHub secret, and the owner's `backend/.env` for `dev` |
 | `CFBD_API_KEY` | GitHub secret; `backend/.env` | new key at collegefootballdata.com → update both |
+| `OWNER_API_KEY` | Render env; the owner's `backend/.env` | new key (≥ 32 random characters, e.g. the generator above) → Render → Environment → edit → Save, rebuild, and deploy → `backend/.env`. Until both match, `/book/*` and `/model/report` answer 404 and the weekly review skips the Book |
 
 After any rotation, run the daily check (section 1) after the next nightly run, or re-run
 it with the owner's OK.

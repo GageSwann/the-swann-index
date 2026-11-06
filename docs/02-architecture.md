@@ -103,9 +103,9 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | GET | `/teams?division=fbs\|fcs\|all` | teams of a division (slug, name, colors, logo) |
 | GET | `/teams/{slug}?season` | team profile, rating history, schedule + win probs |
 | GET | `/weeks/{season}/{week}/games?division=fbs\|fcs\|all` | matchup board with TSI vs. market (games with a team of that division) |
-| GET | `/games/{id}` | full game center payload (odds board, distribution, comparison, result/grade) |
-| GET | `/book/ledger?season` | picks + running record, ROI, CLV |
-| GET | `/model/report?season` | latest saved backtest (headline metrics + report tables: accuracy by season/period, calibration, ATS, totals, Book record/calibration/units), model version history, live accuracy (#76) |
+| GET | `/games/{id}` | full game center payload (TSI's chances and fair prices, distribution, comparison, result) |
+| GET | `/book/ledger?season` | picks + running record, ROI, CLV; **owner-only** (#139): answers only `Authorization: Bearer <OWNER_API_KEY>`, else the same 404 as an unknown path; left out of the public spec; `Cache-Control: no-store` |
+| GET | `/model/report?season` | latest saved backtest (headline metrics + report tables: accuracy by season/period, calibration, ATS, totals, Book record/calibration/units), model version history, live accuracy (#76); owner-only like the ledger |
 | GET | `/matchup?home&away&neutral` | on-demand hypothetical prediction |
 | GET | `/playoff?season` | playoff odds per team (field, bye, rounds, title, fair odds), projected bracket, the format's pairings (#101; 404 outside the regular season) |
 
@@ -116,6 +116,7 @@ Behavior (decision #60):
 - **Market shown:** books' consensus as of now; once kicked off, the closing consensus (falls back to the last pre-kickoff lines until closing lines are ingested the next morning).
 - **Game center** re-prices team totals and alt ladders from the snapshot's stored distribution (`book/pricing.py`), so they always match it.
 - **Week board** lists games with at least one FBS team. **Rankings** read the latest live rating run (optionally within a week); records come from completed games before that run.
+- **No Book data in public responses (#139):** snapshots carry no TSI Book prices or picks, and the game center and matchup markets are `FairMarkets` (TSI's probability + no-vig odds per line; `services/read/fair_markets.py`). Picks are still published and graded nightly; the owner reads them through `/book/ledger` (with the key), the CLI and the weekly review.
 - **Ledger** = picks on locked snapshots (`pending`/`graded`) plus `open` picks on not-yet-started games (may still change).
 - **Matchup** reuses the live prediction path; live inputs are cached in-process for an hour.
 - `season` defaults to the current season everywhere; unknown team/game → 404.

@@ -10,7 +10,6 @@ import { OddsBoard } from "@/components/game/odds-board"
 import { PredictionHistory } from "@/components/game/prediction-history"
 import { RatingTrendChart } from "@/components/charts/lazy"
 import { TaleOfTape } from "@/components/game/tale-of-tape"
-import { PickBadge } from "@/components/board/pick-badge"
 import { PageHeading } from "@/components/layout/page-heading"
 import { getGame, getMeta, getTeam, getWeekGames } from "@/lib/api/queries"
 import { pageMeta } from "@/lib/metadata"
@@ -68,13 +67,6 @@ async function GameCenterView({ params }: Props) {
       </h1>
       <GameHeader game={game} home={home} away={away} />
       {p && <AdjustedNote prediction={p} game={game} className="max-w-[70ch]" />}
-      {p && p.picks.length > 0 && (
-        <div className="space-y-2">
-          {p.picks.map((pick) => (
-            <PickBadge key={`${pick.market}-${pick.side}`} pick={pick} game={game} />
-          ))}
-        </div>
-      )}
       {p && center.markets ? (
         <>
           <OddsBoard center={center} />
