@@ -15,6 +15,8 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 # src/tsi/config.py -> backend/
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_ENV_FILE = BACKEND_DIR / ".env"
+# A random key (e.g. `secrets.token_urlsafe(32)`), never a guessable word.
+OWNER_KEY_MIN_LENGTH = 32
 
 
 class ConfigError(RuntimeError):
@@ -36,6 +38,9 @@ class Settings(BaseSettings):
     database_url_direct: SecretStr | None = None
     cfbd_monthly_call_budget: int = Field(default=980, ge=0)
     tsi_cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
+    # The owner's key for the private endpoints (/book/*, /model/report; decision #139).
+    # Unset = those endpoints answer 404 to everyone.
+    owner_api_key: SecretStr | None = None
     # Raw CFBD response cache (gitignored).
     tsi_cache_dir: Path = BACKEND_DIR / ".cache"
 
@@ -45,6 +50,13 @@ class Settings(BaseSettings):
         # Settings validate defaults too, so an unset optional key arrives as None.
         if value is not None and not value.get_secret_value().strip():
             raise ValueError("is empty")
+        return value
+
+    @field_validator("owner_api_key")
+    @classmethod
+    def _long_enough(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is not None and len(value.get_secret_value().strip()) < OWNER_KEY_MIN_LENGTH:
+            raise ValueError(f"must be at least {OWNER_KEY_MIN_LENGTH} characters")
         return value
 
     @field_validator("tsi_cors_origins", mode="before")

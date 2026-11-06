@@ -9,22 +9,33 @@ from tsi.api.deps import get_now, get_sessions
 from tsi.config import Settings
 from tsi.model.ratings.probability import win_prob
 
+OWNER_KEY = "fakekey-" + "x" * 32  # low entropy on purpose (gitleaks)
+OWNER = {"Authorization": f"Bearer {OWNER_KEY}"}
+
+
+def make_api(sessions, owner_key: str | None = OWNER_KEY) -> TestClient:
+    settings = Settings(
+        cfbd_api_key="fakekey",
+        database_url="postgresql+psycopg://u:fakekey@x/y",
+        owner_api_key=owner_key,
+    )
+    app = create_app(settings)
+
+    app.dependency_overrides[get_sessions] = lambda: sessions
+    app.dependency_overrides[get_now] = lambda: NOW
+    return TestClient(app)
+
 
 @pytest.fixture
 def api(sessions) -> TestClient:
     with sessions.begin() as s:
         seed(s)
-    settings = Settings(cfbd_api_key="fakekey", database_url="postgresql+psycopg://u:fakekey@x/y")
-    app = create_app(settings)
-
-    app.dependency_overrides[get_sessions] = lambda: sessions
-    app.dependency_overrides[get_now] = lambda: NOW
-    with TestClient(app) as client:
+    with make_api(sessions) as client:
         yield client
 
 
-def ok(api: TestClient, path: str) -> dict:
-    r = api.get(path)
+def ok(api: TestClient, path: str, headers: dict | None = None) -> dict:
+    r = api.get(path, headers=headers)
     assert r.status_code == 200, (path, r.text)
     return r.json()
 
@@ -113,10 +124,11 @@ def test_week_board(api: TestClient) -> None:
 
     assert set(games) == {201, 202}  # the FCS-only game is left out
     live = games[201]["prediction"]
-    assert live["locked"] is True and live["spread"] == -4.0 and live["picks"] == []
+    assert live["locked"] is True and live["spread"] == -4.0
     upcoming = games[202]
     assert upcoming["prediction"]["locked"] is False
-    assert [p["side"] for p in upcoming["prediction"]["picks"]] == ["over"]
+    # The Book is owner-only (#139): no picks or Book prices in public responses.
+    assert not {k for k in upcoming["prediction"] if k == "picks" or k.startswith("book_")}
     assert live["adjusted"] is False and live["raw"] is None and live["adjustments"] == []
     adjusted = upcoming["prediction"]
     assert (adjusted["adjusted"], adjusted["spread"], adjusted["total"]) == (True, -2.0, 54.0)
@@ -135,6 +147,8 @@ def test_game_center(api: TestClient) -> None:
     assert center["markets"]["spread"]["line"] == -2.0
     assert center["markets"]["total"]["line"] == 54.0
     assert len(center["markets"]["alt_spreads"]) == 21
+    spread = center["markets"]["spread"]["first"]
+    assert set(spread) == {"prob", "fair"}  # TSI's chance and fair odds, no Book price
     assert len(center["history"]) == 1
     assert ok(api, "/games/101")["game"]["result"] == {
         "home_points": 30,
@@ -145,7 +159,7 @@ def test_game_center(api: TestClient) -> None:
 
 
 def test_ledger(api: TestClient) -> None:
-    ledger = ok(api, "/book/ledger")
+    ledger = ok(api, "/book/ledger", OWNER)
 
     statuses = {p["game_id"]: p["status"] for p in ledger["picks"]}
     assert statuses == {101: "graded", 202: "open"}  # the post-kickoff pick on 201 never counts
@@ -157,7 +171,7 @@ def test_ledger(api: TestClient) -> None:
 
 
 def test_model_report(api: TestClient) -> None:
-    report = ok(api, "/model/report")
+    report = ok(api, "/model/report", OWNER)
 
     assert report["backtest"]["metrics"]["validate_mae"] == 12.4
     tables = report["backtest"]["report"]
@@ -278,3 +292,35 @@ def test_no_movement_until_the_earlier_run_ranked_the_division(api: TestClient) 
         assert board["previous_as_of"] is None
         assert all(t["previous_rank"] is None for t in board["teams"])
     assert ok(api, "/rankings")["previous_as_of"] is not None  # FBS keeps its movement
+
+
+PRIVATE = ("/book/ledger", "/model/report")
+
+
+@pytest.mark.parametrize("path", PRIVATE)
+@pytest.mark.parametrize(
+    "headers",
+    [
+        None,
+        {"Authorization": "Bearer wrong-" + "x" * 32},
+        {"Authorization": OWNER_KEY},  # no "Bearer"
+        {"X-Owner-Key": OWNER_KEY},
+    ],
+)
+def test_private_endpoints_hide_without_the_key(api: TestClient, path: str, headers) -> None:
+    r = api.get(path, headers=headers)
+    assert (r.status_code, r.json()) == (404, {"detail": "Not Found"})  # same as unknown paths
+    assert r.headers["cache-control"] == "no-store"
+
+
+@pytest.mark.parametrize("path", PRIVATE)
+def test_private_endpoints_answer_the_owner_uncached(api: TestClient, path: str) -> None:
+    r = api.get(path, headers=OWNER)
+    assert r.status_code == 200
+    assert r.headers["cache-control"] == "no-store"  # never kept by a shared cache
+
+
+@pytest.mark.parametrize("path", PRIVATE)
+def test_private_endpoints_closed_when_no_key_is_configured(sessions, path: str) -> None:
+    with make_api(sessions, owner_key=None) as client:
+        assert client.get(path, headers=OWNER).status_code == 404

@@ -9,11 +9,11 @@ V1_PATHS = {
     "/teams/{slug}",
     "/weeks/{season}/{week}/games",
     "/games/{game_id}",
-    "/book/ledger",
-    "/model/report",
     "/matchup",
     "/playoff",
 }
+# Owner-only (decision #139): served with the key, never in the public spec.
+PRIVATE_PATHS = {"/book/ledger", "/model/report"}
 
 
 def test_committed_spec_is_current() -> None:
@@ -27,6 +27,7 @@ def test_spec_covers_v1_with_clean_operation_ids() -> None:
     ops = [path["get"] for path in doc["paths"].values()]
 
     assert set(doc["paths"]) == V1_PATHS
+    assert not PRIVATE_PATHS & set(doc["paths"])
     ids = [op["operationId"] for op in ops]
     assert len(set(ids)) == len(ids) and all(i.startswith("get_") for i in ids)
     for op in ops:

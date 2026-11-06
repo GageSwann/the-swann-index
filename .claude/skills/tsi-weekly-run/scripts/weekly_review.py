@@ -1,8 +1,12 @@
-"""Weekly review of The Swann Index from the public API (no secrets, stdlib only).
+"""Weekly review of The Swann Index from the API (stdlib only).
 
 Prints a Markdown report: data freshness, the TSI Book (season + the week's graded
 picks), prediction accuracy for the week vs. the closing line, Power rankings with
-weekly movement, and the coming week's key matchups.
+weekly movement, and the coming week's key matchups and TSI plays.
+
+The Book is owner-only (decision #139): `/book/ledger` answers only with the owner's key,
+read from the OWNER_API_KEY environment variable or else `backend/.env`, and never
+printed. Without it the report skips the Book sections and says so.
 
     python weekly_review.py                      # production API, last completed week
     python weekly_review.py --week 8             # a specific week
@@ -13,17 +17,46 @@ Spread sign: home team's view, negative = home favored (CLAUDE.md, data conventi
 
 import argparse
 import json
+import os
 import sys
+import urllib.error
 import urllib.request
+from pathlib import Path
 from statistics import mean
 
 PRODUCTION_API = "https://tsi-api-44wx.onrender.com"
+ENV_FILE = Path(__file__).resolve().parents[4] / "backend" / ".env"
 
 
-def get(api: str, path: str):
+def owner_key() -> str | None:
+    """OWNER_API_KEY from the environment, else backend/.env; None when unset."""
+    key = os.environ.get("OWNER_API_KEY", "").strip()
+    if not key and ENV_FILE.exists():
+        for raw in ENV_FILE.read_text(encoding="utf-8").splitlines():
+            name, sep, value = raw.partition("=")
+            if sep and name.strip() == "OWNER_API_KEY":
+                key = value.strip().strip('"').strip("'")
+    return key or None
+
+
+def get(api: str, path: str, key: str | None = None):
     # The free Render API sleeps when idle; the first call can take ~1 minute.
-    with urllib.request.urlopen(api + path, timeout=150) as r:
+    headers = {"Authorization": f"Bearer {key}"} if key else {}
+    with urllib.request.urlopen(urllib.request.Request(api + path, headers=headers), timeout=150) as r:
         return json.load(r)
+
+
+def get_ledger(api: str, season: int) -> dict | None:
+    """The owner-only Book ledger; None without a key or when the API refuses it (404)."""
+    key = owner_key()
+    if key is None:
+        return None
+    try:
+        return get(api, f"/book/ledger?season={season}", key)
+    except urllib.error.HTTPError as e:
+        if e.code == 404:  # wrong key, or none configured on the API
+            return None
+        raise
 
 
 def short(team: dict) -> str:
@@ -39,9 +72,16 @@ def fmt_record(r: dict) -> str:
     return f"{r['wins']}-{r['losses']}" + (f"-{r['pushes']}" if r.get("pushes") else "")
 
 
-def book_section(api: str, season: int, week_ids: set[int], week: int) -> list[str]:
-    ledger = get(api, f"/book/ledger?season={season}")
+NO_BOOK = (
+    "- Skipped: the Book is owner-only. Set OWNER_API_KEY (environment or backend/.env) "
+    "to the key configured on Render."
+)
+
+
+def book_section(ledger: dict | None, week_ids: set[int], week: int) -> list[str]:
     out = ["## TSI Book", ""]
+    if ledger is None:
+        return out + [NO_BOOK, ""]
     overall = next((r for r in ledger["records"] if r["market"] == "all" and r["tier"] == 0), None)
     if overall and overall["wins"] + overall["losses"] + overall["pushes"]:
         clv = "n/a" if overall["clv"] is None else f"{overall['clv']:+.2f} pts"
@@ -134,28 +174,40 @@ def rankings_section(api: str) -> tuple[list[str], dict]:
     return out + [""], ranks
 
 
-def next_week_section(api: str, season: int, week: int, ranks: dict) -> list[str]:
+def next_week_section(
+    api: str, season: int, week: int, ranks: dict, ledger: dict | None
+) -> list[str]:
     try:
         games = get(api, f"/weeks/{season}/{week}/games")["games"]
     except Exception:  # noqa: BLE001 - no such week (end of season)
         return []
     pub = [g for g in games if g.get("prediction")]
+    plays_by_game: dict[int, list[dict]] = {}  # the Book's current picks (owner-only ledger)
+    for p in (ledger or {}).get("picks", []):
+        if p["status"] != "graded":
+            plays_by_game.setdefault(p["game_id"], []).append(p["pick"])
     out = [f"## Week {week} preview", "", f"{len(pub)} of {len(games)} games have TSI predictions.", ""]
 
     def line(g):
         p, m = g["prediction"], g.get("market") or {}
         fav = g["home"] if p["spread"] < 0 else g["away"]
         mk = f" | Vegas {m['spread']:+.1f}, total {m['total']}" if m.get("spread") is not None else ""
-        picks = "".join(f" | PLAY {'★' * k['tier']} {k['market']} {k['side']} {k['line']}" for k in p["picks"])
+        picks = "".join(
+            f" | PLAY {'★' * k['tier']} {k['market']} {k['side']} {k['line']}"
+            for k in plays_by_game.get(g["id"], [])
+        )
         return (f"- {ranked(g['away'], ranks)} {'vs' if g['neutral'] else 'at'} {ranked(g['home'], ranks)}: "
                 f"{short(fav)} by {abs(p['spread']):.1f}, total {p['total']:.1f}{mk}{picks}")
 
     top = lambda g, side: ranks.get(g[side]["slug"], 99) <= 25
     both = [g for g in pub if top(g, "home") and top(g, "away")]
-    plays = [g for g in pub if g["prediction"]["picks"]]
+    plays = [g for g in pub if g["id"] in plays_by_game]
     lined = [g for g in pub if (g.get("market") or {}).get("spread") is not None]
     dis = sorted(lined, key=lambda g: -abs(g["prediction"]["spread"] - g["market"]["spread"]))[:4]
     for title, items in (("Ranked vs. ranked", both), ("TSI plays", plays), ("Biggest disagreements with Vegas", dis)):
+        if title == "TSI plays" and ledger is None:
+            out += [f"**{title}:**", "", NO_BOOK, ""]
+            continue
         out += [f"**{title}:**", ""] + ([line(g) for g in items] or ["- none"]) + [""]
     return out
 
@@ -182,11 +234,12 @@ def main() -> int:
         ),
         "",
     ]
-    report += book_section(api, season, {g["id"] for g in games}, week)
+    ledger = get_ledger(api, season)
+    report += book_section(ledger, {g["id"] for g in games}, week)
     report += accuracy_section(games, week)
     rank_lines, ranks = rankings_section(api)
     report += rank_lines
-    report += next_week_section(api, season, week + 1, ranks)
+    report += next_week_section(api, season, week + 1, ranks, ledger)
     sys.stdout.reconfigure(encoding="utf-8")
     print("\n".join(report))
     return 0

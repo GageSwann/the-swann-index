@@ -13,13 +13,14 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
-from tsi.book.pricing import GameMarkets, price_game
+from tsi.book.pricing import price_game
 from tsi.db.queries.schedule import UpcomingGame
 from tsi.db.queries.team_info import TeamRef, team_ids_by_slug, team_refs
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact, production_artifact
 from tsi.services.live_inputs import LiveInputs, load_live_inputs
 from tsi.services.predict import forecast_game
+from tsi.services.read.fair_markets import FairMarkets, fair_markets
 
 CACHE_TTL = timedelta(hours=1)
 _cache: dict[int, tuple[datetime, LiveInputs]] = {}
@@ -40,7 +41,7 @@ class Matchup:
     home_win_prob: float
     sigma_margin: float  # spread of the score distribution (for the margin chart)
     sigma_total: float
-    markets: GameMarkets
+    markets: FairMarkets  # TSI's chances and fair prices (no Book prices, #139)
 
 
 class UnknownTeamError(LookupError):
@@ -83,7 +84,7 @@ def matchup(session: Session, home: str, away: str, neutral: bool, now: datetime
         home_win_prob=dist.home_win_prob,
         sigma_margin=dist.sigma_margin,
         sigma_total=dist.sigma_total,
-        markets=price_game(dist, keys=artifact.key_numbers),
+        markets=fair_markets(price_game(dist, keys=artifact.key_numbers)),
     )
 
 

@@ -1,165 +1,6 @@
 {
   "components": {
     "schemas": {
-      "AccuracyRow": {
-        "properties": {
-          "elo_mae": {
-            "title": "Elo Mae",
-            "type": "number"
-          },
-          "elo_su": {
-            "title": "Elo Su",
-            "type": "number"
-          },
-          "games": {
-            "title": "Games",
-            "type": "integer"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "predictive_brier": {
-            "title": "Predictive Brier",
-            "type": "number"
-          },
-          "predictive_mae": {
-            "title": "Predictive Mae",
-            "type": "number"
-          },
-          "predictive_su": {
-            "title": "Predictive Su",
-            "type": "number"
-          },
-          "season_mae": {
-            "title": "Season Mae",
-            "type": "number"
-          },
-          "vegas_mae": {
-            "title": "Vegas Mae",
-            "type": "number"
-          },
-          "vegas_su": {
-            "title": "Vegas Su",
-            "type": "number"
-          }
-        },
-        "required": [
-          "label",
-          "games",
-          "season_mae",
-          "predictive_mae",
-          "elo_mae",
-          "vegas_mae",
-          "predictive_su",
-          "elo_su",
-          "vegas_su",
-          "predictive_brier"
-        ],
-        "title": "AccuracyRow",
-        "type": "object"
-      },
-      "AdjustedScore": {
-        "description": "Raw vs. adjusted over a set of adjusted games (lower error is better).",
-        "properties": {
-          "adjusted_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adjusted Mae"
-          },
-          "adjusted_su": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adjusted Su"
-          },
-          "adjusted_total_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Adjusted Total Mae"
-          },
-          "games": {
-            "title": "Games",
-            "type": "integer"
-          },
-          "helped": {
-            "title": "Helped",
-            "type": "integer"
-          },
-          "hurt": {
-            "title": "Hurt",
-            "type": "integer"
-          },
-          "raw_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Raw Mae"
-          },
-          "raw_su": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Raw Su"
-          },
-          "raw_total_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Raw Total Mae"
-          },
-          "same": {
-            "title": "Same",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "games",
-          "raw_mae",
-          "adjusted_mae",
-          "raw_total_mae",
-          "adjusted_total_mae",
-          "raw_su",
-          "adjusted_su",
-          "helped",
-          "hurt",
-          "same"
-        ],
-        "title": "AdjustedScore",
-        "type": "object"
-      },
       "AdjustmentNote": {
         "description": "A manual adjustment behind an adjusted prediction (decision #103).",
         "properties": {
@@ -197,351 +38,6 @@
           "reason"
         ],
         "title": "AdjustmentNote",
-        "type": "object"
-      },
-      "AdjustmentReport": {
-        "properties": {
-          "adjustments": {
-            "items": {
-              "$ref": "#/components/schemas/AdjustmentScore"
-            },
-            "title": "Adjustments",
-            "type": "array"
-          },
-          "overall": {
-            "$ref": "#/components/schemas/AdjustedScore"
-          }
-        },
-        "required": [
-          "overall",
-          "adjustments"
-        ],
-        "title": "AdjustmentReport",
-        "type": "object"
-      },
-      "AdjustmentScore": {
-        "properties": {
-          "adjustment": {
-            "$ref": "#/components/schemas/AdjustmentNote"
-          },
-          "score": {
-            "$ref": "#/components/schemas/AdjustedScore"
-          }
-        },
-        "required": [
-          "adjustment",
-          "score"
-        ],
-        "title": "AdjustmentScore",
-        "type": "object"
-      },
-      "AtsRow": {
-        "properties": {
-          "bets": {
-            "title": "Bets",
-            "type": "integer"
-          },
-          "losses": {
-            "title": "Losses",
-            "type": "integer"
-          },
-          "min_edge": {
-            "title": "Min Edge",
-            "type": "number"
-          },
-          "pushes": {
-            "title": "Pushes",
-            "type": "integer"
-          },
-          "win_rate": {
-            "title": "Win Rate",
-            "type": "number"
-          },
-          "wins": {
-            "title": "Wins",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "min_edge",
-          "bets",
-          "wins",
-          "losses",
-          "pushes",
-          "win_rate"
-        ],
-        "title": "AtsRow",
-        "type": "object"
-      },
-      "BacktestReport": {
-        "properties": {
-          "ats": {
-            "items": {
-              "$ref": "#/components/schemas/AtsRow"
-            },
-            "title": "Ats",
-            "type": "array"
-          },
-          "book": {
-            "items": {
-              "$ref": "#/components/schemas/BookBacktestRow"
-            },
-            "title": "Book",
-            "type": "array"
-          },
-          "book_calibration": {
-            "items": {
-              "$ref": "#/components/schemas/BookCalibrationBin"
-            },
-            "title": "Book Calibration",
-            "type": "array"
-          },
-          "book_units": {
-            "items": {
-              "$ref": "#/components/schemas/BookUnitsPoint"
-            },
-            "title": "Book Units",
-            "type": "array"
-          },
-          "by_season": {
-            "items": {
-              "$ref": "#/components/schemas/AccuracyRow"
-            },
-            "title": "By Season",
-            "type": "array"
-          },
-          "calibration": {
-            "items": {
-              "$ref": "#/components/schemas/CalibrationBin"
-            },
-            "title": "Calibration",
-            "type": "array"
-          },
-          "periods": {
-            "items": {
-              "$ref": "#/components/schemas/AccuracyRow"
-            },
-            "title": "Periods",
-            "type": "array"
-          },
-          "totals": {
-            "items": {
-              "$ref": "#/components/schemas/TotalsRow"
-            },
-            "title": "Totals",
-            "type": "array"
-          }
-        },
-        "required": [
-          "by_season",
-          "periods",
-          "calibration",
-          "ats",
-          "totals",
-          "book",
-          "book_calibration",
-          "book_units"
-        ],
-        "title": "BacktestReport",
-        "type": "object"
-      },
-      "BacktestSummary": {
-        "properties": {
-          "git_sha": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Git Sha"
-          },
-          "metrics": {
-            "additionalProperties": {
-              "type": "number"
-            },
-            "title": "Metrics",
-            "type": "object"
-          },
-          "model_version": {
-            "title": "Model Version",
-            "type": "string"
-          },
-          "report": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BacktestReport"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "run_at": {
-            "format": "date-time",
-            "title": "Run At",
-            "type": "string"
-          }
-        },
-        "required": [
-          "run_at",
-          "model_version",
-          "git_sha",
-          "metrics",
-          "report"
-        ],
-        "title": "BacktestSummary",
-        "type": "object"
-      },
-      "BookBacktestRow": {
-        "properties": {
-          "beat_close": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Beat Close"
-          },
-          "bets": {
-            "title": "Bets",
-            "type": "integer"
-          },
-          "clv": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Clv"
-          },
-          "kelly_units": {
-            "title": "Kelly Units",
-            "type": "number"
-          },
-          "losses": {
-            "title": "Losses",
-            "type": "integer"
-          },
-          "market": {
-            "title": "Market",
-            "type": "string"
-          },
-          "period": {
-            "title": "Period",
-            "type": "string"
-          },
-          "pushes": {
-            "title": "Pushes",
-            "type": "integer"
-          },
-          "roi": {
-            "title": "Roi",
-            "type": "number"
-          },
-          "tier": {
-            "title": "Tier",
-            "type": "integer"
-          },
-          "units": {
-            "title": "Units",
-            "type": "number"
-          },
-          "win_rate": {
-            "title": "Win Rate",
-            "type": "number"
-          },
-          "wins": {
-            "title": "Wins",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "period",
-          "market",
-          "tier",
-          "bets",
-          "wins",
-          "losses",
-          "pushes",
-          "win_rate",
-          "units",
-          "roi",
-          "kelly_units",
-          "clv",
-          "beat_close"
-        ],
-        "title": "BookBacktestRow",
-        "type": "object"
-      },
-      "BookCalibrationBin": {
-        "properties": {
-          "bin": {
-            "title": "Bin",
-            "type": "string"
-          },
-          "games": {
-            "title": "Games",
-            "type": "integer"
-          },
-          "market": {
-            "title": "Market",
-            "type": "string"
-          },
-          "observed": {
-            "title": "Observed",
-            "type": "number"
-          },
-          "predicted": {
-            "title": "Predicted",
-            "type": "number"
-          }
-        },
-        "required": [
-          "market",
-          "bin",
-          "games",
-          "predicted",
-          "observed"
-        ],
-        "title": "BookCalibrationBin",
-        "type": "object"
-      },
-      "BookUnitsPoint": {
-        "properties": {
-          "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
-          },
-          "kelly_units": {
-            "title": "Kelly Units",
-            "type": "number"
-          },
-          "season": {
-            "title": "Season",
-            "type": "integer"
-          },
-          "units": {
-            "title": "Units",
-            "type": "number"
-          }
-        },
-        "required": [
-          "date",
-          "season",
-          "units",
-          "kelly_units"
-        ],
-        "title": "BookUnitsPoint",
         "type": "object"
       },
       "BracketRound": {
@@ -611,34 +107,6 @@
           }
         },
         "title": "BracketSlot",
-        "type": "object"
-      },
-      "CalibrationBin": {
-        "properties": {
-          "bin": {
-            "title": "Bin",
-            "type": "string"
-          },
-          "games": {
-            "title": "Games",
-            "type": "integer"
-          },
-          "observed": {
-            "title": "Observed",
-            "type": "number"
-          },
-          "predicted": {
-            "title": "Predicted",
-            "type": "number"
-          }
-        },
-        "required": [
-          "bin",
-          "games",
-          "predicted",
-          "observed"
-        ],
-        "title": "CalibrationBin",
         "type": "object"
       },
       "ConsensusLine": {
@@ -714,6 +182,60 @@
         "title": "ConsensusLine",
         "type": "object"
       },
+      "FairMarkets": {
+        "properties": {
+          "alt_spreads": {
+            "items": {
+              "$ref": "#/components/schemas/FairTwoWay"
+            },
+            "title": "Alt Spreads",
+            "type": "array"
+          },
+          "alt_totals": {
+            "items": {
+              "$ref": "#/components/schemas/FairTwoWay"
+            },
+            "title": "Alt Totals",
+            "type": "array"
+          },
+          "away_total": {
+            "$ref": "#/components/schemas/FairTwoWay"
+          },
+          "fair_spread": {
+            "title": "Fair Spread",
+            "type": "number"
+          },
+          "fair_total": {
+            "title": "Fair Total",
+            "type": "number"
+          },
+          "home_total": {
+            "$ref": "#/components/schemas/FairTwoWay"
+          },
+          "moneyline": {
+            "$ref": "#/components/schemas/FairTwoWay"
+          },
+          "spread": {
+            "$ref": "#/components/schemas/FairTwoWay"
+          },
+          "total": {
+            "$ref": "#/components/schemas/FairTwoWay"
+          }
+        },
+        "required": [
+          "fair_spread",
+          "fair_total",
+          "moneyline",
+          "spread",
+          "total",
+          "home_total",
+          "away_total",
+          "alt_spreads",
+          "alt_totals"
+        ],
+        "title": "FairMarkets",
+        "type": "object"
+      },
       "FairOdds": {
         "description": "American odds without vig; None when the chance is too close to 0 or 1 to price.",
         "properties": {
@@ -759,6 +281,57 @@
         "title": "FairOdds",
         "type": "object"
       },
+      "FairPrice": {
+        "properties": {
+          "fair": {
+            "title": "Fair",
+            "type": "integer"
+          },
+          "prob": {
+            "title": "Prob",
+            "type": "number"
+          }
+        },
+        "required": [
+          "prob",
+          "fair"
+        ],
+        "title": "FairPrice",
+        "type": "object"
+      },
+      "FairTwoWay": {
+        "properties": {
+          "first": {
+            "$ref": "#/components/schemas/FairPrice"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "push": {
+            "default": 0.0,
+            "title": "Push",
+            "type": "number"
+          },
+          "second": {
+            "$ref": "#/components/schemas/FairPrice"
+          }
+        },
+        "required": [
+          "line",
+          "first",
+          "second"
+        ],
+        "title": "FairTwoWay",
+        "type": "object"
+      },
       "GameCenter": {
         "properties": {
           "game": {
@@ -774,7 +347,7 @@
           "markets": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/GameMarkets"
+                "$ref": "#/components/schemas/FairMarkets"
               },
               {
                 "type": "null"
@@ -788,60 +361,6 @@
           "history"
         ],
         "title": "GameCenter",
-        "type": "object"
-      },
-      "GameMarkets": {
-        "properties": {
-          "alt_spreads": {
-            "items": {
-              "$ref": "#/components/schemas/TwoWay"
-            },
-            "title": "Alt Spreads",
-            "type": "array"
-          },
-          "alt_totals": {
-            "items": {
-              "$ref": "#/components/schemas/TwoWay"
-            },
-            "title": "Alt Totals",
-            "type": "array"
-          },
-          "away_total": {
-            "$ref": "#/components/schemas/TwoWay"
-          },
-          "fair_spread": {
-            "title": "Fair Spread",
-            "type": "number"
-          },
-          "fair_total": {
-            "title": "Fair Total",
-            "type": "number"
-          },
-          "home_total": {
-            "$ref": "#/components/schemas/TwoWay"
-          },
-          "moneyline": {
-            "$ref": "#/components/schemas/TwoWay"
-          },
-          "spread": {
-            "$ref": "#/components/schemas/TwoWay"
-          },
-          "total": {
-            "$ref": "#/components/schemas/TwoWay"
-          }
-        },
-        "required": [
-          "fair_spread",
-          "fair_total",
-          "moneyline",
-          "spread",
-          "total",
-          "home_total",
-          "away_total",
-          "alt_spreads",
-          "alt_totals"
-        ],
-        "title": "GameMarkets",
         "type": "object"
       },
       "GameSummary": {
@@ -966,213 +485,6 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
-      "Ledger": {
-        "properties": {
-          "cumulative": {
-            "items": {
-              "$ref": "#/components/schemas/UnitsPoint"
-            },
-            "title": "Cumulative",
-            "type": "array"
-          },
-          "picks": {
-            "items": {
-              "$ref": "#/components/schemas/LedgerPick"
-            },
-            "title": "Picks",
-            "type": "array"
-          },
-          "records": {
-            "items": {
-              "$ref": "#/components/schemas/LedgerRecord"
-            },
-            "title": "Records",
-            "type": "array"
-          },
-          "season": {
-            "title": "Season",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "season",
-          "records",
-          "cumulative",
-          "picks"
-        ],
-        "title": "Ledger",
-        "type": "object"
-      },
-      "LedgerPick": {
-        "properties": {
-          "away": {
-            "$ref": "#/components/schemas/TeamRef"
-          },
-          "game_id": {
-            "title": "Game Id",
-            "type": "integer"
-          },
-          "home": {
-            "$ref": "#/components/schemas/TeamRef"
-          },
-          "kickoff": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Kickoff"
-          },
-          "pick": {
-            "$ref": "#/components/schemas/PickView"
-          },
-          "published_at": {
-            "format": "date-time",
-            "title": "Published At",
-            "type": "string"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          }
-        },
-        "required": [
-          "game_id",
-          "kickoff",
-          "home",
-          "away",
-          "published_at",
-          "status",
-          "pick"
-        ],
-        "title": "LedgerPick",
-        "type": "object"
-      },
-      "LedgerRecord": {
-        "properties": {
-          "beat_close": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Beat Close"
-          },
-          "clv": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Clv"
-          },
-          "kelly_units": {
-            "title": "Kelly Units",
-            "type": "number"
-          },
-          "losses": {
-            "title": "Losses",
-            "type": "integer"
-          },
-          "market": {
-            "title": "Market",
-            "type": "string"
-          },
-          "pushes": {
-            "title": "Pushes",
-            "type": "integer"
-          },
-          "roi": {
-            "title": "Roi",
-            "type": "number"
-          },
-          "tier": {
-            "title": "Tier",
-            "type": "integer"
-          },
-          "units": {
-            "title": "Units",
-            "type": "number"
-          },
-          "wins": {
-            "title": "Wins",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "market",
-          "tier",
-          "wins",
-          "losses",
-          "pushes",
-          "units",
-          "kelly_units",
-          "roi",
-          "clv",
-          "beat_close"
-        ],
-        "title": "LedgerRecord",
-        "type": "object"
-      },
-      "LiveAccuracy": {
-        "properties": {
-          "games": {
-            "title": "Games",
-            "type": "integer"
-          },
-          "mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Mae"
-          },
-          "market_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Market Mae"
-          },
-          "su_accuracy": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Su Accuracy"
-          }
-        },
-        "required": [
-          "games",
-          "mae",
-          "market_mae",
-          "su_accuracy"
-        ],
-        "title": "LiveAccuracy",
-        "type": "object"
-      },
       "Matchup": {
         "properties": {
           "as_of": {
@@ -1191,7 +503,7 @@
             "type": "number"
           },
           "markets": {
-            "$ref": "#/components/schemas/GameMarkets"
+            "$ref": "#/components/schemas/FairMarkets"
           },
           "neutral": {
             "title": "Neutral",
@@ -1291,235 +603,6 @@
           "model_version"
         ],
         "title": "Meta",
-        "type": "object"
-      },
-      "ModelReport": {
-        "properties": {
-          "adjustments": {
-            "$ref": "#/components/schemas/AdjustmentReport"
-          },
-          "backtest": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BacktestSummary"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "live": {
-            "$ref": "#/components/schemas/LiveAccuracy"
-          },
-          "season": {
-            "title": "Season",
-            "type": "integer"
-          },
-          "versions": {
-            "items": {
-              "$ref": "#/components/schemas/ModelVersion"
-            },
-            "title": "Versions",
-            "type": "array"
-          }
-        },
-        "required": [
-          "season",
-          "backtest",
-          "live",
-          "versions",
-          "adjustments"
-        ],
-        "title": "ModelReport",
-        "type": "object"
-      },
-      "ModelVersion": {
-        "properties": {
-          "git_sha": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Git Sha"
-          },
-          "model_version": {
-            "title": "Model Version",
-            "type": "string"
-          },
-          "run_at": {
-            "format": "date-time",
-            "title": "Run At",
-            "type": "string"
-          },
-          "validate_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Validate Mae"
-          },
-          "validate_market_mae": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Validate Market Mae"
-          },
-          "validate_su": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Validate Su"
-          }
-        },
-        "required": [
-          "model_version",
-          "run_at",
-          "git_sha",
-          "validate_mae",
-          "validate_market_mae",
-          "validate_su"
-        ],
-        "title": "ModelVersion",
-        "type": "object"
-      },
-      "PickView": {
-        "properties": {
-          "closing_line": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Closing Line"
-          },
-          "closing_odds": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Closing Odds"
-          },
-          "clv": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Clv"
-          },
-          "edge": {
-            "title": "Edge",
-            "type": "number"
-          },
-          "kelly_units": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Kelly Units"
-          },
-          "line": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Line"
-          },
-          "market": {
-            "title": "Market",
-            "type": "string"
-          },
-          "odds": {
-            "title": "Odds",
-            "type": "integer"
-          },
-          "result": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Result"
-          },
-          "side": {
-            "title": "Side",
-            "type": "string"
-          },
-          "stake_units": {
-            "title": "Stake Units",
-            "type": "number"
-          },
-          "tier": {
-            "title": "Tier",
-            "type": "integer"
-          },
-          "units_won": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Units Won"
-          }
-        },
-        "required": [
-          "market",
-          "side",
-          "line",
-          "odds",
-          "tier",
-          "edge",
-          "stake_units",
-          "kelly_units",
-          "result",
-          "units_won",
-          "closing_line",
-          "closing_odds",
-          "clv"
-        ],
-        "title": "PickView",
         "type": "object"
       },
       "Playoff": {
@@ -1688,29 +771,6 @@
           "fair_odds"
         ],
         "title": "PlayoffTeam",
-        "type": "object"
-      },
-      "Price": {
-        "properties": {
-          "book": {
-            "title": "Book",
-            "type": "integer"
-          },
-          "fair": {
-            "title": "Fair",
-            "type": "integer"
-          },
-          "prob": {
-            "title": "Prob",
-            "type": "number"
-          }
-        },
-        "required": [
-          "prob",
-          "fair",
-          "book"
-        ],
-        "title": "Price",
         "type": "object"
       },
       "Projection": {
@@ -2439,30 +1499,6 @@
             "title": "Adjustments",
             "type": "array"
           },
-          "book_away_ml": {
-            "title": "Book Away Ml",
-            "type": "integer"
-          },
-          "book_home_ml": {
-            "title": "Book Home Ml",
-            "type": "integer"
-          },
-          "book_over_odds": {
-            "title": "Book Over Odds",
-            "type": "integer"
-          },
-          "book_spread_away_odds": {
-            "title": "Book Spread Away Odds",
-            "type": "integer"
-          },
-          "book_spread_home_odds": {
-            "title": "Book Spread Home Odds",
-            "type": "integer"
-          },
-          "book_under_odds": {
-            "title": "Book Under Odds",
-            "type": "integer"
-          },
           "fair_away_ml": {
             "title": "Fair Away Ml",
             "type": "integer"
@@ -2478,13 +1514,6 @@
           "locked": {
             "title": "Locked",
             "type": "boolean"
-          },
-          "picks": {
-            "items": {
-              "$ref": "#/components/schemas/PickView"
-            },
-            "title": "Picks",
-            "type": "array"
           },
           "proj_away": {
             "title": "Proj Away",
@@ -2543,13 +1572,6 @@
           "rho",
           "fair_home_ml",
           "fair_away_ml",
-          "book_home_ml",
-          "book_away_ml",
-          "book_spread_home_odds",
-          "book_spread_away_odds",
-          "book_over_odds",
-          "book_under_odds",
-          "picks",
           "adjusted",
           "raw",
           "adjustments"
@@ -2858,101 +1880,6 @@
         "title": "TeamRef",
         "type": "object"
       },
-      "TotalsRow": {
-        "properties": {
-          "bias": {
-            "title": "Bias",
-            "type": "number"
-          },
-          "games": {
-            "title": "Games",
-            "type": "integer"
-          },
-          "ou_vs_close": {
-            "title": "Ou Vs Close",
-            "type": "number"
-          },
-          "period": {
-            "title": "Period",
-            "type": "string"
-          },
-          "tsi_mae": {
-            "title": "Tsi Mae",
-            "type": "number"
-          },
-          "vegas_mae": {
-            "title": "Vegas Mae",
-            "type": "number"
-          }
-        },
-        "required": [
-          "period",
-          "games",
-          "tsi_mae",
-          "vegas_mae",
-          "bias",
-          "ou_vs_close"
-        ],
-        "title": "TotalsRow",
-        "type": "object"
-      },
-      "TwoWay": {
-        "properties": {
-          "first": {
-            "$ref": "#/components/schemas/Price"
-          },
-          "line": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Line"
-          },
-          "push": {
-            "default": 0.0,
-            "title": "Push",
-            "type": "number"
-          },
-          "second": {
-            "$ref": "#/components/schemas/Price"
-          }
-        },
-        "required": [
-          "line",
-          "first",
-          "second"
-        ],
-        "title": "TwoWay",
-        "type": "object"
-      },
-      "UnitsPoint": {
-        "properties": {
-          "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
-          },
-          "kelly_units": {
-            "title": "Kelly Units",
-            "type": "number"
-          },
-          "units": {
-            "title": "Units",
-            "type": "number"
-          }
-        },
-        "required": [
-          "date",
-          "units",
-          "kelly_units"
-        ],
-        "title": "UnitsPoint",
-        "type": "object"
-      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -3027,62 +1954,12 @@
     }
   },
   "info": {
-    "description": "Read-only college football ratings, predictions and TSI Book data.",
+    "description": "Read-only college football ratings, rankings and predictions.",
     "title": "The Swann Index API",
     "version": "0.1.0"
   },
   "openapi": "3.1.0",
   "paths": {
-    "/book/ledger": {
-      "get": {
-        "description": "TSI Book picks for a season with record, units, ROI and closing line value.",
-        "operationId": "get_ledger",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "season",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Season"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Ledger"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Ledger",
-        "tags": [
-          "book"
-        ]
-      }
-    },
     "/games/{game_id}": {
       "get": {
         "description": "Game center: prediction, full odds board, market comparison, snapshot history, result.",
@@ -3207,56 +2084,6 @@
         "summary": "Get Meta",
         "tags": [
           "meta"
-        ]
-      }
-    },
-    "/model/report": {
-      "get": {
-        "description": "Backtest headline metrics plus this season's live accuracy of published predictions.",
-        "operationId": "get_model_report",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "season",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Season"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ModelReport"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Model Report",
-        "tags": [
-          "model"
         ]
       }
     },

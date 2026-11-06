@@ -20,13 +20,15 @@ TITLE = "The Swann Index API"
 # connection: under a burst (a site build) extra requests queue for a thread, which has no
 # timeout, instead of failing after the pool's 30 s wait (decision #102).
 CONCURRENT_REQUESTS = 10
-DESCRIPTION = "Read-only college football ratings, predictions and TSI Book data."
+DESCRIPTION = "Read-only college football ratings, rankings and predictions."
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     """The served app: settings (database, CORS origins) are resolved now."""
     settings = settings or get_settings()
-    return build_app(settings.tsi_cors_origins, settings)
+    app = build_app(settings.tsi_cors_origins, settings)
+    app.state.owner_key = settings.owner_api_key  # unset: private endpoints always 404
+    return app
 
 
 def build_app(cors_origins: list[str], settings: Settings | None = None) -> FastAPI:
@@ -62,7 +64,9 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_methods=["GET"],
-        allow_headers=["If-None-Match"],
+        allow_headers=[
+            "If-None-Match"
+        ],  # no Authorization: the owner's key never comes from a browser
         expose_headers=["ETag"],
         max_age=86400,
     )

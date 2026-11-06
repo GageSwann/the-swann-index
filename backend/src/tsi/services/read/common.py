@@ -70,13 +70,7 @@ class SnapshotView:
     rho: float
     fair_home_ml: int
     fair_away_ml: int
-    book_home_ml: int
-    book_away_ml: int
-    book_spread_home_odds: int
-    book_spread_away_odds: int
-    book_over_odds: int
-    book_under_odds: int
-    picks: list[PickView]
+    # No TSI Book prices or picks: the Book is owner-only (decision #139, `/book/ledger`).
     # Manual adjustments (decision #104): the numbers above are then the adjusted ones.
     adjusted: bool
     raw: RawForecast | None  # the raw model's numbers, when adjusted
@@ -101,10 +95,7 @@ def current_snapshot(
 
 
 def snapshot_view(
-    snap: SnapshotRow,
-    locked: bool,
-    picks: Sequence[PickRow],
-    notes: dict[int, AdjustmentNote],
+    snap: SnapshotRow, locked: bool, notes: dict[int, AdjustmentNote]
 ) -> SnapshotView:
     skip = {"adjusted", "raw"}
     fields = {
@@ -116,7 +107,6 @@ def snapshot_view(
     return SnapshotView(
         **fields,
         locked=locked,
-        picks=[pick_view(p) for p in picks],
         adjusted=snap.adjusted,
         raw=None
         if raw is None

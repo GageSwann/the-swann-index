@@ -12,9 +12,9 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from tsi.book.consensus import ConsensusLine
-from tsi.book.pricing import GameMarkets, price_game
+from tsi.book.pricing import price_game
 from tsi.db.queries.games import GameRow, game_by_id, week_games
-from tsi.db.queries.snapshots import SnapshotRow, picks_for_snapshots, snapshots_for_games
+from tsi.db.queries.snapshots import SnapshotRow, snapshots_for_games
 from tsi.db.queries.team_info import TeamRef, team_refs
 from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION
 from tsi.model.artifact import production_artifact
@@ -28,6 +28,7 @@ from tsi.services.read.common import (
     result_of,
     snapshot_view,
 )
+from tsi.services.read.fair_markets import FairMarkets, fair_markets
 
 
 @dataclass(frozen=True)
@@ -67,7 +68,7 @@ class SnapshotPoint:
 @dataclass(frozen=True)
 class GameCenter:
     game: GameSummary
-    markets: GameMarkets | None  # TSI fair + Book prices, incl. team totals and alt ladders
+    markets: FairMarkets | None  # TSI's chances and fair prices, incl. team totals and alt ladders
     history: list[SnapshotPoint]  # every published snapshot, oldest first
 
 
@@ -96,7 +97,7 @@ def game_center(session: Session, game_id: int, now: datetime) -> GameCenter | N
     snaps = all_snaps.get(game.id, [])
     p = summary.prediction
     keys = production_artifact().key_numbers
-    markets = None if p is None else price_game(_distribution(p), keys=keys)
+    markets = None if p is None else fair_markets(price_game(_distribution(p), keys=keys))
     history = [SnapshotPoint(s.published_at, s.spread, s.total, s.home_win_prob) for s in snaps]
     return GameCenter(summary, markets, history)
 
@@ -121,7 +122,6 @@ def _summaries(
         snap, locked = current_snapshot(snaps.get(g.id, []), g.start_time, now)
         if snap is not None:
             shown[g.id] = (snap, locked)
-    picks = picks_for_snapshots(session, [s.id for s, _ in shown.values()])
     notes = adjustment_notes(session, [s for s, _ in shown.values()])
     markets = market_lines(session, games, now)
     out = []
@@ -141,9 +141,7 @@ def _summaries(
                 home=refs[g.home_id],
                 away=refs[g.away_id],
                 result=result_of(g),
-                prediction=None
-                if snap is None
-                else snapshot_view(snap[0], snap[1], picks.get(snap[0].id, []), notes),
+                prediction=None if snap is None else snapshot_view(snap[0], snap[1], notes),
                 market=markets.get(g.id),
             )
         )

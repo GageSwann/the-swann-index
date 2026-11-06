@@ -1,9 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from tsi.api.deps import NowDep, SessionsDep, read, season_or_current
+from tsi.api.deps import NowDep, SessionsDep, read, require_owner, season_or_current
 from tsi.services.read.ledger import Ledger, ledger
 
-router = APIRouter(tags=["book"])
+# Owner-only (decision #139): left out of the public API spec, 404 without the key.
+router = APIRouter(tags=["book"], include_in_schema=False, dependencies=[Depends(require_owner)])
 
 
 @router.get("/book/ledger", response_model=Ledger)

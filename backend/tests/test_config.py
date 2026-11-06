@@ -123,3 +123,11 @@ def test_migration_url_falls_back_to_pooled(required_env: pytest.MonkeyPatch) ->
         load_settings(env_file=None).migration_database_url.get_secret_value()
         == "postgresql://direct"
     )
+
+
+def test_owner_key_is_optional_but_never_short(required_env: pytest.MonkeyPatch) -> None:
+    assert load_settings(env_file=None).owner_api_key is None  # private endpoints closed
+    required_env.setenv("OWNER_API_KEY", "shortkey")
+    with pytest.raises(ConfigError, match="OWNER_API_KEY: .*32 characters") as exc_info:
+        load_settings(env_file=None)
+    assert "shortkey" not in str(exc_info.value)
