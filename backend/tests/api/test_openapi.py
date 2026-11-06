@@ -9,6 +9,7 @@ V1_PATHS = {
     "/teams/{slug}",
     "/weeks/{season}/{week}/games",
     "/games/{game_id}",
+    "/games-of-week",
     "/matchup",
     "/playoff",
 }

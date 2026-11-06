@@ -21,6 +21,7 @@ def test_all_schema_tables_registered() -> None:
         "picks",
         "sim_results",
         "adjustments",
+        "games_of_week",
     }
 
 

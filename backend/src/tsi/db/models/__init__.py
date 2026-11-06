@@ -3,6 +3,7 @@
 from tsi.db.models.adjustments import Adjustment
 from tsi.db.models.calendar import CalendarWeek
 from tsi.db.models.games import Game, TeamGameStats
+from tsi.db.models.games_of_week import GameOfWeek
 from tsi.db.models.ingest import IngestLog
 from tsi.db.models.market import MarketLine
 from tsi.db.models.predictions import Pick, Prediction
@@ -14,6 +15,7 @@ __all__ = [
     "Adjustment",
     "CalendarWeek",
     "Game",
+    "GameOfWeek",
     "IngestLog",
     "MarketLine",
     "ModelRun",

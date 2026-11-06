@@ -363,6 +363,120 @@
         "title": "GameCenter",
         "type": "object"
       },
+      "GameOfWeekView": {
+        "properties": {
+          "away_playoff_swing": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Away Playoff Swing"
+          },
+          "away_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Away Rank"
+          },
+          "away_title_swing": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Away Title Swing"
+          },
+          "closeness": {
+            "title": "Closeness",
+            "type": "number"
+          },
+          "division": {
+            "title": "Division",
+            "type": "string"
+          },
+          "game": {
+            "$ref": "#/components/schemas/GameSummary"
+          },
+          "home_playoff_swing": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Playoff Swing"
+          },
+          "home_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Rank"
+          },
+          "home_title_swing": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Title Swing"
+          },
+          "quality": {
+            "title": "Quality",
+            "type": "number"
+          },
+          "ranking_type": {
+            "title": "Ranking Type",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "stakes": {
+            "title": "Stakes",
+            "type": "number"
+          }
+        },
+        "required": [
+          "division",
+          "ranking_type",
+          "game",
+          "score",
+          "quality",
+          "closeness",
+          "stakes",
+          "home_rank",
+          "away_rank",
+          "home_playoff_swing",
+          "away_playoff_swing",
+          "home_title_swing",
+          "away_title_swing"
+        ],
+        "title": "GameOfWeekView",
+        "type": "object"
+      },
       "GameSummary": {
         "properties": {
           "away": {
@@ -470,6 +584,48 @@
           "market"
         ],
         "title": "GameSummary",
+        "type": "object"
+      },
+      "GamesOfWeek": {
+        "properties": {
+          "picked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Picked At"
+          },
+          "picks": {
+            "items": {
+              "$ref": "#/components/schemas/GameOfWeekView"
+            },
+            "title": "Picks",
+            "type": "array"
+          },
+          "poll_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Poll Date"
+          }
+        },
+        "required": [
+          "poll_date",
+          "picked_at",
+          "picks"
+        ],
+        "title": "GamesOfWeek",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1960,6 +2116,28 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/games-of-week": {
+      "get": {
+        "description": "This poll week's FBS and FCS games of the week, for Power and Résumé (picked with\nSunday's rankings and held all week); empty before the first pick.",
+        "operationId": "get_games_of_week",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamesOfWeek"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Games Of Week",
+        "tags": [
+          "games"
+        ]
+      }
+    },
     "/games/{game_id}": {
       "get": {
         "description": "Game center: prediction, full odds board, market comparison, snapshot history, result.",

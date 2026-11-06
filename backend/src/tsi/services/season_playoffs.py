@@ -17,7 +17,7 @@ from tsi.db.queries.schedule import UpcomingGame
 from tsi.db.queries.team_info import team_ids_by_slug
 from tsi.services.compute_rankings import Rankings
 from tsi.services.fcs_playoff_projection import FcsPlayoffInputs, project_fcs_playoff
-from tsi.services.playoff_projection import PlayoffInputs, TeamPlayoff, project_playoff
+from tsi.services.playoff_projection import PlayoffInputs, PlayoffProjection, project_playoff
 from tsi.sim.cfp_format import CfpFormat
 from tsi.sim.conference import TitleResults
 from tsi.sim.fcs_format import FcsFormat
@@ -40,7 +40,7 @@ class SeasonState:
 
 def fbs_playoff(
     session: Session, state: SeasonState, rankings: Rankings, sigma: float, fmt: CfpFormat
-) -> dict[int, TeamPlayoff]:
+) -> PlayoffProjection:
     slug, _ = fmt.independent_bid or ("", 0)
     return project_playoff(
         PlayoffInputs(
@@ -62,9 +62,9 @@ def fbs_playoff(
 
 def fcs_playoff(
     session: Session, state: SeasonState, rankings: Rankings, sigma: float, fmt: FcsFormat
-) -> dict[int, TeamPlayoff]:
+) -> PlayoffProjection:
     if not state.fcs or rankings.fcs_benchmark is None:
-        return {}
+        return PlayoffProjection({})
     moving_up = team_ids_by_slug(session, list(fmt.moving_up))
     return project_fcs_playoff(
         FcsPlayoffInputs(

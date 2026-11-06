@@ -16,7 +16,7 @@ from tsi.db.queries.results import GameResult
 from tsi.db.queries.schedule import UpcomingGame
 from tsi.divisions import FCS
 from tsi.model.ratings.types import RatingSet
-from tsi.services.playoff_projection import TeamPlayoff
+from tsi.services.playoff_projection import PlayoffProjection, TeamPlayoff
 from tsi.services.playoff_resume import DivisionResume, simulated_order
 from tsi.sim.bracket import MeanMargin
 from tsi.sim.conference import TitleResults
@@ -46,7 +46,7 @@ def project_fcs_playoff(
     sim: SimulatedGames,
     mean_margin: MeanMargin,  # simulation indexes
     fmt: FcsFormat,
-) -> dict[int, TeamPlayoff]:
+) -> PlayoffProjection:
     n = len(inputs.fcs)
     order = simulated_order(
         DivisionResume(inputs.fcs, inputs.offset, FCS, benchmark, season),
@@ -74,9 +74,10 @@ def project_fcs_playoff(
     )
     field = fcs_field(order, bids, eligible, fmt)
     if field is None:
-        return {}
+        return PlayoffProjection({})
     bracket = play_fcs_bracket(field + inputs.offset, sim, mean_margin, fmt)
-    return {t: _odds(inputs.offset + i, bracket, fmt) for i, t in enumerate(inputs.fcs)}
+    odds = {t: _odds(inputs.offset + i, bracket, fmt) for i, t in enumerate(inputs.fcs)}
+    return PlayoffProjection(odds, field + inputs.offset)
 
 
 def _bid(result: TitleResults, eligible: np.ndarray, offset: int, n: int) -> np.ndarray:

@@ -4,6 +4,27 @@
  */
 
 export interface paths {
+    "/games-of-week": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Games Of Week
+         * @description This poll week's FBS and FCS games of the week, for Power and Résumé (picked with
+         *     Sunday's rankings and held all week); empty before the first pick.
+         */
+        get: operations["get_games_of_week"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/games/{game_id}": {
         parameters: {
             query?: never;
@@ -278,6 +299,34 @@ export interface components {
             history: components["schemas"]["SnapshotPoint"][];
             markets: components["schemas"]["FairMarkets"] | null;
         };
+        /** GameOfWeekView */
+        GameOfWeekView: {
+            /** Away Playoff Swing */
+            away_playoff_swing: number | null;
+            /** Away Rank */
+            away_rank: number | null;
+            /** Away Title Swing */
+            away_title_swing: number | null;
+            /** Closeness */
+            closeness: number;
+            /** Division */
+            division: string;
+            game: components["schemas"]["GameSummary"];
+            /** Home Playoff Swing */
+            home_playoff_swing: number | null;
+            /** Home Rank */
+            home_rank: number | null;
+            /** Home Title Swing */
+            home_title_swing: number | null;
+            /** Quality */
+            quality: number;
+            /** Ranking Type */
+            ranking_type: string;
+            /** Score */
+            score: number;
+            /** Stakes */
+            stakes: number;
+        };
         /** GameSummary */
         GameSummary: {
             away: components["schemas"]["TeamRef"];
@@ -303,6 +352,15 @@ export interface components {
             season_type: string;
             /** Week */
             week: number;
+        };
+        /** GamesOfWeek */
+        GamesOfWeek: {
+            /** Picked At */
+            picked_at: string | null;
+            /** Picks */
+            picks: components["schemas"]["GameOfWeekView"][];
+            /** Poll Date */
+            poll_date: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -745,6 +803,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_games_of_week: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GamesOfWeek"];
+                };
+            };
+        };
+    };
     get_game: {
         parameters: {
             query?: never;

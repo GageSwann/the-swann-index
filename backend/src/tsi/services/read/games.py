@@ -102,6 +102,11 @@ def game_center(session: Session, game_id: int, now: datetime) -> GameCenter | N
     return GameCenter(summary, markets, history)
 
 
+def game_summaries(session: Session, games: list[GameRow], now: datetime) -> list[GameSummary]:
+    """Board entries for any games: snapshot shown, market, result (games of the week)."""
+    return _summaries(session, games, now)
+
+
 def _summaries(
     session: Session,
     games: list[GameRow],

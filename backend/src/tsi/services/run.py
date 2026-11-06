@@ -8,12 +8,13 @@ after kickoff can never be the locked one, and back-dating `published_at` would 
 history (rule 2). If ingest fails, the later steps still run on the data already
 stored and the failure is reported, so one CFBD hiccup doesn't skip a day of
 predictions. The season sim is isolated the same way: if it fails, ratings, grading
-and publishing still happen and the failure is reported.
+and publishing still happen and the failure is reported. So are the games of the week
+(#141): picked by the first run of each poll week (Sunday, Eastern) and held all week.
 """
 
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from sqlalchemy.orm import Session, sessionmaker
@@ -23,6 +24,8 @@ from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
 from tsi.services.board import Board, build_board
 from tsi.services.daily import DailyResult, run_daily
+from tsi.services.games_of_week import GameOfWeekPick, pick_games_of_week
+from tsi.services.games_of_week_store import needs_picks, save_games_of_week
 from tsi.services.grade import GradeResult, grade_picks
 from tsi.services.live_inputs import load_live_inputs
 from tsi.services.publish import PublishResult, publish_board
@@ -45,10 +48,17 @@ class RunResult:
     grade: GradeResult | None
     board: Board
     publish: PublishResult | None
+    # Picked this run (the poll week's first); empty when the week already has its picks.
+    games_of_week: list[GameOfWeekPick] = field(default_factory=list)
+    games_of_week_error: str | None = None
 
     @property
     def ok(self) -> bool:
-        return self.ingest_error is None and self.sim_error is None
+        return (
+            self.ingest_error is None
+            and self.sim_error is None
+            and self.games_of_week_error is None
+        )
 
 
 def run_pipeline(
@@ -68,13 +78,34 @@ def run_pipeline(
             lambda: project_season(session, now, artifact, live=live, rankings=ratings.rankings),
         )
         board = build_board(session, now, artifact, week=week, live=live)
+        picks, gotw_error = _guarded(
+            "games of the week",
+            lambda: (
+                pick_games_of_week(
+                    [b.forecast for b in board.games],
+                    ratings.rankings,
+                    sim.game_stakes if sim else {},
+                    now,
+                )
+                if needs_picks(session, now)
+                else []
+            ),
+        )
     if dry_run:
-        return RunResult(daily, error, ratings, None, sim, sim_error, None, board, None)
+        return RunResult(
+            daily, error, ratings, None, sim, sim_error, None, board, None, picks or [], gotw_error
+        )
     run_id = save_live_ratings(sessions, ratings, artifact)
     if sim is not None:
         _, sim_error = _guarded(
             "saving the season sim", lambda: save_season_sim(sessions, run_id, sim)
         )
+    if picks:
+        _, save_error = _guarded(
+            "saving the games of the week",
+            lambda: save_games_of_week(sessions, picks, current_season(now), now),
+        )
+        gotw_error = gotw_error or save_error
     return RunResult(
         ingest=daily,
         ingest_error=error,
@@ -85,6 +116,8 @@ def run_pipeline(
         grade=grade_picks(sessions, now),
         board=board,
         publish=publish_board(sessions, board.games, now, artifact),
+        games_of_week=picks or [],
+        games_of_week_error=gotw_error,
     )
 
 

@@ -66,5 +66,20 @@ def _report(r: RunResult, now: datetime, version: str) -> None:
         typer.echo(
             f"  publish {p.published} new snapshots ({p.unchanged} unchanged), {p.picks} picks"
         )
+    if r.games_of_week_error:
+        typer.secho(
+            f"  gotw    FAILED: {r.games_of_week_error} (everything else continued)", fg="red"
+        )
+    for g in r.games_of_week:
+        names = r.board.names
+        game = next(
+            (b.forecast.game for b in r.board.games if b.forecast.game.id == g.game_id), None
+        )
+        teams = (
+            f"{names.get(game.away_id, '?')} at {names.get(game.home_id, '?')}"
+            if game
+            else str(g.game_id)
+        )
+        typer.echo(f"  gotw    {g.division} {g.ranking_type}: {teams} (score {g.score:.2f})")
     if r.publish is None and r.grade is None:
         typer.echo("  (dry run: nothing saved)")

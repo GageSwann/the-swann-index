@@ -35,6 +35,14 @@ class TeamPlayoff:
 
 
 @dataclass(frozen=True)
+class PlayoffProjection:
+    odds: dict[int, TeamPlayoff]  # team id -> odds
+    # (sims, field_size) simulation team index at each seed, per simulated season; None when
+    # no field could be formed. Read for the stakes of single games (games of the week).
+    field: np.ndarray | None = None
+
+
+@dataclass(frozen=True)
 class PlayoffInputs:
     fbs: Sequence[int]  # team ids; simulation index = position
     played: Sequence[GameResult]  # this season's finished regular-season games
@@ -52,7 +60,7 @@ def project_playoff(
     sim: SimulatedGames,
     mean_margin: MeanMargin,
     fmt: CfpFormat,
-) -> dict[int, TeamPlayoff]:
+) -> PlayoffProjection:
     index = {t: i for i, t in enumerate(inputs.fbs)}
     n = len(inputs.fbs)
     order = simulated_order(
@@ -74,7 +82,8 @@ def project_playoff(
     )
     seeded = seeds(order, field_inputs, fmt)
     bracket = play_bracket(seeded, sim, mean_margin, fmt)
-    return {inputs.fbs[i]: _odds(i, bracket, fmt) for i in range(n)}
+    odds = {inputs.fbs[i]: _odds(i, bracket, fmt) for i in range(n)}
+    return PlayoffProjection(odds, seeded)  # FBS indexes come first in the simulation
 
 
 def _odds(i: int, b, fmt: CfpFormat) -> TeamPlayoff:

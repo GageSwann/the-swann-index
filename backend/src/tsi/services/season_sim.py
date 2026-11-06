@@ -12,7 +12,8 @@ one simulation, so their games against each other agree. Nothing is stored here:
 nightly `tsi run` saves the result (services/sim_store.py).
 """
 
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -36,10 +37,13 @@ from tsi.services.season_playoffs import SeasonState, fbs_playoff, fcs_playoff
 from tsi.sim.cfp_format import FORMAT_2026, CfpFormat
 from tsi.sim.conference import TitleResults, simulate_title, title_odds
 from tsi.sim.fcs_format import FCS_FORMAT_2026, FcsFormat
-from tsi.sim.season import DEFAULT_SIMS, RemainingGame, simulate_games, wins_added
+from tsi.sim.season import DEFAULT_SIMS, RemainingGame, SimulatedGames, simulate_games, wins_added
+from tsi.sim.stakes import GameStakes, team_stakes
 from tsi.sim.uncertainty import LAST_WEEK, game_noise, rating_tau
 
+logger = logging.getLogger(__name__)
 SEASON_DAYS = 200  # far enough to reach the end of any regular season
+STAKES_DAYS = 8  # games whose stakes are measured: the coming week's (games of the week)
 
 
 @dataclass(frozen=True)
@@ -66,6 +70,9 @@ class SeasonProjection:
     sims: int
     teams: list[TeamProjection]  # FBS, then FCS teams; most expected wins first in each
     names: dict[int, str]  # team id -> school, for display
+    # game id -> what a win is worth to each side, for games in the next STAKES_DAYS
+    # between two rated teams (#141); empty outside the regular season.
+    game_stakes: dict[int, GameStakes] = field(default_factory=dict)
 
 
 def project_season(
@@ -138,6 +145,7 @@ def project_season(
 
     so_far = records(session, season, now)
     playoff: dict[int, TeamPlayoff] = {}
+    stakes: dict[int, GameStakes] = {}
     if season_type == "regular":
         state = SeasonState(
             season=season,
@@ -158,9 +166,24 @@ def project_season(
         rankings = rankings or build_rankings(
             session, season, now, artifact.rating, artifact.sigma_season
         )
-        playoff = fbs_playoff(session, state, rankings, artifact.sigma_season, fmt)
+        fbs_proj = fbs_playoff(session, state, rankings, artifact.sigma_season, fmt)
+        playoff = dict(fbs_proj.odds)
+        fcs_field = None
         if not fcs_field_set:
-            playoff |= fcs_playoff(session, state, rankings, artifact.sigma_season, fcs_fmt)
+            fcs_proj = fcs_playoff(session, state, rankings, artifact.sigma_season, fcs_fmt)
+            playoff |= fcs_proj.odds
+            fcs_field = fcs_proj.field
+        conference_index = {index[m.team_id]: m.conference for m in members if m.team_id in index}
+        stakes = _safe_stakes(
+            upcoming,
+            simulated,
+            index,
+            len(fbs),
+            len(rated),
+            (fbs_proj.field, fcs_field),
+            {i: titles[c].champion for i, c in conference_index.items() if c in titles},
+            now + timedelta(days=STAKES_DAYS),
+        )
 
     conference_of = {m.team_id: m.conference for m in members}
     projections = {
@@ -183,8 +206,43 @@ def project_season(
         for t in sorted(group, key=lambda t: -projections[t].expected_wins)
     ]
     return SeasonProjection(
-        season, now, regular_week, tau, sims, ordered, team_names(session, rated)
+        season, now, regular_week, tau, sims, ordered, team_names(session, rated), stakes
     )
+
+
+def _safe_stakes(*args) -> dict[int, GameStakes]:
+    """Stakes are an extra for the games of the week: a failure here must not lose the
+    night's simulation, so it's logged and the picks go without stakes."""
+    try:
+        return _game_stakes(*args)
+    except Exception:
+        logger.exception("game stakes failed; games of the week go without them")
+        return {}
+
+
+def _game_stakes(
+    upcoming: list[UpcomingGame],  # in simulation column order
+    simulated: SimulatedGames,
+    index: dict[int, int],  # team id -> simulation index
+    n_fbs: int,
+    n_rated: int,
+    fields: tuple[np.ndarray | None, np.ndarray | None],  # FBS, FCS playoff fields
+    champion: dict[int, np.ndarray],  # simulation index -> its conference's champion
+    until: datetime,
+) -> dict[int, GameStakes]:
+    """Stakes of each game before `until` between two rated teams (#141)."""
+    out: dict[int, GameStakes] = {}
+    for j, g in enumerate(upcoming):
+        home, away = index[g.home_id], index[g.away_id]
+        if g.start_time is None or g.start_time >= until or max(home, away) >= n_rated:
+            continue
+        home_won = simulated.home_wins[:, j]
+
+        def side(i: int, won: np.ndarray):
+            return team_stakes(i, won, fields[0] if i < n_fbs else fields[1], champion.get(i))
+
+        out[g.id] = GameStakes(side(home, home_won), side(away, ~home_won))
+    return out
 
 
 def _projection(
