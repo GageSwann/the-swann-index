@@ -36,10 +36,14 @@ export function HomeView({ rails, picks }: Props) {
         className="grid gap-8 lg:grid-cols-[15.5rem_minmax(0,1fr)_15.5rem] xl:grid-cols-[18rem_minmax(0,1fr)_18rem]"
       >
         <div className="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-start-1">
-          <GameOfWeekCard division="fbs" type={type} teams={rails.fbs[type]} {...picks.fbs[type]} />
+          <GameOfWeekCard
+            division="fbs"
+            teams={rails.fbs[type]}
+            className="flex-1"
+            {...picks.fbs[type]}
+          />
           <GameOfWeekCard
             division="fcs"
-            type={type}
             teams={rails.fcs[type]}
             className="flex-1"
             {...picks.fcs[type]}

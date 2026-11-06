@@ -2,17 +2,16 @@ import Link from "next/link"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
 import { TeamLogo } from "@/components/team/team-logo"
-import type { GameOfWeekView, RankedTeam, RankingType, TeamRef } from "@/lib/api/types"
+import type { GameOfWeekView, RankedTeam, TeamRef } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
-import { chance, points, record } from "@/lib/format/numbers"
-import { favoriteLine, totalLine } from "@/lib/format/odds"
+import { points, record } from "@/lib/format/numbers"
+import { favoriteLine } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 
 type Props = {
   pick: GameOfWeekView | null // this poll week's pick (#141, #142)
   teams: RankedTeam[] // the chosen ranking now: ranks and records shown
   division: Division
-  type: RankingType
   when: string | null // kickoff, formatted on the server ("Saturday, Nov 7, 7:30 PM ET")
   className?: string
 }
@@ -28,7 +27,7 @@ const TITLE: Record<Division, string> = {
  * up the bottoms). The whole card opens the game center, except the team names and logos,
  * which open the team pages; it lights on hover in the page's plain light (owner).
  */
-export function GameOfWeekCard({ pick, teams, division, type, when, className }: Props) {
+export function GameOfWeekCard({ pick, teams, division, when, className }: Props) {
   const headingId = `gotw-${division}`
   const heading = (
     <h2 id={headingId} className="text-lg font-semibold font-stretch-condensed">
@@ -48,14 +47,13 @@ export function GameOfWeekCard({ pick, teams, division, type, when, className }:
     )
   }
   const { game } = pick
-  const m = game.market
   const row = new Map(teams.map((t) => [t.team.id, t]))
   const final = game.result?.final ? game.result : null
   const matchup = `${game.away.school} ${game.neutral ? "vs." : "at"} ${game.home.school}`
   return (
     <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col gap-2", className)}>
       {heading}
-      <div className="tsi-lit-hover relative flex flex-1 flex-col gap-5 rounded-md border border-border bg-card p-5">
+      <div className="tsi-lit-hover relative flex flex-1 flex-col justify-between gap-5 rounded-md border border-border bg-card p-5">
         <Link
           href={`/games/${game.id}`}
           aria-label={`Game center: ${matchup}`}
@@ -90,20 +88,13 @@ export function GameOfWeekCard({ pick, teams, division, type, when, className }:
           )}
         </div>
 
+        {/* TSI's lines only (owner): no Vegas line or explanation on the home page. */}
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-          <dt className="text-muted-foreground">TSI line</dt>
-          <dd className="text-right">
-            {favoriteLine(p.spread, game.home, game.away)}, total {p.total.toFixed(1)}
-          </dd>
-          <dt className="text-muted-foreground">Vegas line</dt>
-          <dd className="text-right">
-            {m?.spread != null && m.total != null
-              ? `${favoriteLine(m.spread, game.home, game.away)}, total ${totalLine(m.total)}`
-              : "Not posted yet"}
-          </dd>
+          <dt className="text-muted-foreground">TSI spread</dt>
+          <dd className="text-right">{favoriteLine(p.spread, game.home, game.away)}</dd>
+          <dt className="text-muted-foreground">TSI total</dt>
+          <dd className="text-right">{p.total.toFixed(1)}</dd>
         </dl>
-
-        <p className="text-sm">{whyThisGame(pick, row, type)}</p>
       </div>
     </section>
   )
@@ -160,52 +151,4 @@ function Score({ value, alignEnd = false }: { value: number; alignEnd?: boolean 
       {points(value)}
     </p>
   )
-}
-
-/** Plain-language reasons: who's in it, how close TSI has it, and what rides on it. */
-function whyThisGame(
-  pick: GameOfWeekView,
-  row: Map<number, RankedTeam>,
-  type: RankingType,
-): string {
-  const { game } = pick
-  const ranking = type === "power" ? "Power" : "Résumé"
-  const ranked = [game.away, game.home]
-    .map((t) => row.get(t.id))
-    .filter((r): r is RankedTeam => !!r && r.rank <= 25)
-  const who =
-    ranked.length === 2
-      ? `Both teams are in the ${ranking} Top 25.`
-      : ranked.length === 1
-        ? `${ranked[0].team.school} is No. ${ranked[0].rank} in the ${ranking} rankings.`
-        : ""
-  const p = game.prediction!.home_win_prob
-  const fav = p >= 0.5 ? game.home : game.away
-  const close = `TSI gives ${fav.school} a ${chance(Math.max(p, 1 - p))} chance to win.`
-  return [who, close, stakesText(pick)].filter(Boolean).join(" ")
-}
-
-const MEANINGFUL = 0.05 // a swing under 5 percentage points isn't worth a sentence
-
-/** "A win would raise Notre Dame's playoff chances by 31 percentage points, and Miami's by 24." */
-function stakesText(pick: GameOfWeekView): string {
-  const { game } = pick
-  const sides = [
-    { team: game.away, playoff: pick.away_playoff_swing, title: pick.away_title_swing },
-    { team: game.home, playoff: pick.home_playoff_swing, title: pick.home_title_swing },
-  ]
-  for (const [key, what] of [
-    ["playoff", "playoff chances"],
-    ["title", "chances of winning its conference"],
-  ] as const) {
-    const big = sides
-      .filter((s) => (s[key] ?? 0) >= MEANINGFUL)
-      .sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0))
-    if (big.length === 0) continue
-    const pts = (v: number | null) => Math.round((v ?? 0) * 100)
-    const first = `${big[0].team.school}'s ${what} by ${pts(big[0][key])} percentage points`
-    const second = big[1] ? `, and ${big[1].team.school}'s by ${pts(big[1][key])}` : ""
-    return `A win would raise ${first}${second}.`
-  }
-  return ""
 }
