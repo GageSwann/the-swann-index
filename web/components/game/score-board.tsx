@@ -20,7 +20,7 @@ type Props = {
 }
 
 /**
- * The scoreboard panel shared by the game center and the matchup tool: both teams with
+ * The scoreboard panel of the game center: both teams with
  * records and ranks, the score (projected or final), and the win-probability bar. It is
  * the page's focal point, so it carries the border light in both teams' colors (#137).
  */

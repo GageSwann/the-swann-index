@@ -13,7 +13,6 @@ const LINKS = [
   },
   { href: "/week", label: "This week", match: (p: string) => p.startsWith("/week") },
   { href: "/playoff", label: "Playoff", match: (p: string) => p.startsWith("/playoff") },
-  { href: "/matchup", label: "Matchup", match: (p: string) => p.startsWith("/matchup") },
 ]
 
 export function MainNav() {

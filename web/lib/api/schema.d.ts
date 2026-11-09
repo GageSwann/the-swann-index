@@ -45,26 +45,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/matchup": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Matchup
-         * @description Hypothetical game between any two teams (slugs), predicted as of now.
-         */
-        get: operations["get_matchup"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/meta/current": {
         parameters: {
             query?: never;
@@ -366,33 +346,6 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
-        };
-        /** Matchup */
-        Matchup: {
-            /**
-             * As Of
-             * Format: date-time
-             */
-            as_of: string;
-            away: components["schemas"]["TeamRef"];
-            home: components["schemas"]["TeamRef"];
-            /** Home Win Prob */
-            home_win_prob: number;
-            markets: components["schemas"]["FairMarkets"];
-            /** Neutral */
-            neutral: boolean;
-            /** Proj Away */
-            proj_away: number;
-            /** Proj Home */
-            proj_home: number;
-            /** Sigma Margin */
-            sigma_margin: number;
-            /** Sigma Total */
-            sigma_total: number;
-            /** Spread */
-            spread: number;
-            /** Total */
-            total: number;
         };
         /** Meta */
         Meta: {
@@ -859,39 +812,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GameCenter"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_matchup: {
-        parameters: {
-            query: {
-                home: string;
-                away: string;
-                neutral?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Matchup"];
                 };
             };
             /** @description Validation Error */

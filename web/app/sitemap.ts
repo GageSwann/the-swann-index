@@ -17,7 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     `${week}/fcs`,
     "/playoff",
     "/playoff/fcs",
-    "/matchup",
   ]
   return [
     ...pages.map((path) => ({ url: `${SITE_URL}${path}`, changeFrequency: "daily" as const })),

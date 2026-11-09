@@ -25,7 +25,7 @@ type Props = {
  */
 export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank }: Props) {
   const bench = benchmarkName(division, benchmarkRank)
-  const anyToday = [...odds.values()].some((o) => o.source === "today")
+  const anyForecast = [...odds.values()].some((o) => o.source === "forecast")
   const anyAdjusted = [...odds.values()].some((o) => o.adjusted)
   const date = (g: ScheduleGame) => (g.kickoff ? formatShortDay(g.kickoff) : `Week ${g.week}`)
   return (
@@ -106,7 +106,7 @@ export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank 
       <p className="text-xs text-muted-foreground">
         TSI line and win chance are from the team&apos;s side, as published before kickoff
         (predictions began Oct 20, 2026).
-        {anyToday && " * Not yet published: if the game were played today, with current ratings."}
+        {anyForecast && " * Not yet published: TSI’s forecast from last night’s season simulation."}
         {anyAdjusted && " † Includes a manual adjustment (see the game center)."} &ldquo;{bench}{" "}
         wins&rdquo;: how often a typical {bench} would win the game, against the opponent&apos;s
         current rating (lower = harder); played games make up the{" "}
@@ -170,8 +170,8 @@ function WinChance({ odds }: { odds: GameOdds | undefined }) {
   return (
     <>
       <span className="text-foreground">{percent(odds.winProb, 0)}</span>
-      {odds.source === "today" && (
-        <span className="text-muted-foreground" title="If played today">
+      {odds.source === "forecast" && (
+        <span className="text-muted-foreground" title="Forecast, not yet published">
           *
         </span>
       )}

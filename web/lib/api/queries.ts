@@ -7,7 +7,6 @@ import * as tags from "./tags"
 import type {
   GameCenter,
   GamesOfWeek,
-  Matchup,
   Meta,
   Playoff,
   RankingType,
@@ -42,7 +41,7 @@ export async function getRankings(
   return orNull("/rankings", result)
 }
 
-/** Teams of a division (or "all": FBS and FCS), alphabetical: the matchup tool's picker. */
+/** Teams of a division (or "all": FBS and FCS), alphabetical (the sitemap). */
 export async function getTeams(
   options: { season?: number; division?: DivisionView } = {},
 ): Promise<TeamRef[]> {
@@ -97,21 +96,6 @@ export async function getGame(id: number): Promise<GameCenter | null> {
     params: { path: { game_id: id } },
   })
   return orNull(`/games/${id}`, result)
-}
-
-/** Hypothetical game; `null` if either slug is unknown. Same teams twice is a caller bug. */
-export async function getMatchup(
-  home: string,
-  away: string,
-  neutral = false,
-): Promise<Matchup | null> {
-  "use cache"
-  cacheLife("hours") // the API recomputes from its hourly cache of live inputs
-  cacheTag(tags.ALL)
-  const result = await apiClient().GET("/matchup", {
-    params: { query: { home, away, neutral } },
-  })
-  return orNull("/matchup", result)
 }
 
 /** CFP or FCS playoff odds and a projected bracket; null outside the regular season. */

@@ -15,7 +15,7 @@ export function pageMeta({
 }: {
   title: string
   description: string
-  image?: string // an image route (e.g. /api/og/matchup?...)
+  image?: string // an image route
   ownImage?: boolean // the route has an `opengraph-image` file: set no image here
 }): Metadata {
   // Setting `images` (even to undefined) overrides a route's `opengraph-image` file, and a

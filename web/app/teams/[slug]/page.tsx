@@ -11,8 +11,7 @@ import { ScheduleTable } from "@/components/team/schedule-table"
 import { PageTeamLight } from "@/components/team/page-team-light"
 import { TeamHeader } from "@/components/team/team-header"
 import { getRankings, getTeam } from "@/lib/api/queries"
-import { publishedScheduleOdds, scheduleOdds } from "@/lib/api/schedule-odds"
-import type { TeamProfile } from "@/lib/api/types"
+import { scheduleOdds } from "@/lib/api/schedule-odds"
 import { rankText, teamDivision } from "@/lib/divisions"
 import { pageMeta } from "@/lib/metadata"
 import { record, signed } from "@/lib/format/numbers"
@@ -75,31 +74,12 @@ async function TeamView({ params }: Props) {
         </section>
       )}
       <ResumeCard profile={profile} />
-      {/* Streams in: games without a published prediction need a matchup call each. */}
-      <Suspense
-        fallback={
-          <ScheduleTable
-            schedule={profile.schedule}
-            odds={publishedScheduleOdds(profile.schedule)}
-            division={division}
-            benchmarkRank={profile.resume?.benchmark_rank}
-          />
-        }
-      >
-        <Schedule profile={profile} />
-      </Suspense>
+      <ScheduleTable
+        schedule={profile.schedule}
+        odds={scheduleOdds(profile.schedule)}
+        division={division}
+        benchmarkRank={profile.resume?.benchmark_rank}
+      />
     </div>
-  )
-}
-
-async function Schedule({ profile }: { profile: TeamProfile }) {
-  const odds = await scheduleOdds(profile.team, profile.schedule)
-  return (
-    <ScheduleTable
-      schedule={profile.schedule}
-      odds={odds}
-      division={teamDivision(profile.team)}
-      benchmarkRank={profile.resume?.benchmark_rank}
-    />
   )
 }

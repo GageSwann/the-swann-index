@@ -1,7 +1,4 @@
-import "server-only"
-
-import { getMatchup } from "./queries"
-import type { ScheduleGame, TeamRef } from "./types"
+import type { ScheduleGame } from "./types"
 
 /** TSI's view of one game from the team's side; `source` says where it came from. */
 export type GameOdds = {
@@ -9,52 +6,19 @@ export type GameOdds = {
   spread: number // team's view, negative = favored
   teamPoints: number
   opponentPoints: number
-  source: "published" | "today"
-  adjusted: boolean // the published prediction includes manual adjustments
+  source: "published" | "forecast"
+  adjusted: boolean // includes manual adjustments
 }
 
 /**
  * Odds for every schedule game TSI has a view on: the published snapshot when there is
- * one (finished games keep their locked pre-game prediction), else, for games not played
- * yet, the API's hypothetical matchup with today's ratings. Matchups run in parallel.
+ * one (finished games keep their locked pre-game prediction), else last night's season
+ * simulation forecast for games not published yet (#144). No API calls.
  */
-export async function scheduleOdds(
-  team: TeamRef,
-  schedule: ScheduleGame[],
-): Promise<Map<number, GameOdds>> {
-  const entries = await Promise.all(
-    schedule.map(async (g): Promise<[number, GameOdds] | null> => {
-      const published = publishedOdds(g)
-      if (published) return [g.game_id, published]
-      if (g.outcome !== null || g.result?.final) return null
-      const atHome = g.site !== "away"
-      const m = await getMatchup(
-        atHome ? team.slug : g.opponent.slug,
-        atHome ? g.opponent.slug : team.slug,
-        g.site === "neutral",
-      ).catch(() => null)
-      if (!m) return null
-      return [
-        g.game_id,
-        {
-          winProb: atHome ? m.home_win_prob : 1 - m.home_win_prob,
-          spread: atHome ? m.spread : -m.spread,
-          teamPoints: atHome ? m.proj_home : m.proj_away,
-          opponentPoints: atHome ? m.proj_away : m.proj_home,
-          source: "today",
-          adjusted: false,
-        },
-      ]
-    }),
-  )
-  return new Map(entries.filter((e) => e !== null))
-}
-
-/** The published prediction's odds for every game that has one (no API calls). */
-export function publishedScheduleOdds(schedule: ScheduleGame[]): Map<number, GameOdds> {
+export function scheduleOdds(schedule: ScheduleGame[]): Map<number, GameOdds> {
   return new Map(
     schedule.flatMap((g) => {
-      const odds = publishedOdds(g)
+      const odds = publishedOdds(g) ?? forecastOdds(g)
       return odds ? [[g.game_id, odds] as const] : []
     }),
   )
@@ -76,5 +40,18 @@ function publishedOdds(g: ScheduleGame): GameOdds | null {
     opponentPoints: g.projected_opponent,
     source: "published",
     adjusted: g.adjusted,
+  }
+}
+
+function forecastOdds(g: ScheduleGame): GameOdds | null {
+  const f = g.forecast
+  if (!f) return null
+  return {
+    winProb: f.win_prob,
+    spread: f.spread,
+    teamPoints: f.team_points,
+    opponentPoints: f.opponent_points,
+    source: "forecast",
+    adjusted: f.adjusted,
   }
 }
