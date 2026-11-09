@@ -46,6 +46,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.collegefootballdata.com", pathname: "/logos/**" },
     ],
+    // Each logo × width is one Vercel image transformation, and the default 4-hour TTL
+    // re-transforms every logo several times a day (75% of Hobby's 5,000 a month used by
+    // 2026-11-09). Logos almost never change: keep the optimized copies for 31 days.
+    minimumCacheTTL: 2678400,
   },
   turbopack: {
     rules: {
