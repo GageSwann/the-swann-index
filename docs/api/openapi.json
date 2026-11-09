@@ -1404,6 +1404,40 @@
         "title": "ResumeSummary",
         "type": "object"
       },
+      "ScheduleForecast": {
+        "description": "Last night's season-simulation forecast, from this team's view (#144): shown for\ngames TSI hasn't published a prediction for yet (beyond the 8-day window).",
+        "properties": {
+          "adjusted": {
+            "title": "Adjusted",
+            "type": "boolean"
+          },
+          "opponent_points": {
+            "title": "Opponent Points",
+            "type": "number"
+          },
+          "spread": {
+            "title": "Spread",
+            "type": "number"
+          },
+          "team_points": {
+            "title": "Team Points",
+            "type": "number"
+          },
+          "win_prob": {
+            "title": "Win Prob",
+            "type": "number"
+          }
+        },
+        "required": [
+          "team_points",
+          "opponent_points",
+          "win_prob",
+          "spread",
+          "adjusted"
+        ],
+        "title": "ScheduleForecast",
+        "type": "object"
+      },
       "ScheduleGame": {
         "properties": {
           "adjusted": {
@@ -1420,6 +1454,16 @@
               }
             ],
             "title": "Benchmark Win Prob"
+          },
+          "forecast": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScheduleForecast"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "game_id": {
             "title": "Game Id",

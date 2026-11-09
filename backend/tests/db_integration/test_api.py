@@ -281,6 +281,19 @@ def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
     assert (foxtrot_game["opponent_rating"], foxtrot_game["opponent_rank"]) == (-35.0, 2)
     p = win_prob(-25.0 - (-35.0) + 3.0, 15.0)  # Echo at home, #24 FCS benchmark
     assert foxtrot_game["benchmark_win_prob"] == pytest.approx(p)
+    # Not published yet: last night's sim forecast, from Echo's (home) view (#144).
+    assert foxtrot_game["win_prob"] is None
+    assert foxtrot_game["forecast"] == {
+        "team_points": 30.0,
+        "opponent_points": 20.0,
+        "win_prob": 0.75,
+        "spread": -10.0,
+        "adjusted": False,
+    }
+    foxtrot = ok(api, "/teams/foxtrot")["schedule"][0]["forecast"]
+    assert (foxtrot["win_prob"], foxtrot["spread"]) == (0.25, 10.0)  # the away side
+    # Published games keep their snapshot and carry no forecast.
+    assert all(g["forecast"] is None for g in ok(api, "/teams/bravo")["schedule"])
     m = ok(api, "/matchup?home=alpha&away=echo")
     assert (m["home"]["division"], m["away"]["division"]) == ("fbs", "fcs")
 

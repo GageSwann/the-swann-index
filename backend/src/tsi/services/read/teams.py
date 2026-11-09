@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from tsi.db.queries.adjustments import season_adjustments
 from tsi.db.queries.games import team_games
 from tsi.db.queries.runs import rating_runs
-from tsi.db.queries.sim import stored_sims
+from tsi.db.queries.sim import stored_outlooks, stored_sims
 from tsi.db.queries.snapshots import snapshots_for_games
 from tsi.db.queries.team_info import (
     Record,
@@ -103,6 +103,8 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     ctx = run_ctx.for_division(division) if run_ctx else None
     # FBS and FCS teams (#125); D-II and below aren't simulated.
     sim = stored_sims(session, latest.id, team_id).get(team_id) if latest and rated else None
+    upcoming = [g.id for g in games if not g.completed]
+    outlooks = stored_outlooks(session, latest.id, upcoming) if latest and upcoming else {}
     return TeamProfile(
         team=refs[team_id],
         season=season,
@@ -116,7 +118,10 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
             if rated
             and (point := _point(run.run_at, run.week, history_rows.get(run.id, []))) is not None
         ],
-        schedule=[schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx) for g in games],
+        schedule=[
+            schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx, outlooks.get(g.id))
+            for g in games
+        ],
         resume=resume_summary(ctx, games, team_id, refs) if ctx else None,
         projection=projection(sim),
         adjustments=[

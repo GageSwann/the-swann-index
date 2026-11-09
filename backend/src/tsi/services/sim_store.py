@@ -6,7 +6,7 @@ parameters, so a stored projection can always be traced to how it was made.
 
 from sqlalchemy.orm import Session, sessionmaker
 
-from tsi.db.models import ModelRun, SimResult
+from tsi.db.models import ModelRun, SimGameForecast, SimResult
 from tsi.db.upsert import upsert_rows
 from tsi.services.playoff_projection import TeamPlayoff
 from tsi.services.season_sim import SeasonProjection
@@ -40,7 +40,24 @@ def save_season_sim(
                 "seed": DEFAULT_SEED,
             },
         }
-        return upsert_rows(session, SimResult, rows)
+        saved = upsert_rows(session, SimResult, rows)
+        upsert_rows(session, SimGameForecast, _forecast_rows(run_id, projection))
+        return saved
+
+
+def _forecast_rows(run_id: int, projection: SeasonProjection) -> list[dict[str, object]]:
+    """Each simulated game's forecast, for team pages beyond the published window (#144)."""
+    return [
+        {
+            "run_id": run_id,
+            "game_id": game_id,
+            "proj_home": f.proj_home,
+            "proj_away": f.proj_away,
+            "home_win_prob": f.home_win_prob,
+            "adjusted": f.adjusted,
+        }
+        for game_id, f in projection.game_forecasts.items()
+    ]
 
 
 def _playoff_columns(p: TeamPlayoff | None) -> dict[str, float | list[float] | None]:

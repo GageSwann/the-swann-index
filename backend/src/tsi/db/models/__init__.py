@@ -8,7 +8,7 @@ from tsi.db.models.ingest import IngestLog
 from tsi.db.models.market import MarketLine
 from tsi.db.models.predictions import Pick, Prediction
 from tsi.db.models.ratings import ModelRun, Prior, TeamRating
-from tsi.db.models.sim import SimResult
+from tsi.db.models.sim import SimGameForecast, SimResult
 from tsi.db.models.teams import Team, TeamSeason, Venue
 
 __all__ = [
@@ -22,6 +22,7 @@ __all__ = [
     "Pick",
     "Prediction",
     "Prior",
+    "SimGameForecast",
     "SimResult",
     "Team",
     "TeamGameStats",

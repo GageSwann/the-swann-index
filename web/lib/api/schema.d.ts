@@ -604,12 +604,30 @@ export interface components {
             /** Sor */
             sor: number | null;
         };
+        /**
+         * ScheduleForecast
+         * @description Last night's season-simulation forecast, from this team's view (#144): shown for
+         *     games TSI hasn't published a prediction for yet (beyond the 8-day window).
+         */
+        ScheduleForecast: {
+            /** Adjusted */
+            adjusted: boolean;
+            /** Opponent Points */
+            opponent_points: number;
+            /** Spread */
+            spread: number;
+            /** Team Points */
+            team_points: number;
+            /** Win Prob */
+            win_prob: number;
+        };
         /** ScheduleGame */
         ScheduleGame: {
             /** Adjusted */
             adjusted: boolean;
             /** Benchmark Win Prob */
             benchmark_win_prob: number | null;
+            forecast?: components["schemas"]["ScheduleForecast"] | null;
             /** Game Id */
             game_id: number;
             /** In Resume */

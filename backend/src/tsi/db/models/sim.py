@@ -30,3 +30,18 @@ class SimResult(CreatedAtMixin, Base):
     semifinal_prob: Mapped[float | None]
     final_prob: Mapped[float | None]
     champion_prob: Mapped[float | None]
+
+
+class SimGameForecast(CreatedAtMixin, Base):
+    """The forecast the season simulation used for each remaining regular-season game
+    (#144): the official one, adjusted when manual adjustments apply. Team pages show it
+    for games TSI hasn't published yet (beyond the 8-day window)."""
+
+    __tablename__ = "sim_game_forecasts"
+
+    run_id: Mapped[int] = mapped_column(ForeignKey("model_runs.id"), primary_key=True)
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), primary_key=True)
+    proj_home: Mapped[float]
+    proj_away: Mapped[float]
+    home_win_prob: Mapped[float]
+    adjusted: Mapped[bool]  # includes manual adjustments (decision #104)

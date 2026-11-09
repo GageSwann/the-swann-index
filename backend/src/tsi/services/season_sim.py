@@ -62,6 +62,16 @@ class TeamProjection:
 
 
 @dataclass(frozen=True)
+class GameOutlook:
+    """The forecast the simulation used for one remaining game (stored for team pages)."""
+
+    proj_home: float
+    proj_away: float
+    home_win_prob: float
+    adjusted: bool  # includes manual adjustments
+
+
+@dataclass(frozen=True)
 class SeasonProjection:
     season: int
     as_of: datetime
@@ -73,6 +83,8 @@ class SeasonProjection:
     # game id -> what a win is worth to each side, for games in the next STAKES_DAYS
     # between two rated teams (#141); empty outside the regular season.
     game_stakes: dict[int, GameStakes] = field(default_factory=dict)
+    # game id -> forecast, for every remaining regular-season game simulated (#144)
+    game_forecasts: dict[int, GameOutlook] = field(default_factory=dict)
 
 
 def project_season(
@@ -102,12 +114,9 @@ def project_season(
     teams = rated + sorted({t for g in upcoming for t in (g.home_id, g.away_id)} - set(rated))
     index = {t: i for i, t in enumerate(teams)}
     division_of = {t: RATED_DIVISION for t in fbs} | {t: FCS for t in fcs}
+    forecasts = {g.id: forecast_game(g, live, artifact) for g in upcoming}
     remaining = [
-        RemainingGame(
-            index[g.home_id],
-            index[g.away_id],
-            forecast_game(g, live, artifact).distribution.margin,
-        )
+        RemainingGame(index[g.home_id], index[g.away_id], forecasts[g.id].distribution.margin)
         for g in upcoming
     ]
     noise = game_noise(artifact.distribution.sigma_margin, tau)
@@ -205,8 +214,17 @@ def project_season(
         for group in (fbs, fcs)
         for t in sorted(group, key=lambda t: -projections[t].expected_wins)
     ]
+    outlooks = {
+        game_id: GameOutlook(
+            f.distribution.home_points,
+            f.distribution.away_points,
+            f.distribution.home_win_prob,
+            f.adjustment is not None,
+        )
+        for game_id, f in forecasts.items()
+    }
     return SeasonProjection(
-        season, now, regular_week, tau, sims, ordered, team_names(session, rated), stakes
+        season, now, regular_week, tau, sims, ordered, team_names(session, rated), stakes, outlooks
     )
 
 

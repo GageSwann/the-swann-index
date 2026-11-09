@@ -1,11 +1,12 @@
-"""Stored season simulations (`sim_results`) of a rating run."""
+"""Stored season simulations (`sim_results`, `sim_game_forecasts`) of a rating run."""
 
 from dataclasses import dataclass
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tsi.db.models import SimResult
+from tsi.db.models import SimGameForecast, SimResult
+from tsi.db.queries.filters import one_of
 
 
 @dataclass(frozen=True)
@@ -45,3 +46,25 @@ def stored_sims(session: Session, run_id: int, team_id: int | None = None) -> di
     if team_id is not None:
         query = query.where(SimResult.team_id == team_id)
     return {row[0]: StoredSim(*row) for row in session.execute(query)}
+
+
+@dataclass(frozen=True)
+class StoredOutlook:
+    game_id: int
+    proj_home: float
+    proj_away: float
+    home_win_prob: float
+    adjusted: bool
+
+
+def stored_outlooks(session: Session, run_id: int, game_ids: list[int]) -> dict[int, StoredOutlook]:
+    """game id -> the forecast that run's season simulation used (#144); games it didn't
+    simulate (played, postseason, runs before #144) are missing."""
+    query = select(
+        SimGameForecast.game_id,
+        SimGameForecast.proj_home,
+        SimGameForecast.proj_away,
+        SimGameForecast.home_win_prob,
+        SimGameForecast.adjusted,
+    ).where(SimGameForecast.run_id == run_id, one_of(SimGameForecast.game_id, game_ids))
+    return {row[0]: StoredOutlook(*row) for row in session.execute(query)}

@@ -4,10 +4,23 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from tsi.db.queries.games import GameRow
+from tsi.db.queries.sim import StoredOutlook
 from tsi.db.queries.snapshots import SnapshotRow
 from tsi.db.queries.team_info import TeamRef
 from tsi.services.read.common import Score, current_snapshot, result_of
 from tsi.services.read.resume_view import ResumeContext, game_difficulty
+
+
+@dataclass(frozen=True)
+class ScheduleForecast:
+    """Last night's season-simulation forecast, from this team's view (#144): shown for
+    games TSI hasn't published a prediction for yet (beyond the 8-day window)."""
+
+    team_points: float
+    opponent_points: float
+    win_prob: float
+    spread: float  # negative = this team favored
+    adjusted: bool  # includes manual adjustments (decision #104)
 
 
 @dataclass(frozen=True)
@@ -32,6 +45,7 @@ class ScheduleGame:
     opponent_rank: int | None  # current Power rank, if in the team's own division
     benchmark_win_prob: float | None  # chance the benchmark (#12 FBS / #24 FCS) wins it
     in_resume: bool  # counts toward the Résumé (decided before the run)
+    forecast: ScheduleForecast | None = None  # unpublished, unplayed games only (#144)
 
 
 def schedule_game(
@@ -41,6 +55,7 @@ def schedule_game(
     snaps: list[SnapshotRow],
     now: datetime,
     ctx: ResumeContext | None,
+    outlook: StoredOutlook | None = None,
 ) -> ScheduleGame:
     home = g.home_id == team_id
     sign = 1 if home else -1
@@ -77,4 +92,13 @@ def schedule_game(
         opponent_rank=diff.opponent_rank if diff else None,
         benchmark_win_prob=diff.benchmark_win_prob if diff else None,
         in_resume=diff.in_resume if diff else False,
+        forecast=_forecast(outlook, home) if snap is None and outcome is None else None,
     )
+
+
+def _forecast(o: StoredOutlook | None, home: bool) -> ScheduleForecast | None:
+    if o is None:
+        return None
+    team, opp = (o.proj_home, o.proj_away) if home else (o.proj_away, o.proj_home)
+    win = o.home_win_prob if home else 1 - o.home_win_prob
+    return ScheduleForecast(team, opp, win, opp - team, o.adjusted)

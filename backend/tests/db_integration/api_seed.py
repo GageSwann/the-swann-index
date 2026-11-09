@@ -25,6 +25,7 @@ from tsi.db.models import (
     ModelRun,
     Pick,
     Prediction,
+    SimGameForecast,
     SimResult,
     Team,
     TeamRating,
@@ -248,6 +249,20 @@ def _runs(session) -> None:
                 champion_prob=make / 16,
             )
         )
+    # The sim's forecasts (#144): team pages show one only where nothing is published (203).
+    session.add_all(
+        [
+            SimGameForecast(
+                run_id=week2.id,
+                game_id=gid,
+                proj_home=30.0,
+                proj_away=20.0,
+                home_win_prob=0.75,
+                adjusted=False,
+            )
+            for gid in (202, 203)
+        ]
+    )
     week1_at = datetime(2026, 10, 17, 10, tzinfo=UTC)
     raw_101 = _snapshot(publish.id, 101, week1_at, -6.0, 52.0)
     snap_101 = _snapshot(publish.id, 101, week1_at, -8.0, 50.0, adjustment_ids=[2])
