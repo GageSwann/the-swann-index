@@ -22,7 +22,7 @@ the rare manual jobs (deploys, rollbacks, migrations, secret rotation). Project 
 | CI | `.github/workflows/ci.yml` | every push and pull request; gates Render deploys |
 
 Pages are served from Vercel's cache. The API is only called when the cache refreshes
-(nightly, hourly at most, or on first visit to an uncached page). The free Render API
+(nightly, daily at most otherwise (#145), or on first visit to an uncached page). The free Render API
 sleeps after ~15 idle minutes and takes up to a minute to wake, so a slow first API
 call is normal, not an outage.
 
@@ -214,7 +214,7 @@ it with the owner's OK.
 | Vercel build fails at "Generating static pages" | API down or too slow during prerendering | check `/health`; the build allows 180 s per page (`staticPageGenerationTimeout`); redeploy once the API is up |
 | Render build fails immediately ("Exited with status 1") | Dockerfile path or a dependency problem | paths in `render.yaml` are relative to `rootDir` (`backend/`); read the build log's last lines |
 | CI fails on `npm run check` with type errors after an API change | generated types out of date | `uv run tsi openapi`, then `npm run api:types` in `web/`, commit both (CLAUDE.md "API changes") |
-| API 500s under load (`QueuePool limit … reached`) | many cold-cache requests at once | in-process caches must be single-flight (CLAUDE.md "Neon latency"); see `services/read/matchup.py` |
+| API 500s under load (`QueuePool limit … reached`) | many cold-cache requests at once | in-process caches must be single-flight (CLAUDE.md "Neon latency"); one loader behind a lock |
 | Neon email "used N% of its 5 GB monthly public network transfer", or API 500s with "exceeded the data transfer quota" | reads out of Neon (any branch) near or over the free allowance (#140) | stop all heavy reads (backtests, experiments, backtest/migrate workflows, backfills); keep the nightly job; check the daily growth on the project's **Overview** page in the Neon console (the Billing page shows network transfer only after an overage); per branch: `data_transfer_bytes` from the branch details API (Free plan included, needs a Neon API key). Over the limit, the compute stays suspended until the next period or an upgrade |
 | Rankings arrows missing | no rating run ≥ 6 days older (start of a season) | expected; the Δ column hides itself until a week of runs exists |
 

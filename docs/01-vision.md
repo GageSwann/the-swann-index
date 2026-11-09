@@ -28,7 +28,7 @@ There are no user accounts. Operator actions happen locally or through GitHub Ac
 
 ## Later features
 - Season simulation: projected wins, conference title odds, CFP playoff odds and bracket
-- Hypothetical matchup tool (any two teams, any site)
+- ~~Hypothetical matchup tool (any two teams, any site)~~ built (#85), removed 2026-11-09 (#145)
 - Manual adjustments layer (injuries, QB changes), shown transparently as raw vs. adjusted
 - FCS expansion (full FCS ratings, not just a pooled FCS opponent)
 - Advanced markets: first half, key-number pricing, props

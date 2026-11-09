@@ -18,7 +18,7 @@ CollegeFootballData API ──► Ingest (Python) ──► PostgreSQL (Neon)
 GitHub Actions (11:00 UTC, started by cron-job.org) ── `tsi run`: ingest → rate → grade → publish ── then POST /api/revalidate (bearer token) refreshes the site's cached pages
 ```
 
-The Python side owns **all** data and math. The frontend never calculates odds or ratings; it only renders what the API returns. The one exception is the hypothetical matchup tool, which calls an API endpoint that computes on demand.
+The Python side owns **all** data and math. The frontend never calculates odds or ratings; it only renders what the API returns.
 
 ## Repo layout (monorepo)
 
@@ -107,7 +107,6 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | GET | `/games/{id}` | full game center payload (TSI's chances and fair prices, distribution, comparison, result) |
 | GET | `/book/ledger?season` | picks + running record, ROI, CLV; **owner-only** (#139): answers only `Authorization: Bearer <OWNER_API_KEY>`, else the same 404 as an unknown path; left out of the public spec; `Cache-Control: no-store` |
 | GET | `/model/report?season` | latest saved backtest (headline metrics + report tables: accuracy by season/period, calibration, ATS, totals, Book record/calibration/units), model version history, live accuracy (#76); owner-only like the ledger |
-| GET | `/matchup?home&away&neutral` | on-demand hypothetical prediction |
 | GET | `/games-of-week` | this poll week's FBS and FCS games of the week for Power and Résumé, each with the week board's game entry, the score's parts and both teams' swings; empty before the first pick (#141) |
 | GET | `/playoff?season` | playoff odds per team (field, bye, rounds, title, fair odds), projected bracket, the format's pairings (#101; 404 outside the regular season) |
 
@@ -118,9 +117,9 @@ Behavior (decision #60):
 - **Market shown:** books' consensus as of now; once kicked off, the closing consensus (falls back to the last pre-kickoff lines until closing lines are ingested the next morning).
 - **Game center** re-prices team totals and alt ladders from the snapshot's stored distribution (`book/pricing.py`), so they always match it.
 - **Week board** lists games with at least one FBS team. **Rankings** read the latest live rating run (optionally within a week); records come from completed games before that run.
-- **No Book data in public responses (#139):** snapshots carry no TSI Book prices or picks, and the game center and matchup markets are `FairMarkets` (TSI's probability + no-vig odds per line; `services/read/fair_markets.py`). Picks are still published and graded nightly; the owner reads them through `/book/ledger` (with the key), the CLI and the weekly review.
+- **No Book data in public responses (#139):** snapshots carry no TSI Book prices or picks, and the game center's markets are `FairMarkets` (TSI's probability + no-vig odds per line; `services/read/fair_markets.py`). Picks are still published and graded nightly; the owner reads them through `/book/ledger` (with the key), the CLI and the weekly review.
 - **Ledger** = picks on locked snapshots (`pending`/`graded`) plus `open` picks on not-yet-started games (may still change).
-- **Matchup** reuses the live prediction path; live inputs are cached in-process for an hour.
+- **Team schedules** show the published snapshot when there is one, else the nightly season sim's stored forecast (`sim_game_forecasts`, #145). The matchup tool (`/matchup`) was removed in #145.
 - `season` defaults to the current season everywhere; unknown team/game → 404.
 
 ## Data flow per week (in season)
@@ -135,10 +134,10 @@ Rankings therefore move the morning after any game, including midweek games.
 **Lock:** the locked prediction is the latest snapshot published before kickoff (a query, not a scheduled job); picks are graded against it and the closing line.
 
 ## Caching & revalidation
-- **API** (`api/caching.py`, decision #61): successful GETs send `Cache-Control: public, max-age=300, stale-while-revalidate=86400` (`/matchup`: `max-age=3600`, its in-process cache TTL); errors are `no-store`. Every JSON body carries a strong `ETag`; `If-None-Match` → empty 304. Responses over 1 KB are gzipped (rankings 74 KB → 16 KB). CORS allows only `TSI_CORS_ORIGINS`, GET only, no credentials, `ETag` exposed.
-- **Web** (Cache Components, decision #68): every API read in `web/lib/api/queries.ts` is a `"use cache"` function with the custom `tsi` profile (stale 5 min, revalidate hourly, expire 2 days; `next.config.ts`) and tags `tsi` + one of `meta`, `rankings`, `teams`, `ledger`, `report`, `week-{season}-{n}`, `team-{slug}`, `game-{id}` (`lib/api/tags.ts`). Phase 6 calls `revalidateTag` from `/api/revalidate` after each nightly run.
+- **API** (`api/caching.py`, decision #61): successful GETs send `Cache-Control: public, max-age=300, stale-while-revalidate=86400`; errors are `no-store`. Every JSON body carries a strong `ETag`; `If-None-Match` → empty 304. Responses over 1 KB are gzipped (rankings 74 KB → 16 KB). CORS allows only `TSI_CORS_ORIGINS`, GET only, no credentials, `ETag` exposed.
+- **Web** (Cache Components, decision #68): every API read in `web/lib/api/queries.ts` is a `"use cache"` function with the custom `tsi` profile (stale 5 min, revalidate daily (hourly before #145), expire 2 days; `next.config.ts`) and tags `tsi` + one of `meta`, `rankings`, `teams`, `ledger`, `report`, `week-{season}-{n}`, `team-{slug}`, `game-{id}` (`lib/api/tags.ts`). Phase 6 calls `revalidateTag` from `/api/revalidate` after each nightly run.
 - After each nightly run, the workflow wakes the API (`/health`), calls `POST /api/revalidate` with `Authorization: Bearer $REVALIDATE_TOKEN` (constant-time check; 401 wrong token, 503 unset), which runs `revalidateTag("tsi", { expire: 0 })`, then visits the main pages so the first reader gets fresh ones (#80). `expire: 0` (Phase 12.2) means the next visit to *any* page waits for fresh data (a team page builds in ~0.8–1.4 s, measured 2026-11-05) instead of being served the previous day's page while the new one builds, as `"max"` did: that left team pages nobody pre-visited showing old schedules.
-- Result: nearly every page view is served from Vercel's cache, and the API is only hit on revalidation and for the matchup tool.
+- Result: nearly every page view is served from Vercel's cache, and the API is only hit after the nightly revalidation (and the daily safety-net re-check).
 
 ## Environments & secrets
 All secrets come from environment variables; none are in code. See [09-conventions.md](09-conventions.md) §3.

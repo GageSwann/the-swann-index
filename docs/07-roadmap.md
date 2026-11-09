@@ -280,9 +280,9 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
 - [x] Pushes that don't touch `web/` don't rebuild the site (#144, `web/vercel.json`).
 - [x] Logo transformations cached 31 days (#144; Vercel Hobby: 5,000 a month, 75% used by Nov 9).
 - [ ] Local Postgres copy of the data on the home PC; backtests, experiments and refits run against it. Build it with one `pg_dump` of `dev` restored locally: the database is ~63 MB, so a dump costs about that much transfer (~1–2% of the allowance) and brings every table, live snapshots and picks included. Re-ingesting from the CFBD disk cache (`tsi ingest season --season 2014 --through 2026` against local Postgres) costs no transfer but leaves out the live-only tables.
-- [ ] Transfer meter: log how much the nightly job and the API read per run or request. Neon gives no per-query bytes; per-branch totals come from the branch details API (`data_transfer_bytes`) and the heaviest queries from `pg_stat_statements` (rows per call; cleared whenever the compute scales to zero).
+- [x] Transfer meter (#145: measured on a local copy with a byte-counting relay: nightly run 12.6 MB, site build 17.6 MB, per-endpoint costs; the hourly page re-check was the main cost). Original plan: log how much the nightly job and the API read per run or request. Neon gives no per-query bytes; per-branch totals come from the branch details API (`data_transfer_bytes`) and the heaviest queries from `pg_stat_statements` (rows per call; cleared whenever the compute scales to zero).
 - [ ] "Save backtest to production" without reading the history from production (compute from a copy; upload only the saved run).
-- [ ] Cut reads per site build or nightly run if the meter shows they matter.
+- [x] Cut reads per site build or nightly run (#145: pages re-check daily, not hourly; matchup tool removed, team pages use stored sim forecasts; nightly rankings and sim read one season). *Done when:* Neon's daily production growth, measured from the owner's console figures, fits well inside 5 GB a month.
 
 **Owner's answers (2026-11-05, #127):**
 1. Book data behind a private owner key (more practical than deleting the routes, since the weekly review reads `/book/ledger`).

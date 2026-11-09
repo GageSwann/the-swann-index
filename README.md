@@ -24,7 +24,7 @@ The closing line is the bar to clear, and TSI sits within half a point of it. It
 | | |
 |---|---|
 | ![Game center](docs/images/game-center.png) **Game center:** projected score, win probability, TSI's line and chances next to Vegas, alt-line ladder and score distribution. | ![Team page](docs/images/team.png) **Team pages:** Power and Résumé ranks, offense/defense profile, rating trend, schedule with win odds and a Résumé breakdown. |
-| ![This week](docs/images/week.png) **This week:** every game with TSI's numbers beside the market, filterable by Top 25 and conference. | ![Matchup tool](docs/images/matchup.png) **Matchup:** price any two FBS teams as if they played today, home or neutral site. |
+| ![This week](docs/images/week.png) **This week:** every game with TSI's numbers beside the market, filterable by Top 25 and conference. | |
 
 - **Power** ranks who is best right now, from this season's games only.
 - **Résumé** ranks who has earned it: how likely a typical #12 team would be to match the record against the same schedule.
@@ -50,7 +50,7 @@ flowchart LR
     RUN -. "POST /api/revalidate (bearer token)" .-> WEB
 ```
 
-- **Python owns all the data and math.** The site never calculates odds or ratings; it renders what the API returns. The one on-demand calculation is the matchup tool's endpoint.
+- **Python owns all the data and math.** The site never calculates odds or ratings; it renders what the API returns.
 - **No look-ahead.** Any rating, prediction or backtest for a game uses only data available before its kickoff.
 - **Published predictions are immutable.** New forecasts are new snapshots (a database trigger rejects updates). Only the last one published before kickoff is graded.
 - **Market lines are never model inputs.** They are evaluation points, and in the Book they only size edges.
