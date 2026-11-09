@@ -32,8 +32,12 @@ class GameResult:
         return self.home_div == RATED_DIVISION and self.away_div == RATED_DIVISION
 
 
-def completed_games(session: Session, through_season: int) -> list[GameResult]:
-    """Every completed, scored game up to `through_season`, oldest kickoff first."""
+def completed_games(
+    session: Session, through_season: int, *, from_season: int | None = None
+) -> list[GameResult]:
+    """Every completed, scored game up to `through_season` (from `from_season` when given,
+    else all seasons), oldest kickoff first. Steps that only need one season pass
+    `from_season`: the full history is ~3 MB of database reads (#144)."""
     home_ts, away_ts = aliased(TeamSeason), aliased(TeamSeason)
     query = (
         select(
@@ -58,4 +62,6 @@ def completed_games(session: Session, through_season: int) -> list[GameResult]:
         )
         .order_by(Game.start_time, Game.id)
     )
+    if from_season is not None:
+        query = query.where(Game.season >= from_season)
     return [GameResult(*row) for row in session.execute(query)]

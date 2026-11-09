@@ -103,7 +103,7 @@ def _schedules(
 ) -> dict[int, list[ScheduleGame]]:
     """Each team's decided games so far, with opponents' current ratings (ties don't count)."""
     schedules: dict[int, list[ScheduleGame]] = {t: [] for t in teams}
-    for g in completed_games(session, season):
+    for g in completed_games(session, season, from_season=season):
         if g.season != season or not g.start_time or g.start_time >= as_of or g.margin == 0:
             continue
         for team, opp, opp_div, site, won in (

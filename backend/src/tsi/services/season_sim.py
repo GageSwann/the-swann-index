@@ -153,7 +153,7 @@ def project_season(
             fcs=fcs,
             played=[
                 g
-                for g in completed_games(session, season)
+                for g in completed_games(session, season, from_season=season)
                 if g.season == season and g.start_time and g.start_time < now
             ],  # fmt: skip
             remaining=upcoming,
