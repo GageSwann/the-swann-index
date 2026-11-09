@@ -17,11 +17,13 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: { "/**": ["./assets/fonts/*.ttf"] },
   partialPrefetching: true,
   cacheLife: {
-    // TSI data changes once a day (the 11:00 UTC nightly run). Pages re-check hourly, and
-    // the nightly job calls /api/revalidate so updates land right away.
+    // TSI data changes once a day (the 11:00 UTC nightly run), and the nightly job calls
+    // /api/revalidate so updates land right away. Re-checking hourly re-read identical data
+    // up to 24 times a day per page from the API, and so from Neon (#144); the daily
+    // re-check is only a safety net for a night whose refresh failed.
     tsi: {
       stale: 300, // client may reuse for 5 minutes without asking
-      revalidate: 3600, // background refresh at most hourly
+      revalidate: 86400, // background refresh at most daily
       expire: 172800, // never serve data older than 2 days
     },
   },
