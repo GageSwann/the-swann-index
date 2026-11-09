@@ -27,9 +27,25 @@ Request = tuple[str, Mapping[str, Any]]  # (endpoint, params)
 logger = logging.getLogger(__name__)
 
 DEFAULT_BASE_URL = "https://api.collegefootballdata.com"
-# Transient failures (timeouts, connection errors, HTTP 5xx) are retried after these
-# waits. A 2026-10-18 nightly run failed on one CFBD ReadTimeout.
-RETRY_DELAYS = (2.0, 5.0)
+# Transient failures (timeouts, connection errors, HTTP 429 and 5xx) are retried after
+# these waits. A 2026-10-18 nightly run failed on one CFBD ReadTimeout; the 11:00 UTC runs
+# of Nov 7-9 failed on the full-season advanced stats: >30 s at that hour (~15 s later in
+# the day), then a 429 on the quick retry.
+RETRY_DELAYS = (5.0, 30.0)
+# The full-season advanced-stats responses grow every week. Worst case per request with
+# the retries: 3 x 60 s + 35 s, so the nightly job's 15-minute limit still holds.
+TIMEOUT = httpx.Timeout(60.0, connect=10.0)
+MAX_RETRY_AFTER = 60.0  # longest CFBD `Retry-After` we honor, in seconds
+RETRYABLE = {httpx.codes.TOO_MANY_REQUESTS}  # plus every 5xx
+
+
+def _retry_after(response: httpx.Response | None) -> float:
+    """CFBD's `Retry-After` in seconds (capped), or 0 when absent or not a number."""
+    value = response.headers.get("Retry-After") if response is not None else None
+    try:
+        return min(max(float(value), 0.0), MAX_RETRY_AFTER) if value else 0.0
+    except ValueError:
+        return 0.0
 
 
 class CfbdClient:
@@ -51,7 +67,7 @@ class CfbdClient:
         self._cache = cache
         self._ledger = ledger
         self._budget = monthly_budget
-        self._http = http or httpx.Client(base_url=base_url, timeout=30.0)
+        self._http = http or httpx.Client(base_url=base_url, timeout=TIMEOUT)
         self._clock = clock
         self._is_fresh = freshness
         self._retry_delays = tuple(retry_delays)
@@ -86,12 +102,22 @@ class CfbdClient:
         return CachedResponse(data, fetched_at)
 
     def prefetch(self, requests: Sequence[Request], *, refresh: bool = False) -> None:
-        """Fetch independent requests concurrently into the cache, so the loaders that
-        follow read them from disk. CFBD response time dominates the nightly ingest
-        (several seconds per advanced-stats call); our own work is well under a second.
+        """Fetch independent requests into the cache, so the loaders that follow read them
+        from disk. CFBD response time dominates the nightly ingest (several seconds per
+        advanced-stats call), so different endpoints run concurrently; requests to the
+        same endpoint run one after another, which keeps two heavy calls from hitting
+        CFBD at once (a source of the 429s of Nov 7-9).
         """
-        with ThreadPoolExecutor(max_workers=len(requests) or 1) as pool:
-            futures = [pool.submit(self.get_response, e, p, refresh=refresh) for e, p in requests]
+        by_endpoint: dict[str, list[Mapping[str, Any]]] = {}
+        for endpoint, params in requests:
+            by_endpoint.setdefault(endpoint, []).append(params)
+
+        def fetch_all(endpoint: str) -> None:
+            for params in by_endpoint[endpoint]:
+                self.get_response(endpoint, params, refresh=refresh)
+
+        with ThreadPoolExecutor(max_workers=len(by_endpoint) or 1) as pool:
+            futures = [pool.submit(fetch_all, endpoint) for endpoint in by_endpoint]
             for future in futures:
                 future.result()  # re-raise the first failure
 
@@ -118,7 +144,7 @@ class CfbdClient:
                     if response.status_code == httpx.codes.OK
                     else f"HTTP {response.status_code}"
                 )
-                retryable = response.status_code >= 500
+                retryable = response.status_code in RETRYABLE or response.status_code >= 500
             except httpx.TransportError as exc:  # timeouts, connection errors
                 response, problem, retryable = None, type(exc).__name__, True
             if problem is None:
@@ -127,7 +153,7 @@ class CfbdClient:
             if not retryable or not waits:
                 prefix = "returned" if problem.startswith("HTTP") else "request failed:"
                 raise CfbdError(f"CFBD {endpoint} {prefix} {problem}")
-            wait = waits.pop(0)
+            wait = max(waits.pop(0), _retry_after(response))
             logger.warning("CFBD %s %s (%s); retrying in %.0fs", endpoint, params, problem, wait)
             self._sleep(wait)
 

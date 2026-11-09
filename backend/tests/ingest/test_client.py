@@ -1,3 +1,5 @@
+import threading
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -165,7 +167,7 @@ def test_timeouts_are_retried_with_backoff(tmp_path: Path, ledger) -> None:
 
     assert client.get("/games", {"year": 2024}) == GAMES
 
-    assert len(api.requests) == 3 and sleeps == [2.0, 5.0]
+    assert len(api.requests) == 3 and sleeps == [5.0, 30.0]
     assert [r.status for r in ledger.records] == ["error", "error", "ok"]  # all attempts count
 
 
@@ -176,6 +178,28 @@ def test_server_errors_are_retried_but_give_up_eventually(tmp_path: Path, ledger
     with pytest.raises(CfbdError, match="HTTP 503"):
         client.get("/games", {"year": 2024})
     assert len(api.requests) == 3  # first try + 2 retries
+
+
+def test_rate_limits_are_retried_and_honor_retry_after(tmp_path: Path, ledger) -> None:
+    class RateLimited(FakeApi):
+        def __init__(self, retry_after: list[str | None]) -> None:
+            super().__init__()
+            self.retry_after = retry_after
+
+        def handler(self, request: httpx.Request) -> httpx.Response:
+            if self.retry_after:
+                self.requests.append(request)
+                value = self.retry_after.pop(0)
+                return httpx.Response(429, headers={"Retry-After": value} if value else {})
+            return super().handler(request)
+
+    api, sleeps = RateLimited(["12", "999"]), []  # 999 s is capped at 60 s
+    assert make_client(tmp_path, ledger, api, sleeps=sleeps).get("/games", {"year": 2024})
+    assert sleeps == [12.0, 60.0] and len(api.requests) == 3
+
+    api, sleeps = RateLimited([None, "soon"]), []  # no or unreadable header: normal waits
+    make_client(tmp_path, ledger, api, sleeps=sleeps).get("/games", {"year": 2023}, refresh=True)
+    assert sleeps == [5.0, 30.0]
 
 
 def test_client_errors_are_not_retried(tmp_path: Path, ledger) -> None:
@@ -209,3 +233,26 @@ def test_prefetch_raises_a_failure(tmp_path: Path, ledger) -> None:
 
     with pytest.raises(CfbdError, match="HTTP 404"):
         client.prefetch([("/games", {"year": 2024})])
+
+
+def test_prefetch_runs_requests_to_one_endpoint_one_at_a_time(tmp_path: Path, ledger) -> None:
+    active: dict[str, int] = {}
+    most: dict[str, int] = {}
+    lock = threading.Lock()
+
+    class SlowApi(FakeApi):
+        def handler(self, request: httpx.Request) -> httpx.Response:
+            path = request.url.path
+            with lock:
+                active[path] = active.get(path, 0) + 1
+                most[path] = max(most.get(path, 0), active[path])
+            time.sleep(0.05)
+            with lock:
+                active[path] -= 1
+            return super().handler(request)
+
+    client = make_client(tmp_path, ledger, SlowApi())
+    stats = "/stats/game/advanced"
+    client.prefetch([(stats, {"year": 2026}), (stats, {"year": 2026, "x": 1}), ("/games", {})])
+
+    assert most == {stats: 1, "/games": 1}
