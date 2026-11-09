@@ -183,6 +183,8 @@ afterwards.
    ```
 
    Environment variables win over `backend/.env`, so nothing local changes.
+
+   Usually simpler, and the connection string never leaves GitHub: the **Migrate production** workflow (`gh workflow run migrate.yml`). It checks out a ref, so to migrate before the code reaches `main`, push a temporary branch from `origin/main` with only the migration file, run `gh workflow run migrate.yml --ref <branch>`, check the log for `Running upgrade …`, delete the branch, then push `main` (#145).
 3. Check the live API afterwards (`/meta/current`, `/rankings`).
 
 ## 6. Rotating secrets
@@ -209,6 +211,8 @@ it with the owner's OK.
 |---|---|---|
 | API returns 500, Render log shows `relation "…" does not exist` | `DATABASE_URL` points at an empty branch | Render env must be the `production` branch's pooled string (host `ep-soft-firefly-…-pooler`) |
 | Site shows yesterday's "Model updated" time, API is newer | refresh step failed or was skipped | check the run log for the refresh step; 401 = token mismatch between Vercel and GitHub (rotate both); skipped = `SITE_URL` / `TSI_API_URL` repo variables missing (`gh variable list`); then refresh only the site (section 2) |
+| Nightly job fails at 11:00 UTC with `CFBD /stats/game/advanced … ReadTimeout` or `HTTP 429`, the 14:23 backup succeeds | CFBD slow at the top of the hour | fixed in #144 (60 s timeout, 429 retried with `Retry-After`, one request per endpoint at a time); if it returns, move the cron-job.org start off the hour (e.g. 11:17 UTC) |
+| Neon transfer climbing faster than ~15–20 MB a day with no pushes | something re-reading the API (a cache setting, a new reader) | measure with `scripts/transfer_meter/` on a local copy (README there has the baseline per run and endpoint); the `tsi` cache profile in `web/next.config.ts` must stay daily (#145) |
 | Nightly job: `run the live pipeline` failed | ingest failed (CFBD down, quota) or DB unreachable | the rest of `tsi run` still runs on stored data and exits 1; read the log; CFBD outages resolve themselves; check the call budget below |
 | First page load or API call takes ~60 s | Render free tier woke from sleep | normal; the nightly refresh step wakes it before refreshing the site |
 | Vercel build fails at "Generating static pages" | API down or too slow during prerendering | check `/health`; the build allows 180 s per page (`staticPageGenerationTimeout`); redeploy once the API is up |
