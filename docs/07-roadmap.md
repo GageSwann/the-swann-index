@@ -276,6 +276,9 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
   - *Done when:* no 2026 team page or week board shows dashes where TSI numbers belong; the replay reproduces the backtest's features for those games (parity check); the published-snapshot tables are untouched.
 
 **Operations (found 2026-11-06, #140): Neon network transfer**
+- [x] Morning runs survive a slow CFBD (#144: 60 s timeout, 429 retried with `Retry-After`, same-endpoint requests one at a time). *Done when:* a week of 11:00 UTC runs succeed.
+- [x] Pushes that don't touch `web/` don't rebuild the site (#144, `web/vercel.json`).
+- [x] Logo transformations cached 31 days (#144; Vercel Hobby: 5,000 a month, 75% used by Nov 9).
 - [ ] Local Postgres copy of the data on the home PC; backtests, experiments and refits run against it. Build it with one `pg_dump` of `dev` restored locally: the database is ~63 MB, so a dump costs about that much transfer (~1–2% of the allowance) and brings every table, live snapshots and picks included. Re-ingesting from the CFBD disk cache (`tsi ingest season --season 2014 --through 2026` against local Postgres) costs no transfer but leaves out the live-only tables.
 - [ ] Transfer meter: log how much the nightly job and the API read per run or request. Neon gives no per-query bytes; per-branch totals come from the branch details API (`data_transfer_bytes`) and the heaviest queries from `pg_stat_statements` (rows per call; cleared whenever the compute scales to zero).
 - [ ] "Save backtest to production" without reading the history from production (compute from a copy; upload only the saved run).
