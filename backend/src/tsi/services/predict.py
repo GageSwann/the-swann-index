@@ -45,7 +45,7 @@ def forecast_games(
 def forecast_game(
     g: UpcomingGame, live: LiveInputs, artifact: ModelArtifact, *, scheduled: bool = True
 ) -> GameForecast:
-    """`scheduled=False` for hypothetical games (matchups, projected title games): no rest
+    """`scheduled=False` for hypothetical games (projected title games): no rest
     adjustment, since their rest days aren't real."""
     side = GameSide(
         rated_id(g.home_id, g.home_div, g.season),

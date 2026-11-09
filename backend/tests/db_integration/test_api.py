@@ -194,16 +194,6 @@ def test_model_report(api: TestClient) -> None:
     assert (one["adjustment"]["reason"], one["score"]["games"]) == ("Starting LB back", 1)
 
 
-def test_matchup(api: TestClient) -> None:
-    m = ok(api, "/matchup?home=alpha&away=delta&neutral=true")
-
-    assert m["proj_home"] + m["proj_away"] == pytest.approx(m["total"])
-    assert 0 < m["home_win_prob"] < 1 and m["neutral"] is True
-    assert m["sigma_margin"] > 0 and m["sigma_total"] > 0  # the margin chart needs them
-    assert api.get("/matchup?home=alpha&away=nope").status_code == 404
-    assert api.get("/matchup?home=alpha&away=alpha").status_code == 400
-
-
 def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
     result = ok(api, "/playoff")
 
@@ -266,7 +256,7 @@ def test_team_list_and_week_board_by_division(api: TestClient) -> None:
     assert (ids("fbs"), ids("fcs"), ids("all")) == ([201, 202], [203], [201, 202, 203])
 
 
-def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
+def test_fcs_team_profile(api: TestClient) -> None:
     echo = ok(api, "/teams/echo")
 
     assert (echo["ratings"]["rating"], echo["ratings"]["rank_power"]) == (-30.0, 1)
@@ -294,8 +284,6 @@ def test_fcs_team_profile_and_cross_division_matchup(api: TestClient) -> None:
     assert (foxtrot["win_prob"], foxtrot["spread"]) == (0.25, 10.0)  # the away side
     # Published games keep their snapshot and carry no forecast.
     assert all(g["forecast"] is None for g in ok(api, "/teams/bravo")["schedule"])
-    m = ok(api, "/matchup?home=alpha&away=echo")
-    assert (m["home"]["division"], m["away"]["division"]) == ("fbs", "fcs")
 
 
 def test_no_movement_until_the_earlier_run_ranked_the_division(api: TestClient) -> None:

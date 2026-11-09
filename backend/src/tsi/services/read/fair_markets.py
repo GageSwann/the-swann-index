@@ -1,6 +1,6 @@
 """TSI's own prices for a game, without the TSI Book (decision #139).
 
-The Book is owner-only, so public responses (game center, matchup tool) carry TSI's
+The Book is owner-only, so public responses (the game center) carry TSI's
 probabilities and fair (no-vig) odds per market and leave out the Book's vigged prices.
 """
 

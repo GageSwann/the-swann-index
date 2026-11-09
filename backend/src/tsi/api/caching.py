@@ -1,8 +1,7 @@
 """HTTP caching for a read-only API whose data changes once a day (the 11:00 UTC nightly run).
 
 - `Cache-Control` per path prefix: successful GETs are public and short-lived with a
-  long stale-while-revalidate window; `/matchup` is cached as long as its live inputs;
-  errors are `no-store`.
+  long stale-while-revalidate window; errors are `no-store`.
 - Strong `ETag` = hash of the JSON body; a matching `If-None-Match` gets an empty 304.
 """
 
@@ -16,7 +15,6 @@ DEFAULT_POLICY = "public, max-age=300, stale-while-revalidate=86400"
 NO_STORE = "no-store"
 POLICIES = {
     "/health": NO_STORE,  # liveness must never come from a cache
-    "/matchup": "public, max-age=3600",  # same TTL as the in-process live-inputs cache
     "/book": NO_STORE,  # owner-only (decision #139): never in a shared cache
     "/model": NO_STORE,
     "/docs": "no-cache",

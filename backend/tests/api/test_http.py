@@ -23,9 +23,9 @@ def client() -> TestClient:
 
 def test_cache_policy_by_path_and_status() -> None:
     assert cache_policy("/rankings", 200) == DEFAULT_POLICY
-    assert cache_policy("/matchup", 200) == "public, max-age=3600"
+    assert cache_policy("/book/ledger", 200) == NO_STORE
     assert cache_policy("/teams/nope", 404) == NO_STORE
-    assert cache_policy("/matchupx", 200) == DEFAULT_POLICY  # prefix match is per path segment
+    assert cache_policy("/bookx", 200) == DEFAULT_POLICY  # prefix match is per path segment
 
 
 def test_health_needs_no_database_and_is_never_cached(client: TestClient) -> None:

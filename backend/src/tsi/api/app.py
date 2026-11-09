@@ -15,7 +15,6 @@ from tsi.api.routers import (
     games,
     games_of_week,
     health,
-    matchup,
     meta,
     model,
     playoff,
@@ -72,7 +71,6 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
         games_of_week,
         book,
         model,
-        matchup,
         playoff,
     ):
         app.include_router(router.router)

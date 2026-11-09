@@ -10,7 +10,6 @@ V1_PATHS = {
     "/weeks/{season}/{week}/games",
     "/games/{game_id}",
     "/games-of-week",
-    "/matchup",
     "/playoff",
 }
 # Owner-only (decision #139): served with the key, never in the public spec.
