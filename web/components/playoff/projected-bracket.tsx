@@ -3,7 +3,6 @@ import type { CSSProperties } from "react"
 
 import { TeamLink } from "@/components/team/team-link"
 import { TeamLogo } from "@/components/team/team-logo"
-import { BorderLightRings, borderLightVars } from "@/components/ui/border-light"
 import type { Playoff } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { percent } from "@/lib/format/numbers"
@@ -30,8 +29,7 @@ const top = (row: number) => HEAD_H + row * UNIT
 /**
  * The projected field as a real bracket (Phase 13.6; decisions #100, #125): rounds left to
  * right with connector lines; every game and the line out of it lit in the color of the
- * team that advances (owner, 2026-11-10), and the champion card carrying the border light
- * (#137). Wider than a phone (and the FCS bracket
+ * team that advances (owner, 2026-11-10), and the champion card framed in its color. Wider than a phone (and the FCS bracket
  * wider than most screens), so it scrolls sideways inside its own frame; the page never does.
  */
 export function ProjectedBracket({ playoff }: { playoff: Playoff }) {
@@ -165,10 +163,10 @@ function Champion({ entry, style }: { entry: Entry; style: CSSProperties }) {
   return (
     <div className="absolute" style={{ ...style, height: CHAMP_H }}>
       <div
-        className="tsi-border-light flex h-full flex-col justify-center gap-1 rounded-md border border-border bg-card p-3"
-        style={borderLightVars(t.team, t.team)}
+        // A solid border in the champion's color, lit like the games (owner: no moving light).
+        className="tsi-team-light tsi-lit flex h-full flex-col justify-center gap-1 rounded-md border-2 border-(--light) bg-card p-3"
+        style={teamColorVars(t.team)}
       >
-        <BorderLightRings />
         <p className="text-xs text-muted-foreground">Projected champion</p>
         <Link href={`/teams/${t.team.slug}`} className="group flex min-w-0 items-center gap-2">
           <TeamLogo team={t.team} size={36} />
