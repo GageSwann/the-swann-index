@@ -46,6 +46,7 @@ class ScheduleGame:
     benchmark_win_prob: float | None  # chance the benchmark (#12 FBS / #24 FCS) wins it
     in_resume: bool  # counts toward the Résumé (decided before the run)
     forecast: ScheduleForecast | None = None  # unpublished, unplayed games only (#144)
+    kickoff_tbd: bool = False  # date only: the site never flips it to "in progress" (13.5)
 
 
 def schedule_game(
@@ -75,6 +76,7 @@ def schedule_game(
     return ScheduleGame(
         game_id=g.id,
         kickoff=g.start_time,
+        kickoff_tbd=g.start_time_tbd,
         week=g.week,
         season_type=g.season_type,
         opponent=opponent,

@@ -86,6 +86,7 @@ def test_team_list_and_profile(api: TestClient) -> None:
     assert (first["outcome"], first["team_points"], first["opponent"]["slug"]) == ("W", 30, "bravo")
     # In progress: the locked pre-kickoff snapshot (Alpha -4), never the post-kickoff one (-9).
     assert live["spread"] == -4.0 and live["site"] == "home"
+    assert (first["kickoff_tbd"], live["kickoff_tbd"]) == (False, False)  # 13.5: site's clock
     assert api.get("/teams/nope").status_code == 404
     assert alpha["adjustments"] == [] and live["adjusted"] is False
     bravo = ok(api, "/teams/bravo")

@@ -1419,6 +1419,11 @@
             ],
             "title": "Kickoff"
           },
+          "kickoff_tbd": {
+            "default": false,
+            "title": "Kickoff Tbd",
+            "type": "boolean"
+          },
           "opponent": {
             "$ref": "#/components/schemas/TeamRef"
           },
