@@ -16,12 +16,15 @@ export function TeamLink({ team, rank }: { team: TeamRef; rank?: number | null }
       className="group inline-flex min-w-0 items-center gap-2 font-medium"
     >
       <TeamLogo team={team} size={26} className="mx-0.5" />
-      {rank != null && (
-        <>
-          <span className="shrink-0 text-xs text-muted-foreground tabular-nums">#{rank}</span>{" "}
-        </>
-      )}
-      <span className="truncate underline-offset-4 group-hover:underline">{team.school}</span>
+      {/* One text run: the rank sits a normal space from the name, not the flex gap. */}
+      <span className="truncate">
+        {rank != null && (
+          <>
+            <span className="text-xs text-muted-foreground tabular-nums">#{rank}</span>{" "}
+          </>
+        )}
+        <span className="underline-offset-4 group-hover:underline">{team.school}</span>
+      </span>
     </Link>
   )
 }
