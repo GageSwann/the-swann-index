@@ -47,8 +47,10 @@ def compute_live_ratings(
     inputs: LiveInputs | None = None,
 ) -> LiveRatings:
     season = current_season(now)
-    rankings = build_rankings(session, season, now, artifact.rating, artifact.sigma_season)
     live = inputs or load_live_inputs(session, season, now, artifact)
+    rankings = build_rankings(
+        session, season, now, artifact.rating, artifact.sigma_season, live=live
+    )
     components = live.components
 
     elo = live.elo.ratings

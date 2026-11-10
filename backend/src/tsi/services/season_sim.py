@@ -162,7 +162,11 @@ def project_season(
             fcs=fcs,
             played=[
                 g
-                for g in completed_games(session, season, from_season=season)
+                for g in (
+                    live.season_games
+                    if live.shares(season, now)
+                    else completed_games(session, season, from_season=season)
+                )
                 if g.season == season and g.start_time and g.start_time < now
             ],  # fmt: skip
             remaining=upcoming,
@@ -173,7 +177,7 @@ def project_season(
             margin=lambda a, b, neutral: margin(teams[a], teams[b], neutral),
         )
         rankings = rankings or build_rankings(
-            session, season, now, artifact.rating, artifact.sigma_season
+            session, season, now, artifact.rating, artifact.sigma_season, live=live
         )
         fbs_proj = fbs_playoff(session, state, rankings, artifact.sigma_season, fmt)
         playoff = dict(fbs_proj.odds)

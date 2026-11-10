@@ -9,6 +9,7 @@ FCS_STATS_FROM, when they are rated individually (decision #109).
 Teams with fewer than 4 games are marked provisional.
 """
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -17,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from tsi.db.models import Team
 from tsi.db.queries.priors import division_teams, fbs_teams
-from tsi.db.queries.results import completed_games
+from tsi.db.queries.results import GameResult, completed_games
 from tsi.db.queries.stats import offense_rows
 from tsi.divisions import FCS, FCS_STATS_FROM
 from tsi.model.config import ESTABLISHED_GAMES
@@ -31,6 +32,7 @@ from tsi.model.resume import (
     benchmark_rating,
     strength_of_record,
 )
+from tsi.services.live_inputs import LiveInputs
 
 
 @dataclass(frozen=True)
@@ -70,11 +72,19 @@ def build_rankings(
     as_of: datetime,
     params: RatingParams | None = None,
     sigma: float = SEASON_SIGMA,
+    live: LiveInputs | None = None,  # the run's inputs: their season rows and games are reused
 ) -> Rankings:
     params = params or RatingParams()
-    rows = [
-        r for r in offense_rows(session, season, season) if r.start_time and r.start_time < as_of
-    ]
+    shared = live is not None and live.shares(season, as_of)
+    rows = (
+        list(live.season_rows)
+        if shared
+        else [
+            r
+            for r in offense_rows(session, season, season)
+            if r.start_time and r.start_time < as_of
+        ]
+    )
     ratings = fit_ratings(rows, params)
     fbs = fbs_teams(session, season, season).get(season, set())
     fcs = (
@@ -82,7 +92,8 @@ def build_rankings(
         if season >= FCS_STATS_FROM
         else set()
     )
-    schedules = _schedules(session, season, as_of, ratings, {*fbs, *fcs})
+    games = live.season_games if shared else completed_games(session, season, from_season=season)
+    schedules = _schedules(games, season, as_of, ratings, {*fbs, *fcs})
     teams, benchmark = rank_division(fbs, ratings, schedules, BENCHMARK_RANK, sigma)
     fcs_teams, fcs_benchmark = rank_division(fcs, ratings, schedules, FCS_BENCHMARK_RANK, sigma)
     names = {tid: school for tid, school in session.execute(select(Team.id, Team.school))}
@@ -99,11 +110,11 @@ def build_rankings(
 
 
 def _schedules(
-    session: Session, season: int, as_of: datetime, ratings: RatingSet, teams: set[int]
+    games: Iterable[GameResult], season: int, as_of: datetime, ratings: RatingSet, teams: set[int]
 ) -> dict[int, list[ScheduleGame]]:
     """Each team's decided games so far, with opponents' current ratings (ties don't count)."""
     schedules: dict[int, list[ScheduleGame]] = {t: [] for t in teams}
-    for g in completed_games(session, season, from_season=season):
+    for g in games:
         if g.season != season or not g.start_time or g.start_time >= as_of or g.margin == 0:
             continue
         for team, opp, opp_div, site, won in (

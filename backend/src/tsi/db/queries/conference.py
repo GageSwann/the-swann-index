@@ -4,8 +4,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy import exists, func, or_, select
+from sqlalchemy.orm import Session, aliased
 
 from tsi.db.models import Game, TeamSeason
 from tsi.db.queries.filters import one_of
@@ -66,24 +66,24 @@ def fcs_playoff_games(session: Session, season: int) -> set[int]:
 
 
 def moved_up_teams(session: Session, season: int, seasons: int) -> set[int]:
-    """FCS teams in one of their first `seasons` FCS seasons after D-II/III (or below)."""
-    rows = session.execute(
-        select(TeamSeason.team_id, TeamSeason.season, TeamSeason.division).where(
-            TeamSeason.season <= season
-        )
+    """FCS teams in one of their first `seasons` FCS seasons after D-II/III (or below).
+
+    Worked out by the database (a few ids back instead of every team-season since 2014, #147).
+    """
+    first = (
+        select(TeamSeason.team_id, func.min(TeamSeason.season).label("first"))
+        .where(TeamSeason.division == FCS, TeamSeason.season <= season)
+        .group_by(TeamSeason.team_id)
+        .having(season - func.min(TeamSeason.season) < seasons)
+        .subquery()
     )
-    first_fcs: dict[int, int] = {}
-    lower: dict[int, list[int]] = {}
-    for team, year, division in rows:
-        if division == FCS:
-            first_fcs[team] = min(first_fcs.get(team, year), year)
-        elif division != RATED_DIVISION:
-            lower.setdefault(team, []).append(year)
-    return {
-        t
-        for t, first in first_fcs.items()
-        if season - first < seasons and any(y < first for y in lower.get(t, ()))
-    }
+    lower = aliased(TeamSeason)
+    below_first = exists().where(
+        lower.team_id == first.c.team_id,
+        lower.season < first.c.first,
+        lower.division.not_in((FCS, RATED_DIVISION)),
+    )
+    return set(session.scalars(select(first.c.team_id).where(below_first)))
 
 
 def conference_games(session: Session, season: int) -> list[ConferenceGameRow]:

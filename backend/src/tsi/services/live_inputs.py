@@ -13,9 +13,9 @@ from sqlalchemy.orm import Session
 
 from tsi.db.queries.adjustments import StoredAdjustment, season_adjustments
 from tsi.db.queries.priors import division_teams, fbs_teams, prior_inputs
-from tsi.db.queries.results import completed_games
+from tsi.db.queries.results import GameResult, completed_games
 from tsi.db.queries.schedule import team_kickoffs
-from tsi.db.queries.stats import offense_rows
+from tsi.db.queries.stats import OffenseRow, offense_rows
 from tsi.divisions import FCS, FCS_STATS_FROM
 from tsi.model.artifact import ModelArtifact
 from tsi.model.elo import EloRun, run_elo
@@ -40,6 +40,14 @@ class LiveInputs:
     fcs: frozenset[int] = frozenset()  # individually rated FCS teams this season (#109)
     adjustments: tuple[StoredAdjustment, ...] = ()  # in effect at `as_of` (decision #104)
     kickoffs: dict[int, list[datetime]] = field(default_factory=dict)  # team -> season (#120)
+    # This season's stat rows and completed games before `as_of`, read once and shared with
+    # the rankings and the season sim of the same run (#147).
+    season_rows: tuple[OffenseRow, ...] = ()
+    season_games: tuple[GameResult, ...] = ()
+
+    def shares(self, season: int, as_of: datetime) -> bool:
+        """Its season rows and games are the ones a step at (`season`, `as_of`) would read."""
+        return self.season == season and self.as_of == as_of
 
     def games_played(self, team_id: int) -> int:
         return self.components.games.get(team_id, 0) if self.components else 0
@@ -94,4 +102,6 @@ def load_live_inputs(
         adjustments=tuple(
             a for a in season_adjustments(session, season, open_at=as_of) if a.created_at <= as_of
         ),
+        season_rows=tuple(rows),
+        season_games=tuple(g for g in games if g.season == season),
     )
