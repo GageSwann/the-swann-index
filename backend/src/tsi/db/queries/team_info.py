@@ -94,9 +94,12 @@ def team_ids_by_slug(session: Session, slugs: Iterable[str]) -> dict[str, int]:
 
 
 def stored_ratings(
-    session: Session, run_ids: Iterable[int], team_id: int | None = None
+    session: Session,
+    run_ids: Iterable[int],
+    team_id: int | None = None,
+    basis: str | None = None,
 ) -> dict[int, list[StoredRating]]:
-    """run id -> its raw ratings (both bases), optionally for one team."""
+    """run id -> its raw ratings (both bases, or only `basis`), optionally for one team."""
     query = select(
         TeamRating.run_id,
         TeamRating.team_id,
@@ -113,6 +116,8 @@ def stored_ratings(
     ).where(one_of(TeamRating.run_id, run_ids), TeamRating.variant == "raw")
     if team_id is not None:
         query = query.where(TeamRating.team_id == team_id)
+    if basis is not None:  # half the rows when only one rating set is used (#148)
+        query = query.where(TeamRating.basis == basis)
     out: dict[int, list[StoredRating]] = defaultdict(list)
     for run_id, *rest in session.execute(query):
         out[run_id].append(StoredRating(*rest))

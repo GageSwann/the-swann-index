@@ -23,6 +23,7 @@ from tsi.api.routers import (
 )
 from tsi.config import Settings, get_settings
 from tsi.db.engine import make_engine, make_session_factory
+from tsi.services.read.resume_cache import ResumeCache
 
 TITLE = "The Swann Index API"
 # Requests handled at once (sync endpoints run in a thread each). Kept below the engine's
@@ -62,6 +63,7 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
         # Operation ids = the router function names (get_rankings, ...): clean TS client names.
         generate_unique_id_function=lambda route: route.name,
     )
+    app.state.resume_cache = ResumeCache()  # per app: the latest run's Résumé context (#148)
     for router in (
         health,
         meta,

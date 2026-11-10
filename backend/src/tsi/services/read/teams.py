@@ -22,6 +22,7 @@ from tsi.db.queries.team_info import (
 from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION, rated_individually
 from tsi.services.read.common import AdjustmentNote, note_of
 from tsi.services.read.projection import Projection, projection
+from tsi.services.read.resume_cache import ResumeCache
 from tsi.services.read.resume_view import (
     ResumeSummary,
     resume_context,
@@ -77,7 +78,13 @@ def team_list(session: Session, season: int, division: str = RATED_DIVISION) -> 
     return sorted(teams, key=lambda t: t.school)
 
 
-def team_profile(session: Session, slug: str, season: int, now: datetime) -> TeamProfile | None:
+def team_profile(
+    session: Session,
+    slug: str,
+    season: int,
+    now: datetime,
+    contexts: ResumeCache | None = None,  # the API's shared one (#148); None: build it here
+) -> TeamProfile | None:
     team_id = team_id_by_slug(session, slug)
     if team_id is None:
         return None
@@ -99,7 +106,9 @@ def team_profile(session: Session, slug: str, season: int, now: datetime) -> Tea
     division = refs[team_id].division or ""
     rated = rated_individually(division, season)  # FBS, and FCS from 2022 (#109)
     # Résumé breakdown vs. the team's own division benchmark (#12 FBS, #24 FCS; #114, #133).
-    run_ctx = resume_context(session, latest) if latest and rated else None
+    run_ctx = None
+    if latest and rated:
+        run_ctx = contexts.get(session, latest) if contexts else resume_context(session, latest)
     ctx = run_ctx.for_division(division) if run_ctx else None
     # FBS and FCS teams (#125); D-II and below aren't simulated.
     sim = stored_sims(session, latest.id, team_id).get(team_id) if latest and rated else None

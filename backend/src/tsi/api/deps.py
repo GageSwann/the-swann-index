@@ -19,10 +19,15 @@ from sqlalchemy.orm import Session, sessionmaker
 from starlette.concurrency import run_in_threadpool
 
 from tsi.ingest.freshness import current_season
+from tsi.services.read.resume_cache import ResumeCache
 
 
 async def get_sessions(request: Request) -> sessionmaker[Session]:
     return request.app.state.sessions
+
+
+async def get_resume_cache(request: Request) -> ResumeCache:
+    return request.app.state.resume_cache
 
 
 async def get_now() -> datetime:
@@ -46,6 +51,7 @@ async def require_owner(request: Request) -> None:
 
 SessionsDep = Annotated[sessionmaker[Session], Depends(get_sessions)]
 NowDep = Annotated[datetime, Depends(get_now)]
+ResumeCacheDep = Annotated[ResumeCache, Depends(get_resume_cache)]
 
 
 async def read[T](sessions: sessionmaker[Session], fn: Callable[[Session], T]) -> T:

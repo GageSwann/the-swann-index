@@ -2,7 +2,7 @@ from typing import Literal
 
 from fastapi import APIRouter, HTTPException
 
-from tsi.api.deps import NowDep, SessionsDep, read, season_or_current
+from tsi.api.deps import NowDep, ResumeCacheDep, SessionsDep, read, season_or_current
 from tsi.db.queries.team_info import TeamRef
 from tsi.services.read.teams import TeamProfile, team_list, team_profile
 
@@ -25,11 +25,12 @@ async def get_team(
     slug: str,
     sessions: SessionsDep,
     now: NowDep,
+    contexts: ResumeCacheDep,
     season: int | None = None,
 ) -> TeamProfile:
     """Team profile: ratings and ranks, rating history, schedule with results and TSI odds."""
     profile = await read(
-        sessions, lambda s: team_profile(s, slug, season_or_current(season, now), now)
+        sessions, lambda s: team_profile(s, slug, season_or_current(season, now), now, contexts)
     )
     if profile is None:
         raise HTTPException(404, f"Unknown team {slug!r}.")

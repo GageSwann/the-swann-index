@@ -284,7 +284,8 @@ Starts after Phase 12. A full redesign of the public site; the Book becomes the 
 - [x] Transfer meter (#145: measured on a local copy with a byte-counting relay: nightly run 12.6 MB, site build 17.6 MB, per-endpoint costs; the hourly page re-check was the main cost). Original plan: log how much the nightly job and the API read per run or request. Neon gives no per-query bytes; per-branch totals come from the branch details API (`data_transfer_bytes`) and the heaviest queries from `pg_stat_statements` (rows per call; cleared whenever the compute scales to zero).
 - [x] Nightly Elo resumes from a saved end of last season instead of replaying every game since 2014 (#146: nightly read 7.18 → 4.40 MB on the local copy; identical ratings, forecasts and sim; falls back to the full replay if past games change).
 - [x] Nightly run reads this season's games and stats once, and FCS eligibility is one SQL query (#147: 4.40 → 3.04 MB; identical output).
-- [ ] Measure the ~60-page site refresh after the run (the API reads behind it), and cut it if it costs more than the run. Later, maybe: last season's fitted stats saved like the Elo carry (~0.5 MB a run).
+- [x] Measure the ~60-page site refresh after the run (#148: 7.3 MB, twice the run; team pages now share the latest run's Résumé context: 94 → 8 KB each, refresh 2.95 + 0.38 MB; identical responses).
+- [ ] Next, maybe: the home page (764 KB) and week boards (~350 KB) in the refresh; last season's fitted stats saved like the Elo carry (~0.5 MB a run).
 - [ ] "Save backtest to production" without reading the history from production (compute from a copy; upload only the saved run).
 - [x] Cut reads per site build or nightly run (#145: pages re-check daily, not hourly; matchup tool removed, team pages use stored sim forecasts; nightly rankings and sim read one season). *Done when:* Neon's daily production growth, measured from the owner's console figures, fits well inside 5 GB a month.
 

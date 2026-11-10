@@ -78,7 +78,7 @@ class ResumeContext:
 
 def resume_context(session: Session, run: RunInfo) -> ResumeContext:
     """Two round trips: every team's ratings in the run, and the run's parameters."""
-    rows = [r for r in stored_ratings(session, [run.id]).get(run.id, []) if r.basis == "season"]
+    rows = stored_ratings(session, [run.id], basis="season").get(run.id, [])
     params: dict[str, Any] = run_params(session, run.id)
     season = {r.team_id: r for r in rows}
     benchmark = params.get("resume_benchmark")

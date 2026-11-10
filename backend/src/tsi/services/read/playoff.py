@@ -84,8 +84,7 @@ def playoff(
     rec = records(session, season, run.run_at)
     resume_rank = {
         r.team_id: r.rank_resume
-        for r in stored_ratings(session, [run.id]).get(run.id, [])
-        if r.basis == "season"
+        for r in stored_ratings(session, [run.id], basis="season").get(run.id, [])
     }
     rows = {t: _team(refs[t], rec.get(t, Record()), resume_rank.get(t), s) for t, s in sims.items()}
     odds_rows = [
