@@ -7,9 +7,11 @@ import typer
 from tsi.backtest.evaluate import Summary
 from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
-from tsi.model.artifact import ARTIFACT_PATH, save_artifact
+from tsi.model.artifact import ARTIFACT_PATH, load_artifact, save_artifact
 from tsi.model.elo import EloParams
+from tsi.model.elo_carry import ELO_CARRY_PATH, save_carry
 from tsi.services.compute_rankings import build_rankings
+from tsi.services.elo_carry import build_elo_carry
 from tsi.services.elo_report import run_elo_report
 from tsi.services.model_fit import fit_production_model
 from tsi.services.sp_check import compare_with_sp
@@ -122,4 +124,20 @@ def fit(
         f"edge shrink k spread {artifact.edge_shrink.k_spread:.3f}, "
         f"k total {artifact.edge_shrink.k_total:.3f}\n"
         f"sigma season {artifact.sigma_season:.1f} | {artifact.elo.elo_per_point:.1f} Elo per point"
+    )
+
+
+@app.command("elo-carry")
+def elo_carry(
+    through: int | None = typer.Option(None, "--through", help="Last finished season."),
+) -> None:
+    """Save Elo's end state of finished seasons so live runs replay only this season (commit
+    it). Reads every season: run it against a local copy, not Neon (#140)."""
+    last = through or current_season(datetime.now(UTC)) - 1
+    with db_runtime() as sessions, sessions() as session:
+        carry = build_elo_carry(session, last, load_artifact().elo)
+    save_carry(carry)
+    typer.echo(
+        f"Saved Elo through {carry.through_season} ({len(carry.run.ratings)} teams, "
+        f"fingerprint {carry.fingerprint[:8]}) to {ELO_CARRY_PATH}"
     )

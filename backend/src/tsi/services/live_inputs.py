@@ -24,6 +24,7 @@ from tsi.model.ratings.fit import AVERAGE, blend_components
 from tsi.model.ratings.types import TeamRating
 from tsi.model.situational import features as situational_features
 from tsi.model.situational import rest_days
+from tsi.services.elo_carry import starting_elo
 from tsi.services.prior_setup import prior_inputs_for
 
 
@@ -34,7 +35,7 @@ class LiveInputs:
     components: Components | None  # this season's games before `as_of`
     last_components: Components | None  # last season's final fit
     priors: dict[int, TeamRating]  # FBS (and from 2022 FCS) team -> preseason prior
-    elo: EloRun  # every completed game before `as_of`, all seasons
+    elo: EloRun  # every completed game before `as_of`, all seasons (may resume, #146)
     fbs: set[int]
     fcs: frozenset[int] = frozenset()  # individually rated FCS teams this season (#109)
     adjustments: tuple[StoredAdjustment, ...] = ()  # in effect at `as_of` (decision #104)
@@ -72,14 +73,21 @@ def load_live_inputs(
         priors |= artifact.fcs_prior.priors(
             fcs.get(season, set()), last_final, fcs.get(season - 1, set())
         )
-    games = [g for g in completed_games(session, season) if g.start_time and g.start_time < as_of]
+    # Elo carries over from every past season: resume from the saved end of last season
+    # when it still matches the database (one season read), else replay them all (#146).
+    start = starting_elo(session, season, artifact.elo)
+    games = [
+        g
+        for g in completed_games(session, season, from_season=season if start else None)
+        if g.start_time and g.start_time < as_of
+    ]
     return LiveInputs(
         season=season,
         as_of=as_of,
         components=fit_components(rows, lam),
         last_components=last_components,
         priors=priors,
-        elo=run_elo(games, artifact.elo),
+        elo=run_elo(games, artifact.elo, start),
         fbs=fbs,
         fcs=frozenset(fcs.get(season, set())),
         kickoffs={team: k for (team, _), k in team_kickoffs(session, season, season).items()},

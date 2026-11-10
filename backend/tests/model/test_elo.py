@@ -95,3 +95,16 @@ def test_fit_points_per_elo_recovers_the_slope() -> None:
     assert fit_points_per_elo(diffs, [d / 20 for d in diffs]) == pytest.approx(20)
     with pytest.raises(ValueError):
         fit_points_per_elo(diffs, [-d for d in diffs])
+
+
+def test_resuming_from_a_saved_state_matches_one_replay() -> None:
+    first = [G(1, 2024, 1, 2, 30, 20), G(2, 2024, 2, 3, 14, 17, home_div="fcs")]
+    second = [G(3, 2025, 3, 1, 21, 24, neutral=True), G(4, 2025, 1, 4, 7, 10, away_div="ii")]
+
+    whole = run_elo(first + second)
+    resumed = run_elo(second, start=run_elo(first))
+
+    assert resumed.ratings == whole.ratings  # exact: the between-season regression included
+    assert resumed.divisions == whole.divisions
+    assert resumed.season == whole.season
+    assert resumed.predictions == whole.predictions[len(first) :]

@@ -107,13 +107,20 @@ def margin_multiplier(margin: int, winner_elo_diff: float) -> float:
     return math.log(abs(margin) + 1) * 2.2 / (0.001 * winner_elo_diff + 2.2)
 
 
-def run_elo(games: Iterable[EloGame], params: EloParams | None = None) -> EloRun:
-    """Process games in the given (kickoff) order; return pre-game predictions."""
+def run_elo(
+    games: Iterable[EloGame], params: EloParams | None = None, start: EloRun | None = None
+) -> EloRun:
+    """Process games in the given (kickoff) order; return pre-game predictions.
+
+    `start` resumes from an earlier run's state (ratings, divisions, last season), so
+    replaying seasons A..B and then C..D gives the same ratings as A..D in one go;
+    only predictions for the games passed here are returned.
+    """
     params = params or EloParams()
-    ratings: dict[int, float] = {}
-    last_division: dict[int, str] = {}
+    ratings: dict[int, float] = dict(start.ratings) if start else {}
+    last_division: dict[int, str] = dict(start.divisions) if start else {}
     predictions: list[EloPrediction] = []
-    season: int | None = None
+    season: int | None = start.season if start else None
 
     for game in games:
         if season is not None and game.season != season:
