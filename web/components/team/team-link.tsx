@@ -17,13 +17,14 @@ export function TeamLink({ team, rank }: { team: TeamRef; rank?: number | null }
     >
       <TeamLogo team={team} size={26} className="mx-0.5" />
       {/* One text run: the rank sits a normal space from the name, not the flex gap. */}
-      <span className="truncate">
+      {/* The underline covers the rank too, like the home page cards. */}
+      <span className="truncate underline-offset-4 group-hover:underline">
         {rank != null && (
           <>
             <span className="text-xs text-muted-foreground tabular-nums">#{rank}</span>{" "}
           </>
         )}
-        <span className="underline-offset-4 group-hover:underline">{team.school}</span>
+        {team.school}
       </span>
     </Link>
   )
