@@ -12,7 +12,7 @@ const LINKS = [
     match: (p: string) => p.startsWith("/rankings"),
   },
   { href: "/week", label: "This week", match: (p: string) => p.startsWith("/week") },
-  { href: "/playoff", label: "Playoff", match: (p: string) => p.startsWith("/playoff") },
+  { href: "/playoff", label: "Playoffs", match: (p: string) => p.startsWith("/playoff") },
 ]
 
 export function MainNav() {

@@ -36,7 +36,7 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 | Win-probability bars | Each side glows, still | Its team's color |
 | Team page | Header rule, header band glow, profile and win-total bars, focus and toggles | The team's color |
 | Rating trend chart | The latest point glows | The series' team color |
-| **Border light** | The scoreboard of the game center (`ScoreBoard`); the projected champion card on `/playoff` and `/playoff/fcs` (13.6, #150; its path's games glow and its connector lines are drawn in its color) | The two teams' colors |
+| **Border light** | The scoreboard of the game center (`ScoreBoard`); the projected champion card on `/playoff` and `/playoff/fcs` (13.6, #150); every bracket game glows in the color of the team that advances from it, and each connector line is drawn in that team's color | The two teams' colors |
 | Games of the week (home) | Border and glow on hover, like a card that opens a page; no border light (owner, 2026-11-06) | Plain white/black (page light), never a team's color |
 
 **Rules:** no glowing text (`text-shadow`); no new hues (black, white, neutrals, team colors mixed with transparency); contrast checked with the light on; glows are static (a 160 ms fade on hover), and the border light is the only animation, on a page's focal point only. Under `prefers-reduced-motion` the border light's animation is removed (not shortened by the global 0.01 ms rule, which would flicker) and it becomes a still two-color border. The rings sit outside Tailwind's layers for one rule (`margin: 0`), so a panel's `space-y-*` can't shorten them. Performance: the arc rotates a conic gradient through the registered `@property --tsi-angle`; box-shadows never animate.

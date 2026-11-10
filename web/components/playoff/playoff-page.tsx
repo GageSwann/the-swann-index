@@ -16,7 +16,7 @@ const COPY: Record<
   { title: string; field: string; bracket: ReactNode; odds: ReactNode; offSeason: string }
 > = {
   fbs: {
-    title: "Playoff",
+    title: "Playoffs",
     field: "Who makes the 12-team field and who wins it",
     bracket: (
       <>
@@ -40,7 +40,7 @@ const COPY: Record<
       "Playoff odds run during the regular season, from the nightly simulation. Once the real field is set, they stop until next season.",
   },
   fcs: {
-    title: "FCS playoff",
+    title: "FCS playoffs",
     field: "Who makes the 24-team FCS field and who wins it",
     bracket: (
       <>

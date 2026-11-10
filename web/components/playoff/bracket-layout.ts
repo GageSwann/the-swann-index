@@ -23,7 +23,6 @@ export type BracketGame = {
   feeders: [number | null, number | null] // per slot: the previous round's game, if any
   winner: Entry
   row: number // vertical position, in game units (may be fractional)
-  onChampionPath: boolean
 }
 
 export type Bracket = { games: BracketGame[][]; rows: number; champion: Entry }
@@ -56,7 +55,6 @@ export function buildBracket(playoff: Playoff): Bracket | null {
           ],
           winner: odds(a.team) >= odds(b.team) ? a : b,
           row: 0,
-          onChampionPath: false,
         }
       }),
     )
@@ -74,9 +72,5 @@ export function buildBracket(playoff: Playoff): Bracket | null {
   if (!final) return null
   place(final)
 
-  const champion = final.winner
-  for (const round of games) {
-    for (const g of round) g.onChampionPath = g.entries.some((e) => e.seed === champion.seed)
-  }
-  return { games, rows: next, champion }
+  return { games, rows: next, champion: final.winner }
 }

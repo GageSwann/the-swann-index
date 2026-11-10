@@ -29,8 +29,9 @@ const top = (row: number) => HEAD_H + row * UNIT
 
 /**
  * The projected field as a real bracket (Phase 13.6; decisions #100, #125): rounds left to
- * right with connector lines, the projected champion's path lit in its team color and the
- * champion card carrying the border light (#137). Wider than a phone (and the FCS bracket
+ * right with connector lines; every game and the line out of it lit in the color of the
+ * team that advances (owner, 2026-11-10), and the champion card carrying the border light
+ * (#137). Wider than a phone (and the FCS bracket
  * wider than most screens), so it scrolls sideways inside its own frame; the page never does.
  */
 export function ProjectedBracket({ playoff }: { playoff: Playoff }) {
@@ -48,10 +49,7 @@ export function ProjectedBracket({ playoff }: { playoff: Playoff }) {
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground lg:hidden">Scroll sideways for later rounds.</p>
       <div className="overflow-x-auto rounded-md border border-border">
-        <div
-          className="tsi-team-light relative"
-          style={{ width, height, ...teamColorVars(champion.team.team) }}
-        >
+        <div className="relative" style={{ width, height }}>
           <Connectors games={games} cols={cols} />
           {rounds.map((round, r) => (
             <section key={round.name} aria-label={round.name}>
@@ -81,15 +79,14 @@ export function ProjectedBracket({ playoff }: { playoff: Playoff }) {
 function Game({ game, seeds, cols }: { game: BracketGame; seeds: number; cols: Columns }) {
   return (
     <li
-      className={cn(
-        "absolute divide-y divide-border rounded-md border border-border bg-card",
-        game.onChampionPath && "tsi-lit",
-      )}
+      // Every game is lit in the color of the team that advances from it (owner, 2026-11-10).
+      className="tsi-team-light tsi-lit absolute divide-y divide-border rounded-md border border-border bg-card"
       style={{
         left: left(cols, game.round),
         top: top(game.row),
         width: cols.width,
         height: GAME_H,
+        ...teamColorVars(game.winner.team.team),
       }}
     >
       {game.entries.map((e) => (
@@ -123,9 +120,9 @@ function Slot({ entry, seeded, advances }: { entry: Entry; seeded: boolean; adva
   )
 }
 
-/** Lines from each game to the slot its winner fills; the champion's path in its color. */
+/** Lines from each game to the slot its winner fills, in that winner's color. */
 function Connectors({ games, cols }: { games: BracketGame[][]; cols: Columns }) {
-  const paths: { d: string; lit: boolean }[] = []
+  const paths: { d: string; winner: Entry }[] = []
   for (const round of games.slice(1)) {
     for (const g of round) {
       g.feeders.forEach((f, slot) => {
@@ -138,7 +135,7 @@ function Connectors({ games, cols }: { games: BracketGame[][]; cols: Columns }) 
         const mid = x0 + cols.gutter / 2
         paths.push({
           d: `M${x0} ${y0}H${mid}V${y1}H${x1}`,
-          lit: from.onChampionPath && g.onChampionPath,
+          winner: from.winner, // the line carries the team that advances along it
         })
       })
     }
@@ -146,20 +143,19 @@ function Connectors({ games, cols }: { games: BracketGame[][]; cols: Columns }) 
   const final = games.at(-1)![0]
   const x = left(cols, final.round) + cols.width / 2
   const y = top(final.row) + GAME_H
-  paths.push({ d: `M${x} ${y}V${y + CHAMP_GAP}`, lit: true }) // down to the champion card
+  paths.push({ d: `M${x} ${y}V${y + CHAMP_GAP}`, winner: final.winner }) // to the champion
 
   return (
     <svg aria-hidden className="absolute inset-0 size-full" fill="none">
-      {paths
-        .sort((a, b) => Number(a.lit) - Number(b.lit)) // lit lines on top
-        .map((p, i) => (
-          <path
-            key={i}
-            d={p.d}
-            className={p.lit ? "stroke-(--light)" : "stroke-border"}
-            strokeWidth={p.lit ? 2 : 1.5}
-          />
-        ))}
+      {paths.map((p, i) => (
+        <path
+          key={i}
+          d={p.d}
+          className="tsi-team-light stroke-(--light)"
+          style={teamColorVars(p.winner.team.team)}
+          strokeWidth={2}
+        />
+      ))}
     </svg>
   )
 }
