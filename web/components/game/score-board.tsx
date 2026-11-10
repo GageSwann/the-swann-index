@@ -8,7 +8,12 @@ import type { TeamProfile, TeamRef } from "@/lib/api/types"
 import { points, record } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
 
-type Side = { team: TeamRef; profile: TeamProfile | null; score: number | null | undefined }
+type Side = {
+  team: TeamRef
+  profile: TeamProfile | null
+  score: number | null | undefined
+  shown?: ReactNode // replaces the score (e.g. switched by the game's phase, 13.5)
+}
 
 type Props = {
   away: Side
@@ -49,7 +54,7 @@ export function ScoreBoard({ away, home, neutral, context, note, homeWinProb }: 
 }
 
 function TeamScore({ side, alignEnd = false }: { side: Side; alignEnd?: boolean }) {
-  const { team, profile, score } = side
+  const { team, profile, score, shown } = side
   const r = profile?.ratings
   const ranks = r
     ? [r.rank_power && `#${r.rank_power} power`, r.rank_resume && `#${r.rank_resume} résumé`]
@@ -77,7 +82,7 @@ function TeamScore({ side, alignEnd = false }: { side: Side; alignEnd?: boolean 
         {ranks && `, ${ranks}`}
       </p>
       <p className="mt-2 text-4xl font-bold font-stretch-condensed proportional-nums sm:text-5xl">
-        {score == null ? "–" : points(score)}
+        {shown ?? (score == null ? "–" : points(score))}
       </p>
     </div>
   )

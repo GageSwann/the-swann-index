@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { AdjustedNote } from "@/components/game/adjusted-note"
+import { PhaseLabel, useGamePhase } from "@/components/game/game-phase"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameSummary, TeamRef } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
@@ -19,7 +20,15 @@ export function MatchupCard({ game, ranks }: Props) {
   const p = game.prediction
   const m = game.market
   const final = game.result?.final === true
-  const status = final ? "Final" : p?.locked ? "Kicked off" : null
+  // The viewer's clock: "In progress", then "Final score pending" until the nightly run
+  // records the final (13.5).
+  const phase = useGamePhase({
+    kickoff: game.kickoff,
+    tbd: game.kickoff_tbd,
+    final,
+    locked: p?.locked,
+  })
+  const underway = phase === "live" || phase === "pending"
   const awayRank = shownRank(ranks[game.away.id])
   const homeRank = shownRank(ranks[game.home.id])
   const wide = !!(awayRank?.fcs || homeRank?.fcs) // both rows make room, names stay aligned
@@ -40,7 +49,9 @@ export function MatchupCard({ game, ranks }: Props) {
           {formatKickoff(game.kickoff, game.kickoff_tbd)}
           {game.neutral && ", neutral site"}
         </span>
-        {status && <span className="font-medium text-foreground">{status}</span>}
+        <span className="font-medium text-foreground">
+          <PhaseLabel phase={phase} />
+        </span>
       </header>
 
       <div className="space-y-1.5">
@@ -48,17 +59,19 @@ export function MatchupCard({ game, ranks }: Props) {
           team={game.away}
           rank={awayRank}
           wide={wide}
-          score={final ? game.result?.away_points : p?.proj_away}
+          score={final ? game.result?.away_points : underway ? null : p?.proj_away}
           isFinal={final}
+          underway={underway}
         />
         <TeamRow
           team={game.home}
           rank={homeRank}
           wide={wide}
-          score={final ? game.result?.home_points : p?.proj_home}
+          score={final ? game.result?.home_points : underway ? null : p?.proj_home}
           isFinal={final}
+          underway={underway}
         />
-        {final && p && (
+        {(final || underway) && p && (
           <p className="text-xs text-muted-foreground">
             TSI projected {points(p.proj_away)}–{points(p.proj_home)}
           </p>
@@ -130,12 +143,14 @@ function TeamRow({
   wide,
   score,
   isFinal,
+  underway = false,
 }: {
   team: TeamRef
   rank?: BoardRank // already limited to the Top 25
   wide: boolean // the card shows an FCS rank: room for the "FCS" marker
   score?: number | null
   isFinal: boolean
+  underway?: boolean // kicked off, no final yet: "—" (13.5)
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -154,7 +169,7 @@ function TeamRow({
             : "text-xl font-semibold text-muted-foreground font-stretch-condensed"
         }
       >
-        {score == null ? "" : points(score)}
+        {underway ? "—" : score == null ? "" : points(score)}
       </span>
     </div>
   )

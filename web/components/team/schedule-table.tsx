@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { PhaseLabel, PhaseScope, When } from "@/components/game/game-phase"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameOdds } from "@/lib/api/schedule-odds"
 import type { ScheduleGame } from "@/lib/api/types"
@@ -132,7 +133,8 @@ function Opponent({ game }: { game: ScheduleGame }) {
   )
 }
 
-/** Final score, else the projected score; either way a link to the game center. */
+/** Final score, else the projected score (or the game's phase once it has kicked off);
+ * either way a link to the game center. */
 function Result({ game, odds }: { game: ScheduleGame; odds: GameOdds | undefined }) {
   return (
     <Link
@@ -151,12 +153,21 @@ function Result({ game, odds }: { game: ScheduleGame; odds: GameOdds | undefined
           </span>{" "}
           {game.team_points}–{game.opponent_points}
         </span>
-      ) : odds ? (
-        <span className="text-muted-foreground">
-          Proj. {points(odds.teamPoints)}–{points(odds.opponentPoints)}
-        </span>
       ) : (
-        <span className="text-muted-foreground">Game center</span>
+        // No final yet: after kickoff the viewer's clock shows "In progress", then
+        // "Score pending" until the nightly run records it (13.5).
+        <PhaseScope game={{ kickoff: game.kickoff, tbd: game.kickoff_tbd ?? false, final: false }}>
+          <When phase={["scheduled"]}>
+            <span className="text-muted-foreground">
+              {odds
+                ? `Proj. ${points(odds.teamPoints)}–${points(odds.opponentPoints)}`
+                : "Game center"}
+            </span>
+          </When>
+          <When phase={["live", "pending"]}>
+            <PhaseLabel short />
+          </When>
+        </PhaseScope>
       )}
     </Link>
   )

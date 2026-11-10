@@ -587,6 +587,11 @@ export interface components {
             in_resume: boolean;
             /** Kickoff */
             kickoff: string | null;
+            /**
+             * Kickoff Tbd
+             * @default false
+             */
+            kickoff_tbd: boolean;
             opponent: components["schemas"]["TeamRef"];
             /** Opponent Points */
             opponent_points: number | null;
