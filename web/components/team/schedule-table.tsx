@@ -126,10 +126,7 @@ function Opponent({ game }: { game: ScheduleGame }) {
       <span className="w-5 shrink-0 text-muted-foreground">
         {game.site === "away" ? "at" : "vs"}
       </span>
-      {rank != null && rank <= 25 && (
-        <span className="text-xs text-muted-foreground tabular-nums">#{rank}</span>
-      )}
-      <TeamLink team={game.opponent} />
+      <TeamLink team={game.opponent} rank={rank != null && rank <= 25 ? rank : null} />
       {game.site === "neutral" && <span className="text-xs text-muted-foreground">(neutral)</span>}
     </span>
   )

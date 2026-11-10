@@ -9,8 +9,7 @@ import { Stat } from "@/components/ui/stat"
 import { TeamLogo } from "./team-logo"
 
 /**
- * Team identity and its headline numbers: logo, then the Power rank and name ("#5 Miami",
- * "#5 FCS" for FCS teams; Phase 13.7). A solid band in the team's (contrast-checked)
+ * Team identity and its headline numbers. A solid band in the team's (contrast-checked)
  * color tops the panel and casts light in that color (#137); no gradients.
  */
 export function TeamHeader({ profile }: { profile: TeamProfile }) {
@@ -45,13 +44,6 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
           <TeamLogo team={team} size={72} priority />
           <div className="min-w-0">
             <h1 className="text-4xl leading-tight font-bold font-stretch-condensed sm:text-5xl">
-              {r?.rank_power ? (
-                <>
-                  <span className="text-muted-foreground tabular-nums">
-                    {rankText(r.rank_power, division)}
-                  </span>{" "}
-                </>
-              ) : null}
               {team.school}
             </h1>
             <p className="text-muted-foreground">

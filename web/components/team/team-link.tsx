@@ -6,15 +6,21 @@ import { TeamLogo } from "./team-logo"
 
 /**
  * Logo + school name, linking to the team page. The logo's ring carries the team's color
- * (team colors are accents, never text).
+ * (team colors are accents, never text). A `rank` goes between the logo and the name:
+ * (logo) #25 BYU (Phase 13.7).
  */
-export function TeamLink({ team }: { team: TeamRef }) {
+export function TeamLink({ team, rank }: { team: TeamRef; rank?: number | null }) {
   return (
     <Link
       href={`/teams/${team.slug}`}
       className="group inline-flex min-w-0 items-center gap-2 font-medium"
     >
       <TeamLogo team={team} size={26} className="mx-0.5" />
+      {rank != null && (
+        <>
+          <span className="shrink-0 text-xs text-muted-foreground tabular-nums">#{rank}</span>{" "}
+        </>
+      )}
       <span className="truncate underline-offset-4 group-hover:underline">{team.school}</span>
     </Link>
   )
