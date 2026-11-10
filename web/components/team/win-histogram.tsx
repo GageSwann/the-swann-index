@@ -48,23 +48,26 @@ export function WinHistogram({ dist, school }: { dist: number[]; school: string 
       <p aria-hidden className="text-center text-xs text-muted-foreground">
         Final wins
       </p>
-      <table className="sr-only">
-        <caption>{school}: chance of each final win total</caption>
-        <thead>
-          <tr>
-            <th scope="col">Wins</th>
-            <th scope="col">Chance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {shown.map(({ wins, p }) => (
-            <tr key={wins}>
-              <td>{wins}</td>
-              <td>{chance(p)}</td>
+      {/* sr-only on a div: a table ignores the 1px width and widened phone pages. */}
+      <div className="sr-only">
+        <table>
+          <caption>{school}: chance of each final win total</caption>
+          <thead>
+            <tr>
+              <th scope="col">Wins</th>
+              <th scope="col">Chance</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {shown.map(({ wins, p }) => (
+              <tr key={wins}>
+                <td>{wins}</td>
+                <td>{chance(p)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   )
 }
