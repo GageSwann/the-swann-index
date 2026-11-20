@@ -109,6 +109,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/rankings/top": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Top Rankings
+         * @description A division's Power and Résumé top `n` from the latest run, with movement since the
+         *     Sunday baseline and records: what the home page's rails show, read cheaply (#155).
+         */
+        get: operations["get_top_rankings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/teams": {
         parameters: {
             query?: never;
@@ -285,6 +306,7 @@ export interface components {
             away_playoff_swing: number | null;
             /** Away Rank */
             away_rank: number | null;
+            away_record?: components["schemas"]["Record"] | null;
             /** Away Title Swing */
             away_title_swing: number | null;
             /** Closeness */
@@ -296,6 +318,7 @@ export interface components {
             home_playoff_swing: number | null;
             /** Home Rank */
             home_rank: number | null;
+            home_record?: components["schemas"]["Record"] | null;
             /** Home Title Swing */
             home_title_swing: number | null;
             /** Quality */
@@ -544,6 +567,24 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** Record */
+        Record: {
+            /**
+             * Losses
+             * @default 0
+             */
+            losses: number;
+            /**
+             * Ties
+             * @default 0
+             */
+            ties: number;
+            /**
+             * Wins
+             * @default 0
+             */
+            wins: number;
+        };
         /** ResumeSummary */
         ResumeSummary: {
             /** Benchmark Expected Wins */
@@ -756,6 +797,43 @@ export interface components {
             /** Slug */
             slug: string;
         };
+        /** TopRankings */
+        TopRankings: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /**
+             * Division
+             * @enum {string}
+             */
+            division: "fbs" | "fcs";
+            /** Power */
+            power: components["schemas"]["TopTeam"][];
+            /** Previous As Of */
+            previous_as_of: string | null;
+            /** Resume */
+            resume: components["schemas"]["TopTeam"][];
+            /** Season */
+            season: number;
+            /** Week */
+            week: number;
+        };
+        /** TopTeam */
+        TopTeam: {
+            /** Losses */
+            losses: number;
+            /** Previous Rank */
+            previous_rank: number | null;
+            /** Rank */
+            rank: number;
+            team: components["schemas"]["TeamRef"];
+            /** Ties */
+            ties: number;
+            /** Wins */
+            wins: number;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -915,6 +993,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Rankings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_top_rankings: {
+        parameters: {
+            query?: {
+                division?: "fbs" | "fcs";
+                /** @description How many teams per ranking. */
+                n?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopRankings"];
                 };
             };
             /** @description Validation Error */
