@@ -52,6 +52,11 @@ const nextConfig: NextConfig = {
     // re-transforms every logo several times a day (75% of Hobby's 5,000 a month used by
     // 2026-11-09). Logos almost never change: keep the optimized copies for 31 days.
     minimumCacheTTL: 2678400,
+    // Logos render at 17–56 px. Next picks the smallest allowed width ≥ 1x and ≥ 2x the
+    // rendered size, and the default list (32…384) turned each team into ~5 widths, so ~5
+    // transformations (4.7K of 5K by 2026-11-20). With only 64 and 128 every logo needs one
+    // or both. Not `unoptimized`: the source PNGs are 500 px and 18–60 KB each.
+    imageSizes: [64, 128],
   },
   turbopack: {
     rules: {

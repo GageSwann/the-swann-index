@@ -122,7 +122,7 @@ Both PCs have one; it is where heavy work runs (§1).
 - `npm audit --omit=dev` must stay at 0 (dev-only lint tooling has known `braces` advisories; don't `audit fix --force`). npm 11 blocks `unrs-resolver`'s postinstall; ESLint works without it.
 
 **Vercel Hobby limits** (usage on 2026-11-20, while the site was frozen): image transformations **4.7K / 5K** (4.5K on Nov 9), ISR writes 31K / 200K (30K on Nov 9), ISR reads 47K / 1M, CDN requests 57K / 1M, origin transfer 678 MB / 10 GB, active CPU 36 min / 4 h. Every other line is far from its limit.
-- **Image transformations:** each logo × width is one. The 31-day `minimumCacheTTL` (#144) slowed them; the default `imageSizes` (7 widths) still turns each team into ~5 (32, 48, 64, 96, 128 px for our 17–56 px logos). Pending: `imageSizes: [64, 128]` (2 per team). Not `unoptimized`: the CFBD logos are 500 px PNGs of 18–60 KB, so a rankings page would load several MB. Formats are already WebP only.
+- **Image transformations:** each logo × width is one. The 31-day `minimumCacheTTL` (#144) slowed them; the default `imageSizes` (7 widths) still turns each team into ~5 (32, 48, 64, 96, 128 px for our 17–56 px logos). Since 2026-11-20 `imageSizes: [64, 128]`: one or two per team (Next picks the smallest allowed width ≥ 1x and ≥ 2x the rendered size). Not `unoptimized`: the CFBD logos are 500 px PNGs of 18–60 KB, so a rankings page would load several MB. Formats are already WebP only.
 - **ISR writes** are the signal that the daily cache works: expect roughly 60–100 a day after the reset, not ~1,000.
 
 **Browser testing**
