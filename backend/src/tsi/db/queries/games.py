@@ -1,12 +1,13 @@
 """Game rows for read pages: a week's games, a team's schedule, one game."""
 
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
-from tsi.db.models import Game
+from tsi.db.models import Game, TeamSeason
 from tsi.db.queries.filters import one_of
 
 
@@ -46,12 +47,27 @@ COLUMNS = (
 )
 
 
-def week_games(session: Session, season: int, week: int, season_type: str) -> list[GameRow]:
+def week_games(
+    session: Session,
+    season: int,
+    week: int,
+    season_type: str,
+    divisions: Collection[str] | None = None,  # only games with a team of these (#155)
+) -> list[GameRow]:
     query = (
         select(*COLUMNS)
         .where(Game.season == season, Game.week == week, Game.season_type == season_type)
         .order_by(Game.start_time, Game.id)
     )
+    if divisions is not None:
+        # Outer joins: a placeholder opponent without a team_seasons row still counts as
+        # "not in the division", like the Python filter this replaces.
+        home, away = aliased(TeamSeason), aliased(TeamSeason)
+        query = (
+            query.outerjoin(home, (home.team_id == Game.home_id) & (home.season == Game.season))
+            .outerjoin(away, (away.team_id == Game.away_id) & (away.season == Game.season))
+            .where(or_(home.division.in_(list(divisions)), away.division.in_(list(divisions))))
+        )
     return [GameRow(*row) for row in session.execute(query)]
 
 

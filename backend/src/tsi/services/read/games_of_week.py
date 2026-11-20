@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 
 from tsi.db.queries.games import season_games
 from tsi.db.queries.games_of_week import latest_poll_date, picks_for
+from tsi.db.queries.runs import latest_rating_run
+from tsi.db.queries.team_info import Record, records
 from tsi.services.games_of_week import poll_sunday
 from tsi.services.read.games import GameSummary, game_summaries
 
@@ -26,6 +28,10 @@ class GameOfWeekView:
     away_playoff_swing: float | None
     home_title_swing: float | None  # the same for the conference title
     away_title_swing: float | None
+    # Records as of the latest rating run, as the rankings show them: the card no longer
+    # needs a full ranking to find a team outside the Top 25 (#155).
+    home_record: Record | None = None
+    away_record: Record | None = None
 
 
 @dataclass(frozen=True)
@@ -47,6 +53,9 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
             session, season_games(session, season, [r.game_id for r in rows]), now
         )
     }
+    latest = latest_rating_run(session, season)
+    teams = {t for s in summaries.values() for t in (s.home.id, s.away.id)}
+    record = records(session, season, latest.run_at if latest else now, teams)
     picks = [
         GameOfWeekView(
             division=r.division,
@@ -62,6 +71,8 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
             away_playoff_swing=r.away_playoff_swing,
             home_title_swing=r.home_title_swing,
             away_title_swing=r.away_title_swing,
+            home_record=record.get(summaries[r.game_id].home.id, Record()),
+            away_record=record.get(summaries[r.game_id].away.id, Record()),
         )
         for r in rows
         if r.game_id in summaries

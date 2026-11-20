@@ -14,7 +14,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, Pick, Prediction
@@ -117,6 +117,42 @@ def snapshots_for_games(session: Session, game_ids: Iterable[int]) -> dict[int, 
     """game id -> every snapshot, oldest first; a rebuilt forecast for games never published."""
     ids = list(game_ids)
     query = select(*SNAPSHOT_COLUMNS).where(one_of(Prediction.game_id, ids)).order_by(*ORDER)
+    out = _by_game(session.execute(query))
+    missing = [i for i in ids if not out.get(i)]
+    if missing:
+        out.update(_rebuilt_by_game(rebuilt_rows(session, missing)))
+    return out
+
+
+def current_snapshots(
+    session: Session, game_ids: Iterable[int], now: datetime
+) -> dict[int, list[SnapshotRow]]:
+    """game id -> only the snapshot a page shows (`current_snapshot`'s pick): the latest
+    publish, or once a game has kicked off, the latest before kickoff; a rebuilt forecast
+    for games never published. Boards and schedules need no history (#155)."""
+    ids = list(game_ids)
+    shown = (
+        select(Prediction.game_id, func.max(Prediction.published_at).label("at"))
+        .join(Game, Game.id == Prediction.game_id)
+        .where(
+            one_of(Prediction.game_id, ids),
+            or_(
+                Game.start_time.is_(None),
+                Game.start_time > now,
+                Prediction.published_at < Game.start_time,
+            ),
+        )
+        .group_by(Prediction.game_id)
+        .subquery()
+    )
+    query = (
+        select(*SNAPSHOT_COLUMNS)
+        .join(
+            shown,
+            (shown.c.game_id == Prediction.game_id) & (shown.c.at == Prediction.published_at),
+        )
+        .order_by(*ORDER)
+    )
     out = _by_game(session.execute(query))
     missing = [i for i in ids if not out.get(i)]
     if missing:

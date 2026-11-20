@@ -387,6 +387,16 @@
             ],
             "title": "Away Rank"
           },
+          "away_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "away_title_swing": {
             "anyOf": [
               {
@@ -430,6 +440,16 @@
               }
             ],
             "title": "Home Rank"
+          },
+          "home_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "home_title_swing": {
             "anyOf": [
@@ -1291,6 +1311,27 @@
         "title": "RawForecast",
         "type": "object"
       },
+      "Record": {
+        "properties": {
+          "losses": {
+            "default": 0,
+            "title": "Losses",
+            "type": "integer"
+          },
+          "ties": {
+            "default": 0,
+            "title": "Ties",
+            "type": "integer"
+          },
+          "wins": {
+            "default": 0,
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "title": "Record",
+        "type": "object"
+      },
       "ResumeSummary": {
         "properties": {
           "benchmark_expected_wins": {
@@ -2029,6 +2070,112 @@
         "title": "TeamRef",
         "type": "object"
       },
+      "TopRankings": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "division": {
+            "enum": [
+              "fbs",
+              "fcs"
+            ],
+            "title": "Division",
+            "type": "string"
+          },
+          "power": {
+            "items": {
+              "$ref": "#/components/schemas/TopTeam"
+            },
+            "title": "Power",
+            "type": "array"
+          },
+          "previous_as_of": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous As Of"
+          },
+          "resume": {
+            "items": {
+              "$ref": "#/components/schemas/TopTeam"
+            },
+            "title": "Resume",
+            "type": "array"
+          },
+          "season": {
+            "title": "Season",
+            "type": "integer"
+          },
+          "week": {
+            "title": "Week",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "season",
+          "week",
+          "as_of",
+          "previous_as_of",
+          "division",
+          "power",
+          "resume"
+        ],
+        "title": "TopRankings",
+        "type": "object"
+      },
+      "TopTeam": {
+        "properties": {
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "previous_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Rank"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamRef"
+          },
+          "ties": {
+            "title": "Ties",
+            "type": "integer"
+          },
+          "wins": {
+            "title": "Wins",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rank",
+          "previous_rank",
+          "team",
+          "wins",
+          "losses",
+          "ties"
+        ],
+        "title": "TopTeam",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -2372,6 +2519,68 @@
           }
         },
         "summary": "Get Rankings",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/rankings/top": {
+      "get": {
+        "description": "A division's Power and Résumé top `n` from the latest run, with movement since the\nSunday baseline and records: what the home page's rails show, read cheaply (#155).",
+        "operationId": "get_top_rankings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs"
+              ],
+              "title": "Division",
+              "type": "string"
+            }
+          },
+          {
+            "description": "How many teams per ranking.",
+            "in": "query",
+            "name": "n",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "description": "How many teams per ranking.",
+              "maximum": 50,
+              "minimum": 1,
+              "title": "N",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopRankings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Top Rankings",
         "tags": [
           "rankings"
         ]

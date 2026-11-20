@@ -5,6 +5,7 @@ from tsi.api.openapi import SPEC_PATH, openapi_document, render
 V1_PATHS = {
     "/meta/current",
     "/rankings",
+    "/rankings/top",
     "/teams",
     "/teams/{slug}",
     "/weeks/{season}/{week}/games",

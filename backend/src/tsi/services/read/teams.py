@@ -9,7 +9,7 @@ from tsi.db.queries.adjustments import season_adjustments
 from tsi.db.queries.games import team_games
 from tsi.db.queries.runs import latest_rating_run, rating_history
 from tsi.db.queries.sim import stored_outlooks, stored_sims
-from tsi.db.queries.snapshots import snapshots_for_games
+from tsi.db.queries.snapshots import current_snapshots
 from tsi.db.queries.team_info import (
     Record,
     StoredRating,
@@ -101,7 +101,7 @@ def team_profile(
         if g.completed and g.home_points is not None and g.start_time and g.start_time < now
     ]
     rec = tally_records(finished).get(team_id, Record())
-    snaps = snapshots_for_games(session, [g.id for g in games])
+    snaps = current_snapshots(session, [g.id for g in games], now)
     division = refs[team_id].division or ""
     rated = rated_individually(division, season)  # FBS, and FCS from 2022 (#109)
     # Résumé breakdown vs. the team's own division benchmark (#12 FBS, #24 FCS; #114, #133).

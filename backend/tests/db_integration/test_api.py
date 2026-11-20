@@ -326,3 +326,13 @@ def test_private_endpoints_answer_the_owner_uncached(api: TestClient, path: str)
 def test_private_endpoints_closed_when_no_key_is_configured(sessions, path: str) -> None:
     with make_api(sessions, owner_key=None) as client:
         assert client.get(path, headers=OWNER).status_code == 404
+
+
+def test_top_rankings_match_the_full_rankings(api: TestClient) -> None:
+    for division in ("fbs", "fcs"):
+        top = ok(api, f"/rankings/top?division={division}&n=3")
+        for kind in ("power", "resume"):
+            full = ok(api, f"/rankings?type={kind}&division={division}")["teams"][:3]
+            keys = ("rank", "previous_rank", "team", "wins", "losses", "ties")
+            assert [[t[k] for k in keys] for t in top[kind]] == [[t[k] for k in keys] for t in full]
+    assert api.get("/rankings/top?division=all").status_code == 422  # fbs or fcs only

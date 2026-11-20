@@ -124,8 +124,11 @@ def stored_ratings(
     return out
 
 
-def records(session: Session, season: int, before: datetime) -> dict[int, Record]:
-    """Win-loss records of every team from games completed and kicked off before `before`.
+def records(
+    session: Session, season: int, before: datetime, team_ids: Iterable[int] | None = None
+) -> dict[int, Record]:
+    """Win-loss records of every team (or only `team_ids`) from games completed and kicked
+    off before `before`.
 
     Tallied in the database (one row per team instead of every game of every division).
     """
@@ -149,6 +152,8 @@ def records(session: Session, season: int, before: datetime) -> dict[int, Record
         func.count().filter(sides.c.pf < sides.c.pa),
         func.count().filter(sides.c.pf == sides.c.pa),
     ).group_by(sides.c.team_id)
+    if team_ids is not None:
+        query = query.where(one_of(sides.c.team_id, list(team_ids)))
     return {team: Record(w, lo, t) for team, w, lo, t in session.execute(query)}
 
 
@@ -176,10 +181,42 @@ class RankRow:
     rank_resume: int | None
 
 
-def season_ranks(session: Session, run_id: int) -> list[RankRow]:
-    """The season set's rating and ranks of every team in a run (rankings' Sunday baseline:
-    a quarter of the bytes of both sets' full rows, #154)."""
-    query = select(
-        TeamRating.team_id, TeamRating.rating, TeamRating.rank_power, TeamRating.rank_resume
-    ).where(TeamRating.run_id == run_id, TeamRating.variant == "raw", TeamRating.basis == "season")
+RANK_COLUMNS = (
+    TeamRating.team_id,
+    TeamRating.rating,
+    TeamRating.rank_power,
+    TeamRating.rank_resume,
+)
+
+
+def season_ranks(
+    session: Session, run_id: int, team_ids: Iterable[int] | None = None
+) -> list[RankRow]:
+    """The season set's rating and ranks of every team (or only `team_ids`) in a run
+    (rankings' Sunday baseline: a quarter of the bytes of both sets' full rows, #154)."""
+    query = select(*RANK_COLUMNS).where(
+        TeamRating.run_id == run_id, TeamRating.variant == "raw", TeamRating.basis == "season"
+    )
+    if team_ids is not None:
+        query = query.where(one_of(TeamRating.team_id, list(team_ids)))
+    return [RankRow(*row) for row in session.execute(query)]
+
+
+def top_ranks(session: Session, run_id: int, season: int, division: str, n: int) -> list[RankRow]:
+    """Teams of a division in a run's Power or Résumé top `n` (stored ranks are within the
+    division): the home page's rails (#155)."""
+    query = (
+        select(*RANK_COLUMNS)
+        .join(
+            TeamSeason,
+            (TeamSeason.team_id == TeamRating.team_id) & (TeamSeason.season == season),
+        )
+        .where(
+            TeamRating.run_id == run_id,
+            TeamRating.variant == "raw",
+            TeamRating.basis == "season",
+            TeamSeason.division == division,
+            (TeamRating.rank_power <= n) | (TeamRating.rank_resume <= n),
+        )
+    )
     return [RankRow(*row) for row in session.execute(query)]

@@ -102,6 +102,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 |---|---|---|
 | GET | `/meta/current` | current season, week, last model run time |
 | GET | `/rankings?season&week&type=power\|resume&division=fbs\|fcs\|all` | ranked team list (ranks within a division; `all` = Power on one scale, #113) |
+| GET | `/rankings/top?division=fbs\|fcs&n=25` | a division's Power and Résumé top `n` with movement and records, from the latest run: the home page's rails at ~11 KB of reads instead of two full rankings (#155) |
 | GET | `/teams?division=fbs\|fcs\|all` | teams of a division (slug, name, colors, logo) |
 | GET | `/teams/{slug}?season` | team profile, rating history, schedule + win probs |
 | GET | `/weeks/{season}/{week}/games?division=fbs\|fcs\|all` | matchup board with TSI vs. market (games with a team of that division) |

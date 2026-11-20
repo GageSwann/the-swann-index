@@ -10,6 +10,7 @@ from tsi.services.read.rankings import (
     RankingType,
     rankings,
 )
+from tsi.services.read.rankings_top import TopDivision, TopRankings, top_rankings
 
 router = APIRouter(tags=["rankings"])
 
@@ -39,4 +40,21 @@ async def get_rankings(
         raise HTTPException(422, str(exc)) from exc
     if result is None:
         raise HTTPException(404, "No rankings for that season/week yet.")
+    return result
+
+
+@router.get("/rankings/top", response_model=TopRankings)
+async def get_top_rankings(
+    sessions: SessionsDep,
+    now: NowDep,
+    division: TopDivision = "fbs",
+    n: int = Query(25, ge=1, le=50, description="How many teams per ranking."),
+) -> TopRankings:
+    """A division's Power and Résumé top `n` from the latest run, with movement since the
+    Sunday baseline and records: what the home page's rails show, read cheaply (#155)."""
+    result = await read(
+        sessions, lambda s: top_rankings(s, season_or_current(None, now), division, n)
+    )
+    if result is None:
+        raise HTTPException(404, "No rankings yet.")
     return result

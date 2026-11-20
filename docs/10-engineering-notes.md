@@ -17,7 +17,8 @@ Things learned the hard way. `CLAUDE.md` keeps the short version of each; the de
 | Nightly `tsi run` | 12.6 MB | 3.0 MB (#146 Elo carry, #147 one read per season) |
 | Nightly page refresh (~60 pages) | 7.3 MB | 3.3 MB (#148 Résumé context cache) |
 | A full site build (~120 pages) | 17.6 MB | 9.95 MB (2026-11-20) |
-| `/rankings` · `/playoff` · week board | ~267 · ~189 · 145–200 KB | ~200 (#154) · ~152 · 80–170 KB |
+| `/rankings` · `/playoff` · week board | ~267 · ~189 · 145–200 KB | ~200 (#154) · ~152 · ~55 KB (FBS/FCS), ~100 KB (All) (#155) |
+| Home page rankings | ~0.8 MB (four full rankings) | ~22 KB (`/rankings/top`, #155) |
 | `/teams/{slug}` | ~87 KB | ~8 KB after #148; 42 KB with the rebuilt season's ~90 runs; **~20 KB** after #154 (history grows ~90 B per run) |
 | Home page | 764 KB | same (largest left) |
 

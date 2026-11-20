@@ -26,7 +26,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 **Neon: cheaper still** (each on the local copy with the transfer meter, outputs identical)
 - [x] Re-measure since #148 and the rebuild (2026-11-20, local copy, ~90 runs): nightly run 2.14 MB without ingest (~3 MB with), a full site build **9.95 MB** (was 17.6), the nightly ~60-page refresh ~4 MB, a team page 42 KB (was 8: its rating history reads both sets' full rows for every run), rankings 265 KB, `/playoff` 152 KB. **Untouched month:** ~7 MB a night (~210 MB) plus first visits; even a crawler opening every team, week and game page daily adds ~22 MB a day, so ~0.9 GB a month at worst, well under 5 GB. Each web push adds ~10 MB.
 - [x] Trim the two heavy reads found (#154): team page 41 → 20 KB (one compact history row per run), rankings 265 → 200 KB (the Sunday baseline reads only ranks); every response byte-identical. Also Next.js 16.4.2 → 16.4.6 for 7 moderate advisories (`npm audit --omit=dev` back to 0).
-- [ ] The home page (764 KB) and week boards (~350 KB) in the nightly refresh.
+- [x] The home page and week boards (#155): home rankings ~0.8 MB → ~22 KB (`/rankings/top`), week boards 82 → 55 KB this week and 168 → 54 KB an older one (division filter in SQL, only the shown snapshot); every response byte-identical.
 - [ ] Save last season's fitted stats like the Elo carry (~0.5 MB a run).
 - [ ] "Save backtest to production" without reading the history from production (compute on a copy; upload only the saved run).
 - [ ] *Maybe (ask: changes the nightly workflow, needs a Neon API key secret):* the nightly job reads production's transfer from Neon's API and warns when the month is on pace to go over.
