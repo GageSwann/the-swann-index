@@ -101,9 +101,10 @@ npm run check                                           # API types, typecheck, 
 | [04 – Model](docs/04-model.md) | Rating methodology, priors, backtesting |
 | [05 – Prediction Engine & Book](docs/05-sportsbook.md) | Score distributions, odds, market edges, picks ledger |
 | [06 – Frontend](docs/06-frontend.md) | Pages, components, visuals, design direction |
-| [07 – Roadmap](docs/07-roadmap.md) | Phased build plan with checklists |
+| [07 – Roadmap](docs/07-roadmap.md) | Now / next / later, and finished phases |
 | [08 – Windows Setup](docs/08-setup-windows.md) | Environment setup |
 | [09 – Conventions](docs/09-conventions.md) | Workflow, modularity, secrets, skills |
+| [10 – Engineering notes](docs/10-engineering-notes.md) | Gotchas by area: Neon budget, local copy, API, deploying, web, Windows |
 | [Decisions](docs/decisions.md) | Decision log |
 
 ---

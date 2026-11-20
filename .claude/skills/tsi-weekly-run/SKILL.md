@@ -169,7 +169,7 @@ afterwards.
 **Migrations:** apply and test on `dev` first (`uv run alembic upgrade head`, then
 `uv run pytest`, `tsi backtest run --no-save`). For production, with the owner's OK:
 
-1. Deploy order (CLAUDE.md): a migration that drops or renames a column goes to
+1. Deploy order (doc 10 §8): a migration that drops or renames a column goes to
    production **before** the code that depends on it is pushed; additive migrations can
    follow the code.
 2. The owner opens a fresh PowerShell in `backend/`, sets the production **direct**
@@ -217,10 +217,10 @@ it with the owner's OK.
 | First page load or API call takes ~60 s | Render free tier woke from sleep | normal; the nightly refresh step wakes it before refreshing the site |
 | Vercel build fails at "Generating static pages" | API down or too slow during prerendering | check `/health`; the build allows 180 s per page (`staticPageGenerationTimeout`); redeploy once the API is up |
 | Render build fails immediately ("Exited with status 1") | Dockerfile path or a dependency problem | paths in `render.yaml` are relative to `rootDir` (`backend/`); read the build log's last lines |
-| CI fails on `npm run check` with type errors after an API change | generated types out of date | `uv run tsi openapi`, then `npm run api:types` in `web/`, commit both (CLAUDE.md "API changes") |
-| API 500s under load (`QueuePool limit … reached`) | many cold-cache requests at once | in-process caches must be single-flight (CLAUDE.md "Neon latency"); one loader behind a lock |
+| CI fails on `npm run check` with type errors after an API change | generated types out of date | `uv run tsi openapi`, then `npm run api:types` in `web/`, commit both (doc 10 §8 "API changes") |
+| API 500s under load (`QueuePool limit … reached`) | many cold-cache requests at once | in-process caches must be single-flight (doc 10 §4); one loader behind a lock |
 | Neon email "used N% of its 5 GB monthly public network transfer", or API 500s with "exceeded the data transfer quota" | reads out of Neon (any branch) near or over the free allowance (#140) | stop all heavy reads (backtests, experiments, backtest/migrate workflows, backfills); keep the nightly job; check the daily growth on the project's **Overview** page in the Neon console (the Billing page shows network transfer only after an overage); per branch: `data_transfer_bytes` from the branch details API (Free plan included, needs a Neon API key). Over the limit, the compute stays suspended until the next period or an upgrade |
-| **Neon suspended** (seen 2026-11-09): connections fail with `ERROR: Your account or project has exceeded the quota`; the API's `/health` answers 200 but every data endpoint 500; the site still loads (cached pages) | over the monthly transfer quota (#140) | the site keeps serving its cached pages **until something expires them**: pause the nightly job (`gh workflow disable daily-refresh.yml`) or its refresh step (runs even when `tsi run` fails) expires every page and they rebuild against a failing API. While suspended: CI's web job fails (it builds against the live API), so Render deploys nothing; a web push starts a Vercel build that fails and keeps the old site (harmless). Work on a local copy. Reset day: roadmap Operations, "Neon suspended" |
+| **Neon suspended** (seen 2026-11-09): connections fail with `ERROR: Your account or project has exceeded the quota`; the API's `/health` answers 200 but every data endpoint 500; the site still loads (cached pages) | over the monthly transfer quota (#140) | the site keeps serving its cached pages **until something expires them**: pause the nightly job (`gh workflow disable daily-refresh.yml`) or its refresh step (runs even when `tsi run` fails) expires every page and they rebuild against a failing API. While suspended: CI's web job fails (it builds against the live API), so Render deploys nothing; a web push starts a Vercel build that fails and keeps the old site (harmless). Work on a local copy. Reset day: roadmap "Now" |
 | Rankings arrows missing | no rating run ≥ 6 days older (start of a season) | expected; the Δ column hides itself until a week of runs exists |
 
 **CFBD call budget:** the free tier is ~1,000 calls a month; the client refuses past 980

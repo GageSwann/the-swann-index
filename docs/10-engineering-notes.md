@@ -113,6 +113,8 @@ Both PCs have one; it is where heavy work runs (§1).
 **Building blocks**
 - Charts: import from `components/charts/lazy.tsx` (lazy, same-height placeholders; #87), never directly; colors from `lib/chart-theme.ts` (`axisStyle`); shared parts in `components/charts/chart-parts.tsx` and `line-series-chart.tsx`.
 - Table headers: `components/ui/head-cell.tsx`. Dates: `lib/format/time.ts`. `cn` merges conflicting Tailwind classes, so `className` overrides win. No shadcn components remain (#77).
+- **Long names:** a `TeamLink` inside a flex row needs a `min-w-0` wrapper to truncate (full name on hover); otherwise it overlaps its neighbours (biggest movers, the bracket; roadmap 12.7).
+- **Screen-reader tables** ignore `sr-only`'s 1 px width and can widen a page on phones: wrap the table in an `sr-only` div (13.7).
 - Page metadata: `pageMeta()` from `lib/metadata.ts`; pass `ownImage: true` on routes with an `opengraph-image` file. Indexing is off until `ALLOW_INDEXING=1` (#86).
 
 **Checks and dependencies**
