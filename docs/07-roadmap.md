@@ -6,7 +6,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 
 ## Now: confirm the Neon cuts hold (Nov 20 – Dec 1)
 
-**Where things stand (2026-11-20):** back online. Neon suspended the project on 2026-11-09 for going over its 5 GB monthly transfer (that period froze at 5.6 GB; doc 10 §1). On Nov 20 the owner added Neon's $5 limit increase (25 GB) for one period instead of waiting for Dec 1 (#151); the new period runs **Nov 20 – Dec 1** and started at 0 GB. The cuts (#144–#148) are live but not yet measured on production. **Goal:** show from real daily figures that the free 5 GB fits (target **under 80 MB a day**, half the free budget), then remove the add-on before the next period's bill.
+**Where things stand (2026-11-20):** back online. Neon suspended the project on 2026-11-09 for going over its 5 GB monthly transfer (that period froze at 5.6 GB; doc 10 §1). On Nov 20 the owner added Neon's $5 limit increase (25 GB) for one period instead of waiting for Dec 1 (#151); the new period runs **Nov 20 – Dec 1** and started at 0 GB. The cuts (#144–#148) are live, and on the local copy an untouched month measures ~0.9 GB at worst (#154); since then the team pages, rankings, home page and week boards read less (#154, #155). Production's daily figures are still to come. **Goal:** show from real daily figures that the free 5 GB fits (target **under 80 MB a day**, half the free budget), then remove the add-on before the next period's bill.
 
 - [x] **Back online (2026-11-20, all checked):** API answers; Render manual deploy of `34e5cf8` (#146–#148, `kickoff_tbd`); nightly job re-enabled and run at 21:25 UTC (clean, Elo carry fingerprint matches production, 182 games published, Nov 9–20 picks graded, 60 pages refreshed); site redeployed after fixing Vercel's skip-build check (#151) with 13.5–13.7 and the logo widths (Playoffs nav and bracket, `/matchup` 404, This week, Navy's Dec 12 game with its "Not yet published" forecast); CI green.
 - [ ] **Neon transfer per day:** the owner sends the project's Network transfer figure each morning; record it below. Expected ~10–50 MB a day (the night's ~6.4 MB, visitors, ~18 MB per site build); it was ~300 MB. If a day runs high, measure with the transfer meter and check Vercel's ISR writes and Render's response volume.
@@ -14,6 +14,8 @@ Work one item at a time: build → test → tick → commit, then stop for revie
   | Date (morning) | Project total | That day |
   |---|---|---|
   | Nov 20 (period start) | 0 GB | — |
+
+  *Expect Nov 21 to be high:* it includes the one-off rebuild (~250 MB, #152), the rebuild's verify, today's pushes' site builds (~10 MB each) and the migrations. Nov 22 onward is the normal pattern.
 
 - [ ] **Vercel:** ISR writes grow ~60–100 a day (31K on Nov 20; were ~1,000 a day); image transformations stay under 5K (4.7K on Nov 20) until Vercel's period resets.
 - [ ] **12.1:** a week of nightly runs that start at 11:0x UTC from cron-job.org with no 14:23 backup run (built #126; three morning runs failed on a slow CFBD before #144 fixed the client). First: Nov 21.
