@@ -61,6 +61,15 @@ Every real CFBD request (including failed ones) is recorded in `ingest_log`; cac
 - **FCS playoff games (checked 2026-11-05, #125):** notes read "FCS Championship - First Round" / "- Second Round" / "- Quarterfinals" / "- Semifinals" / "FCS Championship", and CFBD often files them as `season_type = 'regular'` (2022 and 2024–25 had most of them there). They contain "championship", so code that looks for conference title games must skip them (`is_fcs_playoff`). They appear once the field is picked (the Sunday before Thanksgiving week), which is how the sim knows the real field is set. The SWAC title game is the only FCS conference title game.
 - **Teams moving up a division** show up in `team_seasons`: lower-division seasons (`ii`, `iii`, `unknown`) before their first FCS season (e.g. West Georgia, Mercyhurst, New Haven, West Florida). New Division I programs (Kennesaw State, UTRGV, Chicago State) have no lower-division seasons. Teams moving to FBS can't be seen ahead of time (a slug list in `sim/fcs_format.py`).
 
+### Conventions in stored data
+- **`team_game_stats`** = one row per team per game = its **offense**; its defense is the opponent's row. Efficiency stats are garbage-time filtered; plays and drives are full-game.
+- **Division values:** `fbs`, `fcs`, `ii`, `iii`, `unknown` (CFBD `classification`). Conference sub-divisions (Sun Belt East/West) are `team_seasons.conference_division` (CFBD's `division`). Which divisions are rated individually, and from when, is decided only in `tsi/divisions.py` (`rated_individually`, `FCS_STATS_FROM = 2022`).
+- **Conference title games** are found by "championship" in `games.notes` (CFBD doesn't always flag them as conference games), except FCS playoff games (`is_fcs_playoff`, above).
+- **Placeholder teams:** opponents missing from CFBD `/teams` (mostly NAIA) get placeholder rows with slug `name-<id>`.
+- **Times** are UTC and timezone-aware; `parse_utc` rejects naive timestamps. `games.start_time_tbd` marks date-only kickoffs.
+- **Matching by school name:** CFBD identifies teams by school name in stats, talent and returning production, so match through our tables.
+- **New FBS teams in 2026:** North Dakota State (Mountain West) and Sacramento State (MAC) are FBS this season and rated individually; don't mistake them for pooled FCS teams.
+
 ### Market lines
 - CFBD `/lines` returns lines from multiple providers (2024: ESPN Bet, DraftKings, Bovada), with team ids. All providers are stored. A **consensus** line (median across providers) is computed in Phase 3.
 - **Sign:** `spread` is from the home team's view, negative = home favored. Verified two ways: 0 mismatches against CFBD's `formattedSpread`, and closing-spread MAE vs. actual margin of ~12 pts (vs. ~25 if flipped).

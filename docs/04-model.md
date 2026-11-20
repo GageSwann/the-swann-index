@@ -21,7 +21,18 @@ Each model run produces two sets of ratings, stored separately:
 - **Provisional ranks:** a team with fewer than **4** games this season (threshold tunable) is still ranked, but shown as *provisional*.
 - **Updated daily:** the nightly job (11:00 UTC) refits both sets after loading data, so a Tuesday-night game moves the rankings by Wednesday morning. Each day's run is a new `model_runs` row; published snapshots are never edited (rule 2).
 
-### Model v1.1 at a glance (decisions #37–#38)
+### The current model (v1.7) at a glance
+The order a forecast is built in, each step with its section:
+1. **Components** (`model/ratings/components.py`): opponent-adjusted ridge fits of PPD, success rate, pace (drives), tempo (plays), second-level yards and power success (§2, §9c), each with a `level`. FCS teams are rated individually from 2022 (§5); D-II and below, and FCS before 2022, pool into −2 / −1.
+2. **Stacks:** the margin stack (site, PPD, success, prior, Elo, second-level yards, power success; ridge per season-stage bucket) and the totals stack (§6). The stacks learn from FBS-vs-FBS games only.
+3. **Rest / bye / short week** on the margin (§9b, v1.4).
+4. **FBS vs. FCS** margin scale and total offset (§9d, v1.6).
+5. **Lopsided-game total bump** for games with an FCS team, then the **underdog floor** (§9e, v1.7).
+6. Scores = (total ± margin) / 2, then the distribution and prices (doc 05).
+
+Rankings use the `season` set (below); Résumé is §7. Manual adjustments apply after all of this, to the game forecast only (§11).
+
+### Model v1.1 (decisions #37–#38)
 - **`season` (rankings):** `off = 0.726 × PPD off + 0.635 × success-rate off` (same for def), HFA 3.24 pts. The weights were learned on 2015–22 walk-forward games, but the inputs are **this season's games only**. EPA is not fitted (#49): it added nothing to either rating set. Raw EPA/play can still be shown as a stat.
 - **`predictive` (predictions):** a stacked margin, learned per season stage, from home field, PPD margin, success-rate margin, prior difference and Elo margin (`model/stack.py`). The prior's fade is **learned**: its weight drops from ~1.1 with no games to ~0.15 at 9+ games. The hand-set fading blend (§3 formula) was removed.
 - **Validation 2023–25:** rankings MAE 13.37 (12.55 with 4+ games); predictions **12.47 vs. Vegas 12.00**, SU 72.2%; calibration within ±1 in 4 of 5 bins.
@@ -138,6 +149,8 @@ Strength of schedule is also shown: the average current `season` rating of oppon
 
 **Implementation** (`model/resume.py`, `services/compute_rankings.py`): benchmark = the 12th-best current FBS `season` rating. Each game's probability comes from the benchmark's rating minus the opponent's, plus home field from the benchmark's seat, via a normal with σ = 15.7 (log-loss fit of `season` margins on 2015–22 games where both teams had 4+ games). Wins follow a Poisson-binomial distribution; SOR = P(≥ actual wins). Résumé order: SOR ascending, then wins, then rating. Non-FBS opponents use the pooled rating.
 
+**FCS teams** (#91, #133): measured against a typical **#24 FCS team** (the size of the FCS playoff field, as #12 matches the 12-team CFP; `FCS_BENCHMARK_RANK`, #10 before 2026-11-06). Opponents use their own stored rating whenever one exists. Each run stores the benchmark rank it used (`benchmark_rank` in the API, so the site names the right one). Ranks are always within a division (`rank_division`, #111).
+
 ## 8. Baseline: Elo
 A simple margin-aware Elo (`model/elo.py`) is the baseline. If the main model doesn't clearly beat Elo in backtest, something is wrong.
 
@@ -149,6 +162,8 @@ A simple margin-aware Elo (`model/elo.py`) is the baseline. If the main model do
 |---|---|---|---|---|---|---|
 | Train 2015–22 | 5,927 | 13.45 | 12.45 | 71.0 | 74.3 | 0.189 |
 | **Validate 2023–25** | 2,398 | **13.15** | **12.00** | **70.5** | **72.7** | 0.191 |
+
+**Elo carry (#146):** because Elo carries ratings across seasons, a live run would replay every game since 2014. Instead it resumes from `model/artifacts/elo_carry.json` (Elo through last season, with a fingerprint of the games replayed and the parameters) when the database computes the same fingerprint; otherwise it replays everything, so the numbers are identical either way. Rebuild the file after each season (`tsi model elo-carry`, doc 10 §5).
 
 Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI is within ~1 point of the closing line, so TSI must beat Elo by a real margin.
 

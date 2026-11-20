@@ -8,9 +8,9 @@ Every game prediction is a **joint distribution of the two teams' scores**, not 
 **v1: bivariate normal**
 - Means: `proj_home`, `proj_away` (from [04-model.md](04-model.md))
 - Std devs and correlation `ρ` fit from backtest residuals (`model/distribution.py`, `distribution_fit.py`; decision #51):
-  - margin σ = the win-probability σ (log loss at 0): **15.2** in production
+  - margin σ = the win-probability σ (log loss at 0): **15.4** in production (v1.7 artifact)
   - total σ grows with the projected total: **16.4 + 0.12 × (total − 55)**, fit by log loss of P(total > projection + d) for d = ±3…±14
-  - ρ(margin, total) = **0.0075 × projected home margin** (clipped ±0.5): ~0 in close games, ~+0.2 when a team is favored by 25+ (blowouts raise totals)
+  - ρ(margin, total) = **0.0074 × projected home margin** (clipped ±0.5): ~0 in close games, ~+0.2 when a team is favored by 25+ (blowouts raise totals)
   - team totals follow: home = (total + margin)/2, away = (total − margin)/2, both normal
 - Residuals are close to normal (kurtosis 3.0–3.5), so v1 is a reasonable start; key numbers wait for v2
 
@@ -52,7 +52,7 @@ For each game, using the consensus market line:
 **Implementation** (`book/consensus.py`, `book/edges.py`, `book/shrink_fit.py`; decisions #52, #53):
 - **Consensus** = each sportsbook's latest line at or before the publish time (`db/queries/market.line_snapshots`; aggregator "providers" `consensus` and `teamrankings` excluded). Spread and total: median across books. Moneyline: each book's pair de-vigged, then averaged.
 - **Shrunk probabilities:** the Book moves a fraction k from the market's number toward TSI's: P(home covers s) = Φ(k·(TSI margin + s)/σ_margin), P(over t) = Φ(k·(TSI total − t)/σ_total); moneyline uses the spread-implied margin moved by k_spread.
-- **k** is fit by log loss on leave-one-season-out predictions against the **median opening line** (history has no publish-time snapshots; the opener is the closest proxy). Production (v1.3): **k_spread 0.081, k_total 0.308** (v1.2: 0.07 / 0.32). Backtest (train → validation): spread 0.00, total 0.24.
+- **k** is fit by log loss on leave-one-season-out predictions against the **median opening line** (history has no publish-time snapshots; the opener is the closest proxy). Production (v1.7): **k_spread 0.136, k_total 0.309** (v1.3: 0.081 / 0.308; v1.2: 0.07 / 0.32). Backtest (train → validation): spread 0.00, total 0.24.
 - **Edges:** spread/total = shrunk P − 0.5238 (−110 assumed: CFBD has no spread prices); moneyline = shrunk P − no-vig P, with EV per unit at the market price. The better side of each market is reported.
 - Validation calibration at the opener (k from train): spreads 50.0% predicted / 49.9% observed; overs within ±0.5 pts in the bins holding 93% of games.
 
