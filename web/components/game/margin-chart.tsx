@@ -14,7 +14,7 @@ import {
 import type { FairTwoWay, TeamRef } from "@/lib/api/types"
 import { TooltipBox } from "@/components/charts/chart-parts"
 import { axisStyle, useChartTheme } from "@/lib/chart-theme"
-import { percent } from "@/lib/format/numbers"
+import { chance, percent } from "@/lib/format/numbers"
 import { teamSpread } from "@/lib/format/odds"
 
 type Props = {
@@ -131,7 +131,7 @@ function MarginTip({
       <p className="text-muted-foreground">{outcome}</p>
       {rung && (
         <p>
-          <span className="font-semibold">{percent(rung.first.prob, 0)}</span>{" "}
+          <span className="font-semibold">{chance(rung.first.prob)}</span>{" "}
           <span className="text-muted-foreground">
             {homeName} covers {teamSpread(rung.line ?? 0)}
             {rung.push >= 0.005 && `, push ${percent(rung.push, 0)}`}

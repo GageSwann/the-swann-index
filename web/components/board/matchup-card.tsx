@@ -1,7 +1,6 @@
 import Link from "next/link"
 
 import { AdjustedNote } from "@/components/game/adjusted-note"
-import { RebuiltNote } from "@/components/game/rebuilt-note"
 import { PhaseLabel, useGamePhase } from "@/components/game/game-phase"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameSummary, TeamRef } from "@/lib/api/types"
@@ -119,7 +118,6 @@ export function MatchupCard({ game, ranks }: Props) {
             </tbody>
           </table>
           <AdjustedNote prediction={p} game={game} />
-          <RebuiltNote prediction={p} />
         </>
       ) : (
         <p className="text-sm text-muted-foreground">

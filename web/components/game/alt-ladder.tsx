@@ -1,5 +1,5 @@
 import type { FairMarkets, FairTwoWay, TeamRef } from "@/lib/api/types"
-import { percent } from "@/lib/format/numbers"
+import { chance, percent } from "@/lib/format/numbers"
 import { american, teamSpread, totalLine } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
@@ -98,7 +98,7 @@ function Ladder({
                 {label(r.line ?? 0)}
                 {r.line === nearest && <span className="ml-2 text-xs text-primary">Vegas</span>}
               </th>
-              <td className="px-3 py-1.5 text-right">{percent(r.first.prob, 0)}</td>
+              <td className="px-3 py-1.5 text-right">{chance(r.first.prob)}</td>
               {pushes && (
                 <td className="px-3 py-1.5 text-right text-muted-foreground">
                   {r.push >= 0.005 ? percent(r.push, 0) : "—"}

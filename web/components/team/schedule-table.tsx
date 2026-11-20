@@ -4,7 +4,7 @@ import { PhaseLabel, PhaseScope, When } from "@/components/game/game-phase"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameOdds } from "@/lib/api/schedule-odds"
 import type { ScheduleGame } from "@/lib/api/types"
-import { chance, percent, points } from "@/lib/format/numbers"
+import { chance, points } from "@/lib/format/numbers"
 import { teamSpread } from "@/lib/format/odds"
 import { formatShortDay } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
@@ -28,7 +28,6 @@ export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank 
   const bench = benchmarkName(division, benchmarkRank)
   const anyForecast = [...odds.values()].some((o) => o.source === "forecast")
   const anyAdjusted = [...odds.values()].some((o) => o.adjusted)
-  const anyRebuilt = [...odds.values()].some((o) => o.source === "rebuilt")
   const date = (g: ScheduleGame) => (g.kickoff ? formatShortDay(g.kickoff) : `Week ${g.week}`)
   return (
     <section aria-labelledby="schedule-heading" className="space-y-3">
@@ -106,9 +105,7 @@ export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank 
         })}
       </ol>
       <p className="text-xs text-muted-foreground">
-        TSI line and win chance are from the team&apos;s side, as published before kickoff.
-        {anyRebuilt &&
-          " ‡ Rebuilt: TSI’s pre-game forecast for a game it didn’t publish at the time (before Oct 20, 2026, and Nov 10–19), computed later from games played before it."}
+        TSI line and win chance are from the team&apos;s side: TSI&apos;s last view before kickoff.
         {anyForecast && " * Not yet published: TSI’s forecast from last night’s season simulation."}
         {anyAdjusted && " † Includes a manual adjustment (see the game center)."} &ldquo;{bench}{" "}
         wins&rdquo;: how often a typical {bench} would win the game, against the opponent&apos;s
@@ -179,15 +176,10 @@ function WinChance({ odds }: { odds: GameOdds | undefined }) {
   if (!odds) return <>—</>
   return (
     <>
-      <span className="text-foreground">{percent(odds.winProb, 0)}</span>
+      <span className="text-foreground">{chance(odds.winProb)}</span>
       {odds.source === "forecast" && (
         <span className="text-muted-foreground" title="Forecast, not yet published">
           *
-        </span>
-      )}
-      {odds.source === "rebuilt" && (
-        <span className="text-muted-foreground" title="Rebuilt later: not published at the time">
-          ‡
         </span>
       )}
     </>

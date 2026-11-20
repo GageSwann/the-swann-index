@@ -25,9 +25,14 @@ export function percent(value: number, digits = 1): string {
   return `${(value * 100).toFixed(digits)}%`
 }
 
-/** A probability as a whole percent that never claims certainty: "<1%", "37%", ">99%". */
-export function chance(value: number): string {
-  if (value < 0.005) return "<1%"
-  if (value > 0.995) return ">99%"
-  return percent(value, 0)
+/**
+ * A probability that never claims certainty (owner, 2026-11-20): "<1%", "37%", ">99%".
+ * With `digits`, the bounds follow the shown precision: "<0.1%" / ">99.9%" for 1.
+ */
+export function chance(value: number, digits = 0): string {
+  const step = 10 ** -digits // smallest shown step, in percent
+  const shown = Number((value * 100).toFixed(digits))
+  if (shown < step) return `<${step.toFixed(digits)}%`
+  if (shown > 100 - step) return `>${(100 - step).toFixed(digits)}%`
+  return percent(value, digits)
 }

@@ -1,5 +1,5 @@
 import type { GameSummary, SnapshotPoint } from "@/lib/api/types"
-import { percent } from "@/lib/format/numbers"
+import { chance } from "@/lib/format/numbers"
 import { favoriteLine } from "@/lib/format/odds"
 import { formatUpdated } from "@/lib/format/time"
 
@@ -38,7 +38,7 @@ export function PredictionHistory({
             <span className="text-muted-foreground">{formatUpdated(s.published_at)}</span>
             <span>
               {favoriteLine(s.spread, game.home, game.away)}, total {s.total.toFixed(1)},{" "}
-              {game.home.abbreviation ?? game.home.school} {percent(s.home_win_prob, 0)} to win
+              {game.home.abbreviation ?? game.home.school} {chance(s.home_win_prob)} to win
             </span>
           </li>
         ))}

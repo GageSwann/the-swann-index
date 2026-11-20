@@ -4,7 +4,7 @@ import type { TeamRef } from "@/lib/api/types"
 import { separation, teamColor } from "@/lib/format/color"
 
 import { Display, OG, OgLogo } from "./frame"
-import { points } from "@/lib/format/numbers"
+import { chance, points } from "@/lib/format/numbers"
 
 type Props = {
   context: string // "Saturday, Oct 31 | TSI projection", "Final", "Hypothetical | neutral site"
@@ -70,10 +70,8 @@ export function TwoTeamCard({
               marginTop: 8,
             }}
           >
-            <div
-              style={{ display: "flex" }}
-            >{`${Math.round((1 - homeWinProb) * 100)}% to win`}</div>
-            <div style={{ display: "flex" }}>{`${Math.round(homeWinProb * 100)}% to win`}</div>
+            <div style={{ display: "flex" }}>{`${chance(1 - homeWinProb)} to win`}</div>
+            <div style={{ display: "flex" }}>{`${chance(homeWinProb)} to win`}</div>
           </div>
         </div>
       )}

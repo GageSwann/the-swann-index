@@ -5,7 +5,7 @@ import { TeamLink } from "@/components/team/team-link"
 import { TeamLogo } from "@/components/team/team-logo"
 import type { Playoff } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
-import { percent } from "@/lib/format/numbers"
+import { chance } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
 
 import { type BracketGame, buildBracket, type Entry } from "./bracket-layout"
@@ -175,7 +175,7 @@ function Champion({ entry, style }: { entry: Entry; style: CSSProperties }) {
           </span>
         </Link>
         <p className="text-xs text-muted-foreground">
-          {t.wins}-{t.losses}, {percent(t.champion_prob, 0)} to win it all
+          {t.wins}-{t.losses}, {chance(t.champion_prob)} to win it all
         </p>
       </div>
     </div>

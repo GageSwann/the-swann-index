@@ -11,7 +11,7 @@ import Link from "next/link"
 
 import { TeamLink } from "@/components/team/team-link"
 import type { RankedTeam } from "@/lib/api/types"
-import { chance, percent, record, signed } from "@/lib/format/numbers"
+import { chance, record, signed } from "@/lib/format/numbers"
 
 import { RankChange } from "./rank-change"
 
@@ -114,7 +114,7 @@ export const columns = col.columns([
           className="underline-offset-4 hover:underline"
           title="See how this résumé was built"
         >
-          {percent(v)}
+          {chance(v, 1)}
         </Link>
       )
     },

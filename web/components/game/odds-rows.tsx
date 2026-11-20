@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 
 import type { FairMarkets, GameCenter, TeamRef } from "@/lib/api/types"
-import { percent } from "@/lib/format/numbers"
+import { chance, percent } from "@/lib/format/numbers"
 import { american, favoriteLine, teamSpread, totalLine } from "@/lib/format/odds"
 
 /** One market in an odds table: TSI's own line (no vig) and, for games, Vegas. */
@@ -32,7 +32,7 @@ export function tsiRows({ markets, home, away, projHome, projAway }: Priced): Ma
       fair: (
         <Line
           value={favoriteLine(markets.fair_spread, home, away)}
-          note={`${short(home)} ${teamSpread(markets.spread.line ?? 0)} covers ${percent(markets.spread.first.prob, 0)}${pushNote(markets.spread.push)}`}
+          note={`${short(home)} ${teamSpread(markets.spread.line ?? 0)} covers ${chance(markets.spread.first.prob)}${pushNote(markets.spread.push)}`}
         />
       ),
     },
@@ -41,7 +41,7 @@ export function tsiRows({ markets, home, away, projHome, projAway }: Priced): Ma
       fair: (
         <Line
           value={markets.fair_total.toFixed(1)}
-          note={`over ${totalAt} ${percent(markets.total.first.prob, 0)}${pushNote(markets.total.push)}`}
+          note={`over ${totalAt} ${chance(markets.total.first.prob)}${pushNote(markets.total.push)}`}
         />
       ),
     },
