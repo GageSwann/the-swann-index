@@ -3,8 +3,8 @@
 Personal college football rating model + prediction engine + public read-only dashboard. One operator (the owner) runs the model; everyone else only views. Live: site https://the-swann-index.vercel.app (Vercel) → API https://tsi-api-44wx.onrender.com (Render) → Neon `production`. The nightly job (11:00 UTC, started by cron-job.org; GitHub schedule at 14:23 as a backup) runs `tsi run` and refreshes the site.
 
 ## Status (2026-11-20)
-- **Offline until the Neon reset on Dec 1.** Neon suspended the project on 2026-11-09 for going over its 5 GB monthly transfer. The nightly job is paused, the site shows its Nov 9 pages, CI's web job is red (it builds against the live API). The roadmap's **"Now"** section has the reset-day steps and the checks for the days after.
-- **Model v1.7.** Phases 0–12 done; Phase 13 (frontend overhaul) done except 13.8 (rebuild early 2026) and the 13.9/13.10 prototypes. The Neon cuts (#144–#148) are built; #146–#148 and 13.5–13.7 go live on reset day.
+- **Back online (2026-11-20)** after Neon's 5 GB transfer limit suspended the project Nov 9–20. The owner added Neon's limit increase for one period (Nov 20 – Dec 1, #151); this period proves the cuts (#144–#148) fit the free 5 GB (target < 80 MB a day) before it's removed. The roadmap's **"Now"** has the daily checks.
+- **Model v1.7.** Phases 0–12 done; Phase 13 (frontend overhaul) done except 13.8 (rebuild early 2026) and the 13.9/13.10 prototypes. The Neon cuts (#144–#148) and 13.5–13.7 are live.
 - No launch deadline: quality over speed (#27).
 
 ## Read before building

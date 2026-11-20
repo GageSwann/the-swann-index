@@ -6,7 +6,7 @@ Things learned the hard way. `CLAUDE.md` keeps the short version of each; the de
 
 **The limit (#140):** Neon's free plan allows **5 GB of network transfer a month for the whole project**, every branch counted (`dev` too) and every reader (local scripts, GitHub Actions, Render). Over the limit Neon **suspends the compute until the next billing period**: connections are refused ("exceeded the quota"), the API's `/health` still answers 200 but every data endpoint answers 500.
 
-**History:** the period that started Oct 31 hit 5.40 GB on 2026-11-09 (production 4.19, dev 1.21) and Neon suspended the project that evening; the project total froze at **5.6 GB**. The owner stayed on the free plan and waited for the reset (Dec 1).
+**History:** the period that started Oct 31 hit 5.40 GB on 2026-11-09 (production 4.19, dev 1.21) and Neon suspended the project that evening; the project total froze at **5.6 GB**. On Nov 20 the owner added Neon's $5 limit increase (25 GB) for one period to come back early (#151); the new period (Nov 20 – Dec 1) started at 0 GB and serves to prove the free 5 GB fits.
 
 **Where it went (#145, measured with the transfer meter):** the site re-checked every visited page's data **hourly** (~1,000 ISR writes and ~30 MB of gzipped API responses a day, ~0.3 GB a day from Neon). Since #145 pages re-check daily and the nightly refresh is what updates them.
 
@@ -29,7 +29,7 @@ Things learned the hard way. `CLAUDE.md` keeps the short version of each; the de
 - **Neon console:** the project's **Overview** shows the period's total (the number the limit uses; the Billing page shows transfer only after an overage). Each branch's Overview shows its own share, but **while the project is suspended the branch panels read 0** ("metrics are not updated for inactive projects"; seen 2026-11-20 while the project total read 5.6 GB). Per branch by API: `data_transfer_bytes` from the branch details endpoint (needs a Neon API key). The project page says "Since Nov 1" and the branch page "Since Oct 31" for the same period (time zones).
 - The database is ~63 MB, so one `pg_dump` costs about that; the danger is *repeated* full reads (2.89 GB by Nov 6 ≈ 46 of them).
 
-**While suspended:** the site serves its cached pages as long as nothing expires them, so the nightly job is paused (`gh workflow disable daily-refresh.yml`): its refresh step runs even after a failed `tsi run` and would expire the pages. Pushes fail CI's web job (it prerenders from the live API), so Render deploys nothing, and Vercel's build fails (the old site stays). The reset-day order is in the roadmap ("Now").
+**While suspended:** the site serves its cached pages as long as nothing expires them, so the nightly job is paused (`gh workflow disable daily-refresh.yml`): its refresh step runs even after a failed `tsi run` and would expire the pages. Pushes fail CI's web job (it prerenders from the live API), so Render deploys nothing, and Vercel's build fails (the old site stays). Coming back (done 2026-11-20): confirm Neon answers, Render Manual Deploy (CI was red), re-enable and run the nightly job, then redeploy the site.
 
 ## 2. Local Postgres copy
 

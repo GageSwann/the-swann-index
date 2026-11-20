@@ -4,25 +4,22 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 
 ---
 
-## Now: back online after the Neon reset
+## Now: confirm the Neon cuts hold (Nov 20 – Dec 1)
 
-**Where things stand (2026-11-20):** Neon suspended the project on 2026-11-09 for going over its 5 GB monthly transfer (the period's total froze at 5.6 GB; doc 10 §1). The live API's data endpoints answer 500, the site serves its Nov 9 pages, the nightly job is paused (`daily-refresh.yml` disabled), and CI's web job is red because it builds against the live API. The period resets on **Dec 1**. The causes were found and cut before then (#144–#148: the hourly page re-check first; a night's reads went from ~14.5 MB to ~6.4 MB), but none of it has been measured on production yet. Waiting to go live: the API from #146–#148 and 13.5 (`kickoff_tbd`), and the site from 13.5–13.7 (built on the local copy Nov 10, pushed during the outage, their builds failed).
+**Where things stand (2026-11-20):** back online. Neon suspended the project on 2026-11-09 for going over its 5 GB monthly transfer (that period froze at 5.6 GB; doc 10 §1). On Nov 20 the owner added Neon's $5 limit increase (25 GB) for one period instead of waiting for Dec 1 (#151); the new period runs **Nov 20 – Dec 1** and started at 0 GB. The cuts (#144–#148) are live but not yet measured on production. **Goal:** show from real daily figures that the free 5 GB fits (target **under 80 MB a day**, half the free budget), then remove the add-on before the next period's bill.
 
-**Reset day, in order** (confirm each step before the next):
-- [x] Neon answers: `curl -s -o /dev/null -w "%{http_code}" https://tsi-api-44wx.onrender.com/meta/current` → 200. Note the project's network transfer on the Neon Overview (should be ~0). *(2026-11-20: the owner added Neon's $5 limit increase for one period (25 GB) to come back before Dec 1; the new period runs Nov 20 – Dec 1 and started at **0 GB**. Remove the add-on only after a new period starts, once the daily figures show the free 5 GB fits.)*
-- [x] Production's Elo fingerprint matches `elo_carry.json` (`completed_games_fingerprint(s, 2025)`, ~32 bytes). If not, runs log "replaying all seasons" and lose the #146 saving: rebuild the file on a local copy.
-- [x] Deploy the API: Render **Manual Deploy** of the latest `main` (CI was red, so nothing deployed since `6713d3f`). Confirm `/matchup` → 404, and `/teams/notre-dame` schedule rows carry `kickoff_tbd` and `forecast`. *(2026-11-20: Manual Deploy of `34e5cf8`; confirmed.)*
-- [x] Turn the nightly job back on (`gh workflow enable daily-refresh.yml`) and run it once (`gh workflow run daily-refresh.yml`): success, no `ingest FAILED`, no "replaying all seasons". *(2026-11-20 21:25 UTC: both clean, so the fingerprint matches; 182 games published, the Nov 9–20 picks graded, 60 pages refreshed.)*
-- [ ] Redeploy the site, only after the API serves `kickoff_tbd` (Vercel → Deployments → Redeploy, or push the pending web change below). Check: no Matchup in the nav, the Playoffs bracket, This week, a team schedule with forecasts for games beyond 8 days (marked "not yet published").
-- [ ] CI green again.
+- [x] **Back online (2026-11-20, all checked):** API answers; Render manual deploy of `34e5cf8` (#146–#148, `kickoff_tbd`); nightly job re-enabled and run at 21:25 UTC (clean, Elo carry fingerprint matches production, 182 games published, Nov 9–20 picks graded, 60 pages refreshed); site redeployed after fixing Vercel's skip-build check (#151) with 13.5–13.7 and the logo widths (Playoffs nav and bracket, `/matchup` 404, This week, Navy's Dec 12 game with its "Not yet published" forecast); CI green.
+- [ ] **Neon transfer per day:** the owner sends the project's Network transfer figure each morning; record it below. Expected ~10–50 MB a day (the night's ~6.4 MB, visitors, ~18 MB per site build); it was ~300 MB. If a day runs high, measure with the transfer meter and check Vercel's ISR writes and Render's response volume.
 
-**Pending web change for that redeploy:** `images.imageSizes: [64, 128]` in `web/next.config.ts`, so each team's logo is 2 image transformations instead of ~5 (Vercel Hobby: 4.7K of 5K used by Nov 20; doc 10 §9). Built 2026-11-20 (owner: ship with the redeploy).
+  | Date (morning) | Project total | That day |
+  |---|---|---|
+  | Nov 20 (period start) | 0 GB | — |
 
-**The days after:**
-- [ ] **Neon transfer per day** (the point of #144–#148): note the project total each morning. Expected ~10–50 MB a day (the night's ~6.4 MB, visitors, ~18 MB per site build); it was ~300 MB. If it runs high, measure with the transfer meter and check Vercel's ISR writes and Render's response volume.
-- [ ] **Vercel:** ISR writes should grow ~60–100 a day (were ~1,000); image transformations should stay under 5K until Vercel's period resets.
-- [ ] **12.1:** a week of nightly runs that start at 11:0x UTC from cron-job.org with no 14:23 backup run (built #126, 2026-11-05; three morning runs failed on a slow CFBD before #144 fixed the client).
-- [ ] **12.5:** on the first Sunday, ranking arrows and biggest movers match the previous Sunday's ranks (built #134, 2026-11-05; never checked live).
+- [ ] **Vercel:** ISR writes grow ~60–100 a day (31K on Nov 20; were ~1,000 a day); image transformations stay under 5K (4.7K on Nov 20) until Vercel's period resets.
+- [ ] **12.1:** a week of nightly runs that start at 11:0x UTC from cron-job.org with no 14:23 backup run (built #126; three morning runs failed on a slow CFBD before #144 fixed the client). First: Nov 21.
+- [ ] **12.5:** on Sunday Nov 22, ranking arrows and biggest movers match the previous Sunday's ranks (built #134; never checked live).
+- [ ] **Games of the week:** the Nov 20 run picked Kentucky at Missouri for the FBS Résumé view with a score of 0.00 (picked late because the outage left the poll week empty). Look at why before Sunday's pick.
+- [ ] **By Nov 30: keep or remove the Neon add-on.** If the daily figures fit (under ~80 MB a day on average), remove it so the Dec 1 period is free; if not, find the cause first.
 
 ## Next
 
