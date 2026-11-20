@@ -24,7 +24,8 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 ## Next
 
 **Neon: cheaper still** (each on the local copy with the transfer meter, outputs identical)
-- [ ] Re-measure a full site build since #148 (17.6 MB before; it decides how freely we can push).
+- [x] Re-measure since #148 and the rebuild (2026-11-20, local copy, ~90 runs): nightly run 2.14 MB without ingest (~3 MB with), a full site build **9.95 MB** (was 17.6), the nightly ~60-page refresh ~4 MB, a team page 42 KB (was 8: its rating history reads both sets' full rows for every run), rankings 265 KB, `/playoff` 152 KB. **Untouched month:** ~7 MB a night (~210 MB) plus first visits; even a crawler opening every team, week and game page daily adds ~22 MB a day, so ~0.9 GB a month at worst, well under 5 GB. Each web push adds ~10 MB.
+- [ ] Trim the two heavy reads found: the team page's rating history (season rating only, the columns the chart uses) and rankings (season set only, if the page doesn't need the predictive one).
 - [ ] The home page (764 KB) and week boards (~350 KB) in the nightly refresh.
 - [ ] Save last season's fitted stats like the Elo carry (~0.5 MB a run).
 - [ ] "Save backtest to production" without reading the history from production (compute on a copy; upload only the saved run).

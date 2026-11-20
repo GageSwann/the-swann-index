@@ -4,6 +4,7 @@
 DB bytes per API request (local API on :8001 through the relay). Each URL twice: cold, warm."""
 
 import json
+import urllib.error
 import urllib.request
 
 from meterlib import counters
@@ -13,8 +14,12 @@ API = "http://127.0.0.1:8001"
 
 def get(path):
     d0, _, c0 = counters()
-    with urllib.request.urlopen(API + path, timeout=300) as r:
-        body = r.read()
+    try:
+        with urllib.request.urlopen(API + path, timeout=300) as r:
+            body = r.read()
+    except urllib.error.HTTPError as e:  # report it, keep measuring the rest
+        print(f"{path}: HTTP {e.code}")
+        body = b""
     d1, _, c1 = counters()
     return d1 - d0, len(body), json.loads(body) if body[:1] in b"{[" else None
 
@@ -45,7 +50,6 @@ paths = [
     f"/games/{game_id}",
     "/playoff?division=fbs",
     "/playoff?division=fcs",
-    f"/matchup?home={slug}&away={fcs_slug}",
 ]
 print(f"{'path':55} {'cold KB':>9} {'warm KB':>9} {'resp KB':>8}")
 for p in paths:

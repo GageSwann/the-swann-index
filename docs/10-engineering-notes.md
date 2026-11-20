@@ -16,9 +16,9 @@ Things learned the hard way. `CLAUDE.md` keeps the short version of each; the de
 |---|---|---|
 | Nightly `tsi run` | 12.6 MB | 3.0 MB (#146 Elo carry, #147 one read per season) |
 | Nightly page refresh (~60 pages) | 7.3 MB | 3.3 MB (#148 Résumé context cache) |
-| A full site build (~119 pages, ~290 API requests) | 17.6 MB | not re-measured since #148 (team pages got much cheaper) |
+| A full site build (~120 pages) | 17.6 MB | 9.95 MB (2026-11-20) |
 | `/rankings` · `/playoff` · week board | ~267 · ~189 · 145–200 KB | same |
-| `/teams/{slug}` | ~87 KB | ~8 KB (#148) |
+| `/teams/{slug}` | ~87 KB | ~8 KB after #148; ~42 KB with the rebuilt season's ~90 runs (the rating history reads every run) |
 | Home page | 764 KB | same (largest left) |
 
 **Heavy (never against Neon without the owner's OK):** `tsi backtest run` / `book`, scratch experiments, `tsi model fit`, `tsi model elo-carry`, the backtest and migrate-with-reload workflows, `tsi ingest season`, a full replay (13.8), `pg_dump`. Run them on a **local copy** (§2) and write only results to Neon. **Light:** the nightly job, the API, site builds (but batch pushes: each web push rebuilds the site from the live API).
