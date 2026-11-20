@@ -1,7 +1,7 @@
 import { type HomePicks, HomeView } from "@/components/home/home-view"
 import { PageHeading } from "@/components/layout/page-heading"
-import { getGamesOfWeek, getMeta, getRankings } from "@/lib/api/queries"
-import type { GameSummary, RankedTeam, RankingType } from "@/lib/api/types"
+import { getGamesOfWeek, getMeta, getTopRankings } from "@/lib/api/queries"
+import type { GameSummary, RankingType, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { formatDay, formatKickoff } from "@/lib/format/time"
 
@@ -21,20 +21,14 @@ export default async function HomePage() {
       </PageHeading>
     )
   }
-  const [rankings, week] = await Promise.all([
-    Promise.all(
-      DIVISIONS.flatMap((division) =>
-        TYPES.map((type) => getRankings({ type, division }).catch(() => null)),
-      ),
-    ),
+  // Each division's Power and Résumé Top 25 in one small read (#155), not full rankings.
+  const [tops, week] = await Promise.all([
+    Promise.all(DIVISIONS.map((division) => getTopRankings(division).catch(() => null))),
     getGamesOfWeek().catch(() => null),
   ])
-  const ranking = (d: Division, t: RankingType): RankedTeam[] =>
-    rankings[DIVISIONS.indexOf(d) * TYPES.length + TYPES.indexOf(t)]?.teams ?? []
-
   const rails = Object.fromEntries(
-    DIVISIONS.map((d) => [d, { power: ranking(d, "power"), resume: ranking(d, "resume") }]),
-  ) as Record<Division, Record<RankingType, RankedTeam[]>>
+    DIVISIONS.map((d, i) => [d, { power: tops[i]?.power ?? [], resume: tops[i]?.resume ?? [] }]),
+  ) as Record<Division, Record<RankingType, TopTeam[]>>
 
   const picks = Object.fromEntries(
     DIVISIONS.map((d) => [

@@ -14,6 +14,7 @@ import type {
   SeasonType,
   TeamProfile,
   TeamRef,
+  TopRankings,
   WeekBoard,
 } from "./types"
 import type { Division, DivisionView } from "@/lib/divisions"
@@ -78,6 +79,18 @@ export async function getWeekGames(
     params: { path: { season, week }, query: { season_type: seasonType, division } },
   })
   return required(`/weeks/${season}/${week}/games`, result)
+}
+
+/**
+ * A division's Power and Résumé Top 25 with movement and records: the home page's rails,
+ * at a fraction of the reads of two full rankings (#155).
+ */
+export async function getTopRankings(division: "fbs" | "fcs"): Promise<TopRankings | null> {
+  "use cache"
+  cacheLife("tsi")
+  cacheTag(tags.ALL, tags.RANKINGS)
+  const result = await apiClient().GET("/rankings/top", { params: { query: { division } } })
+  return orNull("/rankings/top", result)
 }
 
 /** This poll week's games of the week (picked with Sunday's rankings, held all week). */

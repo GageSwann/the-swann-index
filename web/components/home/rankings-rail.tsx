@@ -2,14 +2,14 @@ import Link from "next/link"
 
 import { RankChange } from "@/components/rankings/rank-change"
 import { TeamLogo } from "@/components/team/team-logo"
-import type { RankedTeam } from "@/lib/api/types"
+import type { TopTeam } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { record } from "@/lib/format/numbers"
 
 type Props = {
   id: string // for the heading
   title: string // "FBS Top 25"
-  teams: RankedTeam[] // the chosen ranking (Power or Résumé), in order
+  teams: TopTeam[] // the chosen ranking (Power or Résumé), in order
   href: string // the full rankings page
 }
 

@@ -2,7 +2,7 @@ import Link from "next/link"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
 import { TeamLogo } from "@/components/team/team-logo"
-import type { GameOfWeekView, RankedTeam, TeamRef } from "@/lib/api/types"
+import type { GameOfWeekView, TeamRecord, TeamRef, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { points, record } from "@/lib/format/numbers"
 import { favoriteLine, favoriteMoneyline } from "@/lib/format/odds"
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 
 type Props = {
   pick: GameOfWeekView | null // this poll week's pick (#141, #142)
-  teams: RankedTeam[] // the chosen ranking now: ranks and records shown
+  teams: TopTeam[] // the chosen ranking's Top 25 now: the ranks shown
   division: Division
   when: string | null // kickoff, formatted on the server ("Saturday, Nov 7, 7:30 PM ET")
   className?: string
@@ -47,7 +47,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
     )
   }
   const { game } = pick
-  const row = new Map(teams.map((t) => [t.team.id, t]))
+  const rank = new Map(teams.map((t) => [t.team.id, t.rank]))
   const final = game.result?.final ? game.result : null
   const matchup = `${game.away.school} ${game.neutral ? "vs." : "at"} ${game.home.school}`
   return (
@@ -75,11 +75,16 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
         {/* Logos above the names give each name the column's full width; the scores share
             one row, so they line up even if a long name wraps. */}
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-4 gap-y-1">
-          <Side team={game.away} row={row.get(game.away.id) ?? null} />
+          <Side team={game.away} rank={rank.get(game.away.id) ?? null} rec={pick.away_record} />
           <span className="self-center pt-8 text-sm text-muted-foreground">
             {game.neutral ? "vs." : "at"}
           </span>
-          <Side team={game.home} row={row.get(game.home.id) ?? null} alignEnd />
+          <Side
+            team={game.home}
+            rank={rank.get(game.home.id) ?? null}
+            rec={pick.home_record}
+            alignEnd
+          />
           <Score value={final ? final.away_points : p.proj_away} />
           <span aria-hidden />
           <Score value={final ? final.home_points : p.proj_home} alignEnd />
@@ -122,14 +127,16 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
 
 function Side({
   team,
-  row,
+  rank: current,
+  rec,
   alignEnd = false,
 }: {
   team: TeamRef
-  row: RankedTeam | null
+  rank: number | null // in the chosen ranking's Top 25, if there
+  rec: TeamRecord | null | undefined // from the pick (any team, ranked or not; #155)
   alignEnd?: boolean
 }) {
-  const rank = row && row.rank <= 25 ? `#${row.rank} ` : ""
+  const rank = current !== null && current <= 25 ? `#${current} ` : ""
   return (
     <div
       className={cn(
@@ -151,9 +158,9 @@ function Side({
           {team.school}
         </span>
       </Link>
-      {row && (
+      {rec && (
         <span className="text-sm text-muted-foreground">
-          {record(row.wins, row.losses, row.ties)}
+          {record(rec.wins, rec.losses, rec.ties)}
         </span>
       )}
     </div>

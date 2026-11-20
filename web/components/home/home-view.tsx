@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import type { GameOfWeekView, RankedTeam, RankingType } from "@/lib/api/types"
+import type { GameOfWeekView, RankingType, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 
 import { GameOfWeekCard } from "./game-of-week"
@@ -14,7 +14,7 @@ type Pick = { pick: GameOfWeekView | null; when: string | null }
 export type HomePicks = Record<Division, PerType<Pick>>
 
 type Props = {
-  rails: Record<Division, PerType<RankedTeam[]>>
+  rails: Record<Division, PerType<TopTeam[]>>
   picks: HomePicks
 }
 
