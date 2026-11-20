@@ -180,6 +180,7 @@ Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI 
   - Comparison: closing line, SP+, Elo baseline
 - Hyperparameters (λ, k, w, decay, HFA, σ) are tuned on 2015–2022 and **validated on 2023–2025**. Don't tune on the validation seasons.
 - Every backtest run is saved with its params and git SHA.
+- **Report card:** a private claude.ai artifact (https://claude.ai/artifact/AEndkhJAt49YQNJcWC2i7v, last refreshed 2026-10-20 for v1.2), data from `tsi backtest export`. The owner-only `/model/report` serves the latest saved backtest run.
 
 ## 9c. Second-level yards and power success (v1.5, #122)
 Two more opponent-adjusted components from CFBD's garbage-time-filtered advanced stats feed the predictive stack: **second-level yards** (rushing yards gained 5–10 past the line, per rush; × 38 rushes per game) and **power success** (short-yardage conversion rate; × 8 plays per game). Validation 12.390 → 12.349, train 12.895 → 12.891. Also screened and rejected: line yards, stuff rate, open-field yards, explosiveness, and rush/pass and standard/passing-down success rates.
