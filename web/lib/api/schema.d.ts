@@ -605,6 +605,11 @@ export interface components {
             projected_opponent: number | null;
             /** Projected Team */
             projected_team: number | null;
+            /**
+             * Rebuilt
+             * @default false
+             */
+            rebuilt: boolean;
             result: components["schemas"]["Score"] | null;
             /** Season Type */
             season_type: string;
@@ -666,6 +671,11 @@ export interface components {
              */
             published_at: string;
             raw: components["schemas"]["RawForecast"] | null;
+            /**
+             * Rebuilt
+             * @default false
+             */
+            rebuilt: boolean;
             /** Rho */
             rho: number;
             /** Sigma Margin */

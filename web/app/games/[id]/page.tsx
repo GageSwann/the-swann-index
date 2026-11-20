@@ -8,6 +8,7 @@ import { GameHeader } from "@/components/game/game-header"
 import { MarginChart } from "@/components/charts/lazy"
 import { OddsBoard } from "@/components/game/odds-board"
 import { PredictionHistory } from "@/components/game/prediction-history"
+import { RebuiltNote } from "@/components/game/rebuilt-note"
 import { RatingTrendChart } from "@/components/charts/lazy"
 import { TaleOfTape } from "@/components/game/tale-of-tape"
 import { PageHeading } from "@/components/layout/page-heading"
@@ -67,6 +68,7 @@ async function GameCenterView({ params }: Props) {
       </h1>
       <GameHeader game={game} home={home} away={away} />
       {p && <AdjustedNote prediction={p} game={game} className="max-w-[70ch]" />}
+      {p && <RebuiltNote prediction={p} className="max-w-[70ch]" />}
       {p && center.markets ? (
         <>
           <OddsBoard center={center} />
@@ -93,7 +95,7 @@ async function GameCenterView({ params }: Props) {
       ) : (
         <p className="text-muted-foreground">
           {game.result
-            ? "TSI didn't publish a prediction for this game (predictions began Oct 20, 2026)."
+            ? "TSI has no prediction for this game."
             : "TSI hasn't published a prediction for this game yet. It appears after the next daily run once the game is within eight days."}
         </p>
       )}
@@ -113,7 +115,7 @@ async function GameCenterView({ params }: Props) {
           </section>
         </>
       )}
-      <PredictionHistory game={game} history={center.history} />
+      {!p?.rebuilt && <PredictionHistory game={game} history={center.history} />}
     </div>
   )
 }

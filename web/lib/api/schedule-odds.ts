@@ -6,14 +6,15 @@ export type GameOdds = {
   spread: number // team's view, negative = favored
   teamPoints: number
   opponentPoints: number
-  source: "published" | "forecast"
+  source: "published" | "rebuilt" | "forecast"
   adjusted: boolean // includes manual adjustments
 }
 
 /**
  * Odds for every schedule game TSI has a view on: the published snapshot when there is
- * one (finished games keep their locked pre-game prediction), else last night's season
- * simulation forecast for games not published yet (#144). No API calls.
+ * one (finished games keep their locked pre-game prediction), or the rebuilt pre-game
+ * forecast of a game TSI never published (#152), else last night's season simulation
+ * forecast for games not published yet (#144). No API calls.
  */
 export function scheduleOdds(schedule: ScheduleGame[]): Map<number, GameOdds> {
   return new Map(
@@ -38,7 +39,7 @@ function publishedOdds(g: ScheduleGame): GameOdds | null {
     spread: g.spread,
     teamPoints: g.projected_team,
     opponentPoints: g.projected_opponent,
-    source: "published",
+    source: g.rebuilt ? "rebuilt" : "published",
     adjusted: g.adjusted,
   }
 }
