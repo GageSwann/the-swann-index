@@ -1493,6 +1493,11 @@
             ],
             "title": "Projected Team"
           },
+          "rebuilt": {
+            "default": false,
+            "title": "Rebuilt",
+            "type": "boolean"
+          },
           "result": {
             "anyOf": [
               {
@@ -1676,6 +1681,11 @@
                 "type": "null"
               }
             ]
+          },
+          "rebuilt": {
+            "default": false,
+            "title": "Rebuilt",
+            "type": "boolean"
           },
           "rho": {
             "title": "Rho",

@@ -75,6 +75,9 @@ class SnapshotView:
     adjusted: bool
     raw: RawForecast | None  # the raw model's numbers, when adjusted
     adjustments: list[AdjustmentNote]
+    # Replayed later for a game TSI never published (#152): `published_at` is then the
+    # morning it was rebuilt for, using only games played before it.
+    rebuilt: bool = False
 
 
 @dataclass(frozen=True)

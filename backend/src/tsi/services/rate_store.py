@@ -18,7 +18,10 @@ from tsi.services.rate import LiveRatings
 
 
 def save_live_ratings(
-    session_factory: sessionmaker[Session], live: LiveRatings, artifact: ModelArtifact
+    session_factory: sessionmaker[Session],
+    live: LiveRatings,
+    artifact: ModelArtifact,
+    extra_params: dict[str, Any] | None = None,  # e.g. a rebuilt day's marker (#152)
 ) -> int:
     with session_factory.begin() as session:
         season_type, week = calendar_week(session, live.season, live.as_of)
@@ -47,6 +50,7 @@ def save_live_ratings(
                     "fcs": _fcs_fallback(live),
                     "lower": live.rankings.ratings.get(0, "ii", live.season).rating,
                 },
+                **(extra_params or {}),
             },
             git_sha=current_git_sha(),
         )

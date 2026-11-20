@@ -94,6 +94,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | `adjustments` | id, season, team_id, off_points, def_points, reason, starts_at, ends_at (null = rest of season), expired_at, created_at. Covers the team's games kicking off in [starts_at, ends_at); never deleted (decision #103) |
 | `sim_results` | run_id (the nightly rating run whose inputs it used), team_id, expected_wins, win_dist (double[]), win_out_prob, title_game_prob, conference_title_prob (null for independents), playoff_prob, bye_prob, seed_dist (double[12]), quarterfinal/semifinal/final/champion_prob (null outside the regular season, #101). Settings in that run's `params.sim` (#98) |
 | `games_of_week` | poll_date (the poll week's Sunday, Eastern), division, ranking_type (unique together), season, game_id, picked_at, score with its parts (quality, closeness, stakes), both teams' ranks and playoff/title swings; written once per poll week by the nightly run, never updated (#141) |
+| `rebuilt_forecasts` | game_id + variant (PK), run_id (the rebuilt day's rating run, nullable), as_of (the replayed 11:00 UTC cutoff), the same forecast and price columns as `predictions`, adjustment_ids. What TSI would have said before a game it never published (13.8, #152): never a published snapshot, never picks; the API shows it, marked `rebuilt`, only for games with no published snapshot |
 
 ## API (read-only, v1)
 
@@ -119,7 +120,7 @@ Behavior (decision #60):
 - **Week board** lists games with at least one FBS team. **Rankings** read the latest live rating run (optionally within a week); records come from completed games before that run.
 - **No Book data in public responses (#139):** snapshots carry no TSI Book prices or picks, and the game center's markets are `FairMarkets` (TSI's probability + no-vig odds per line; `services/read/fair_markets.py`). Picks are still published and graded nightly; the owner reads them through `/book/ledger` (with the key), the CLI and the weekly review.
 - **Ledger** = picks on locked snapshots (`pending`/`graded`) plus `open` picks on not-yet-started games (may still change).
-- **Team schedules** show the published snapshot when there is one, else the nightly season sim's stored forecast (`sim_game_forecasts`, #145). The matchup tool (`/matchup`) was removed in #145.
+- **Team schedules** show the published snapshot when there is one, else a rebuilt forecast for games TSI never published (`rebuilt_forecasts`, #152), else the nightly season sim's stored forecast (`sim_game_forecasts`, #145). The matchup tool (`/matchup`) was removed in #145.
 - `season` defaults to the current season everywhere; unknown team/game → 404.
 
 ## Data flow per week (in season)

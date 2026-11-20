@@ -1,0 +1,66 @@
+# Manual only: rebuild every day of the current season the nightly job never ran (roadmap
+# 13.8, decision #152) on the production database (Neon `production`, DATABASE_URL secret).
+#   Actions tab -> "Rebuild missing days" -> Run workflow, or
+#   gh workflow run rebuild.yml            (verify, then rebuild and refresh the site)
+#   gh workflow run rebuild.yml -f dry_run=true
+# First it replays the newest nightly run and stops unless every rating and forecast
+# matches exactly. Then it stores rating runs (params.job = "rebuild"), rebuilt forecasts
+# (never published snapshots, never picks), and on Sundays the sim and games of the week.
+# Re-running only fills what is still missing. Neon: ~3 MB read per day rebuilt.
+name: Rebuild missing days
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Compute every day, store nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-refresh # never overlap the nightly job
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0 # exact tag: setup-uv has no floating major tag
+
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Verify the replay on the newest nightly run
+        run: uv run tsi rebuild verify
+
+      - name: Rebuild missing days
+        run: uv run tsi rebuild season ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      # Pages show rebuilt forecasts only once Render serves the API that reads them, so
+      # wait (up to ~10 min) for the live API's `rebuilt` field before refreshing.
+      - name: Refresh the site
+        if: ${{ !inputs.dry_run && vars.SITE_URL != '' && vars.TSI_API_URL != '' }}
+        working-directory: .
+        env:
+          API_URL: ${{ vars.TSI_API_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          REVALIDATE_TOKEN: ${{ secrets.REVALIDATE_TOKEN }}
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS --max-time 90 "$API_URL/teams/notre-dame" | grep -q '"rebuilt"'; then break; fi
+            echo "API doesn't serve 'rebuilt' yet; waiting 30 s ($i/20)"; sleep 30
+          done
+          curl -fsS -X POST -H "Authorization: Bearer $REVALIDATE_TOKEN" "$SITE_URL/api/revalidate"

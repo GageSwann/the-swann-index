@@ -47,6 +47,7 @@ class ScheduleGame:
     in_resume: bool  # counts toward the Résumé (decided before the run)
     forecast: ScheduleForecast | None = None  # unpublished, unplayed games only (#144)
     kickoff_tbd: bool = False  # date only: the site never flips it to "in progress" (13.5)
+    rebuilt: bool = False  # the prediction above was rebuilt later (#152), not published
 
 
 def schedule_game(
@@ -95,6 +96,7 @@ def schedule_game(
         benchmark_win_prob=diff.benchmark_win_prob if diff else None,
         in_resume=diff.in_resume if diff else False,
         forecast=_forecast(outlook, home) if snap is None and outcome is None else None,
+        rebuilt=snap is not None and snap.rebuilt,
     )
 
 

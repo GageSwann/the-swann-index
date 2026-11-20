@@ -1,7 +1,7 @@
 from datetime import UTC, date, datetime
 from types import SimpleNamespace
 
-from tsi.services.rebuild import RebuiltDay, cutoff, is_poll_day
+from tsi.services.rebuild import RebuiltDay, cutoff, forecast_day, is_poll_day
 
 
 def test_cutoff_is_the_nightly_time_in_utc():
@@ -17,7 +17,7 @@ def test_poll_day_is_sunday_eastern():
 
 
 def _forecast(start: datetime):
-    return SimpleNamespace(game=SimpleNamespace(start_time=start))
+    return SimpleNamespace(forecast=SimpleNamespace(game=SimpleNamespace(start_time=start)))
 
 
 def test_final_forecasts_keep_games_before_the_next_cutoff():
@@ -30,3 +30,10 @@ def test_final_forecasts_keep_games_before_the_next_cutoff():
     ]
     day = RebuiltDay(as_of=as_of, ratings=None, board=board, sim=None, games_of_week=[])
     assert day.final_forecasts() == board[:2]
+
+
+def test_forecast_day_is_the_last_cutoff_before_kickoff():
+    assert forecast_day(datetime(2026, 11, 14, 17, 0, tzinfo=UTC)) == date(2026, 11, 14)
+    assert forecast_day(datetime(2026, 11, 15, 2, 30, tzinfo=UTC)) == date(2026, 11, 14)
+    assert forecast_day(datetime(2026, 11, 15, 11, 0, tzinfo=UTC)) == date(2026, 11, 14)
+    assert forecast_day(datetime(2026, 11, 15, 11, 1, tzinfo=UTC)) == date(2026, 11, 15)

@@ -3,6 +3,10 @@
 (Grading and de-duplication use the narrower queries in `predictions.py`.)
 Each publish of a game is one `SnapshotRow`: the official row (`adjusted` when the game
 had manual adjustments, decision #104) with the raw model's row attached as `raw`.
+
+`snapshots_for_games` (the public pages) adds a game's rebuilt forecast (#152) as its only
+snapshot when the game has none published; `snapshots_for_season` (the Book's ledger and
+report) never does: rebuilt forecasts are not published and have no picks.
 """
 
 from collections import defaultdict
@@ -16,6 +20,7 @@ from sqlalchemy.orm import Session
 from tsi.db.models import Game, Pick, Prediction
 from tsi.db.queries.filters import one_of
 from tsi.db.queries.predictions import ADJUSTED, OFFICIAL_FIRST
+from tsi.db.queries.rebuilt import rebuilt_rows
 
 
 @dataclass(frozen=True)
@@ -42,6 +47,7 @@ class SnapshotRow:
     variant: str = "raw"
     adjustment_ids: list[int] | None = None
     raw: "SnapshotRow | None" = None  # the raw model's row of the same publish, if adjusted
+    rebuilt: bool = False  # replayed later (#152): `published_at` is the replayed cutoff
 
     @property
     def adjusted(self) -> bool:
@@ -108,9 +114,27 @@ def _by_game(rows: Iterable) -> dict[int, list[SnapshotRow]]:
 
 
 def snapshots_for_games(session: Session, game_ids: Iterable[int]) -> dict[int, list[SnapshotRow]]:
-    """game id -> every snapshot, oldest first."""
-    query = select(*SNAPSHOT_COLUMNS).where(one_of(Prediction.game_id, game_ids)).order_by(*ORDER)
-    return _by_game(session.execute(query))
+    """game id -> every snapshot, oldest first; a rebuilt forecast for games never published."""
+    ids = list(game_ids)
+    query = select(*SNAPSHOT_COLUMNS).where(one_of(Prediction.game_id, ids)).order_by(*ORDER)
+    out = _by_game(session.execute(query))
+    missing = [i for i in ids if not out.get(i)]
+    if missing:
+        out.update(_rebuilt_by_game(rebuilt_rows(session, missing)))
+    return out
+
+
+def _rebuilt_by_game(rows: Iterable) -> dict[int, list[SnapshotRow]]:
+    """One rebuilt SnapshotRow per game (official first; the raw twin attached if adjusted).
+    Rebuilt rows have no prediction id: they get the game's negated id, which no pick has."""
+    out: dict[int, list[SnapshotRow]] = {}
+    for game_id, as_of, *values in rows:
+        snap = SnapshotRow(-game_id, game_id, as_of, *values, rebuilt=True)
+        if game_id in out:
+            out[game_id] = [replace(out[game_id][0], raw=snap)]
+        else:
+            out[game_id] = [snap]
+    return out
 
 
 def snapshots_for_season(session: Session, season: int) -> dict[int, list[SnapshotRow]]:

@@ -94,6 +94,8 @@ uv run tsi model elo-carry      # after each season: Elo through last season for
 uv run tsi model elo            # Elo baseline vs. closing line, by season
 uv run tsi model compare-sp     # sanity check: TSI final ratings vs. SP+ final
 uv run tsi sim season           # projected wins, win out, conference title and playoff odds (--sims, --top)
+uv run tsi rebuild verify [RUN_ID]  # replay a stored nightly run; exit 1 unless every rating and forecast matches (#152)
+uv run tsi rebuild season       # fill missing days: rating runs, rebuilt forecasts, Sunday sims + games of the week (--dry-run; production: gh workflow run rebuild.yml)
 uv run tsi adjust add TEAM --off -4 --reason "QB out"   # manual adjustment (--def, --from/--through); `adjust list [--all]`, `adjust expire N`, `adjust report`
 
 # Operations (production; see the tsi-weekly-run skill)

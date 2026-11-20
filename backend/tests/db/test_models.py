@@ -23,6 +23,7 @@ def test_all_schema_tables_registered() -> None:
         "sim_game_forecasts",
         "adjustments",
         "games_of_week",
+        "rebuilt_forecasts",
     }
 
 
