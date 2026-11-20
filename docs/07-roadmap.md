@@ -18,7 +18,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [ ] **Vercel:** ISR writes grow ~60–100 a day (31K on Nov 20; were ~1,000 a day); image transformations stay under 5K (4.7K on Nov 20) until Vercel's period resets.
 - [ ] **12.1:** a week of nightly runs that start at 11:0x UTC from cron-job.org with no 14:23 backup run (built #126; three morning runs failed on a slow CFBD before #144 fixed the client). First: Nov 21.
 - [ ] **12.5:** on Sunday Nov 22, ranking arrows and biggest movers match the previous Sunday's ranks (built #134; never checked live).
-- [x] **Games of the week:** Kentucky at Missouri (FBS Résumé, 0.00) is the rule working: no game this week has two Résumé Top 25 teams, so the tiebreakers pick it; the replayed Sunday chose the same games (#152). The score now counts every rank in the division (#153), so this pick reads 0.80, not 0.00.
+- [x] **Games of the week:** Kentucky at Missouri (FBS Résumé, 0.00) is the rule working: no game this week has two Résumé Top 25 teams, so the tiebreakers pick it; the replayed Sunday chose the same games (#152). The score now counts every rank in the division (#153; picks from Sunday Nov 22 on; this week's stored rows keep their old, unshown score).
 - [ ] **By Nov 30: keep or remove the Neon add-on.** If the daily figures fit (under ~80 MB a day on average), remove it so the Dec 1 period is free; if not, find the cause first.
 
 ## Next
