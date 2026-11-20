@@ -10,9 +10,9 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 
 **Reset day, in order** (confirm each step before the next):
 - [x] Neon answers: `curl -s -o /dev/null -w "%{http_code}" https://tsi-api-44wx.onrender.com/meta/current` → 200. Note the project's network transfer on the Neon Overview (should be ~0). *(2026-11-20: the owner added Neon's $5 limit increase for one period (25 GB) to come back before Dec 1; the new period runs Nov 20 – Dec 1 and started at **0 GB**. Remove the add-on only after a new period starts, once the daily figures show the free 5 GB fits.)*
-- [ ] Production's Elo fingerprint matches `elo_carry.json` (`completed_games_fingerprint(s, 2025)`, ~32 bytes). If not, runs log "replaying all seasons" and lose the #146 saving: rebuild the file on a local copy.
+- [x] Production's Elo fingerprint matches `elo_carry.json` (`completed_games_fingerprint(s, 2025)`, ~32 bytes). If not, runs log "replaying all seasons" and lose the #146 saving: rebuild the file on a local copy.
 - [x] Deploy the API: Render **Manual Deploy** of the latest `main` (CI was red, so nothing deployed since `6713d3f`). Confirm `/matchup` → 404, and `/teams/notre-dame` schedule rows carry `kickoff_tbd` and `forecast`. *(2026-11-20: Manual Deploy of `34e5cf8`; confirmed.)*
-- [ ] Turn the nightly job back on (`gh workflow enable daily-refresh.yml`) and run it once (`gh workflow run daily-refresh.yml`): success, no `ingest FAILED`, no "replaying all seasons".
+- [x] Turn the nightly job back on (`gh workflow enable daily-refresh.yml`) and run it once (`gh workflow run daily-refresh.yml`): success, no `ingest FAILED`, no "replaying all seasons". *(2026-11-20 21:25 UTC: both clean, so the fingerprint matches; 182 games published, the Nov 9–20 picks graded, 60 pages refreshed.)*
 - [ ] Redeploy the site, only after the API serves `kickoff_tbd` (Vercel → Deployments → Redeploy, or push the pending web change below). Check: no Matchup in the nav, the Playoffs bracket, This week, a team schedule with forecasts for games beyond 8 days (marked "not yet published").
 - [ ] CI green again.
 
