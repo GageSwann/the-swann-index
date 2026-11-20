@@ -104,3 +104,12 @@ def test_only_games_before_the_end_of_the_next_sunday() -> None:
 def test_a_game_across_divisions_is_never_picked() -> None:
     mixed = forecast(103, 1, 11, 0.0, "fbs", away_div="fcs")
     assert pick_games_of_week([mixed], RANKINGS, {}, NOW) == []
+
+
+def test_quality_counts_every_ranked_team_not_just_the_top_25():
+    from tsi.services.games_of_week import _rank_value
+
+    assert _rank_value(1, 138) == 1.0
+    assert _rank_value(29, 138) == pytest.approx(110 / 138)  # #16 vs #29 is no longer 0
+    assert _rank_value(138, 138) == pytest.approx(1 / 138)
+    assert _rank_value(10_000, 138) == 0.0  # unranked

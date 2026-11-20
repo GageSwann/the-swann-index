@@ -23,7 +23,6 @@ from tsi.services.predict import GameForecast
 from tsi.sim.stakes import GameStakes, stakes_value
 
 EASTERN = ZoneInfo("America/New_York")
-RANKED = 25
 UNRANKED = 10_000  # a team missing from the ranking sorts after every ranked one
 DIVISIONS = (RATED_DIVISION, FCS)
 RANKING_TYPES = ("power", "resume")
@@ -35,7 +34,7 @@ class GameOfWeekPick:
     ranking_type: str  # power / resume
     game_id: int
     score: float  # the lower-ranked team's rank value (= quality); the pick sorts on ranks
-    quality: float  # 0..1: the lower-ranked team's rank (#1 -> 1, #25 -> 0.04, beyond -> 0)
+    quality: float  # 0..1: the lower-ranked team's rank in its whole division (#1 -> 1)
     closeness: float  # 0..1: TSI's win probability near 50% (tie-break)
     stakes: float  # 0..1: playoff and title odds riding on it (shown, not used to pick)
     home_rank: int | None  # in the chosen ranking, within the division
@@ -78,7 +77,10 @@ def pick_games_of_week(
         ]
         for kind in RANKING_TYPES:
             ranks = _ranks(rows, kind)
-            scored = [_score(f, division, kind, ranks, stakes.get(f.game.id)) for f in candidates]
+            size = len(rows)
+            scored = [
+                _score(f, division, kind, ranks, size, stakes.get(f.game.id)) for f in candidates
+            ]
             if scored:
                 picks.append(min(scored, key=_order))
     return picks
@@ -99,12 +101,13 @@ def _score(
     division: str,
     kind: str,
     ranks: dict[int, int],
+    size: int,  # teams ranked in the division
     stakes: GameStakes | None,
 ) -> GameOfWeekPick:
     g = f.game
     home_rank, away_rank = ranks.get(g.home_id), ranks.get(g.away_id)
     worse = max(home_rank or UNRANKED, away_rank or UNRANKED)
-    quality = _rank_value(worse)
+    quality = _rank_value(worse, size)
     p = f.distribution.home_win_prob
     closeness = 1 - abs(2 * p - 1)
     worth = 0.0 if stakes is None else (stakes_value(stakes.home) + stakes_value(stakes.away)) / 2
@@ -126,6 +129,7 @@ def _score(
     )
 
 
-def _rank_value(rank: int) -> float:
-    """#1 -> 1, #25 -> 0.04, outside the Top 25 -> 0."""
-    return max(0, RANKED + 1 - rank) / RANKED
+def _rank_value(rank: int, size: int) -> float:
+    """Over every ranked team of the division (owner, 2026-11-20; was the Top 25 only):
+    #1 -> 1, last -> 1/size, unranked -> 0."""
+    return max(0, size + 1 - rank) / size if size else 0.0
