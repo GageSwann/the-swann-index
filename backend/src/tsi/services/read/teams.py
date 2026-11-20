@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from tsi.db.queries.adjustments import season_adjustments
 from tsi.db.queries.games import team_games
-from tsi.db.queries.runs import rating_runs
+from tsi.db.queries.runs import latest_rating_run, rating_history
 from tsi.db.queries.sim import stored_outlooks, stored_sims
 from tsi.db.queries.snapshots import snapshots_for_games
 from tsi.db.queries.team_info import (
@@ -92,9 +92,8 @@ def team_profile(
     refs = team_refs(
         session, season, {team_id} | {g.home_id for g in games} | {g.away_id for g in games}
     )
-    runs = rating_runs(session, season)
-    history_rows = stored_ratings(session, [r.id for r in runs], team_id)
-    latest = runs[-1] if runs else None
+    latest = latest_rating_run(session, season)
+    latest_rows = stored_ratings(session, [latest.id], team_id).get(latest.id, []) if latest else []
     # Same rule as `records()`: completed, scored and kicked off before now.
     finished = [
         (g.home_id, g.away_id, g.home_points, g.away_points)
@@ -120,12 +119,13 @@ def team_profile(
         wins=rec.wins,
         losses=rec.losses,
         ties=rec.ties,
-        ratings=_ratings(history_rows.get(latest.id, [])) if latest and rated else None,
+        ratings=_ratings(latest_rows) if latest and rated else None,
         history=[
-            point
-            for run in runs
-            if rated
-            and (point := _point(run.run_at, run.week, history_rows.get(run.id, []))) is not None
+            RatingPoint(
+                h.run_at, h.week, h.rating, h.rank_power, h.rank_resume, h.predictive_rating
+            )
+            for h in (rating_history(session, season, team_id) if rated else [])
+            if h.rating is not None  # runs without a season rating (the first days) are skipped
         ],
         schedule=[
             schedule_game(g, team_id, refs, snaps.get(g.id, []), now, ctx, outlooks.get(g.id))
@@ -159,10 +159,3 @@ def _ratings(rows: list[StoredRating]) -> TeamRatings | None:
         predictive_rating=pred.rating if pred else None,
         predictive_rank=pred.rank_power if pred else None,
     )
-
-
-def _point(as_of: datetime, week: int, rows: list[StoredRating]) -> RatingPoint | None:
-    r = _ratings(rows)
-    if r is None:
-        return None
-    return RatingPoint(as_of, week, r.rating, r.rank_power, r.rank_resume, r.predictive_rating)

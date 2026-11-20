@@ -9,10 +9,12 @@ from sqlalchemy.orm import Session
 from tsi.db.queries.runs import run_and_baseline, run_params
 from tsi.db.queries.sim import StoredSim, stored_sims
 from tsi.db.queries.team_info import (
+    RankRow,
     Record,
     StoredRating,
     TeamRef,
     records,
+    season_ranks,
     stored_ratings,
     team_refs,
 )
@@ -82,8 +84,7 @@ def rankings(
     run, previous = run_and_baseline(session, season, week, season_type)
     if run is None:
         return None
-    stored = stored_ratings(session, [run.id] + ([previous.id] if previous else []))
-    rows = stored.get(run.id, [])
+    rows = stored_ratings(session, [run.id]).get(run.id, [])
     season_rows = [r for r in rows if r.basis == "season"]
     predictive = {r.team_id: r for r in rows if r.basis == "predictive"}
     teams = team_refs(session, season, [r.team_id for r in season_rows])
@@ -96,8 +97,8 @@ def rankings(
     ranked = sorted((r for r in season_rows if r.team_id in rank), key=lambda r: rank[r.team_id])
     previous_rows = [
         r
-        for r in (stored.get(previous.id, []) if previous else [])
-        if r.basis == "season" and r.team_id in teams and teams[r.team_id].division in listed
+        for r in (season_ranks(session, previous.id) if previous else [])
+        if r.team_id in teams and teams[r.team_id].division in listed
     ]
     # Movement only when the earlier run ranked every listed division (the first FCS
     # rankings would otherwise all read "new", and "all" would mix in phantom moves).
@@ -137,7 +138,9 @@ def rankings(
     )
 
 
-def _ranks(rows: list[StoredRating], key: str, division: Division) -> dict[int, int]:
+def _ranks(
+    rows: list[StoredRating] | list[RankRow], key: str, division: Division
+) -> dict[int, int]:
     """team -> rank: the stored (within-division) rank, or for "all" by rating."""
     ranked = [r for r in rows if getattr(r, key) is not None]
     if division != "all":

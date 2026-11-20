@@ -164,3 +164,22 @@ def tally_records(results: Iterable[tuple[int, int, int, int]]) -> dict[int, Rec
             tally[winner][0] += 1
             tally[loser][1] += 1
     return {team: Record(*t) for team, t in tally.items()}
+
+
+@dataclass(frozen=True)
+class RankRow:
+    """A team's season-set rating and ranks in one run: all a movement baseline needs."""
+
+    team_id: int
+    rating: float
+    rank_power: int | None
+    rank_resume: int | None
+
+
+def season_ranks(session: Session, run_id: int) -> list[RankRow]:
+    """The season set's rating and ranks of every team in a run (rankings' Sunday baseline:
+    a quarter of the bytes of both sets' full rows, #154)."""
+    query = select(
+        TeamRating.team_id, TeamRating.rating, TeamRating.rank_power, TeamRating.rank_resume
+    ).where(TeamRating.run_id == run_id, TeamRating.variant == "raw", TeamRating.basis == "season")
+    return [RankRow(*row) for row in session.execute(query)]

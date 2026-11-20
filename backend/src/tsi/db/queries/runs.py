@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import Select, exists, select
+from sqlalchemy import Select, exists, func, select
 from sqlalchemy.orm import Session
 
 from tsi.db.models import ModelRun, TeamRating
@@ -95,3 +95,47 @@ def rating_runs(session: Session, season: int) -> list[RunInfo]:
 def run_params(session: Session, run_id: int) -> dict:
     """A run's saved parameters (e.g. `season_hfa`, `resume_benchmark`)."""
     return session.scalar(select(ModelRun.params).where(ModelRun.id == run_id)) or {}
+
+
+def latest_rating_run(session: Session, season: int) -> RunInfo | None:
+    """The newest live rating run of a season (the one pages show)."""
+    row = session.execute(newest_first(rating_runs_query(season)).limit(1)).first()
+    return None if row is None else RunInfo(*row)
+
+
+@dataclass(frozen=True)
+class HistoryPoint:
+    """One team in one rating run: what its rating chart needs, and nothing more."""
+
+    run_at: datetime
+    week: int
+    rating: float | None  # season set; None when the run has no season rating for it
+    rank_power: int | None
+    rank_resume: int | None
+    predictive_rating: float | None
+
+
+def rating_history(session: Session, season: int, team_id: int) -> list[HistoryPoint]:
+    """Every live rating run of a season with this team's chart values, oldest first: one
+    compact row per run (the full rows of both rating sets cost ~5x more, #154)."""
+    season_row = TeamRating.basis == "season"
+    query = (
+        select(
+            ModelRun.run_at,
+            ModelRun.week,
+            func.max(TeamRating.rating).filter(season_row),
+            func.max(TeamRating.rank_power).filter(season_row),
+            func.max(TeamRating.rank_resume).filter(season_row),
+            func.max(TeamRating.rating).filter(TeamRating.basis == "predictive"),
+        )
+        .join(TeamRating, TeamRating.run_id == ModelRun.id)
+        .where(
+            ModelRun.kind == "live",
+            ModelRun.season == season,
+            TeamRating.team_id == team_id,
+            TeamRating.variant == "raw",
+        )
+        .group_by(ModelRun.id)
+        .order_by(ModelRun.run_at, ModelRun.id)
+    )
+    return [HistoryPoint(*row) for row in session.execute(query)]

@@ -47,8 +47,8 @@ Re-measured 2026-11-20 (local copy with the rebuilt season: ~90 rating runs, #15
 |---|---|
 | Nightly `tsi run --no-ingest` | **2.14 MB** (ingest adds ~1 MB) |
 | Full site build (`npm run build`, 120 pages) | **9.95 MB** |
-| `/rankings` (any type/division) | ~265 KB (157 KB of it both rating sets of two runs) |
-| `/teams/{slug}` | ~42 KB warm, ~86 KB cold (24 KB of it the rating history: every column of both sets for every run) |
+| `/rankings` (any type/division) | ~265 KB; **~200 KB** after #154 (the baseline reads ranks only) |
+| `/teams/{slug}` | ~42 KB warm; **~20 KB** after #154 (one compact history row per run) |
 | `/weeks/{s}/{w}/games` | 80–100 KB this week, ~170 KB an older week |
 | `/playoff` | ~152 KB |
 | `/games-of-week` · `/games/{id}` | ~6 KB · ~3 KB |
