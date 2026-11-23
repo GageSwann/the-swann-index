@@ -16,7 +16,7 @@ The plan lives in `docs/`. Read the roadmap and the doc for the area you're touc
 - `docs/03-data-sources.md`: CFBD endpoints, caching, call budget, data conventions, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model, Book and season-sim math, with backtest results
 - `docs/06-frontend.md`: design system, lighting, page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#156 so far). Never rewrite old entries.
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#157 so far). Never rewrite old entries.
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -42,7 +42,7 @@ The plan lives in `docs/`. Read the roadmap and the doc for the area you're touc
 - **A forecast** = components (opponent-adjusted ridge fits) → margin and totals stacks (learned on FBS-vs-FBS games) → rest/bye (v1.4) → FBS-vs-FCS scale (v1.6) → lopsided-game total bump + underdog floor (v1.7) → bivariate-normal distribution priced with key numbers (doc 04 "at a glance").
 - **FCS** is rated individually from 2022 (v1.3) and ranked within its division; picks are FBS-vs-FBS only (#108, #112).
 - **Résumé:** strength of record vs. a typical **#12** team (FCS: **#24 FCS**), opponents' current ratings.
-- **Season sim** (doc 05 §7): published forecasts + a per-team shift; CFP and 24-team FCS playoff projections; each remaining game's forecast stored (`sim_game_forecasts`).
+- **Season sim** (doc 05 §7): published forecasts + a per-team shift; CFP and 24-team FCS playoff projections (once the FCS field is set, the official bracket from `sim/fcs_brackets.py`, entered by hand each selection Sunday, #157); each remaining game's forecast stored (`sim_game_forecasts`).
 - **The Book is owner-only (#139):** no Book or Model page; `/book/*` and `/model/report` need `Authorization: Bearer <OWNER_API_KEY>` (else 404). Picks are still published and graded nightly. TSI has no edge against closing lines; it predicts line moves (positive CLV) and beats opening totals. Edges are shrunk toward the market (k_spread 0.136, k_total 0.309).
 - **Consensus everywhere = median across sportsbooks, aggregators excluded** (#53, #59).
 - Tune on 2015–2022, validate on 2023–2025 (`backtest/splits.py`).

@@ -110,7 +110,7 @@ All tables include `created_at`. Seasons/weeks follow CFBD conventions (`season_
 | GET | `/book/ledger?season` | picks + running record, ROI, CLV; **owner-only** (#139): answers only `Authorization: Bearer <OWNER_API_KEY>`, else the same 404 as an unknown path; left out of the public spec; `Cache-Control: no-store` |
 | GET | `/model/report?season` | latest saved backtest (headline metrics + report tables: accuracy by season/period, calibration, ATS, totals, Book record/calibration/units), model version history, live accuracy (#76); owner-only like the ledger |
 | GET | `/games-of-week` | this poll week's FBS and FCS games of the week for Power and Résumé, each with the week board's game entry, the score's parts and both teams' swings; empty before the first pick (#141) |
-| GET | `/playoff?season` | playoff odds per team (field, bye, rounds, title, fair odds), projected bracket, the format's pairings (#101; 404 outside the regular season) |
+| GET | `/playoff?season&division` | playoff odds per team (field, bye, rounds, title, fair odds), projected bracket, the format's pairings (#101; 404 when the run has no odds). FCS once its field is set: `official: true`, the real field in `projected`, the real games in `games` (score, TSI's shown win chance) (#157) |
 
 Responses are Pydantic-validated **frozen dataclasses** defined once in `services/read/` (one module per resource); FastAPI builds the OpenAPI schema from them, and the spec generates TypeScript types for `web/lib/api.ts`. Routers (`api/routers/`) are thin. Run locally with `tsi serve` (docs at `/docs`). The spec is committed at `docs/api/openapi.json` (`tsi openapi`; a test fails if it's stale); operation ids are the router function names (`get_rankings`, `get_week_games`, ...).
 
