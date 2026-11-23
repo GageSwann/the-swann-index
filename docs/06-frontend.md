@@ -48,8 +48,8 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 
 | Route | Page |
 |---|---|
-| `/` | **Home** (13.4, #141): FBS and FCS games of the week, FBS and FCS Top 25 rails, one Power/Résumé toggle |
-| `/rankings` | **Rankings** (Power/Résumé toggle), FBS (was `/` until 13.4) |
+| `/` | **Home** (13.4, #141): FBS and FCS games of the week, FBS and FCS Top 25 rails, one Résumé/Power toggle (Résumé first and default, #159) |
+| `/rankings` | **Rankings** (Résumé/Power toggle, opens on Résumé, #159), FBS (was `/` until 13.4) |
 | `/rankings/fcs`, `/rankings/all` | FCS rankings; FBS and FCS on one scale (Power only) (#115) |
 | `/week` → `/week/[season]/[week]` | **Matchup board** for the week (defaults to current week), games with an FBS team |
 | `/week/[season]/[week]/fcs`, `…/all` | the same board for games with an FCS team, or either (#115) |
@@ -61,7 +61,7 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 ## Page specs
 
 ### Rankings `/`
-- Toggle: Power | Résumé. Filters: conference, Top 25 / all.
+- Toggle: Résumé | Power (Résumé selected on load, #159; the All view has Power only). Filters: conference, Top 25 / all.
 - Columns: Rank, Δ (movement arrow), Team (logo + name), Record, TSI rating, Off (rank), Def (rank), SOS, SOR, Proj. W (season sim, links to the team's projected record), Conf (conference title %), CFP % (later).
 - Sortable (TanStack Table). Sticky header. Clicking a row opens the team page.
 - Side widget: biggest risers/fallers since the latest Sunday poll (#134). **Built (#88):** "Biggest movers", top 5 each way for the active ranking and conference (ignores Top 25/All), "#52 → #37" with the Δ arrow; beside the table from `xl`, below it otherwise; hidden without a baseline run.
@@ -92,7 +92,7 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 - **Built (decision #72):** this week's games are prerendered and others render on first visit (inside `<Suspense>`; an unknown id streams the not-found page with `noindex`). Sections: score-bug header (final score once over), odds board (TSI's line with its cover/over chance at the nearest bettable line, next to Vegas; no Book prices or plays since #139; team totals have no market data yet), margin density with Tie and Vegas lines (whole-point hover; cover chance from the API's alt-spread ladder, never computed in the browser), alt spread and total ladders with the Vegas rung highlighted, tale of the tape (ranks, rating, off/def, SOS, record; the better side bold), rating trends (home solid, away dashed, direct end labels, neutral away color when the team colors look alike) and prediction history. EPA, success rate, explosiveness and pace in the tape wait for an API addition. Games without a snapshot say why (before Oct 20, 2026, or not yet within eight days).
 
 ### Team page `/teams/[slug]`
-- Header gradient in team colors, logo, record, Power rank, Résumé rank, rating.
+- Header gradient in team colors, logo, record, Résumé rank, Power rank, rating (Résumé first everywhere, #159).
 - **Rating trend** line chart (season, with the preseason prior shown as the starting point).
 - **Efficiency profile:** off/def percentile bars (or radar) vs. FBS.
 - **Schedule table:** each game with opponent, TSI win prob (pre-game for played games, current for upcoming), result, spread result.
@@ -108,9 +108,9 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 - The hypothetical matchup tool (#85) was removed on 2026-11-09 (owner: not the point of the project; it may return later).
 
 ### Home `/` (Phase 13.4, #141, #143; built 2026-11-06)
-- **Layout:** no visible heading (owner). The page opens on **ranking tabs** (`ranking-tabs.tsx`): "Power Rankings" and "Résumé Rankings" in plain medium-weight type, the active one underlined (2 px, no glow), on a hairline, with one sentence on what the active ranking measures ("Power ranks teams by how well they have played this season." / "Résumé ranks teams by what they have accomplished: their record against their schedule."). Below: FBS Top 25 rail left, FCS Top 25 rail right (15.5 rem, 18 rem from `xl`), the two games of the week stacked in the middle. **The three columns share one height** on desktop: the FCS card and the rails' rows stretch, so the cards and the lists end level whatever the names (owner). Phones and tablets: games first, then the two rails (side by side from `sm`).
+- **Layout:** no visible heading (owner). The page opens on **ranking tabs** (`ranking-tabs.tsx`): "Résumé Rankings" (selected on load) and "Power Rankings" in plain medium-weight type, the active one underlined (2 px, no glow), on a hairline, with one sentence on what the active ranking measures ("Power ranks teams by how well they have played this season." / "Résumé ranks teams by what they have accomplished: their record against their schedule."). Below: FBS Top 25 rail left, FCS Top 25 rail right (15.5 rem, 18 rem from `xl`), the two games of the week stacked in the middle. **The three columns share one height** on desktop: the FCS card and the rails' rows stretch, so the cards and the lists end level whatever the names (owner). Phones and tablets: games first, then the two rails (side by side from `sm`).
 - **Game card** (`game-of-week.tsx`): its title ("FBS Game of the Week", title case like every heading on the home page, owner) sits above the card like the rails' titles. Inside: kickoff (ET, formatted on the server; "Final." once played), each team's **logo above its name** (so a long name like "Stephen F. Austin" gets the column's full width), the current rank in the chosen ranking and record, the projected (or final) score on its own row, the win-probability bar, and **TSI's spread, total and moneyline only** as a three-column stat strip (label above both sides, thin dividers: "TSI Spread" with each team's fair spread, "TSI Total" with Over and Under, "TSI Moneyline" with each team's fair price; away on top, home below like the card; owner, 2026-11-23); a **"Predicted Score" badge** across from the kickoff time says the big numbers are TSI's prediction ("Final" once played, with the real score) (owner; owner: no Vegas line or explanation paragraph on the home page; the game center has the rest). Both cards share the column's height and spread their content evenly. **The whole card opens the game center** (a stretched link under the content), except the team names and logos, which sit above it and open the team pages; on hover it lights with `.tsi-lit-hover` in plain white/black, no border light (owner). Before the first pick a card says the games of the week are chosen each Sunday.
-- **Rails** (`rankings-rail.tsx`): title ("FBS Power Top 25") with a "Full Rankings" link beside it; rows with the rank (left-aligned, no gap at the edge), ringed logo, school, record and movement since the Sunday poll (hidden while a division has no previous poll); rows light in the team's color on hover (`li.tsi-row-light`).
+- **Rails** (`rankings-rail.tsx`): title ("FBS Résumé Top 25") with a "Full Rankings" link beside it; rows with the rank (left-aligned, no gap at the edge), ringed logo, school, record and movement since the Sunday poll (hidden while a division has no previous poll); rows light in the team's color on hover (`li.tsi-row-light`).
 - **Picks** come from `/games-of-week`: by the chosen ranking alone, the game whose lower-ranked team is ranked highest (#142), picked with Sunday's rankings and held all week.
 
 ### TSI Book and Model pages: removed (Phase 13.3, #139)

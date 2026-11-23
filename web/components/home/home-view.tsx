@@ -27,7 +27,7 @@ const LABEL: Record<RankingType, string> = { power: "Power", resume: "Résumé" 
  * Phones: games first, then the lists.
  */
 export function HomeView({ rails, picks }: Props) {
-  const [type, setType] = useState<RankingType>("power")
+  const [type, setType] = useState<RankingType>("resume") // Résumé first (owner, 2026-11-23, #159)
   return (
     <div className="space-y-6">
       <RankingTabs value={type} onChange={setType} />

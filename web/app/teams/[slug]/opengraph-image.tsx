@@ -16,8 +16,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const division = teamDivision(team)
   const stats = r
     ? [
-        ["Power", r.rank_power ? rankText(r.rank_power, division) : "—"],
         ["Résumé", r.rank_resume ? rankText(r.rank_resume, division) : "—"],
+        ["Power", r.rank_power ? rankText(r.rank_power, division) : "—"],
         ["Rating", signed(r.rating)],
       ]
     : [["Rating", "Not rated"]]

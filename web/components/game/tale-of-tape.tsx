@@ -10,13 +10,13 @@ type Stat = {
 }
 
 const STATS: Stat[] = [
-  { label: "Power rank", value: (t) => t.ratings?.rank_power, show: (v) => `#${v}`, better: "low" },
   {
     label: "Résumé rank",
     value: (t) => t.ratings?.rank_resume,
     show: (v) => `#${v}`,
     better: "low",
   },
+  { label: "Power rank", value: (t) => t.ratings?.rank_power, show: (v) => `#${v}`, better: "low" },
   { label: "Rating", value: (t) => t.ratings?.rating, show: (v) => signed(v), better: "high" },
   { label: "Offense", value: (t) => t.ratings?.off_rating, show: (v) => signed(v), better: "high" },
   { label: "Defense", value: (t) => t.ratings?.def_rating, show: (v) => signed(v), better: "high" },

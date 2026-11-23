@@ -31,10 +31,14 @@ export async function WeekPage({
 
   const [board, rankings, fcsRankings, meta] = await Promise.all([
     getWeekGames(season, week, "regular", division),
-    getRankings({ season, division: division === "fcs" ? "fcs" : "fbs" }).catch(() => null),
+    getRankings({
+      season,
+      type: "resume", // the board shows Résumé ranks (owner, #159)
+      division: division === "fcs" ? "fcs" : "fbs",
+    }).catch(() => null),
     // The All view marks FCS teams' own Top 25 ranks too (Phase 12.6).
     division === "all"
-      ? getRankings({ season, division: "fcs" }).catch(() => null)
+      ? getRankings({ season, type: "resume", division: "fcs" }).catch(() => null)
       : Promise.resolve(null),
     getMeta(),
   ])

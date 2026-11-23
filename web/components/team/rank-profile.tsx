@@ -18,8 +18,8 @@ export function RankProfile({
   division: Division
 }) {
   const rows: Row[] = [
-    { label: "Power", rank: row.rank_power, value: signed(row.rating) },
     { label: "Résumé", rank: row.rank_resume },
+    { label: "Power", rank: row.rank_power, value: signed(row.rating) },
     { label: "Offense", rank: row.off_rank, value: signed(row.off_rating) },
     { label: "Defense", rank: row.def_rank, value: signed(row.def_rating) },
   ]

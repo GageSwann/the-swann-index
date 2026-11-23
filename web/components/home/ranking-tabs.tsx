@@ -5,15 +5,15 @@ import { cn } from "@/lib/utils"
 
 const TABS: { value: RankingType; label: string; about: string }[] = [
   {
-    value: "power",
-    label: "Power Rankings",
-    about: "Power ranks teams by how well they have played this season.",
-  },
-  {
     value: "resume",
     label: "Résumé Rankings",
     about:
       "Résumé ranks teams by what they have accomplished: their record against their schedule.",
+  },
+  {
+    value: "power",
+    label: "Power Rankings",
+    about: "Power ranks teams by how well they have played this season.",
   },
 ]
 

@@ -18,8 +18,8 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
   const rank = (n: number | null | undefined) => (n ? rankText(n, division) : "—")
   const stats = r
     ? [
-        { label: "Power rank", value: rank(r.rank_power) },
         { label: "Résumé rank", value: rank(r.rank_resume) },
+        { label: "Power rank", value: rank(r.rank_power) },
         { label: "Rating", value: signed(r.rating) },
         {
           label: "Predictive",

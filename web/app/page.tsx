@@ -6,7 +6,7 @@ import type { Division } from "@/lib/divisions"
 import { formatDay, formatKickoff } from "@/lib/format/time"
 
 const DIVISIONS: Division[] = ["fbs", "fcs"]
-const TYPES: RankingType[] = ["power", "resume"]
+const TYPES: RankingType[] = ["resume", "power"]
 
 /**
  * Home (Phase 13.4, #141): the games of the week, picked by the nightly run with Sunday's

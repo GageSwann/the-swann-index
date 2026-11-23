@@ -32,8 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return pageMeta({
     ownImage: true,
     title: team.school,
-    description: r?.rank_power
-      ? `${team.school} (${rec}) is ${rankText(r.rank_power, teamDivision(team))} in the TSI Power rankings and ${r.rank_resume ? rankText(r.rank_resume, teamDivision(team)) : "unranked"} in Résumé, rating ${signed(r.rating)}. Schedule, win chances and rating trend.`
+    description: r?.rank_resume
+      ? `${team.school} (${rec}) is ${rankText(r.rank_resume, teamDivision(team))} in the TSI Résumé rankings and ${r.rank_power ? rankText(r.rank_power, teamDivision(team)) : "unranked"} in Power, rating ${signed(r.rating)}. Schedule, win chances and rating trend.`
       : `${team.school} (${rec}): schedule and TSI win chances.`,
   })
 }

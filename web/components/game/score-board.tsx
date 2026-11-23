@@ -57,7 +57,7 @@ function TeamScore({ side, alignEnd = false }: { side: Side; alignEnd?: boolean 
   const { team, profile, score, shown } = side
   const r = profile?.ratings
   const ranks = r
-    ? [r.rank_power && `#${r.rank_power} power`, r.rank_resume && `#${r.rank_resume} résumé`]
+    ? [r.rank_resume && `#${r.rank_resume} résumé`, r.rank_power && `#${r.rank_power} power`]
         .filter(Boolean)
         .join(", ")
     : ""

@@ -40,7 +40,8 @@ type Props = {
 }
 
 export function RankingsView({ power, resume, since, division, benchmarkRank }: Props) {
-  const [type, setType] = useState<RankingType>("power")
+  // Résumé first (owner, #159); "all" has no Résumé view, so it opens on Power.
+  const [type, setType] = useState<RankingType>(resume !== null ? "resume" : "power")
   const [scope, setScope] = useState<"top25" | "all">("top25")
   const [conference, setConference] = useState("")
 
@@ -71,8 +72,8 @@ export function RankingsView({ power, resume, since, division, benchmarkRank }: 
             value={type}
             onChange={setType}
             options={[
-              { value: "power", label: "Power" },
               { value: "resume", label: "Résumé" },
+              { value: "power", label: "Power" },
             ]}
           />
         )}
