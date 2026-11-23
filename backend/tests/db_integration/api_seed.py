@@ -36,7 +36,7 @@ NOW = datetime(2026, 10, 21, 12, 0, tzinfo=UTC)
 SEASON = 2026
 FBS = {1: "Alpha", 2: "Bravo", 3: "Charlie", 4: "Delta"}
 FCS = {5: "Echo", 6: "Foxtrot"}
-WEEK1_RUN_AT = datetime(2026, 10, 14, 10, 0, tzinfo=UTC)
+WEEK1_RUN_AT = datetime(2026, 10, 11, 10, 0, tzinfo=UTC)  # a Sunday: week 2's baseline (#156)
 
 WEEK2_RUN_AT = datetime(2026, 10, 21, 10, 0, tzinfo=UTC)
 LIVE_KICKOFF = datetime(2026, 10, 21, 0, 0, tzinfo=UTC)  # Alpha-Charlie, in progress

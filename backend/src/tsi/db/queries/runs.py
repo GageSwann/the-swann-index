@@ -43,30 +43,30 @@ def newest_first(query: Select) -> Select:
     return query.order_by(ModelRun.run_at.desc(), ModelRun.id.desc())
 
 
-# Movement (rank arrows, biggest movers) compares with the official weekly poll: the last
-# run of the most recent Sunday before the shown run's day, Eastern time (Phase 12.5,
-# owner's rule, #126). Sunday's run comes after Saturday's games, so on a Sunday the
-# arrows show the week's official move (vs. the previous Sunday); Monday to Saturday they
-# show the move since that Sunday, with midweek results.
+# Movement (rank arrows, biggest movers) shows the official weekly poll's move all week:
+# the shown run against the last run of the Sunday before the latest Sunday (Eastern
+# time). Sunday's run comes after Saturday's games, so every day from that Sunday to the
+# next Saturday compares with the previous Sunday; midweek results move the current rank,
+# never the baseline (owner's rule #126, changed by #156: Monday no longer resets to 0).
 EASTERN = ZoneInfo("America/New_York")
-BASELINE_WINDOW = timedelta(days=15)  # runs fetched to find it (a week back, plus gaps)
+BASELINE_WINDOW = timedelta(days=21)  # runs fetched to find it (up to 13 days back, plus gaps)
 
 
 def baseline_cutoff(run_at: datetime) -> datetime:
-    """The end (midnight Eastern) of the most recent Sunday before `run_at`'s Eastern date,
-    in UTC: the baseline is the last run before this moment, so a Sunday without a run
-    falls back to the latest run before it."""
+    """The end (midnight Eastern) of the Sunday before the latest Sunday on or before
+    `run_at`'s Eastern date, in UTC: the baseline is the last run before this moment, so a
+    Sunday without a run falls back to the latest run before it."""
     day = run_at.astimezone(EASTERN).date()
-    since_sunday = (day.weekday() + 1) % 7 or 7  # Mon 1 ... Sat 6, Sun 7 (the previous one)
-    monday_after = day - timedelta(days=since_sunday - 1)
-    return datetime.combine(monday_after, time(0), tzinfo=EASTERN).astimezone(UTC)
+    poll_sunday = day - timedelta(days=(day.weekday() + 1) % 7)  # Sun 0, Mon 1 ... Sat 6
+    monday_after_previous = poll_sunday - timedelta(days=6)
+    return datetime.combine(monday_after_previous, time(0), tzinfo=EASTERN).astimezone(UTC)
 
 
 def run_and_baseline(
     session: Session, season: int, week: int | None = None, season_type: str | None = None
 ) -> tuple[RunInfo | None, RunInfo | None]:
     """The newest rating run (optionally within a week) and its baseline: the last run
-    before the end of the most recent Sunday before it (`baseline_cutoff`, any week), in
+    at the end of the previous week's Sunday poll (`baseline_cutoff`, any week), in
     one round trip. None for the baseline before the season's first Sunday run."""
     anchor = rating_runs_query(season, ModelRun.run_at)
     if week is not None:

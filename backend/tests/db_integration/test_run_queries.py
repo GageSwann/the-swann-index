@@ -1,5 +1,5 @@
-"""Which rating runs a rankings page compares (Phase 12.5, #126): the newest run and its
-baseline, the last run of the most recent Sunday (Eastern) before the newest run's day."""
+"""Which rating runs a rankings page compares (Phase 12.5, #126, #156): the newest run and
+its baseline, the last run of the Sunday (Eastern) before the latest Sunday poll."""
 
 from datetime import UTC, datetime
 
@@ -17,15 +17,15 @@ def utc(month: int, day: int, hour: int = 11, minute: int = 0) -> datetime:
 @pytest.mark.parametrize(
     ("run_at", "cutoff"),
     [
-        (utc(11, 2), utc(11, 2, 5)),  # Monday: the end of yesterday (Sun Nov 1), EST
-        (utc(11, 7), utc(11, 2, 5)),  # Saturday: still that Sunday
-        (utc(11, 8), utc(11, 2, 5)),  # Sunday Nov 8: the previous Sunday, not today
-        (utc(11, 9), utc(11, 9, 5)),  # Monday Nov 9: Sunday Nov 8
-        (utc(11, 8, 3), utc(11, 2, 5)),  # 3 AM UTC Sunday = 10 PM Saturday Eastern
-        (utc(11, 1, 11), utc(10, 26, 4)),  # Sun Nov 1 -> Sun Oct 25 (EDT: midnight = 4 AM UTC)
+        (utc(11, 8), utc(11, 2, 5)),  # Sunday Nov 8: the previous Sunday (Nov 1), EST
+        (utc(11, 9), utc(11, 2, 5)),  # Monday Nov 9: still Nov 1 (the week's move stays)
+        (utc(11, 14), utc(11, 2, 5)),  # Saturday Nov 14: still Nov 1
+        (utc(11, 15), utc(11, 9, 5)),  # Sunday Nov 15: now Sunday Nov 8
+        (utc(11, 15, 3), utc(11, 2, 5)),  # 3 AM UTC Sunday = 10 PM Saturday Eastern
+        (utc(11, 2), utc(10, 26, 4)),  # Mon Nov 2 -> Sun Oct 25 (EDT: midnight = 4 AM UTC)
     ],
 )
-def test_baseline_cutoff_is_the_end_of_the_last_sunday_before_today(run_at, cutoff) -> None:
+def test_baseline_cutoff_is_the_end_of_the_previous_weeks_sunday(run_at, cutoff) -> None:
     assert baseline_cutoff(run_at) == cutoff
 
 
@@ -50,18 +50,20 @@ def arrow(sessions) -> tuple[int, int | None]:
 
 @pytest.mark.db
 def test_owners_central_michigan_example(sessions) -> None:
-    """#91 on Sunday; wins Tuesday to #75 (up 16); Saturday's results move it to #81 (up 10);
-    that Sunday shows up 10 and #81 becomes the baseline; it wins again to #61: up 20."""
+    """#91 on Sunday Nov 1; #81 on Sunday Nov 8 shows up 10, and Monday to Saturday keep
+    comparing with Nov 1 (#156), so a Tuesday win to #61 shows up 30; Sunday Nov 15 at
+    #61 compares with Nov 8: up 20."""
     with sessions.begin() as s:
         s.add(Team(id=1, school="Central Michigan", slug="central-michigan"))
         add_run(s, 1, utc(11, 1), rank=91)  # Sunday Nov 1
     assert arrow(sessions) == (91, None)  # no earlier Sunday this season: no arrow
 
     steps = [
-        (2, utc(11, 3), 75, 16),  # Tuesday: vs. Sunday Nov 1
-        (3, utc(11, 7), 81, 10),  # Saturday: still vs. Sunday Nov 1
-        (4, utc(11, 8), 81, 10),  # Sunday Nov 8: the week's official move (vs. Nov 1)
-        (5, utc(11, 10), 61, 20),  # Tuesday: vs. Sunday Nov 8 (#81), not +30
+        (2, utc(11, 3), 75, None),  # Tuesday: the first week has no earlier Sunday
+        (3, utc(11, 8), 81, 10),  # Sunday Nov 8: the week's official move (vs. Nov 1)
+        (4, utc(11, 9), 81, 10),  # Monday: still vs. Nov 1, not 0 (#156)
+        (5, utc(11, 10), 61, 30),  # Tuesday: vs. Nov 1
+        (6, utc(11, 15), 61, 20),  # Sunday Nov 15: vs. Sunday Nov 8 (#81)
     ]
     for run_id, run_at, rank, move in steps:
         with sessions.begin() as s:
@@ -73,9 +75,9 @@ def test_owners_central_michigan_example(sessions) -> None:
 def test_sunday_edge_cases(sessions) -> None:
     with sessions.begin() as s:
         s.add(Team(id=1, school="Alpha", slug="alpha"))
-        add_run(s, 1, utc(11, 7), rank=30)  # Saturday Nov 7
-        # No run on Sunday Nov 8 (the job failed): Monday falls back to Saturday's.
-        add_run(s, 2, utc(11, 9), rank=20)
+        add_run(s, 1, utc(10, 31), rank=30)  # Saturday Oct 31
+        # No run on Sunday Nov 1 (the job failed): the next week falls back to Saturday's.
+        add_run(s, 2, utc(11, 9), rank=20)  # Monday Nov 9
         add_run(s, 3, utc(11, 9, 12), rank=None)  # publish job: no ratings, never shown
 
     with sessions() as s:
@@ -85,13 +87,14 @@ def test_sunday_edge_cases(sessions) -> None:
     with sessions.begin() as s:
         add_run(s, 4, utc(11, 15, 11), rank=25, week=11)  # Sunday Nov 15, first run
         add_run(s, 5, utc(11, 15, 20), rank=24, week=11)  # Sunday Nov 15, rerun later
-        add_run(s, 6, utc(11, 16, 11), rank=22, week=11)  # Monday
+        add_run(s, 6, utc(11, 22, 11), rank=22, week=12)  # Sunday Nov 22
+        add_run(s, 7, utc(11, 23, 11), rank=22, week=12)  # Monday Nov 23
 
     with sessions() as s:
         run, base = run_and_baseline(s, 2026)
         in_week_10, before_it = run_and_baseline(s, 2026, week=10)
         none = run_and_baseline(s, 2025)
-    assert (run.id, base.id) == (6, 5)  # the last run of that Sunday
+    assert (run.id, base.id) == (7, 5)  # the last run of the previous Sunday
     assert (in_week_10.id, before_it.id) == (2, 1)  # a past week has its own baseline
     assert none == (None, None)
 

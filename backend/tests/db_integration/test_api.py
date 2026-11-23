@@ -62,7 +62,7 @@ def test_power_and_resume_rankings(api: TestClient) -> None:
     assert alpha["previous_rank"] == 1  # same rank a week earlier (the week-1 run)
     assert (alpha["off_rank"], alpha["def_rank"]) == (1, 1)  # off 7.0, def 5.0: both best
     assert power["as_of"].startswith(WEEK2_RUN_AT.isoformat()[:16])
-    assert power["previous_as_of"].startswith(WEEK1_RUN_AT.isoformat()[:16])  # 7 days earlier
+    assert power["previous_as_of"].startswith(WEEK1_RUN_AT.isoformat()[:16])  # Sunday before last
     assert (alpha["projected_wins"], alpha["conference_title_prob"]) == (3.7, 0.25)  # sim
 
 
