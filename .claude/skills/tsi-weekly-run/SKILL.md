@@ -124,6 +124,20 @@ How to read it, so one week isn't over-interpreted:
   something that changes how the model or Book should work, propose it as a scratchpad
   experiment (CLAUDE.md "Experiment before adopting"); don't change the model directly.
 
+### Selection Sunday (each November): enter the FCS bracket
+
+The NCAA announces the 24-team FCS field on the Sunday before Thanksgiving week, after
+that morning's nightly run. CFBD then lists the first-round games but has **no seeds or
+second-round pairings**, so the bracket is entered by hand (#157):
+
+1. Add the season to `backend/src/tsi/sim/fcs_brackets.py`: 24 team slugs by position
+   (seeds 1–16, then the unseeded team that visits seed 16 at position 17, …, the one at
+   seed 9 at position 24). Confirm the quarterfinal pairings (1/8 v 4/5, 2/7 v 3/6 in 2026).
+2. Run the tests, commit and push before the next 11:00 UTC run (backend only: no site build).
+3. The next run checks the first round against CFBD's games (a mismatch is logged and
+   leaves FCS odds empty), plays the bracket, and may swap the FCS game of the week for a
+   playoff game. Check `/playoff/fcs` afterwards.
+
 ## 4. Deploys and rollbacks
 
 How a change ships:
@@ -221,7 +235,9 @@ it with the owner's OK.
 | API 500s under load (`QueuePool limit … reached`) | many cold-cache requests at once | in-process caches must be single-flight (doc 10 §4); one loader behind a lock |
 | Neon email "used N% of its 5 GB monthly public network transfer", or API 500s with "exceeded the data transfer quota" | reads out of Neon (any branch) near or over the free allowance (#140) | stop all heavy reads (backtests, experiments, backtest/migrate workflows, backfills); keep the nightly job; check the daily growth on the project's **Overview** page in the Neon console (the Billing page shows network transfer only after an overage); per branch: `data_transfer_bytes` from the branch details API (Free plan included, needs a Neon API key). Over the limit, the compute stays suspended until the next period or an upgrade |
 | **Neon suspended** (seen 2026-11-09): connections fail with `ERROR: Your account or project has exceeded the quota`; the API's `/health` answers 200 but every data endpoint 500; the site still loads (cached pages) | over the monthly transfer quota (#140) | the site keeps serving its cached pages **until something expires them**: pause the nightly job (`gh workflow disable daily-refresh.yml`) or its refresh step (runs even when `tsi run` fails) expires every page and they rebuild against a failing API. While suspended: CI's web job fails (it builds against the live API), so Render deploys nothing; a web push starts a Vercel build that fails and keeps the old site (harmless). Work on a local copy. Reset day: roadmap "Now" |
-| Rankings arrows missing | no rating run ≥ 6 days older (start of a season) | expected; the Δ column hides itself until a week of runs exists |
+| Rankings arrows missing | no run from the previous week's Sunday yet (the season's first week) | expected: arrows compare with the Sunday before the latest one, all week (#156) |
+| A pushed change doesn't show on the site | it changes **stored** results (sim, games of the week, forecasts) | those appear only after the next nightly run writes them; a rebuild alone can't show them. Wait for 11:00 UTC, or run the job by hand with the owner's OK (doc 10 §5) |
+| `/playoff/fcs` empty or not the real bracket in late November | the field was announced but this season's bracket isn't entered, or it doesn't match CFBD's first round | enter it (§3 "Selection Sunday"); the run's log names a mismatch |
 
 **CFBD call budget:** the free tier is ~1,000 calls a month; the client refuses past 980
 (`CFBD_MONTHLY_CALL_BUDGET`). The nightly job uses ~4 a day. Calls are logged in the
