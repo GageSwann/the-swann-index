@@ -17,9 +17,10 @@ function sized(url: string, px: number, dark: boolean): string {
 
 /**
  * A team's logo in a tile ringed in the team's color (owner, 2026-11-06), the same size and
- * ring in both themes. Light theme: the light logo on white. Dark theme: the team's
- * dark-background logo on no fill (owner, 2026-11-23, #169, #170); teams without a dark
- * logo (unrated opponents) keep the white fill so dark marks stay visible.
+ * ring in both themes. Light theme: the light logo on the panel color (owner, 2026-11-23,
+ * #172: no pure white). Dark theme: the team's dark-background logo on no fill (#169,
+ * #170); teams without a dark logo (unrated opponents) get a white fill there so dark marks
+ * stay visible.
  */
 export function TeamLogo({
   team,
@@ -51,9 +52,9 @@ export function TeamLogo({
     <span
       aria-hidden
       className={cn(
-        "tsi-team-light inline-flex shrink-0 items-center justify-center bg-white ring-(--light)",
+        "tsi-team-light inline-flex shrink-0 items-center justify-center bg-card ring-(--light)",
         size >= 40 ? "rounded-md ring-[1.5px]" : "rounded-sm ring-1",
-        darkLogo && "dark:bg-transparent",
+        darkLogo ? "dark:bg-transparent" : "dark:bg-white",
         className,
       )}
       style={{ ...teamColorVars(team), width: size, height: size }}
