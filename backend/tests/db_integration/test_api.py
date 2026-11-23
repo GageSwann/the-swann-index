@@ -145,8 +145,10 @@ def test_game_center(api: TestClient) -> None:
 
     assert center["game"]["home"]["school"] == "Bravo"
     # Re-priced from the stored (official, adjusted) distribution.
-    assert center["markets"]["spread"]["line"] == -2.0
-    assert center["markets"]["total"]["line"] == 54.0
+    # TSI's main lines are always on a half point (#187), so they never push.
+    assert center["markets"]["spread"]["line"] == -2.5
+    assert center["markets"]["total"]["line"] == 54.5
+    assert center["markets"]["spread"]["push"] == center["markets"]["total"]["push"] == 0.0
     assert len(center["markets"]["alt_spreads"]) == 21
     spread = center["markets"]["spread"]["first"]
     assert set(spread) == {"prob", "fair"}  # TSI's chance and fair odds, no Book price

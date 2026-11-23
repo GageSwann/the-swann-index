@@ -55,8 +55,8 @@ def price_game(
 ) -> GameMarkets:
     """`keys`: the artifact's key-number weights; None = the smooth distribution only."""
     c = config or BookConfig()
-    spread_line = round_half(-dist.margin)
-    total_line = round_half(dist.total)
+    spread_line = half_point(-dist.margin)
+    total_line = half_point(dist.total)
     win = dist.home_win_prob
     cover, over = _markets(dist, keys)
     return GameMarkets(
@@ -90,9 +90,12 @@ def _no_push(table: Table, line: float) -> Chances:
     return (first / decided if decided > 0 else 0.5), push
 
 
-def round_half(x: float) -> float:
-    """Nearest half point; quarter points round up (Python's round() would bank-round)."""
-    return math.floor(x * 2 + 0.5) / 2
+def half_point(x: float) -> float:
+    """The nearest line ending in .5, by size so both sides mirror (owner, #187: TSI posts
+    every spread, total and team total on a half point, like a book avoiding pushes):
+    -8.8 -> -8.5, 9.0 -> 9.5, 45.2 -> 45.5. Zero becomes +0.5."""
+    size = math.floor(abs(x)) + 0.5
+    return -size if x < 0 else size
 
 
 def _cover(dist: ScoreDistribution, spread: float) -> float:
@@ -101,7 +104,7 @@ def _cover(dist: ScoreDistribution, spread: float) -> float:
 
 
 def _team_total(mean: float, p_over, c: BookConfig) -> TwoWay:
-    line = round_half(mean)
+    line = half_point(mean)
     return _main(line, (p_over(line), 0.0), c)
 
 
