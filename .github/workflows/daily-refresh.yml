@@ -108,3 +108,68 @@ jobs:
             curl -fsS -L -o /dev/null -w "%{http_code} %{time_total}s $page\n" --max-time 120 \
               --retry 2 --retry-delay 5 --retry-all-errors "$SITE_URL$page"
           done
+
+  # Neon's network transfer this period vs. the free 5 GB (#140, #179): one Neon API call,
+  # no database reads. Writes the reading to the run's summary; averaging over 80 MB a day
+  # adds a warning; on pace to go over (or 80% used) opens one issue per period, then
+  # comments on it. Never turns the run red: the backup gate counts successful runs, and a
+  # red run would make the 14:23 backup run `tsi run` again.
+  # Needs the NEON_API_KEY secret and the NEON_PROJECT_ID variable; skipped without them.
+  transfer:
+    needs: [gate, refresh]
+    if: ${{ !cancelled() && needs.gate.outputs.run == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    permissions:
+      contents: read
+      issues: write
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.0 # exact tag: setup-uv has no floating major tag
+
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Check Neon transfer
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          DATABASE_URL: unused # settings require one; this job never connects
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set +e
+          reading=$(uv run tsi neon transfer --json)
+          code=$?
+          set -e
+          if [ "$code" -eq 2 ]; then
+            echo "::notice::Neon transfer check skipped: add the NEON_API_KEY secret and NEON_PROJECT_ID variable."
+            exit 0
+          elif [ "$code" -ne 0 ]; then
+            echo "::warning::Neon transfer check failed (see this step's log)."
+            exit 0
+          fi
+          status=$(jq -r .status <<< "$reading")
+          line=$(jq -r '"Neon transfer \(.status): \(.reason). \(.used_bytes / 1e7 | round / 100) GB used in \(.days_elapsed) of \(.days_in_period) days (period from \(.period_start[:10]), \(.period_source)); pace \(.projected_bytes / 1e7 | round / 100) GB, limit \(.limit_bytes / 1e9) GB."' <<< "$reading")
+          echo "$line"
+          echo "$line" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$status" = "above target" ]; then
+            echo "::warning::$line"
+          elif [ "$status" = "alert" ]; then
+            echo "::warning::$line"
+            title="Neon transfer: on pace to go over (period from $(jq -r '.period_start[:10]' <<< "$reading"))"
+            body=$(printf '%s\n\nNightly run: %s\n\nWhat to check: doc 10 section 1 (transfer meter, Vercel ISR writes, Render response volume).' "$line" "$RUN_URL")
+            number=$(gh issue list --repo "$REPO" --state open --limit 50 --json number,title \
+              --jq "map(select(.title == \"$title\")) | .[0].number // empty")
+            if [ -n "$number" ]; then
+              gh issue comment "$number" --repo "$REPO" --body "$body"
+            else
+              gh issue create --repo "$REPO" --title "$title" --body "$body"
+            fi
+          fi

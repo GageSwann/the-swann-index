@@ -66,6 +66,8 @@ What a healthy log says:
 | `board N games, N TSI Plays` / `publish N new snapshots (N unchanged), N picks` | predictions for the next 8 days; a snapshot is inserted only when something changed |
 | `{"revalidated":"tsi",...}` then `200 0.4s /`, `200 1.2s /teams/...`, ... | the site's cache was expired (`expire: 0`, Phase 12.2) and ~60 pages rebuilt one by one: 10 main pages plus the FBS and FCS Power Top 25 team pages; ~1-2 s each when fresh |
 
+The last job (`transfer`, #179) puts Neon's transfer for the period on the run's summary page (`gh run view <run-id>` shows annotations): a warning means over 80 MB a day on average; an open issue "Neon transfer: on pace to go over" means find the cause (doc 10 §1) before the period runs out. "Skipped" means the `NEON_API_KEY` secret or `NEON_PROJECT_ID` variable is missing.
+
 Then confirm `ratings_updated_at` from `/meta/current` matches the run, and the site's
 "Model updated" time (US Eastern) matches it too. If the API is newer than the site,
 the refresh step failed: see Troubleshooting.

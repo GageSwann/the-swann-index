@@ -153,3 +153,5 @@ All secrets come from environment variables; none are in code. See [09-conventio
 | `TSI_API_URL` | no | `web/.env.local`, Vercel env, GH Actions **variable** (CI build + nightly wake-up) |
 | `SITE_URL` | no | GH Actions variable: the Vercel URL the nightly job refreshes |
 | `REVALIDATE_TOKEN` | yes | `web/.env.local`, Vercel env + GH secret (server-only; never `NEXT_PUBLIC_`) |
+| `NEON_API_KEY` | yes | GH secret (the nightly transfer check, #179); optional in `backend/.env`. A Neon personal API key, read here only for one GET of the project |
+| `NEON_PROJECT_ID` | no | GH Actions **variable** (and optional `backend/.env`) |

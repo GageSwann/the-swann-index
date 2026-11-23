@@ -17,7 +17,7 @@ The plan lives in `docs/`. Read the roadmap and the doc for the area you're touc
 - `docs/03-data-sources.md`: CFBD endpoints, caching, call budget, data conventions, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model, Book and season-sim math, with backtest results
 - `docs/06-frontend.md`: design system, lighting, page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#178 so far). Never rewrite old entries.
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#179 so far). Never rewrite old entries.
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -106,6 +106,7 @@ python ../.claude/skills/tsi-weekly-run/scripts/weekly_review.py   # weekly revi
 
 # Data
 uv run tsi check                # data quality rules; exit 1 on any `fail` (--season, --details)
+uv run tsi neon transfer        # Neon's transfer this period vs. the free 5 GB, one API call (--json; needs NEON_API_KEY + NEON_PROJECT_ID; the nightly job runs it)
 uv run tsi ingest daily         # refresh current season (part of `tsi run`)
 uv run tsi ingest season --season 2014 --through 2026   # all loaders in order (~9 calls/season if not cached)
 uv run tsi ingest teams --season 2024     # single loaders: venues, teams, calendar, games, stats, lines, priors, roster

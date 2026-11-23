@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     # The owner's key for the private endpoints (/book/*, /model/report; decision #139).
     # Unset = those endpoints answer 404 to everyone.
     owner_api_key: SecretStr | None = None
+    # Neon's API, read-only: the project's network transfer this period (`tsi neon transfer`).
+    # Unset = the check is skipped. The project id isn't secret; the key is.
+    neon_api_key: SecretStr | None = None
+    neon_project_id: str | None = None
     # Raw CFBD response cache (gitignored).
     tsi_cache_dir: Path = BACKEND_DIR / ".cache"
 
