@@ -44,7 +44,7 @@ call is normal, not an outage.
 ```bash
 gh run list --workflow daily-refresh.yml --limit 5
 gh run view <run-id> --log | grep -E "ingest |rate |grade |board |publish |revalidated\"|Z [0-9]{3} /"
-curl -s https://tsi-api-44wx.onrender.com/meta/current
+curl -s https://tsi-api-44wx.onrender.com/cfb/meta/current
 curl -s https://the-swann-index.vercel.app/ | grep -oE "Model updated [^<]{0,40}" | head -1
 ```
 
@@ -68,7 +68,7 @@ What a healthy log says:
 
 The last job (`transfer`, #179) puts Neon's transfer for the period on the run's summary page (`gh run view <run-id>` shows annotations): a warning means over 80 MB a day on average; an open issue "Neon transfer: on pace to go over" means find the cause (doc 10 §1) before the period runs out. "Skipped" means the `NEON_API_KEY` secret or `NEON_PROJECT_ID` variable is missing.
 
-Then confirm `ratings_updated_at` from `/meta/current` matches the run, and the site's
+Then confirm `ratings_updated_at` from `/cfb/meta/current` matches the run, and the site's
 "Model updated" time (US Eastern) matches it too. If the API is newer than the site,
 the refresh step failed: see Troubleshooting.
 
@@ -105,7 +105,7 @@ python .claude/skills/tsi-weekly-run/scripts/weekly_review.py --week 9   # a spe
 python .claude/skills/tsi-weekly-run/scripts/weekly_review.py --api http://127.0.0.1:8000  # local dev API
 ```
 
-It reads the public API plus the owner-only `/book/ledger` (decision #139), with the key
+It reads the public API plus the owner-only `/cfb/book/ledger` (decision #139), with the key
 from `OWNER_API_KEY` (environment or `backend/.env`; never printed). Without the key it
 skips the Book sections and says so. It prints Markdown: data freshness, the TSI
 Book (season and the week's graded picks with CLV), the week's prediction accuracy vs.
@@ -201,7 +201,7 @@ afterwards.
    Environment variables win over `backend/.env`, so nothing local changes.
 
    Usually simpler, and the connection string never leaves GitHub: the **Migrate production** workflow (`gh workflow run migrate.yml`). It checks out a ref, so to migrate before the code reaches `main`, push a temporary branch from `origin/main` with only the migration file, run `gh workflow run migrate.yml --ref <branch>`, check the log for `Running upgrade …`, delete the branch, then push `main` (#145).
-3. Check the live API afterwards (`/meta/current`, `/rankings`).
+3. Check the live API afterwards (`/cfb/meta/current`, `/cfb/rankings`; college football's API is under `/cfb`, #183).
 
 ## 6. Rotating secrets
 

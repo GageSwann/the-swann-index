@@ -4,7 +4,7 @@ Prints a Markdown report: data freshness, the TSI Book (season + the week's grad
 picks), prediction accuracy for the week vs. the closing line, Power rankings with
 weekly movement, and the coming week's key matchups and TSI plays.
 
-The Book is owner-only (decision #139): `/book/ledger` answers only with the owner's key,
+The Book is owner-only (decision #139): `/cfb/book/ledger` answers only with the owner's key,
 read from the OWNER_API_KEY environment variable or else `backend/.env`, and never
 printed. Without it the report skips the Book sections and says so.
 
@@ -52,7 +52,7 @@ def get_ledger(api: str, season: int) -> dict | None:
     if key is None:
         return None
     try:
-        return get(api, f"/book/ledger?season={season}", key)
+        return get(api, f"/cfb/book/ledger?season={season}", key)
     except urllib.error.HTTPError as e:
         if e.code == 404:  # wrong key, or none configured on the API
             return None
@@ -158,7 +158,7 @@ def accuracy_section(games: list[dict], week: int) -> list[str]:
 
 
 def rankings_section(api: str) -> tuple[list[str], dict]:
-    data = get(api, "/rankings")
+    data = get(api, "/cfb/rankings")
     ranks = {t["team"]["slug"]: t["rank"] for t in data["teams"]}
     since = (data.get("previous_as_of") or "")[:10] or "n/a"
     out = [f"## Power rankings (movement since {since})", "", "| # | Team | Record | Rating | Move |", "|---|---|---|---|---|"]
@@ -178,7 +178,7 @@ def next_week_section(
     api: str, season: int, week: int, ranks: dict, ledger: dict | None
 ) -> list[str]:
     try:
-        games = get(api, f"/weeks/{season}/{week}/games")["games"]
+        games = get(api, f"/cfb/weeks/{season}/{week}/games")["games"]
     except Exception:  # noqa: BLE001 - no such week (end of season)
         return []
     pub = [g for g in games if g.get("prediction")]
@@ -220,10 +220,10 @@ def main() -> int:
     args = ap.parse_args()
     api = args.api.rstrip("/")
 
-    meta = get(api, "/meta/current")
+    meta = get(api, "/cfb/meta/current")
     season = args.season or meta["season"]
     week = args.week or max(1, meta["week"] - 1)
-    games = get(api, f"/weeks/{season}/{week}/games")["games"]
+    games = get(api, f"/cfb/weeks/{season}/{week}/games")["games"]
 
     report = [
         f"# TSI weekly review: {season}, week {week}",
