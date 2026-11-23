@@ -28,15 +28,22 @@ const COLUMNS: Record<Division, Column[]> = {
   ],
 }
 
+// Once the real field is set (#157), everyone listed is in it: no Playoff or Bye column.
+const SET_FIELD = new Set<keyof PlayoffTeam>(["playoff_prob", "bye_prob"])
+
 /** Every team with a real chance, likeliest first: round-by-round odds and fair title odds. */
 export function PlayoffOdds({
   teams,
   division = "fbs",
+  official = false,
 }: {
   teams: PlayoffTeam[]
   division?: Division
+  official?: boolean
 }) {
-  const columns = COLUMNS[division]
+  const columns = official
+    ? COLUMNS[division].filter((c) => !SET_FIELD.has(c.key))
+    : COLUMNS[division]
   return (
     <div className="overflow-x-auto rounded-md border border-border">
       <table className="w-full min-w-[720px] text-sm">

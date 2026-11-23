@@ -8,7 +8,7 @@ import { teamColorVars } from "@/lib/format/color"
 import { chance } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
 
-import { type BracketGame, buildBracket, type Entry } from "./bracket-layout"
+import { type BracketGame, buildBracket, type Entry, type RealGame } from "./bracket-layout"
 
 // Geometry (px). A game is two 36 px slots; rows are one game plus a gap apart. Columns
 // narrow for five rounds (the FCS playoff), so its champion fits a desktop screen too.
@@ -66,6 +66,7 @@ export function ProjectedBracket({ playoff }: { playoff: Playoff }) {
           ))}
           <Champion
             entry={champion}
+            decided={final.real?.completed ?? false}
             style={{ left: left(cols, final.round), top: champTop, width: cols.width }}
           />
         </div>
@@ -87,15 +88,38 @@ function Game({ game, seeds, cols }: { game: BracketGame; seeds: number; cols: C
         ...teamColorVars(game.winner.team.team),
       }}
     >
-      {game.entries.map((e) => (
-        <Slot key={e.seed} entry={e} seeded={e.seed <= seeds} advances={e === game.winner} />
+      {game.entries.map((e, i) => (
+        <Slot
+          key={e.seed}
+          entry={e}
+          seeded={e.seed <= seeds}
+          advances={e === game.winner}
+          real={game.real}
+          side={i}
+        />
       ))}
     </li>
   )
 }
 
-/** One team in a game; unseeded FCS teams (placed by rank) show no seed number. */
-function Slot({ entry, seeded, advances }: { entry: Entry; seeded: boolean; advances: boolean }) {
+/**
+ * One team in a game; unseeded FCS teams show no seed number. On the right: the team's
+ * score once the real game is final, TSI's win chance before it (both link to the game),
+ * otherwise its record.
+ */
+function Slot({
+  entry,
+  seeded,
+  advances,
+  real,
+  side,
+}: {
+  entry: Entry
+  seeded: boolean
+  advances: boolean
+  real: RealGame | null
+  side: number
+}) {
   return (
     <div
       className={cn("flex items-center gap-2 px-2", !advances && "text-muted-foreground")}
@@ -111,10 +135,29 @@ function Slot({ entry, seeded, advances }: { entry: Entry; seeded: boolean; adva
       >
         <TeamLink team={entry.team.team} />
       </span>
-      <span className="shrink-0 text-xs tabular-nums">
-        {entry.team.wins}-{entry.team.losses}
-      </span>
+      <SlotValue entry={entry} real={real} side={side} />
     </div>
+  )
+}
+
+function SlotValue({ entry, real, side }: { entry: Entry; real: RealGame | null; side: number }) {
+  const points = real?.completed ? real.points[side] : null
+  const prob = real && !real.completed ? (real.winProb?.[side] ?? null) : null
+  if (real && (points != null || prob != null)) {
+    return (
+      <Link
+        href={`/games/${real.id}`}
+        className="shrink-0 text-xs tabular-nums hover:underline"
+        title={points != null ? "Final score" : "TSI's win chance"}
+      >
+        {points != null ? points : chance(prob!)}
+      </Link>
+    )
+  }
+  return (
+    <span className="shrink-0 text-xs tabular-nums">
+      {entry.team.wins}-{entry.team.losses}
+    </span>
   )
 }
 
@@ -158,7 +201,15 @@ function Connectors({ games, cols }: { games: BracketGame[][]; cols: Columns }) 
   )
 }
 
-function Champion({ entry, style }: { entry: Entry; style: CSSProperties }) {
+function Champion({
+  entry,
+  decided,
+  style,
+}: {
+  entry: Entry
+  decided: boolean
+  style: CSSProperties
+}) {
   const t = entry.team
   return (
     <div className="absolute" style={{ ...style, height: CHAMP_H }}>
@@ -167,7 +218,9 @@ function Champion({ entry, style }: { entry: Entry; style: CSSProperties }) {
         className="tsi-team-light tsi-lit flex h-full flex-col justify-center gap-1 rounded-md border-2 border-(--light) bg-card p-3"
         style={teamColorVars(t.team)}
       >
-        <p className="text-xs text-muted-foreground">Projected champion</p>
+        <p className="text-xs text-muted-foreground">
+          {decided ? "Champion" : "Projected champion"}
+        </p>
         <Link href={`/teams/${t.team.slug}`} className="group flex min-w-0 items-center gap-2">
           <TeamLogo team={t.team} size={36} />
           <span className="truncate text-xl font-bold font-stretch-condensed group-hover:underline">
@@ -175,7 +228,9 @@ function Champion({ entry, style }: { entry: Entry; style: CSSProperties }) {
           </span>
         </Link>
         <p className="text-xs text-muted-foreground">
-          {t.wins}-{t.losses}, {chance(t.champion_prob)} to win it all
+          {decided
+            ? `${t.wins}-${t.losses}`
+            : `${t.wins}-${t.losses}, ${chance(t.champion_prob)} to win it all`}
         </p>
       </div>
     </div>

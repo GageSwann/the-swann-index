@@ -13,7 +13,14 @@ const PLAYOFF_HREF: Record<Division, string> = { fbs: "/playoff", fcs: "/playoff
 
 const COPY: Record<
   Division,
-  { title: string; field: string; bracket: ReactNode; odds: ReactNode; offSeason: string }
+  {
+    title: string
+    field: string
+    bracket: ReactNode
+    odds: ReactNode
+    offSeason: string
+    official?: { bracket: ReactNode; odds: ReactNode }
+  }
 > = {
   fbs: {
     title: "Playoffs",
@@ -62,7 +69,24 @@ const COPY: Record<
       </>
     ),
     offSeason:
-      "FCS playoff odds run during the regular season, from the nightly simulation. Once the real field is set, they stop until next season.",
+      "FCS playoff odds run during the regular season, from the nightly simulation, and follow the real bracket once the field is set.",
+    official: {
+      bracket: (
+        <>
+          The official field and seeds. Finished games show the final score; scheduled games show
+          TSI&apos;s win chance, and its favorite moves on. Later rounds follow the team more likely
+          to get there. Updated every night as results come in.
+        </>
+      ),
+      odds: (
+        <>
+          In each simulated playoff, finished games stand as played and every remaining game is
+          played with TSI&apos;s predictions: at the real site once it&apos;s scheduled, then at the
+          better seed until the final at a neutral site. Title odds are TSI&apos;s title chance as
+          fair American odds (no vig), not a betting line.
+        </>
+      ),
+    },
   },
 }
 
@@ -70,6 +94,7 @@ const COPY: Record<
 export async function PlayoffPage({ division }: { division: Division }) {
   const playoff = await getPlayoff(division)
   const copy = COPY[division]
+  const official = playoff?.official ? copy.official : undefined
 
   return (
     <div className="space-y-10">
@@ -87,17 +112,21 @@ export async function PlayoffPage({ division }: { division: Division }) {
         <>
           <section aria-labelledby="bracket-heading" className="space-y-4">
             <h2 id="bracket-heading" className="text-2xl font-semibold font-stretch-condensed">
-              Projected bracket
+              {official ? "Bracket" : "Projected bracket"}
             </h2>
             <ProjectedBracket playoff={playoff} />
-            <p className="max-w-[70ch] text-sm text-muted-foreground">{copy.bracket}</p>
+            <p className="max-w-[70ch] text-sm text-muted-foreground">
+              {official?.bracket ?? copy.bracket}
+            </p>
           </section>
           <section aria-labelledby="odds-heading" className="space-y-4">
             <h2 id="odds-heading" className="text-2xl font-semibold font-stretch-condensed">
               Playoff odds
             </h2>
-            <PlayoffOdds teams={playoff.teams} division={division} />
-            <p className="max-w-[70ch] text-sm text-muted-foreground">{copy.odds}</p>
+            <PlayoffOdds teams={playoff.teams} division={division} official={!!official} />
+            <p className="max-w-[70ch] text-sm text-muted-foreground">
+              {official?.odds ?? copy.odds}
+            </p>
           </section>
         </>
       ) : (

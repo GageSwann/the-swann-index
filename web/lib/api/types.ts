@@ -25,6 +25,7 @@ export type FairTwoWay = Schemas["FairTwoWay"]
 export type SnapshotPoint = Schemas["SnapshotPoint"]
 export type Playoff = Schemas["Playoff"]
 export type PlayoffTeam = Schemas["PlayoffTeam"]
+export type PlayoffGame = Schemas["PlayoffGameView"]
 export type SnapshotView = Schemas["SnapshotView"]
 export type AdjustmentNote = Schemas["AdjustmentNote"]
 

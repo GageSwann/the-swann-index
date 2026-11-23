@@ -74,8 +74,9 @@ export interface paths {
         };
         /**
          * Get Playoff
-         * @description Playoff odds, fair futures odds and a projected bracket (regular season only):
-         *     the College Football Playoff (`fbs`) or the 24-team FCS playoff (`fcs`).
+         * @description Playoff odds, fair futures odds and a projected bracket: the College Football
+         *     Playoff (`fbs`, regular season) or the 24-team FCS playoff (`fcs`; once the field is
+         *     set, the official bracket with the real games: `official`, `games`).
          */
         get: operations["get_playoff"];
         put?: never;
@@ -398,6 +399,13 @@ export interface components {
             division: string;
             /** Field Size */
             field_size: number;
+            /** Games */
+            games?: components["schemas"]["PlayoffGameView"][];
+            /**
+             * Official
+             * @default false
+             */
+            official: boolean;
             /** Projected */
             projected: components["schemas"]["PlayoffTeam"][];
             /** Rounds */
@@ -412,6 +420,32 @@ export interface components {
             teams: components["schemas"]["PlayoffTeam"][];
             /** Week */
             week: number;
+        };
+        /**
+         * PlayoffGameView
+         * @description A scheduled or played playoff game; the site matches it to a bracket game by its
+         *     two teams.
+         */
+        PlayoffGameView: {
+            /** Away Points */
+            away_points: number | null;
+            /** Away Team Id */
+            away_team_id: number;
+            /** Completed */
+            completed: boolean;
+            /** Game Id */
+            game_id: number;
+            /** Home Points */
+            home_points: number | null;
+            /** Home Team Id */
+            home_team_id: number;
+            /** Home Win Prob */
+            home_win_prob: number | null;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
         };
         /** PlayoffTeam */
         PlayoffTeam: {
