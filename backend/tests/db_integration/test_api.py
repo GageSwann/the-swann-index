@@ -41,7 +41,7 @@ def ok(api: TestClient, path: str, headers: dict | None = None) -> dict:
 
 
 def test_meta(api: TestClient) -> None:
-    meta = ok(api, "/meta/current")
+    meta = ok(api, "/cfb/meta/current")
 
     assert (meta["season"], meta["season_type"], meta["week"]) == (2026, "regular", 2)
     assert meta["ratings_updated_at"].startswith(WEEK2_RUN_AT.isoformat()[:16])
@@ -49,8 +49,8 @@ def test_meta(api: TestClient) -> None:
 
 
 def test_power_and_resume_rankings(api: TestClient) -> None:
-    power = ok(api, "/rankings")
-    resume = ok(api, "/rankings?type=resume")
+    power = ok(api, "/cfb/rankings")
+    resume = ok(api, "/cfb/rankings?type=resume")
 
     # FBS only: the seeded FCS teams Echo and Foxtrot have FCS ranks 1 and 2.
     assert [t["team"]["school"] for t in power["teams"]] == ["Alpha", "Delta", "Charlie", "Bravo"]
@@ -67,17 +67,17 @@ def test_power_and_resume_rankings(api: TestClient) -> None:
 
 
 def test_rankings_for_an_earlier_week_and_missing_season(api: TestClient) -> None:
-    week1 = ok(api, "/rankings?week=1")
+    week1 = ok(api, "/cfb/rankings?week=1")
 
     assert week1["as_of"].startswith(WEEK1_RUN_AT.isoformat()[:16])
     assert week1["teams"][0]["rating"] == 11.0
     assert week1["teams"][0]["projected_wins"] is None  # that run predates the season sim
-    assert api.get("/rankings?season=2015").status_code == 404
+    assert api.get("/cfb/rankings?season=2015").status_code == 404
 
 
 def test_team_list_and_profile(api: TestClient) -> None:
-    teams = ok(api, "/teams")
-    alpha = ok(api, "/teams/alpha")
+    teams = ok(api, "/cfb/teams")
+    alpha = ok(api, "/cfb/teams/alpha")
 
     assert [t["school"] for t in teams] == ["Alpha", "Bravo", "Charlie", "Delta"]  # FBS only
     assert (alpha["wins"], alpha["losses"], alpha["ratings"]["rank_power"]) == (1, 0, 1)
@@ -87,9 +87,9 @@ def test_team_list_and_profile(api: TestClient) -> None:
     # In progress: the locked pre-kickoff snapshot (Alpha -4), never the post-kickoff one (-9).
     assert live["spread"] == -4.0 and live["site"] == "home"
     assert (first["kickoff_tbd"], live["kickoff_tbd"]) == (False, False)  # 13.5: site's clock
-    assert api.get("/teams/nope").status_code == 404
+    assert api.get("/cfb/teams/nope").status_code == 404
     assert alpha["adjustments"] == [] and live["adjusted"] is False
-    bravo = ok(api, "/teams/bravo")
+    bravo = ok(api, "/cfb/teams/bravo")
     assert [a["reason"] for a in bravo["adjustments"]] == ["QB out"]
     assert [g["adjusted"] for g in bravo["schedule"]] == [True, True]  # week 1, Bravo-Delta
     proj = alpha["projection"]
@@ -100,11 +100,11 @@ def test_team_list_and_profile(api: TestClient) -> None:
     )
     assert (proj["title_game_prob"], proj["conference_title_prob"]) == (0.5, 0.25)
     assert (proj["playoff_prob"], proj["champion_prob"]) == (0.9, pytest.approx(0.18))
-    assert ok(api, "/teams/echo")["projection"]["expected_wins"] == 8.5  # FCS too (#125)
+    assert ok(api, "/cfb/teams/echo")["projection"]["expected_wins"] == 8.5  # FCS too (#125)
 
 
 def test_team_resume_breakdown(api: TestClient) -> None:
-    alpha = ok(api, "/teams/alpha")
+    alpha = ok(api, "/cfb/teams/alpha")
     first, live = alpha["schedule"]
     site = {"home": 1, "away": -1, "neutral": 0}[first["site"]]
     # Bravo's current rating (-8, #4) vs. the benchmark 6.0, home field 3.0, spread 15.0.
@@ -120,7 +120,7 @@ def test_team_resume_breakdown(api: TestClient) -> None:
 
 
 def test_week_board(api: TestClient) -> None:
-    board = ok(api, "/weeks/2026/2/games")
+    board = ok(api, "/cfb/weeks/2026/2/games")
     games = {g["id"]: g for g in board["games"]}
 
     assert set(games) == {201, 202}  # the FCS-only game is left out
@@ -141,7 +141,7 @@ def test_week_board(api: TestClient) -> None:
 
 
 def test_game_center(api: TestClient) -> None:
-    center = ok(api, "/games/202")
+    center = ok(api, "/cfb/games/202")
 
     assert center["game"]["home"]["school"] == "Bravo"
     # Re-priced from the stored (official, adjusted) distribution.
@@ -151,16 +151,16 @@ def test_game_center(api: TestClient) -> None:
     spread = center["markets"]["spread"]["first"]
     assert set(spread) == {"prob", "fair"}  # TSI's chance and fair odds, no Book price
     assert len(center["history"]) == 1
-    assert ok(api, "/games/101")["game"]["result"] == {
+    assert ok(api, "/cfb/games/101")["game"]["result"] == {
         "home_points": 30,
         "away_points": 20,
         "final": True,
     }
-    assert api.get("/games/999").status_code == 404
+    assert api.get("/cfb/games/999").status_code == 404
 
 
 def test_ledger(api: TestClient) -> None:
-    ledger = ok(api, "/book/ledger", OWNER)
+    ledger = ok(api, "/cfb/book/ledger", OWNER)
 
     statuses = {p["game_id"]: p["status"] for p in ledger["picks"]}
     assert statuses == {101: "graded", 202: "open"}  # the post-kickoff pick on 201 never counts
@@ -172,7 +172,7 @@ def test_ledger(api: TestClient) -> None:
 
 
 def test_model_report(api: TestClient) -> None:
-    report = ok(api, "/model/report", OWNER)
+    report = ok(api, "/cfb/model/report", OWNER)
 
     assert report["backtest"]["metrics"]["validate_mae"] == 12.4
     tables = report["backtest"]["report"]
@@ -196,7 +196,7 @@ def test_model_report(api: TestClient) -> None:
 
 
 def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
-    result = ok(api, "/playoff")
+    result = ok(api, "/cfb/playoff")
 
     # Charlie (0%) is left off; the rest by playoff odds.
     assert [t["team"]["school"] for t in result["teams"]] == ["Alpha", "Delta", "Bravo"]
@@ -207,7 +207,7 @@ def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
     # Projected field: everyone with a chance, by average seed (Alpha ~1.5, the rest 5).
     assert [t["team"]["school"] for t in result["projected"]][0] == "Alpha"
     assert "Charlie" not in [t["team"]["school"] for t in result["projected"]]
-    assert api.get("/playoff?season=2015").status_code == 404
+    assert api.get("/cfb/playoff?season=2015").status_code == 404
     assert len(result["rounds"]) == 4 and result["rounds"][0]["games"][0] == [
         {"seed": 5, "game": None},
         {"seed": 12, "game": None},
@@ -216,7 +216,7 @@ def test_playoff_odds_and_projected_bracket(api: TestClient) -> None:
 
 
 def test_fcs_playoff_odds(api: TestClient) -> None:
-    result = ok(api, "/playoff?division=fcs")
+    result = ok(api, "/cfb/playoff?division=fcs")
 
     assert [t["team"]["school"] for t in result["teams"]] == ["Echo", "Foxtrot"]
     assert (result["division"], result["field_size"], result["byes"]) == ("fcs", 24, 8)
@@ -226,17 +226,17 @@ def test_fcs_playoff_odds(api: TestClient) -> None:
     ]  # fmt: skip
     assert result["rounds"][1]["games"][0] == [{"seed": 1, "game": None}, {"seed": None, "game": 7}]
     assert [t["team"]["school"] for t in result["projected"]] == ["Echo", "Foxtrot"]
-    assert api.get("/playoff?division=all").status_code == 422
-    echo = ok(api, "/teams/echo")["projection"]
+    assert api.get("/cfb/playoff?division=all").status_code == 422
+    echo = ok(api, "/cfb/teams/echo")["projection"]
     assert (echo["playoff_prob"], echo["title_game_prob"]) == (0.8, None)
 
 
 def test_rankings_by_division(api: TestClient) -> None:
-    fcs = ok(api, "/rankings?division=fcs")
-    both = ok(api, "/rankings?division=all")
+    fcs = ok(api, "/cfb/rankings?division=fcs")
+    both = ok(api, "/cfb/rankings?division=all")
 
     assert (fcs["division"], fcs["benchmark_rank"], both["benchmark_rank"]) == ("fcs", 24, None)
-    assert ok(api, "/rankings")["benchmark_rank"] == 12
+    assert ok(api, "/cfb/rankings")["benchmark_rank"] == 12
     assert [(t["rank"], t["team"]["school"]) for t in fcs["teams"]] == [(1, "Echo"), (2, "Foxtrot")]
     # "all": one scale, re-ranked by rating; FCS teams keep their own division ranks too.
     assert [t["team"]["school"] for t in both["teams"]] == [
@@ -244,21 +244,21 @@ def test_rankings_by_division(api: TestClient) -> None:
     ]  # fmt: skip
     assert [t["rank"] for t in both["teams"]] == [1, 2, 3, 4, 5, 6]
     assert both["teams"][4]["rank_power"] == 1  # Echo: #1 in FCS
-    assert api.get("/rankings?division=all&type=resume").status_code == 422
+    assert api.get("/cfb/rankings?division=all&type=resume").status_code == 422
 
 
 def test_team_list_and_week_board_by_division(api: TestClient) -> None:
-    assert [t["school"] for t in ok(api, "/teams?division=fcs")] == ["Echo", "Foxtrot"]
-    assert len(ok(api, "/teams?division=all")) == 6
+    assert [t["school"] for t in ok(api, "/cfb/teams?division=fcs")] == ["Echo", "Foxtrot"]
+    assert len(ok(api, "/cfb/teams?division=all")) == 6
 
     def ids(division: str) -> list[int]:
-        return [g["id"] for g in ok(api, f"/weeks/2026/2/games?division={division}")["games"]]
+        return [g["id"] for g in ok(api, f"/cfb/weeks/2026/2/games?division={division}")["games"]]
 
     assert (ids("fbs"), ids("fcs"), ids("all")) == ([201, 202], [203], [201, 202, 203])
 
 
 def test_fcs_team_profile(api: TestClient) -> None:
-    echo = ok(api, "/teams/echo")
+    echo = ok(api, "/cfb/teams/echo")
 
     assert (echo["ratings"]["rating"], echo["ratings"]["rank_power"]) == (-30.0, 1)
     assert len(echo["history"]) == 1  # FCS teams are stored from the week-2 run on
@@ -281,48 +281,31 @@ def test_fcs_team_profile(api: TestClient) -> None:
         "spread": -10.0,
         "adjusted": False,
     }
-    foxtrot = ok(api, "/teams/foxtrot")["schedule"][0]["forecast"]
+    foxtrot = ok(api, "/cfb/teams/foxtrot")["schedule"][0]["forecast"]
     assert (foxtrot["win_prob"], foxtrot["spread"]) == (0.25, 10.0)  # the away side
     # Published games keep their snapshot and carry no forecast.
-    assert all(g["forecast"] is None for g in ok(api, "/teams/bravo")["schedule"])
+    assert all(g["forecast"] is None for g in ok(api, "/cfb/teams/bravo")["schedule"])
 
 
 def test_no_movement_until_the_earlier_run_ranked_the_division(api: TestClient) -> None:
     # The week-1 run predates FCS rankings: FCS and "all" lists show no movement yet.
     for division in ("fcs", "all"):
-        board = ok(api, f"/rankings?division={division}")
+        board = ok(api, f"/cfb/rankings?division={division}")
         assert board["previous_as_of"] is None
         assert all(t["previous_rank"] is None for t in board["teams"])
-    assert ok(api, "/rankings")["previous_as_of"] is not None  # FBS keeps its movement
+    assert ok(api, "/cfb/rankings")["previous_as_of"] is not None  # FBS keeps its movement
 
 
-PRIVATE = ("/book/ledger", "/model/report", "/cfb/book/ledger", "/cfb/model/report")
+PRIVATE = ("/cfb/book/ledger", "/cfb/model/report")
 
-# Every public endpoint is also served under /cfb (#183), byte for byte the same.
-SAME_UNDER_CFB = (
-    "/meta/current",
-    "/rankings?division=all",
-    "/rankings/top?division=fbs&n=3",
-    "/teams?division=all",
-    "/games-of-week",
-    "/playoff",
-)
+# The old unprefixed paths are gone (#185): they answer like any unknown path.
+OLD_PATHS = ("/meta/current", "/rankings", "/teams", "/games-of-week", "/playoff", "/book/ledger")
 
 
-@pytest.mark.parametrize("path", SAME_UNDER_CFB)
-def test_cfb_paths_answer_like_the_old_ones(api: TestClient, path: str) -> None:
-    old, new = api.get(path), api.get(f"/cfb{path}")
-    assert (new.status_code, new.content) == (old.status_code, old.content), path
-    assert new.headers.get("cache-control") == old.headers.get("cache-control")
-
-
-def test_cfb_team_week_and_game_paths(api: TestClient) -> None:
-    slug = ok(api, "/teams")[0]["slug"]
-    meta = ok(api, "/meta/current")
-    week = f"/weeks/{meta['season']}/{max(1, meta['week'])}/games"
-    game_id = ok(api, week)["games"][0]["id"]
-    for path in (f"/teams/{slug}", week, f"/games/{game_id}"):
-        assert ok(api, f"/cfb{path}") == ok(api, path), path
+@pytest.mark.parametrize("path", OLD_PATHS)
+def test_old_unprefixed_paths_are_gone(api: TestClient, path: str) -> None:
+    r = api.get(path, headers=OWNER)
+    assert (r.status_code, r.json()) == (404, {"detail": "Not Found"})
 
 
 @pytest.mark.parametrize("path", PRIVATE)
@@ -356,9 +339,9 @@ def test_private_endpoints_closed_when_no_key_is_configured(sessions, path: str)
 
 def test_top_rankings_match_the_full_rankings(api: TestClient) -> None:
     for division in ("fbs", "fcs"):
-        top = ok(api, f"/rankings/top?division={division}&n=3")
+        top = ok(api, f"/cfb/rankings/top?division={division}&n=3")
         for kind in ("power", "resume"):
-            full = ok(api, f"/rankings?type={kind}&division={division}")["teams"][:3]
+            full = ok(api, f"/cfb/rankings?type={kind}&division={division}")["teams"][:3]
             keys = ("rank", "previous_rank", "team", "wins", "losses", "ties")
             assert [[t[k] for k in keys] for t in top[kind]] == [[t[k] for k in keys] for t in full]
-    assert api.get("/rankings/top?division=all").status_code == 422  # fbs or fcs only
+    assert api.get("/cfb/rankings/top?division=all").status_code == 422  # fbs or fcs only

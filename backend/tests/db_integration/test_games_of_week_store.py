@@ -31,7 +31,7 @@ def test_saved_once_per_poll_week_and_served(sessions) -> None:
         assert not needs_picks(s, NOW)
 
     with make_api(sessions) as api:
-        body = api.get("/games-of-week").json()
+        body = api.get("/cfb/games-of-week").json()
     assert body["poll_date"] == date(2026, 10, 18).isoformat()  # NOW is a Wednesday
     assert [(p["division"], p["ranking_type"]) for p in body["picks"]] == [
         ("fbs", "power"),
@@ -51,7 +51,7 @@ def test_empty_before_the_first_pick(sessions) -> None:
     with sessions.begin() as s:
         seed(s)
     with make_api(sessions) as api:
-        assert api.get("/games-of-week").json() == {
+        assert api.get("/cfb/games-of-week").json() == {
             "poll_date": None,
             "picked_at": None,
             "picks": [],

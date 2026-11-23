@@ -38,11 +38,8 @@ CFB_ROUTERS = (meta, rankings, teams, games, games_of_week, book, model, playoff
 
 
 def operation_id(route: APIRoute) -> str:
-    """The router function's name (get_rankings, ...): clean TS client names. The old
-    unprefixed copies of the CFB routes are `legacy_...` until they are removed (#183)."""
-    if route.path == "/health" or route.path.startswith(CFB_PREFIX + "/"):
-        return route.name
-    return f"legacy_{route.name}"
+    """The router function's name (get_rankings, ...): clean TS client names."""
+    return route.name
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -76,11 +73,9 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
     app.state.resume_cache = ResumeCache()  # per app: the latest run's Résumé context (#148)
     app.include_router(health.router)
     # College football's endpoints live under /cfb, so other sports can sit beside it
-    # (#183). The old unprefixed paths stay until the live site no longer calls them.
+    # (#183; the old unprefixed paths were dropped once the site had switched, #185).
     for router in CFB_ROUTERS:
         app.include_router(router.router, prefix=CFB_PREFIX)
-    for router in CFB_ROUTERS:
-        app.include_router(router.router)
     # Added innermost first: caching sees the uncompressed JSON (ETag), gzip compresses
     # it, and CORS (outermost) answers preflight requests before anything else runs.
     app.add_middleware(CachingMiddleware)

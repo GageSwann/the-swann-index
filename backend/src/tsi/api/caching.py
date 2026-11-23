@@ -15,9 +15,7 @@ DEFAULT_POLICY = "public, max-age=300, stale-while-revalidate=86400"
 NO_STORE = "no-store"
 POLICIES = {
     "/health": NO_STORE,  # liveness must never come from a cache
-    "/book": NO_STORE,  # owner-only (decision #139): never in a shared cache
-    "/model": NO_STORE,
-    "/cfb/book": NO_STORE,  # the same, under the sport's prefix (#183)
+    "/cfb/book": NO_STORE,  # owner-only (decision #139): never in a shared cache
     "/cfb/model": NO_STORE,
     "/docs": "no-cache",
     "/redoc": "no-cache",
