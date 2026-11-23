@@ -34,6 +34,26 @@ export const metadata: Metadata = {
     locale: "en_US",
   },
   twitter: { card: "summary_large_image", title: SITE_NAME, description: DESCRIPTION },
+  // The tab icon is the header's TSI badge (#173, #175), chosen by the browser's own light or
+  // dark mode, not the site's toggle (#176): the dark badge on light tabs, the light badge on
+  // dark tabs. Browsers that ignore `media` take the last one. Static files in public/icons.
+  icons: {
+    icon: [
+      {
+        url: "/icons/tsi-badge-light.png",
+        media: "(prefers-color-scheme: dark)",
+        type: "image/png",
+        sizes: "64x64",
+      },
+      {
+        url: "/icons/tsi-badge-dark.png",
+        media: "(prefers-color-scheme: light)",
+        type: "image/png",
+        sizes: "64x64",
+      },
+    ],
+    apple: [{ url: "/icons/tsi-home.png", sizes: "180x180", type: "image/png" }],
+  },
   // Opened from an iPhone's Home Screen: full screen, the page drawn behind a transparent
   // status bar (the header pads by the safe-area inset), no separate bar above it (#165).
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
