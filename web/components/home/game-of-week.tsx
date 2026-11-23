@@ -4,8 +4,8 @@ import { WinProbBar } from "@/components/board/win-prob-bar"
 import { TeamLogo } from "@/components/team/team-logo"
 import type { GameOfWeekView, TeamRecord, TeamRef, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
-import { points, record } from "@/lib/format/numbers"
-import { favoriteLine, favoriteMoneyline } from "@/lib/format/odds"
+import { points, record, signed } from "@/lib/format/numbers"
+import { american } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -104,19 +104,42 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
           )}
         </div>
 
-        {/* TSI's lines only (owner): a stat strip, each label right above its value. */}
+        {/* TSI's lines only (owner): a stat strip, each label above both sides of its line,
+            away on top and home below like the card (owner, 2026-11-23). */}
         <dl className="grid grid-cols-3 divide-x divide-border rounded-md border border-border">
           {[
-            ["TSI Spread", favoriteLine(p.spread, game.home, game.away)],
-            ["TSI Total", p.total.toFixed(1)],
-            [
-              "TSI Moneyline",
-              favoriteMoneyline(game.home, game.away, p.fair_home_ml, p.fair_away_ml),
-            ],
-          ].map(([label, value]) => (
-            <div key={label} className="flex flex-col items-center gap-0.5 px-2 py-2.5 text-center">
+            {
+              label: "TSI Spread",
+              rows: [
+                [short(game.away), spreadText(-p.spread)],
+                [short(game.home), spreadText(p.spread)],
+              ],
+            },
+            {
+              label: "TSI Total",
+              rows: [
+                ["Over", p.total.toFixed(1)],
+                ["Under", p.total.toFixed(1)],
+              ],
+            },
+            {
+              label: "TSI Moneyline",
+              rows: [
+                [short(game.away), american(p.fair_away_ml)],
+                [short(game.home), american(p.fair_home_ml)],
+              ],
+            },
+          ].map(({ label, rows }) => (
+            <div key={label} className="flex flex-col items-center gap-1 px-2 py-2.5 text-center">
               <dt className="text-xs text-muted-foreground">{label}</dt>
-              <dd className="text-base font-semibold">{value}</dd>
+              {rows.map(([side, value]) => (
+                <dd key={side} className="flex max-w-full gap-1.5 text-sm whitespace-nowrap">
+                  <span className="truncate text-muted-foreground" title={side}>
+                    {side}
+                  </span>
+                  <span className="shrink-0 font-semibold tabular-nums">{value}</span>
+                </dd>
+              ))}
             </div>
           ))}
         </dl>
@@ -178,4 +201,15 @@ function Score({ value, alignEnd = false }: { value: number; alignEnd?: boolean 
       {points(value)}
     </p>
   )
+}
+
+/** A team's short name for the line rows: its abbreviation, else the school. */
+function short(team: TeamRef): string {
+  return team.abbreviation ?? team.school
+}
+
+/** One side's fair spread: "+3.4", "−3.4", "PK" when it rounds to zero. */
+function spreadText(spread: number): string {
+  const text = signed(spread, 1)
+  return Number(text.replace("−", "-")) === 0 ? "PK" : text
 }
