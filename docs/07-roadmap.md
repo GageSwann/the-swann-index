@@ -43,7 +43,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [x] Trim the two heavy reads found (#154): team page 41 → 20 KB (one compact history row per run), rankings 265 → 200 KB (the Sunday baseline reads only ranks); every response byte-identical. Also Next.js 16.4.2 → 16.4.6 for 7 moderate advisories (`npm audit --omit=dev` back to 0).
 - [x] The home page and week boards (#155): home rankings ~0.8 MB → ~22 KB (`/rankings/top`), week boards 82 → 55 KB this week and 168 → 54 KB an older one (division filter in SQL, only the shown snapshot); every response byte-identical.
 - [x] Save last season's fitted stats like the Elo carry (#177, 2026-11-23): `model/artifacts/component_carry.json` + `tsi model carry`; nightly read **2.15 → 1.56 MB** (local copy, `tsi run --no-ingest`), inputs and the week's forecasts `repr`-identical. Check the first production run's log for no "saved component fit ... no longer matches" warning (the carry was built on the work PC's copy).
-- [ ] "Save backtest to production" without reading the history from production (compute on a copy; upload only the saved run).
+- [x] ~~"Save backtest to production" without reading the history from production (compute on a copy; upload only the saved run).~~ Measured and closed (#178, owner): a save reads ~13 MB, a few times a season; not worth a workflow change.
 - [ ] *Maybe (ask: changes the nightly workflow, needs a Neon API key secret):* the nightly job reads production's transfer from Neon's API and warns when the month is on pace to go over.
 
 **13.8 Fill in every day of 2026** (owner, #127; widened 2026-11-20 to the outage, #152)
