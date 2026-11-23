@@ -14,11 +14,12 @@ Work one item at a time: build → test → tick → commit, then stop for revie
   | Date (morning) | Project total | That day |
   |---|---|---|
   | Nov 20 (period start) | 0 GB | — |
+| Nov 23 | 0.48 GB | Nov 20–22 together (no daily readings sent Nov 21–22): ~250–300 MB of one-offs on Nov 20 (rebuild + verify, ~5 site builds) leave ~180–230 MB for ~2.5 normal days, **~70–90 MB a day** |
 
   *Expect Nov 21 to be high:* it includes the one-off rebuild (~250 MB, #152), the rebuild's verify, today's pushes' site builds (~10 MB each) and the migrations. Nov 22 onward is the normal pattern.
 
 - [ ] **Vercel:** ISR writes grow ~60–100 a day (31K on Nov 20; were ~1,000 a day); image transformations stay under 5K (4.7K on Nov 20) until Vercel's period resets.
-- [ ] **12.1:** a week of nightly runs that start at 11:0x UTC from cron-job.org with no 14:23 backup run (built #126; three morning runs failed on a slow CFBD before #144 fixed the client). First: Nov 21.
+- [ ] **12.1:** a week of nightly runs that start at 11:0x UTC from cron-job.org with no 14:23 backup run (built #126; three morning runs failed on a slow CFBD before #144 fixed the client). First: Nov 21. So far: Nov 21, 22, 23 started 11:01 UTC; the 14:23 backup skipped itself each day (3/7).
 - [ ] **12.5:** on Sunday Nov 22, ranking arrows and biggest movers match the previous Sunday's ranks (built #134; never checked live).
 - [x] **Games of the week:** Kentucky at Missouri (FBS Résumé, 0.00) is the rule working: no game this week has two Résumé Top 25 teams, so the tiebreakers pick it; the replayed Sunday chose the same games (#152). The score now counts every rank in the division (#153; picks from Sunday Nov 22 on; this week's stored rows keep their old, unshown score).
 - [ ] **By Nov 30: keep or remove the Neon add-on.** If the daily figures fit (under ~80 MB a day on average), remove it so the Dec 1 period is free; if not, find the cause first.
