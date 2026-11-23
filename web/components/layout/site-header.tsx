@@ -2,7 +2,7 @@ import Link from "next/link"
 
 import { SPORTS } from "@/lib/sports"
 
-import { SportMenu } from "./sport-menu"
+import { SportMenus } from "./sport-menu"
 import { ThemeToggle } from "./theme-toggle"
 
 /**
@@ -23,12 +23,8 @@ export function SiteHeader() {
             The Swann Index
           </span>
         </Link>
-        {/* One menu per sport (CFB now); phones keep the bottom bar (BottomNav, #163). */}
-        <nav aria-label="Main" className="hidden items-center gap-1 sm:ml-auto sm:flex">
-          {SPORTS.map((sport) => (
-            <SportMenu key={sport.key} sport={sport} />
-          ))}
-        </nav>
+        {/* One menu per sport, one open at a time; phones keep the bottom bar (#163). */}
+        <SportMenus sports={SPORTS} />
         <div className="ml-auto sm:ml-0">
           <ThemeToggle />
         </div>
