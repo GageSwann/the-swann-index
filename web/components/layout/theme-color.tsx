@@ -5,7 +5,7 @@ import { useEffect } from "react"
 
 // The header's panel color in each theme (globals.css --card), so the browser's own bars
 // blend into it (#165).
-const BAR: Record<string, string> = { dark: "#252526", light: "#ffffff" }
+const BAR: Record<string, string> = { dark: "#252526", light: "#f5f5f5" }
 
 /** Keeps `<meta name="theme-color">` in step with the light/dark toggle. */
 export function ThemeColor() {

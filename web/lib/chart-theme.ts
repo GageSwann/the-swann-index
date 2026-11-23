@@ -19,8 +19,8 @@ const TOKENS = {
     accent: "#1f1f1f",
     text: "#1f1f1f",
     muted: "#616161",
-    grid: "#e5e5e5",
-    surface: "#ffffff",
+    grid: "#dcdcdc",
+    surface: "#f5f5f5",
   },
 }
 
