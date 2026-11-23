@@ -164,6 +164,7 @@ Both PCs have one; it is where heavy work runs (§1).
 
 - PowerShell here-strings mangle inline Python: write scripts to the scratchpad and run them with `python -I` from a neutral directory (a local `types.py` once shadowed the stdlib). `python -I` drops the script's own folder from `sys.path`: use `PYTHONPATH` for helper modules next to a script.
 - Shell heredocs turn `\n` inside Python strings into real newlines: write edit scripts with the Write tool, or use the Edit tool.
+- **Line endings:** Python on Windows writes CRLF in text mode. Git normalizes most files to LF on commit (`.gitattributes` `* text=auto eol=lf`), but files under `.claude/` have `text` unset and are committed as written: edit them with `open(p, encoding="utf-8", newline="")` (or the Edit tool) so they stay LF (a runbook edit on 2026-11-23 went in as CRLF and needed a follow-up commit).
 - **Edit scripts must assert their anchors** and the commit's file list must be checked: on 2026-11-23 a Python syntax error stopped a docs edit, the shell carried on, and the code commit went out without its doc change (fixed in a docs-only follow-up).
 - Commit messages: bash heredoc + `git commit -F` (PowerShell `Set-Content` adds a BOM). `sed` replacements containing `#` need another delimiter.
 - The console is cp1252: set `PYTHONIOENCODING=utf-8` (or write to a file) to print ★/–; use `%#I`, not `%-I`, in `strftime`.
