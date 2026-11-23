@@ -301,6 +301,15 @@ export interface components {
             history: components["schemas"]["SnapshotPoint"][];
             markets: components["schemas"]["FairMarkets"] | null;
         };
+        /**
+         * GameLines
+         * @description TSI's spread and total as the card shows them, with TSI's fair odds for both sides at
+         *     that line (#188): the same pricing as the game center.
+         */
+        GameLines: {
+            spread: components["schemas"]["FairTwoWay"];
+            total: components["schemas"]["FairTwoWay"];
+        };
         /** GameOfWeekView */
         GameOfWeekView: {
             /** Away Playoff Swing */
@@ -322,6 +331,7 @@ export interface components {
             home_record?: components["schemas"]["Record"] | null;
             /** Home Title Swing */
             home_title_swing: number | null;
+            lines?: components["schemas"]["GameLines"] | null;
             /** Quality */
             quality: number;
             /** Ranking Type */

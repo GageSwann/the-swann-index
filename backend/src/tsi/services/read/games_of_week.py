@@ -10,7 +10,17 @@ from tsi.db.queries.games_of_week import latest_poll_date, picks_for
 from tsi.db.queries.runs import latest_rating_run
 from tsi.db.queries.team_info import Record, records
 from tsi.services.games_of_week import poll_sunday
-from tsi.services.read.games import GameSummary, game_summaries
+from tsi.services.read.fair_markets import FairTwoWay
+from tsi.services.read.games import GameSummary, game_summaries, tsi_markets
+
+
+@dataclass(frozen=True)
+class GameLines:
+    """TSI's spread and total as the card shows them, with TSI's fair odds for both sides at
+    that line (#188): the same pricing as the game center."""
+
+    spread: FairTwoWay  # home view: first = home covers, second = away covers
+    total: FairTwoWay  # first = over, second = under
 
 
 @dataclass(frozen=True)
@@ -32,6 +42,7 @@ class GameOfWeekView:
     # needs a full ranking to find a team outside the Top 25 (#155).
     home_record: Record | None = None
     away_record: Record | None = None
+    lines: GameLines | None = None  # None without a prediction
 
 
 @dataclass(frozen=True)
@@ -73,8 +84,16 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
             away_title_swing=r.away_title_swing,
             home_record=record.get(summaries[r.game_id].home.id, Record()),
             away_record=record.get(summaries[r.game_id].away.id, Record()),
+            lines=_lines(summaries[r.game_id]),
         )
         for r in rows
         if r.game_id in summaries
     ]
     return GamesOfWeek(poll, rows[0].picked_at, picks)
+
+
+def _lines(game: GameSummary) -> GameLines | None:
+    if game.prediction is None:
+        return None
+    markets = tsi_markets(game.prediction)
+    return GameLines(spread=markets.spread, total=markets.total)

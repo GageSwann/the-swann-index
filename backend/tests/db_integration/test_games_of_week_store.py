@@ -32,6 +32,7 @@ def test_saved_once_per_poll_week_and_served(sessions) -> None:
 
     with make_api(sessions) as api:
         body = api.get("/cfb/games-of-week").json()
+        center = api.get("/cfb/games/202").json()
     assert body["poll_date"] == date(2026, 10, 18).isoformat()  # NOW is a Wednesday
     assert [(p["division"], p["ranking_type"]) for p in body["picks"]] == [
         ("fbs", "power"),
@@ -40,6 +41,12 @@ def test_saved_once_per_poll_week_and_served(sessions) -> None:
     first = body["picks"][0]
     assert first["game"]["id"] == 202 and first["game"]["home"]["school"] == "Bravo"
     assert first["game"]["prediction"] is not None  # the board's current snapshot
+    # TSI's lines with their fair odds, priced exactly as the game center prices them (#188).
+    lines = first["lines"]
+    assert lines["spread"] == center["markets"]["spread"]
+    assert lines["total"] == center["markets"]["total"]
+    assert lines["spread"]["line"] % 1 == 0.5 and lines["total"]["line"] % 1 == 0.5  # #187
+    assert lines["spread"]["first"]["fair"] and lines["spread"]["second"]["fair"]
     assert (first["home_rank"], first["home_playoff_swing"], first["home_title_swing"]) == (
         4,
         0.25,

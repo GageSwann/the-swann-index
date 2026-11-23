@@ -363,6 +363,23 @@
         "title": "GameCenter",
         "type": "object"
       },
+      "GameLines": {
+        "description": "TSI's spread and total as the card shows them, with TSI's fair odds for both sides at\nthat line (#188): the same pricing as the game center.",
+        "properties": {
+          "spread": {
+            "$ref": "#/components/schemas/FairTwoWay"
+          },
+          "total": {
+            "$ref": "#/components/schemas/FairTwoWay"
+          }
+        },
+        "required": [
+          "spread",
+          "total"
+        ],
+        "title": "GameLines",
+        "type": "object"
+      },
       "GameOfWeekView": {
         "properties": {
           "away_playoff_swing": {
@@ -461,6 +478,16 @@
               }
             ],
             "title": "Home Title Swing"
+          },
+          "lines": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameLines"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "quality": {
             "title": "Quality",

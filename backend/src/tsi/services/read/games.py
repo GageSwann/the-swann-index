@@ -95,8 +95,7 @@ def game_center(session: Session, game_id: int, now: datetime) -> GameCenter | N
     summary = _summaries(session, [game], now, all_snaps)[0]
     snaps = all_snaps.get(game.id, [])
     p = summary.prediction
-    keys = production_artifact().key_numbers
-    markets = None if p is None else fair_markets(price_game(_distribution(p), keys=keys))
+    markets = None if p is None else tsi_markets(p)
     history = [SnapshotPoint(s.published_at, s.spread, s.total, s.home_win_prob) for s in snaps]
     return GameCenter(summary, markets, history)
 
@@ -150,6 +149,12 @@ def _summaries(
             )
         )
     return out
+
+
+def tsi_markets(p: SnapshotView) -> FairMarkets:
+    """TSI's lines and fair odds for a shown snapshot, re-priced from its distribution (the
+    game center; the games of the week's lines, #188)."""
+    return fair_markets(price_game(_distribution(p), keys=production_artifact().key_numbers))
 
 
 def _distribution(p: SnapshotView) -> ScoreDistribution:
