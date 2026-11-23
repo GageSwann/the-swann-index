@@ -1,12 +1,13 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { type ReactNode, useMemo, useState } from "react"
 
 import { Segmented } from "@/components/ui/segmented"
 import type { RankedTeam, RankingType } from "@/lib/api/types"
 import { benchmarkName, type DivisionView } from "@/lib/divisions"
 
 import { Movers } from "./movers"
+import { RankingsList } from "./rankings-list"
 import { RankingsTable } from "./rankings-table"
 
 function explainer(
@@ -32,6 +33,7 @@ const HIDDEN: Record<DivisionView, string[]> = {
 }
 
 type Props = {
+  nav: ReactNode // the FBS / FCS / All links, first in the controls row
   power: RankedTeam[]
   resume: RankedTeam[] | null // null: no Résumé view ("all")
   since: string | null
@@ -39,7 +41,7 @@ type Props = {
   benchmarkRank: number | null // the Résumé benchmark the run used (#133)
 }
 
-export function RankingsView({ power, resume, since, division, benchmarkRank }: Props) {
+export function RankingsView({ nav, power, resume, since, division, benchmarkRank }: Props) {
   // Résumé first (owner, #159); "all" has no Résumé view, so it opens on Power.
   const [type, setType] = useState<RankingType>(resume !== null ? "resume" : "power")
   const [scope, setScope] = useState<"top25" | "all">("top25")
@@ -64,51 +66,65 @@ export function RankingsView({ power, resume, since, division, benchmarkRank }: 
   )
 
   return (
-    <div className="space-y-4">
+    // A column, so on phones the explainer can follow the list (#164).
+    <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        {resume !== null && (
+        {/* Phones: division and ranking share the first row, the filters the second. */}
+        <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-start sm:gap-4">
+          {nav}
+          {resume !== null && (
+            <Segmented
+              label="Ranking"
+              value={type}
+              onChange={setType}
+              options={[
+                { value: "resume", label: "Résumé" },
+                { value: "power", label: "Power" },
+              ]}
+            />
+          )}
+        </div>
+        <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start sm:gap-4">
           <Segmented
-            label="Ranking"
-            value={type}
-            onChange={setType}
+            label="Teams shown"
+            value={scope}
+            onChange={setScope}
             options={[
-              { value: "resume", label: "Résumé" },
-              { value: "power", label: "Power" },
+              { value: "top25", label: "Top 25" },
+              { value: "all", label: `All ${power.length}` },
             ]}
           />
-        )}
-        <Segmented
-          label="Teams shown"
-          value={scope}
-          onChange={setScope}
-          options={[
-            { value: "top25", label: "Top 25" },
-            { value: "all", label: `All ${power.length}` },
-          ]}
-        />
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          Conference
-          <select
-            value={conference}
-            onChange={(e) => setConference(e.target.value)}
-            className="rounded-md border border-border bg-card px-2 py-1.5 text-foreground"
-          >
-            <option value="">All conferences</option>
-            {conferences.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+            <span className="max-sm:sr-only">Conference</span>
+            <select
+              value={conference}
+              onChange={(e) => setConference(e.target.value)}
+              className="max-w-44 min-w-0 rounded-md border border-border bg-card px-2 py-1.5 text-foreground"
+            >
+              <option value="">All conferences</option>
+              {conferences.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
-      <p className="max-w-[75ch] text-sm text-muted-foreground">
+      <p className="max-w-[75ch] text-sm text-muted-foreground max-sm:order-last max-sm:text-xs">
         {explainer(type, division, benchmarkRank)}
       </p>
       {/* Wide screens: the movers panel beside the table; below it otherwise. */}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-start">
         {teams.length > 0 ? (
-          <RankingsTable key={type} teams={teams} since={since} hidden={HIDDEN[division]} />
+          <>
+            <div className="sm:hidden">
+              <RankingsList teams={teams} type={resume === null ? "power" : type} since={since} />
+            </div>
+            <div className="max-sm:hidden">
+              <RankingsTable key={type} teams={teams} since={since} hidden={HIDDEN[division]} />
+            </div>
+          </>
         ) : (
           <p className="text-muted-foreground">No ranked teams match these filters.</p>
         )}

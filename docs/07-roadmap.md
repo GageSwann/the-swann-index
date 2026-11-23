@@ -25,7 +25,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [x] **Official FCS bracket + playoff games of the week (#157, 2026-11-23):** the FCS playoff page draws the announced bracket, played out nightly with real results; a better game added after Sunday's pick replaces it. Check live Tuesday Nov 24: `/playoff/fcs` shows "Bracket" with win chances, and the FCS game of the week is a first-round game.
 - [ ] **Mobile pass (owner, 2026-11-23: cluttered, too long, hard to navigate, unpolished):** one area at a time, pushed for the owner's review on a phone.
   - [x] 1. Header, bottom navigation, home (#163)
-  - [ ] 2. Rankings (table, toggles, movers)
+  - [x] 2. Rankings (table, toggles, movers) (#164)
   - [ ] 3. Week board
   - [ ] 4. Game center
   - [ ] 5. Team pages

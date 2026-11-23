@@ -62,7 +62,8 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 ## Page specs
 
 ### Rankings `/`
-- Toggle: Résumé | Power (Résumé selected on load, #159; the All view has Power only). Filters: conference, Top 25 / all.
+- Toggle: Résumé | Power (Résumé selected on load, #159; the All view has Power only).
+- **Phones (#164, mobile pass step 2):** controls in two rows (FBS / FCS / All with Résumé / Power; Top 25 / All with the conference picker, its label screen-reader only); the table is replaced below `sm` by `rankings-list.tsx`: one 52 px row per team (rank, logo, name with record and conference under it, SOR for Résumé or rating for Power, the move since Sunday), the whole row opening the team page; no sideways or nested scrolling. The heading drops the "arrows show…" sentence (the list's Δ and the movers say it), the explainer moves below the list in small type, and the movers show 3 risers and 3 fallers. Tablets and desktop keep the full sortable table. Filters: conference, Top 25 / all.
 - Columns: Rank, Δ (movement arrow), Team (logo + name), Record, TSI rating, Off (rank), Def (rank), SOS, SOR, Proj. W (season sim, links to the team's projected record), Conf (conference title %), CFP % (later).
 - Sortable (TanStack Table). Sticky header. Clicking a row opens the team page.
 - Side widget: biggest risers/fallers since the latest Sunday poll (#134). **Built (#88):** "Biggest movers", top 5 each way for the active ranking and conference (ignores Top 25/All), "#52 → #37" with the Δ arrow; beside the table from `xl`, below it otherwise; hidden without a baseline run.

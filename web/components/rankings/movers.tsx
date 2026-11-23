@@ -5,6 +5,8 @@ import { RankChange } from "./rank-change"
 
 type Move = { team: RankedTeam; moved: number }
 
+const PHONE_COUNT = 3 // phones show the top 3 of each (#164)
+
 /**
  * The week's biggest risers and fallers among the given teams (the active ranking and
  * conference filter). Sorting only: ranks and baseline ranks (the latest Sunday poll, #134)
@@ -57,8 +59,11 @@ function MoveList({ title, moves }: { title: string; moves: Move[] }) {
     <div className="space-y-1.5">
       <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
       <ol className="space-y-1">
-        {moves.map(({ team: t }) => (
-          <li key={t.team.slug} className="flex items-center gap-2 text-sm">
+        {moves.map(({ team: t }, i) => (
+          <li
+            key={t.team.slug}
+            className={`flex items-center gap-2 text-sm ${i >= PHONE_COUNT ? "max-sm:hidden" : ""}`}
+          >
             <span className="w-9 shrink-0 tabular-nums">
               <RankChange rank={t.rank} previous={t.previous_rank} />
             </span>

@@ -50,16 +50,22 @@ export async function RankingsPage({ division }: { division: DivisionView }) {
     <>
       <PageHeading title={TITLE[division]}>
         Week {power.week}, {power.season}. Updated {formatUpdated(power.as_of)}.
-        {since && ` Arrows show each team's move since ${since}.`}
+        {/* Phones: the list's Δ heading and the movers panel say it (#164). */}
+        {since && (
+          <span className="max-sm:hidden"> Arrows show each team&apos;s move since {since}.</span>
+        )}
       </PageHeading>
-      <div className="mb-4">{nav}</div>
       {power.teams.length === 0 ? (
-        <p className="max-w-[70ch] text-muted-foreground">
-          FCS teams are ranked from the first nightly update after they started being rated
-          individually (November 4, 2026). Check back after the next update.
-        </p>
+        <>
+          <div className="mb-4">{nav}</div>
+          <p className="max-w-[70ch] text-muted-foreground">
+            FCS teams are ranked from the first nightly update after they started being rated
+            individually (November 4, 2026). Check back after the next update.
+          </p>
+        </>
       ) : (
         <RankingsView
+          nav={nav}
           power={power.teams}
           resume={resume?.teams ?? null}
           since={since}
