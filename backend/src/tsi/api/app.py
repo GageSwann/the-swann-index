@@ -7,6 +7,7 @@ from anyio import to_thread
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.routing import APIRoute
 
 from tsi import __version__
 from tsi.api.caching import CachingMiddleware
@@ -32,6 +33,16 @@ TITLE = "The Swann Index API"
 # timeout, instead of failing after the pool's 30 s wait (decision #102).
 CONCURRENT_REQUESTS = 10
 DESCRIPTION = "Read-only college football ratings, rankings and predictions."
+CFB_PREFIX = "/cfb"  # college football; other sports get their own prefix (#183)
+CFB_ROUTERS = (meta, rankings, teams, games, games_of_week, book, model, playoff)
+
+
+def operation_id(route: APIRoute) -> str:
+    """The router function's name (get_rankings, ...): clean TS client names. The old
+    unprefixed copies of the CFB routes are `legacy_...` until they are removed (#183)."""
+    if route.path == "/health" or route.path.startswith(CFB_PREFIX + "/"):
+        return route.name
+    return f"legacy_{route.name}"
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -60,21 +71,15 @@ def build_app(cors_origins: list[str], settings: Settings | None = None) -> Fast
         version=__version__,
         description=DESCRIPTION,
         lifespan=lifespan,
-        # Operation ids = the router function names (get_rankings, ...): clean TS client names.
-        generate_unique_id_function=lambda route: route.name,
+        generate_unique_id_function=operation_id,
     )
     app.state.resume_cache = ResumeCache()  # per app: the latest run's Résumé context (#148)
-    for router in (
-        health,
-        meta,
-        rankings,
-        teams,
-        games,
-        games_of_week,
-        book,
-        model,
-        playoff,
-    ):
+    app.include_router(health.router)
+    # College football's endpoints live under /cfb, so other sports can sit beside it
+    # (#183). The old unprefixed paths stay until the live site no longer calls them.
+    for router in CFB_ROUTERS:
+        app.include_router(router.router, prefix=CFB_PREFIX)
+    for router in CFB_ROUTERS:
         app.include_router(router.router)
     # Added innermost first: caching sees the uncompressed JSON (ETag), gzip compresses
     # it, and CORS (outermost) answers preflight requests before anything else runs.

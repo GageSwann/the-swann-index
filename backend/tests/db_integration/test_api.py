@@ -296,7 +296,33 @@ def test_no_movement_until_the_earlier_run_ranked_the_division(api: TestClient) 
     assert ok(api, "/rankings")["previous_as_of"] is not None  # FBS keeps its movement
 
 
-PRIVATE = ("/book/ledger", "/model/report")
+PRIVATE = ("/book/ledger", "/model/report", "/cfb/book/ledger", "/cfb/model/report")
+
+# Every public endpoint is also served under /cfb (#183), byte for byte the same.
+SAME_UNDER_CFB = (
+    "/meta/current",
+    "/rankings?division=all",
+    "/rankings/top?division=fbs&n=3",
+    "/teams?division=all",
+    "/games-of-week",
+    "/playoff",
+)
+
+
+@pytest.mark.parametrize("path", SAME_UNDER_CFB)
+def test_cfb_paths_answer_like_the_old_ones(api: TestClient, path: str) -> None:
+    old, new = api.get(path), api.get(f"/cfb{path}")
+    assert (new.status_code, new.content) == (old.status_code, old.content), path
+    assert new.headers.get("cache-control") == old.headers.get("cache-control")
+
+
+def test_cfb_team_week_and_game_paths(api: TestClient) -> None:
+    slug = ok(api, "/teams")[0]["slug"]
+    meta = ok(api, "/meta/current")
+    week = f"/weeks/{meta['season']}/{max(1, meta['week'])}/games"
+    game_id = ok(api, week)["games"][0]["id"]
+    for path in (f"/teams/{slug}", week, f"/games/{game_id}"):
+        assert ok(api, f"/cfb{path}") == ok(api, path), path
 
 
 @pytest.mark.parametrize("path", PRIVATE)

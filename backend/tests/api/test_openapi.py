@@ -2,6 +2,7 @@
 
 from tsi.api.openapi import SPEC_PATH, openapi_document, render
 
+# College football's endpoints, under /cfb (#183).
 V1_PATHS = {
     "/meta/current",
     "/rankings",
@@ -13,8 +14,11 @@ V1_PATHS = {
     "/games-of-week",
     "/playoff",
 }
+CFB_PATHS = {f"/cfb{path}" for path in V1_PATHS}
+# The old unprefixed copies, until the live site no longer calls them (#183).
+LEGACY_PATHS = V1_PATHS
 # Owner-only (decision #139): served with the key, never in the public spec.
-PRIVATE_PATHS = {"/book/ledger", "/model/report"}
+PRIVATE_PATHS = {"/book/ledger", "/model/report", "/cfb/book/ledger", "/cfb/model/report"}
 
 
 def test_committed_spec_is_current() -> None:
@@ -27,10 +31,12 @@ def test_spec_covers_v1_with_clean_operation_ids() -> None:
     doc = openapi_document()
     ops = [path["get"] for path in doc["paths"].values()]
 
-    assert set(doc["paths"]) == V1_PATHS
+    assert set(doc["paths"]) == CFB_PATHS | LEGACY_PATHS
     assert not PRIVATE_PATHS & set(doc["paths"])
-    ids = [op["operationId"] for op in ops]
-    assert len(set(ids)) == len(ids) and all(i.startswith("get_") for i in ids)
+    ids = {path: doc["paths"][path]["get"]["operationId"] for path in doc["paths"]}
+    assert len(set(ids.values())) == len(ids)
+    assert all(ids[path].startswith("get_") for path in CFB_PATHS)
+    assert all(ids[path] == f"legacy_{ids['/cfb' + path]}" for path in LEGACY_PATHS)
     for op in ops:
         schema = op["responses"]["200"]["content"]["application/json"]["schema"]
         assert "$ref" in schema or schema.get("type") == "array"  # every response is typed

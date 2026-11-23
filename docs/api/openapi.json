@@ -2339,7 +2339,7 @@
   },
   "openapi": "3.1.0",
   "paths": {
-    "/games-of-week": {
+    "/cfb/games-of-week": {
       "get": {
         "description": "This poll week's FBS and FCS games of the week, for Power and Résumé (picked with\nSunday's rankings and held all week); empty before the first pick.",
         "operationId": "get_games_of_week",
@@ -2361,7 +2361,7 @@
         ]
       }
     },
-    "/games/{game_id}": {
+    "/cfb/games/{game_id}": {
       "get": {
         "description": "Game center: prediction, full odds board, market comparison, snapshot history, result.",
         "operationId": "get_game",
@@ -2404,7 +2404,7 @@
         ]
       }
     },
-    "/meta/current": {
+    "/cfb/meta/current": {
       "get": {
         "description": "Current season and week, and when ratings and predictions were last updated.",
         "operationId": "get_meta",
@@ -2426,7 +2426,7 @@
         ]
       }
     },
-    "/playoff": {
+    "/cfb/playoff": {
       "get": {
         "description": "Playoff odds, fair futures odds and a projected bracket: the College Football\nPlayoff (`fbs`, regular season) or the 24-team FCS playoff (`fcs`; once the field is\nset, the official bracket with the real games: `official`, `games`).",
         "operationId": "get_playoff",
@@ -2490,7 +2490,7 @@
         ]
       }
     },
-    "/rankings": {
+    "/cfb/rankings": {
       "get": {
         "description": "Power (how good now) or Résumé (what they've accomplished) rankings.\n\n`division`: fbs (default), fcs, or all. Ranks are within a division; `all` ranks FBS and\nFCS together by rating (Power only: Résumé benchmarks differ by division, so 422).",
         "operationId": "get_rankings",
@@ -2607,7 +2607,7 @@
         ]
       }
     },
-    "/rankings/top": {
+    "/cfb/rankings/top": {
       "get": {
         "description": "A division's Power and Résumé top `n` from the latest run, with movement since the\nSunday baseline and records: what the home page's rails show, read cheaply (#155).",
         "operationId": "get_top_rankings",
@@ -2669,7 +2669,7 @@
         ]
       }
     },
-    "/teams": {
+    "/cfb/teams": {
       "get": {
         "description": "Teams of a season (slug, name, colors, logo, conference): FBS, FCS, or both.",
         "operationId": "get_teams",
@@ -2738,7 +2738,7 @@
         ]
       }
     },
-    "/teams/{slug}": {
+    "/cfb/teams/{slug}": {
       "get": {
         "description": "Team profile: ratings and ranks, rating history, schedule with results and TSI odds.",
         "operationId": "get_team",
@@ -2797,10 +2797,549 @@
         ]
       }
     },
-    "/weeks/{season}/{week}/games": {
+    "/cfb/weeks/{season}/{week}/games": {
       "get": {
         "description": "Matchup board: every game with a team of `division` (fbs default, fcs, or all), with\nTSI's prediction and the market.",
         "operationId": "get_week_games",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "season",
+            "required": true,
+            "schema": {
+              "title": "Season",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "week",
+            "required": true,
+            "schema": {
+              "title": "Week",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season_type",
+            "required": false,
+            "schema": {
+              "default": "regular",
+              "enum": [
+                "regular",
+                "postseason"
+              ],
+              "title": "Season Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs",
+                "all"
+              ],
+              "title": "Division",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeekBoard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Week Games",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games-of-week": {
+      "get": {
+        "description": "This poll week's FBS and FCS games of the week, for Power and Résumé (picked with\nSunday's rankings and held all week); empty before the first pick.",
+        "operationId": "legacy_get_games_of_week",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamesOfWeek"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Games Of Week",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{game_id}": {
+      "get": {
+        "description": "Game center: prediction, full odds board, market comparison, snapshot history, result.",
+        "operationId": "legacy_get_game",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_id",
+            "required": true,
+            "schema": {
+              "title": "Game Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameCenter"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Game",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/meta/current": {
+      "get": {
+        "description": "Current season and week, and when ratings and predictions were last updated.",
+        "operationId": "legacy_get_meta",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meta"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Meta",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/playoff": {
+      "get": {
+        "description": "Playoff odds, fair futures odds and a projected bracket: the College Football\nPlayoff (`fbs`, regular season) or the 24-team FCS playoff (`fcs`; once the field is\nset, the official bracket with the real games: `official`, `games`).",
+        "operationId": "legacy_get_playoff",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs"
+              ],
+              "title": "Division",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Playoff"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Playoff",
+        "tags": [
+          "playoff"
+        ]
+      }
+    },
+    "/rankings": {
+      "get": {
+        "description": "Power (how good now) or Résumé (what they've accomplished) rankings.\n\n`division`: fbs (default), fcs, or all. Ranks are within a division; `all` ranks FBS and\nFCS together by rating (Power only: Résumé benchmarks differ by division, so 422).",
+        "operationId": "legacy_get_rankings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          },
+          {
+            "description": "Latest run within this week (default: latest).",
+            "in": "query",
+            "name": "week",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Latest run within this week (default: latest).",
+              "title": "Week"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "default": "power",
+              "enum": [
+                "power",
+                "resume"
+              ],
+              "title": "Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "regular",
+                    "postseason"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs",
+                "all"
+              ],
+              "title": "Division",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rankings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Rankings",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/rankings/top": {
+      "get": {
+        "description": "A division's Power and Résumé top `n` from the latest run, with movement since the\nSunday baseline and records: what the home page's rails show, read cheaply (#155).",
+        "operationId": "legacy_get_top_rankings",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs"
+              ],
+              "title": "Division",
+              "type": "string"
+            }
+          },
+          {
+            "description": "How many teams per ranking.",
+            "in": "query",
+            "name": "n",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "description": "How many teams per ranking.",
+              "maximum": 50,
+              "minimum": 1,
+              "title": "N",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopRankings"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Top Rankings",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/teams": {
+      "get": {
+        "description": "Teams of a season (slug, name, colors, logo, conference): FBS, FCS, or both.",
+        "operationId": "legacy_get_teams",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          },
+          {
+            "in": "query",
+            "name": "division",
+            "required": false,
+            "schema": {
+              "default": "fbs",
+              "enum": [
+                "fbs",
+                "fcs",
+                "all"
+              ],
+              "title": "Division",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamRef"
+                  },
+                  "title": "Response Legacy Get Teams",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Teams",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/teams/{slug}": {
+      "get": {
+        "description": "Team profile: ratings and ranks, rating history, schedule with results and TSI odds.",
+        "operationId": "legacy_get_team",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "season",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamProfile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Team",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/weeks/{season}/{week}/games": {
+      "get": {
+        "description": "Matchup board: every game with a team of `division` (fbs default, fcs, or all), with\nTSI's prediction and the market.",
+        "operationId": "legacy_get_week_games",
         "parameters": [
           {
             "in": "path",
