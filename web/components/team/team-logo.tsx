@@ -16,10 +16,10 @@ function sized(url: string, px: number, dark: boolean): string {
 }
 
 /**
- * A team's logo. Light theme: on a white tile ringed in the team's color (owner,
- * 2026-11-06). Dark theme: the team's dark-background logo on its own, no tile (owner,
- * 2026-11-23, #169), the way sports apps show them; teams without a dark logo (unrated
- * opponents) keep the white tile so dark marks stay visible.
+ * A team's logo in a tile ringed in the team's color (owner, 2026-11-06), the same size and
+ * ring in both themes. Light theme: the light logo on white. Dark theme: the team's
+ * dark-background logo on no fill (owner, 2026-11-23, #169, #170); teams without a dark
+ * logo (unrated opponents) keep the white fill so dark marks stay visible.
  */
 export function TeamLogo({
   team,
@@ -35,7 +35,6 @@ export function TeamLogo({
   const logo = Math.round(size * 0.78)
   const url = team.logo_url
   const darkLogo = !!url && url.includes("/logos/500/") && RATED.has(team.division ?? "")
-  // Without a tile (dark theme) the logo fills the whole space: no padding to leave.
   const img = (src: string, extra: string, dim: number) => (
     <Image
       src={src}
@@ -54,7 +53,7 @@ export function TeamLogo({
       className={cn(
         "tsi-team-light inline-flex shrink-0 items-center justify-center bg-white ring-(--light)",
         size >= 40 ? "rounded-md ring-[1.5px]" : "rounded-sm ring-1",
-        darkLogo && "dark:bg-transparent dark:ring-0",
+        darkLogo && "dark:bg-transparent",
         className,
       )}
       style={{ ...teamColorVars(team), width: size, height: size }}
@@ -63,7 +62,7 @@ export function TeamLogo({
         (darkLogo ? (
           <>
             {img(sized(url, logo * 2, false), "dark:hidden", logo)}
-            {img(sized(url, size * 2, true), "hidden dark:block", size)}
+            {img(sized(url, logo * 2, true), "hidden dark:block", logo)}
           </>
         ) : (
           img(url.includes("/logos/500/") ? sized(url, logo * 2, false) : url, "", logo)
