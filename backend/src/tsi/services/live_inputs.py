@@ -24,6 +24,7 @@ from tsi.model.ratings.fit import AVERAGE, blend_components
 from tsi.model.ratings.types import TeamRating
 from tsi.model.situational import features as situational_features
 from tsi.model.situational import rest_days
+from tsi.services.component_carry import last_season_components
 from tsi.services.elo_carry import starting_elo
 from tsi.services.prior_setup import prior_inputs_for
 
@@ -65,7 +66,8 @@ def load_live_inputs(
     rows = [
         r for r in offense_rows(session, season, season) if r.start_time and r.start_time < as_of
     ]
-    last_components = fit_components(offense_rows(session, season - 1, season - 1), lam)
+    # Last season's fit never changes once it's over: saved, unless the stats changed.
+    last_components = last_season_components(session, season, lam, artifact.version)
     last_final = (
         AVERAGE if last_components is None else blend_components(last_components, artifact.rating)
     )

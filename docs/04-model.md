@@ -163,7 +163,9 @@ A simple margin-aware Elo (`model/elo.py`) is the baseline. If the main model do
 | Train 2015–22 | 5,927 | 13.45 | 12.45 | 71.0 | 74.3 | 0.189 |
 | **Validate 2023–25** | 2,398 | **13.15** | **12.00** | **70.5** | **72.7** | 0.191 |
 
-**Elo carry (#146):** because Elo carries ratings across seasons, a live run would replay every game since 2014. Instead it resumes from `model/artifacts/elo_carry.json` (Elo through last season, with a fingerprint of the games replayed and the parameters) when the database computes the same fingerprint; otherwise it replays everything, so the numbers are identical either way. Rebuild the file after each season (`tsi model elo-carry`, doc 10 §5).
+**Elo carry (#146):** because Elo carries ratings across seasons, a live run would replay every game since 2014. Instead it resumes from `model/artifacts/elo_carry.json` (Elo through last season, with a fingerprint of the games replayed and the parameters) when the database computes the same fingerprint; otherwise it replays everything, so the numbers are identical either way. Rebuild the file after each season (`tsi model carry`, doc 10 §5).
+
+**Component carry (#177):** each live run also needs last season's final component fit (the preseason prior and the totals stack's last pace/tempo). It comes from `model/artifacts/component_carry.json` when that was built for last season with the same λ and model version and the database fingerprints the same stat rows; otherwise the run fits last season from the database, with identical numbers.
 
 Elo is about 1.15 points worse than the closing line. The doc 01 target for TSI is within ~1 point of the closing line, so TSI must beat Elo by a real margin.
 

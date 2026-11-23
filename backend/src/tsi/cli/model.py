@@ -8,8 +8,12 @@ from tsi.backtest.evaluate import Summary
 from tsi.cli.runtime import db_runtime, ingest_runtime
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ARTIFACT_PATH, load_artifact, save_artifact
+from tsi.model.component_carry import COMPONENT_CARRY_PATH
+from tsi.model.component_carry import save_carry as save_component_carry
 from tsi.model.elo import EloParams
-from tsi.model.elo_carry import ELO_CARRY_PATH, save_carry
+from tsi.model.elo_carry import ELO_CARRY_PATH
+from tsi.model.elo_carry import save_carry as save_elo_carry
+from tsi.services.component_carry import build_component_carry
 from tsi.services.compute_rankings import build_rankings
 from tsi.services.elo_carry import build_elo_carry
 from tsi.services.elo_report import run_elo_report
@@ -127,17 +131,29 @@ def fit(
     )
 
 
-@app.command("elo-carry")
-def elo_carry(
+@app.command("carry")
+def carry(
     through: int | None = typer.Option(None, "--through", help="Last finished season."),
 ) -> None:
-    """Save Elo's end state of finished seasons so live runs replay only this season (commit
-    it). Reads every season: run it against a local copy, not Neon (#140)."""
+    """Save what live runs carry over from finished seasons (commit both files): Elo's end
+    state, so they replay only this season, and last season's component fit, so they don't
+    read last season's stats. Reads every season: run it against a local copy, not Neon
+    (#140)."""
     last = through or current_season(datetime.now(UTC)) - 1
+    artifact = load_artifact()
     with db_runtime() as sessions, sessions() as session:
-        carry = build_elo_carry(session, last, load_artifact().elo)
-    save_carry(carry)
+        elo = build_elo_carry(session, last, artifact.elo)
+        components = build_component_carry(session, last, artifact.rating.lam, artifact.version)
+    save_elo_carry(elo)
     typer.echo(
-        f"Saved Elo through {carry.through_season} ({len(carry.run.ratings)} teams, "
-        f"fingerprint {carry.fingerprint[:8]}) to {ELO_CARRY_PATH}"
+        f"Saved Elo through {elo.through_season} ({len(elo.run.ratings)} teams, "
+        f"fingerprint {elo.fingerprint[:8]}) to {ELO_CARRY_PATH}"
+    )
+    if components is None:
+        typer.echo(f"No stats in {last}: no component fit saved.")
+        return
+    save_component_carry(components)
+    typer.echo(
+        f"Saved the {last} component fit ({len(components.components.games)} teams, "
+        f"fingerprint {components.fingerprint[:8]}) to {COMPONENT_CARRY_PATH}"
     )
