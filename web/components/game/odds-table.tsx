@@ -13,8 +13,8 @@ type Props = { title: string; rows: MarketRow[]; vegas: boolean; note?: ReactNod
 
 /**
  * Markets side by side: TSI's own line (no vig) and, for scheduled games, the market
- * consensus. A table from `sm` up; on phones each market is its own block so nothing
- * scrolls sideways.
+ * consensus. A table from `sm` up; on phones a compact grid with the same columns, sized
+ * to fit (#165), so nothing scrolls sideways.
  */
 export function OddsTable({ title, rows, vegas, note }: Props) {
   const columns = vegas ? COLUMNS : COLUMNS.filter((c) => c.key !== "market")
@@ -54,20 +54,34 @@ export function OddsTable({ title, rows, vegas, note }: Props) {
           </tbody>
         </table>
       </div>
-      <div className="divide-y divide-border rounded-md border border-border text-sm sm:hidden">
-        {rows.map((r) => (
-          <div key={r.label} className="space-y-1.5 px-3 py-2.5">
-            <h3 className="font-medium">{r.label}</h3>
-            <dl className="space-y-1">
+      <div className="rounded-md border border-border text-sm sm:hidden">
+        <div
+          aria-hidden
+          className={`grid ${vegas ? "grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)_minmax(0,0.9fr)]" : "grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"} gap-2 border-b border-border bg-card px-3 py-1.5 text-xs text-muted-foreground`}
+        >
+          <span>Market</span>
+          {columns.map((c) => (
+            <span key={c.key} className="text-right">
+              {c.label}
+            </span>
+          ))}
+        </div>
+        <dl className="divide-y divide-border">
+          {rows.map((r) => (
+            <div
+              key={r.label}
+              className={`grid ${vegas ? "grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)_minmax(0,0.9fr)]" : "grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"} items-start gap-2 px-3 py-2`}
+            >
+              <dt className="font-medium">{r.label}</dt>
               {columns.map((c) => (
-                <div key={c.key} className="flex items-start justify-between gap-4">
-                  <dt className="text-muted-foreground">{c.label}</dt>
-                  <dd className="text-right">{cell(r, c.key)}</dd>
-                </div>
+                <dd key={c.key} className="text-right">
+                  <span className="sr-only">{c.label}: </span>
+                  {cell(r, c.key)}
+                </dd>
               ))}
-            </dl>
-          </div>
-        ))}
+            </div>
+          ))}
+        </dl>
       </div>
       {note && <p className="text-xs text-muted-foreground">{note}</p>}
     </section>

@@ -7,6 +7,7 @@ import { formatDay } from "@/lib/format/time"
 
 import { type BoardRanks, shownRank } from "./board-ranks"
 import { MatchupCard } from "./matchup-card"
+import { MatchupCompact } from "./matchup-compact"
 
 type Sort = "kickoff" | "closest"
 type Props = { games: GameSummary[]; ranks: BoardRanks }
@@ -43,10 +44,10 @@ export function BoardView({ games, ranks }: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm max-sm:gap-x-3">
         <Check label="Top 25 only" checked={top25} onChange={setTop25} />
-        <label className="flex items-center gap-2 text-muted-foreground">
-          Conference
+        <label className="flex min-w-0 items-center gap-2 text-muted-foreground">
+          <span className="max-sm:sr-only">Conference</span>
           <select
             value={conference}
             onChange={(e) => setConference(e.target.value)}
@@ -61,7 +62,7 @@ export function BoardView({ games, ranks }: Props) {
           </select>
         </label>
         <label className="flex items-center gap-2 text-muted-foreground">
-          Sort by
+          <span className="max-sm:sr-only">Sort by</span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
@@ -84,7 +85,7 @@ export function BoardView({ games, ranks }: Props) {
       ) : sort === "kickoff" ? (
         groupByDay(shown).map(([day, dayGames]) => (
           <section key={day} aria-label={day} className="space-y-3">
-            <h2 className="text-xl font-semibold font-stretch-condensed">{day}</h2>
+            <h2 className="text-xl font-semibold font-stretch-condensed max-sm:text-lg">{day}</h2>
             <Grid games={dayGames} ranks={ranks} />
           </section>
         ))
@@ -97,11 +98,19 @@ export function BoardView({ games, ranks }: Props) {
 
 function Grid({ games, ranks }: Props) {
   return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {games.map((g) => (
-        <MatchupCard key={g.id} game={g} ranks={ranks} />
-      ))}
-    </div>
+    <>
+      {/* Phones: compact cards (#165); wider screens: the full cards. */}
+      <div className="grid gap-2.5 sm:hidden">
+        {games.map((g) => (
+          <MatchupCompact key={g.id} game={g} ranks={ranks} />
+        ))}
+      </div>
+      <div className="grid gap-3 max-sm:hidden md:grid-cols-2 xl:grid-cols-3">
+        {games.map((g) => (
+          <MatchupCard key={g.id} game={g} ranks={ranks} />
+        ))}
+      </div>
+    </>
   )
 }
 

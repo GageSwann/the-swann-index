@@ -1,10 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Instrument_Sans } from "next/font/google"
 
 import { SiteHeader } from "@/components/layout/site-header"
 import { ThemeProvider } from "@/components/layout/theme-provider"
 import { BottomNav } from "@/components/layout/bottom-nav"
 import { SiteFooter } from "@/components/layout/site-footer"
+import { ThemeColor } from "@/components/layout/theme-color"
 import { ALLOW_INDEXING, SITE_NAME, SITE_URL } from "@/lib/site"
 
 import "./globals.css"
@@ -37,6 +38,17 @@ export const metadata: Metadata = {
   robots: ALLOW_INDEXING ? undefined : { index: false, follow: false },
 }
 
+// Edge to edge on every iPhone (owner, 2026-11-23, #165): the page draws under the status
+// bar and the home indicator, and the header, bottom bar and sides pad themselves by the
+// safe-area insets (0 on phones without a notch or island). theme-color tints the browser's
+// own bars; ThemeColor keeps it in step with the light/dark toggle.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0e0e0f",
+}
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${instrument.variable} dark h-full`} suppressHydrationWarning>
@@ -48,10 +60,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           >
             Skip to content
           </a>
+          <ThemeColor />
           <SiteHeader />
           {/* At least a screen tall: content that streams in (Suspense) can't push a visible
               footer around, which Lighthouse counts as layout shift (decision #87). */}
-          <main id="main" className="mx-auto min-h-svh w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
+          <main id="main" className="tsi-safe-x mx-auto min-h-svh w-full max-w-7xl flex-1 py-8">
             {children}
           </main>
           <SiteFooter />

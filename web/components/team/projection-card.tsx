@@ -47,7 +47,9 @@ export function ProjectionCard({ profile }: { profile: TeamProfile }) {
         {proj && <WinHistogram dist={proj.win_dist} school={profile.team.school} />}
         <p className="max-w-[70ch] text-sm text-muted-foreground">
           {fcs
-            ? "The season simulation covers FBS teams for now; projected wins and title odds for FCS teams come later."
+            ? proj
+              ? "Each remaining game uses TSI's published prediction, and in every simulated season each team can be better or worse than its rating for the rest of the year. Conference titles follow the simulated standings; FCS playoff odds are on the FCS playoffs page."
+              : "The season projection appears after the next nightly update."
             : proj
               ? "Each remaining game uses TSI's published prediction, and in every simulated season each team can be better or worse than its rating for the rest of the year. Conference title games follow the simulated standings (simplified tiebreakers) and count as a win; the playoff field follows the simulated Résumé rankings (see the Playoff page)."
               : "The season projection appears after the next nightly update."}

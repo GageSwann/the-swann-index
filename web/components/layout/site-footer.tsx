@@ -12,7 +12,7 @@ export async function SiteFooter() {
   const year = await currentYear()
   return (
     <footer className="border-t border-border text-xs text-muted-foreground">
-      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 sm:px-6 md:flex-row md:items-baseline md:justify-between md:gap-8">
+      <div className="tsi-safe-x mx-auto flex max-w-7xl flex-col gap-2 py-5 md:flex-row md:items-baseline md:justify-between md:gap-8">
         <p className="shrink-0">© {year} The Swann Index. All rights reserved.</p>
         <p className="md:text-right">
           Not affiliated with the NCAA or any conference or school; team names and logos belong to

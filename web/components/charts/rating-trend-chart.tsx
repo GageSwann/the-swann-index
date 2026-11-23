@@ -32,13 +32,20 @@ const tooltip = seriesTooltip((v) => signed(v))
 export function RatingTrendChart({ series }: { series: TrendSeries[] }) {
   const theme = useChartTheme()
   const byDay = new Map<string, Row>()
+  const firstSeen = new Map<string, number>()
   series.forEach((s, i) => {
     for (const p of s.history) {
       const day = formatMonthDay(p.as_of)
       byDay.set(day, { ...(byDay.get(day) ?? { day }), [`s${i}`]: p.rating })
+      const at = Date.parse(p.as_of)
+      firstSeen.set(day, Math.min(firstSeen.get(day) ?? at, at))
     }
   })
-  const data = [...byDay.values()]
+  // In date order: a day only the second team has (an early-season run before the first
+  // team's first game) belongs where it falls, not after the first team's days (#165).
+  const data = [...byDay.entries()]
+    .sort(([a], [b]) => (firstSeen.get(a) ?? 0) - (firstSeen.get(b) ?? 0))
+    .map(([, row]) => row)
   if (data.length === 0) return null
 
   const ticks = ratingTicks(series.flatMap((s) => s.history.map((p) => p.rating)))

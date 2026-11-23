@@ -22,7 +22,8 @@ export function WeekNav({
           href={`/week/${season}/${week - 1}${suffix}`}
           className="rounded-md border border-border bg-card px-3 py-1.5 hover:text-primary"
         >
-          ‹ Week {week - 1}
+          ‹ <span className="max-sm:sr-only">Week </span>
+          {week - 1}
         </Link>
       ) : null}
       {week < LAST_REGULAR_WEEK ? (
@@ -30,7 +31,8 @@ export function WeekNav({
           href={`/week/${season}/${week + 1}${suffix}`}
           className="rounded-md border border-border bg-card px-3 py-1.5 hover:text-primary"
         >
-          Week {week + 1} ›
+          <span className="max-sm:sr-only">Week </span>
+          {week + 1} ›
         </Link>
       ) : null}
     </nav>

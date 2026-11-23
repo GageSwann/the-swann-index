@@ -145,6 +145,18 @@
   }
 
   /* The header rule: white or black, the team's color on a team page; blooms at night. */
+  /* Sides clear a landscape iPhone's rounded corners and island (#165): the larger of
+     the element's own padding and the safe-area inset. */
+  .tsi-safe-x {
+    padding-left: max(var(--tsi-pad-x, 1rem), env(safe-area-inset-left));
+    padding-right: max(var(--tsi-pad-x, 1rem), env(safe-area-inset-right));
+  }
+  @media (width >= 40rem) {
+    .tsi-safe-x {
+      --tsi-pad-x: 1.5rem;
+    }
+  }
+
   .tsi-header {
     border-bottom-color: var(--page-team-light, var(--primary));
     box-shadow: 0 6px 12px -8px

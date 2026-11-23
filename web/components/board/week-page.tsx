@@ -49,11 +49,11 @@ export async function WeekPage({
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageHeading title={`Week ${week}, ${season}`}>
+        <PageHeading title={`Week ${week}, ${season}`} phoneHidden>
           {isCurrent ? "This week's games. " : ""}TSI&apos;s projected score and win probability for
           every game with {teams}, next to the betting market.
         </PageHeading>
-        <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="mb-6 flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-start">
           <DivisionNav
             current={division}
             label="Games shown"

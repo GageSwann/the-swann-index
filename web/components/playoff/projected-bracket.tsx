@@ -8,6 +8,7 @@ import { teamColorVars } from "@/lib/format/color"
 import { chance } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
 
+import { BracketByRound } from "./bracket-by-round"
 import { type BracketGame, buildBracket, type Entry, type RealGame } from "./bracket-layout"
 
 // Geometry (px). A game is two 36 px slots; rows are one game plus a gap apart. Columns
@@ -44,34 +45,42 @@ export function ProjectedBracket({ playoff }: { playoff: Playoff }) {
   const height = Math.max(top(rows - 1) + GAME_H, champTop + CHAMP_H) + PAD
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-muted-foreground lg:hidden">Scroll sideways for later rounds.</p>
-      <div className="overflow-x-auto rounded-md border border-border">
-        <div className="relative" style={{ width, height }}>
-          <Connectors games={games} cols={cols} />
-          {rounds.map((round, r) => (
-            <section key={round.name} aria-label={round.name}>
-              <h3 className="absolute" style={{ left: left(cols, r), top: PAD, width: cols.width }}>
-                <span className="block font-semibold">{round.name}</span>
-                {round.note && (
-                  <span className="block text-xs text-muted-foreground">{round.note}</span>
-                )}
-              </h3>
-              <ol>
-                {games[r].map((g) => (
-                  <Game key={g.index} game={g} seeds={playoff.seeds} cols={cols} />
-                ))}
-              </ol>
-            </section>
-          ))}
-          <Champion
-            entry={champion}
-            decided={final.real?.completed ?? false}
-            style={{ left: left(cols, final.round), top: champTop, width: cols.width }}
-          />
+    <>
+      <div className="sm:hidden">
+        <BracketByRound playoff={playoff} />
+      </div>
+      <div className="space-y-2 max-sm:hidden">
+        <p className="text-sm text-muted-foreground lg:hidden">Scroll sideways for later rounds.</p>
+        <div className="overflow-x-auto rounded-md border border-border">
+          <div className="relative" style={{ width, height }}>
+            <Connectors games={games} cols={cols} />
+            {rounds.map((round, r) => (
+              <section key={round.name} aria-label={round.name}>
+                <h3
+                  className="absolute"
+                  style={{ left: left(cols, r), top: PAD, width: cols.width }}
+                >
+                  <span className="block font-semibold">{round.name}</span>
+                  {round.note && (
+                    <span className="block text-xs text-muted-foreground">{round.note}</span>
+                  )}
+                </h3>
+                <ol>
+                  {games[r].map((g) => (
+                    <Game key={g.index} game={g} seeds={playoff.seeds} cols={cols} />
+                  ))}
+                </ol>
+              </section>
+            ))}
+            <Champion
+              entry={champion}
+              decided={final.real?.completed ?? false}
+              style={{ left: left(cols, final.round), top: champTop, width: cols.width }}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

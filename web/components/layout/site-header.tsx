@@ -10,8 +10,8 @@ import { ThemeToggle } from "./theme-toggle"
  */
 export function SiteHeader() {
   return (
-    <header className="tsi-header border-b-2 bg-card">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6">
+    <header className="tsi-header border-b-2 bg-card pt-[env(safe-area-inset-top)]">
+      <div className="tsi-safe-x mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 py-2.5">
         <Link href="/" className="flex items-center gap-2.5" aria-label="The Swann Index, home">
           <span className="rounded-sm bg-primary px-1.5 py-0.5 text-xl leading-none font-bold text-primary-foreground font-stretch-condensed">
             TSI
