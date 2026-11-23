@@ -84,9 +84,9 @@ export function SportMenus({ sports }: { sports: Sport[] }) {
 }
 
 /**
- * One sport's menu: the sport's short name ("CFB"), every button the same width with the name centered, so
- * the sports sit evenly spaced; a sport
- * without sections yet says "Coming Soon". Opens when a mouse hovers it, and on click,
+ * One sport's menu: the sport's short name ("CFB") in a button that hugs it, with the same
+ * padding and gap for every sport, so the names sit evenly spaced (#189); a sport without
+ * sections yet says "Coming Soon". Opens when a mouse hovers it, and on click,
  * tap, Enter or Space; closes on Escape (focus back to the button). The list hangs off
  * the button's right side, unless that would run past the window: then it opens leftward.
  * A disclosure (button + list of links) rather than an ARIA menu, so screen readers read
@@ -145,7 +145,7 @@ function SportMenu({
           else onClose()
         }}
         className={cn(
-          "flex min-w-18 items-center justify-center rounded-sm px-2.5 py-1.5 text-sm font-semibold",
+          "flex items-center justify-center rounded-sm px-2 py-1.5 text-sm font-semibold",
           active || open ? "text-foreground" : "text-muted-foreground hover:text-foreground",
           active && "tsi-nav-active",
         )}
