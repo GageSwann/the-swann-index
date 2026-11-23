@@ -34,6 +34,9 @@ export const metadata: Metadata = {
     locale: "en_US",
   },
   twitter: { card: "summary_large_image", title: SITE_NAME, description: DESCRIPTION },
+  // Opened from an iPhone's Home Screen: full screen, the page drawn behind a transparent
+  // status bar (the header pads by the safe-area inset), no separate bar above it (#165).
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
   // Search engines stay out until ALLOW_INDEXING=1 (decision #86); link previews still work.
   robots: ALLOW_INDEXING ? undefined : { index: false, follow: false },
 }
