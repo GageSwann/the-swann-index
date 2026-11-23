@@ -4,9 +4,11 @@ import { WinProbBar } from "@/components/board/win-prob-bar"
 import { TeamLogo } from "@/components/team/team-logo"
 import type { GameOfWeekView, TeamRecord, TeamRef, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
-import { points, record } from "@/lib/format/numbers"
+import { chance, points, record } from "@/lib/format/numbers"
 import { tsiMoneyline, tsiSpread, tsiTotal } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
+
+import { PickSign } from "./pick-sign"
 
 type Props = {
   pick: GameOfWeekView | null // this poll week's pick (#141, #142)
@@ -50,6 +52,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
   const rank = new Map(teams.map((t) => [t.team.id, t.rank]))
   const final = game.result?.final ? game.result : null
   const matchup = `${game.away.school} ${game.neutral ? "vs." : "at"} ${game.home.school}`
+  const homePicked = p.home_win_prob >= 0.5 // TSI's straight-up pick (13.10), home on a tie
   return (
     <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col gap-2", className)}>
       {heading}
@@ -74,8 +77,17 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
 
         {/* Logos above the names give each name the column's full width; the scores share
             one row, so they line up even if a long name wraps. */}
+        <p className="sr-only">
+          TSI&apos;s pick: {homePicked ? game.home.school : game.away.school},{" "}
+          {chance(homePicked ? p.home_win_prob : 1 - p.home_win_prob)}.
+        </p>
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-4 gap-y-1">
-          <Side team={game.away} rank={rank.get(game.away.id) ?? null} rec={pick.away_record} />
+          <Side
+            team={game.away}
+            rank={rank.get(game.away.id) ?? null}
+            rec={pick.away_record}
+            picked={!homePicked}
+          />
           <span className="self-center pt-8 text-sm text-muted-foreground">
             {game.neutral ? "vs." : "at"}
           </span>
@@ -83,6 +95,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
             team={game.home}
             rank={rank.get(game.home.id) ?? null}
             rec={pick.home_record}
+            picked={homePicked}
             alignEnd
           />
           <Score value={final ? final.away_points : p.proj_away} />
@@ -129,11 +142,13 @@ function Side({
   team,
   rank: current,
   rec,
+  picked,
   alignEnd = false,
 }: {
   team: TeamRef
   rank: number | null // in the chosen ranking's Top 25, if there
   rec: TeamRecord | null | undefined // from the pick (any team, ranked or not; #155)
+  picked: boolean // TSI expects this team to win: its sign stands by the logo (13.10)
   alignEnd?: boolean
 }) {
   const rank = current !== null && current <= 25 ? `#${current} ` : ""
@@ -152,7 +167,16 @@ function Side({
           alignEnd ? "items-end" : "items-start",
         )}
       >
-        <TeamLogo team={team} size={48} />
+        <span className="relative">
+          <TeamLogo team={team} size={48} />
+          {/* On the logo's outer side, overlapping its edge, leaning away from the middle. */}
+          {picked && (
+            <PickSign
+              lean={alignEnd ? "right" : "left"}
+              className={cn("absolute -bottom-2.5", alignEnd ? "-right-1.5" : "-left-1.5")}
+            />
+          )}
+        </span>
         <span className="max-w-full text-2xl leading-tight font-bold text-balance font-stretch-condensed group-hover:underline">
           <span className="text-muted-foreground">{rank}</span>
           {team.school}

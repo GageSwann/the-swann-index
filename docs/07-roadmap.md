@@ -56,8 +56,11 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [x] **4. Run it** (2026-11-20, `rebuild.yml` on production): verify replayed the newest nightly run (79, Nov 20 21:25 UTC) exactly: 532 ratings and 182 published forecasts, 0 differ. Then 68 days: 63 rating runs (Aug 27 – Oct 18 and Nov 10–19; ranks from Aug 30), 985 games given a rebuilt forecast (incl. games the Oct 20 – Nov 9 board never published), a sim and games of the week every rebuilt Sunday (Nov 15's late picks replaced; the Sunday run chose the same four games). The site refreshed once Render served `rebuilt`. Notre Dame: rating history every day from Sep 7, a TSI line and win chance on every game.
 
 ## Later: ideas to prototype first (owner, "maybe")
-- [ ] **13.9 Team-spirit team pages.** Each team page dressed in its school's identity: its colors through the page's accents and glows (13.1), its logo used more boldly (a large faded mark in the header, logo details in section headers), maybe alternate logos and wordmarks where CFBD provides them. Data first, decoration behind it, in both themes. Only the logos and colors we already get from CFBD. Prototype on two or three teams, review with the owner, then roll out.
+- [ ] **13.9 Team-spirit team pages** (skipped for now, owner, 2026-11-23). Each team page dressed in its school's identity: its colors through the page's accents and glows (13.1), its logo used more boldly (a large faded mark in the header, logo details in section headers), maybe alternate logos and wordmarks where CFBD provides them. Data first, decoration behind it, in both themes. Only the logos and colors we already get from CFBD. Prototype on two or three teams, review with the owner, then roll out.
 - [ ] **13.10 "TSI's Pick" on This week.** Next to spread, total and moneyline, a small college-football picket sign with a swan logo on the side of the team TSI expects to win (straight up, with its win chance). The model's prediction, not a Book bet, so it fits the Book being private (#127). Needs an original swan mark (SVG, our own artwork), sized for phones. Prototype a few designs and pick one with the owner.
+  - [x] Prototypes and the swan mark (https://claude.ai/artifact/6u4D4JDPiwqwHMFA3W18Qn); owner: home page first (#180).
+  - [x] **Home page, Game of the Week cards** (#180): the sign beside the predicted winner's logo, leaning outward; stays after the final.
+  - [ ] This week's cards (later, owner: perfect the home page first).
 
 ---
 
