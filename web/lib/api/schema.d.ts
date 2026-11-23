@@ -312,6 +312,7 @@ export interface components {
         };
         /** GameOfWeekView */
         GameOfWeekView: {
+            away_conf_record?: components["schemas"]["Record"] | null;
             /** Away Playoff Swing */
             away_playoff_swing: number | null;
             /** Away Rank */
@@ -324,6 +325,7 @@ export interface components {
             /** Division */
             division: string;
             game: components["schemas"]["GameSummary"];
+            home_conf_record?: components["schemas"]["Record"] | null;
             /** Home Playoff Swing */
             home_playoff_swing: number | null;
             /** Home Rank */

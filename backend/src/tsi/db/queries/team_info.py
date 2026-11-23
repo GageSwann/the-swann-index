@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import Row, func, select, union_all
+from sqlalchemy import Row, func, or_, select, union_all
 from sqlalchemy.orm import Session
 
 from tsi.db.models import Game, Team, TeamRating, TeamSeason
@@ -125,20 +125,31 @@ def stored_ratings(
 
 
 def records(
-    session: Session, season: int, before: datetime, team_ids: Iterable[int] | None = None
+    session: Session,
+    season: int,
+    before: datetime,
+    team_ids: Iterable[int] | None = None,
+    conference_only: bool = False,
 ) -> dict[int, Record]:
     """Win-loss records of every team (or only `team_ids`) from games completed and kicked
-    off before `before`.
+    off before `before`. `conference_only`: the conference record, as the standings count it
+    (#190): games CFBD flags as conference games, without conference title games (billed
+    as a "championship", like the season sim's standings, `db/queries/conference.py`).
 
     Tallied in the database (one row per team instead of every game of every division).
     """
-    done = (
+    done = [
         Game.season == season,
         Game.completed,
         Game.home_points.is_not(None),
         Game.away_points.is_not(None),
         Game.start_time < before,
-    )
+    ]
+    if conference_only:
+        done += [
+            Game.conference_game,
+            or_(Game.notes.is_(None), ~Game.notes.ilike("%championship%")),
+        ]
     home = select(
         Game.home_id.label("team_id"),
         Game.home_points.label("pf"),

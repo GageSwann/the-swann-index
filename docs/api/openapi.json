@@ -382,6 +382,16 @@
       },
       "GameOfWeekView": {
         "properties": {
+          "away_conf_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "away_playoff_swing": {
             "anyOf": [
               {
@@ -435,6 +445,16 @@
           },
           "game": {
             "$ref": "#/components/schemas/GameSummary"
+          },
+          "home_conf_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "home_playoff_swing": {
             "anyOf": [

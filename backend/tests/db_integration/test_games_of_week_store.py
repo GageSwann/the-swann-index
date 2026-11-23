@@ -47,6 +47,11 @@ def test_saved_once_per_poll_week_and_served(sessions) -> None:
     assert lines["total"] == center["markets"]["total"]
     assert lines["spread"]["line"] % 1 == 0.5 and lines["total"]["line"] % 1 == 0.5  # #187
     assert lines["spread"]["first"]["fair"] and lines["spread"]["second"]["fair"]
+    # Conference records beside the overall ones (#190): a dict for a conference team.
+    assert {"wins", "losses", "ties"} <= set(
+        first["home_conf_record"] or {"wins", "losses", "ties"}
+    )
+    assert "away_conf_record" in first
     assert (first["home_rank"], first["home_playoff_swing"], first["home_title_swing"]) == (
         4,
         0.25,
