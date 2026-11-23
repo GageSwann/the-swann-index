@@ -5,7 +5,7 @@ import { TeamLogo } from "@/components/team/team-logo"
 import type { GameOfWeekView, TeamRecord, TeamRef, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { chance, points, record } from "@/lib/format/numbers"
-import { tsiMoneyline, tsiSpread, tsiTotal } from "@/lib/format/odds"
+import { american, tsiMoneyline, tsiSpread, tsiTotal } from "@/lib/format/odds"
 import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
@@ -118,6 +118,9 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
           )}
         </div>
 
+        {/* A thin rule between the win chances and TSI's lines (owner). */}
+        <hr className="border-border" />
+
         <LinesBoard
           rows={[
             {
@@ -217,6 +220,17 @@ type LinesRow = {
   moneyline: string
 }
 
+/** The standard price under a spread or total, small, like a book's board (owner, #187). */
+const STANDARD_PRICE = -110
+
+function Price() {
+  return (
+    <span className="block text-xs font-normal text-muted-foreground">
+      {american(STANDARD_PRICE)}
+    </span>
+  )
+}
+
 /**
  * TSI's lines laid out like a sportsbook's board (owner, 2026-11-23): one row per team, away
  * on top, and each market in its own cell under its column (Spread, Total, Moneyline), so
@@ -261,10 +275,14 @@ function LinesBoard({ rows }: { rows: LinesRow[] }) {
                 </span>
               </span>
             </th>
-            <td className={cell}>{r.spread}</td>
+            <td className={cell}>
+              {r.spread}
+              <Price />
+            </td>
             <td className={cell}>
               <span className="mr-1 font-normal text-muted-foreground">{r.total[0]}</span>
               {r.total[1]}
+              <Price />
             </td>
             <td className={cell}>{r.moneyline}</td>
           </tr>

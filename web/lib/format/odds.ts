@@ -38,19 +38,20 @@ export function favoriteMoneyline(home: TeamRef, away: TeamRef, homeMl: number, 
 }
 
 /*
- * TSI's own lines as a sportsbook posts them (owner, 2026-11-23, #158): spreads, totals and
- * team totals at the nearest half point (−8.8 → −9, −8.6 → −8.5, 44.9 → 45), moneylines at
- * the nearest 5 (−273 → −275). Rounded by size, so both sides always mirror. Vegas lines
+ * TSI's own lines as a sportsbook posts them (owner, #158, #187): spreads, totals and team
+ * totals always on a half point, the nearest one ending in .5 (−8.8 → −8.5, 9 → 9.5,
+ * 44.9 → 44.5), so they never push; moneylines at the nearest 5 (−273 → −275). Rounded by
+ * size, so both sides always mirror; the API's main lines follow the same rule. Vegas lines
  * are shown as the books post them and never pass through these.
  */
 
-/** The nearest half point, rounding by size (a quarter rounds away from zero). */
+/** The nearest line ending in .5, by size (#187): −8.8 → −8.5, 9 → 9.5; zero → +0.5. */
 export function bookLine(value: number): number {
-  const size = Math.floor(Math.abs(value) * 2 + 0.5) / 2
+  const size = Math.floor(Math.abs(value)) + 0.5
   return value < 0 ? -size : size
 }
 
-/** "−9", "−8.5", "45": whole numbers without a decimal, like a book. */
+/** "−8.5", "45.5" (whole numbers, which TSI no longer posts, print without a decimal). */
 export function halfText(value: number): string {
   const size = Math.abs(value)
   const text = Number.isInteger(size) ? size.toFixed(0) : size.toFixed(1)
@@ -63,7 +64,7 @@ export function bookMoneyline(odds: number): number {
   return odds < 0 && size > 100 ? -size : size
 }
 
-/** TSI's spread naming the favorite: "LSU −9", "Pick 'em". */
+/** TSI's spread naming the favorite: "LSU −8.5". */
 export function tsiFavoriteLine(spread: number, home: TeamRef, away: TeamRef): string {
   const line = bookLine(spread)
   if (line === 0) return "Pick 'em"
@@ -71,12 +72,12 @@ export function tsiFavoriteLine(spread: number, home: TeamRef, away: TeamRef): s
   return `${favorite.abbreviation ?? favorite.school} ${halfText(-Math.abs(line))}`
 }
 
-/** TSI's spread from one team's side: "+9", "−8.5", "PK". */
+/** TSI's spread from one team's side: "+8.5", "−8.5". */
 export function tsiSpread(spread: number): string {
   return teamSpread(bookLine(spread))
 }
 
-/** TSI's total or team total: "45", "56.5". */
+/** TSI's total or team total: "44.5", "56.5". */
 export function tsiTotal(total: number): string {
   return halfText(bookLine(total))
 }

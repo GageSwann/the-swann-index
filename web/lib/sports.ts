@@ -7,6 +7,7 @@ export type SportSection = {
   href: string
   label: string
   prefix: string // a page belongs to the section when its path starts with this
+  exact?: boolean // only this very page (a sport's Home, whose prefix every page shares)
 }
 
 export type Sport = {
@@ -24,7 +25,7 @@ export const SPORTS: Sport[] = [
     emoji: "🏈",
     name: "College Football",
     sections: [
-      { href: "/cfb", label: "Home", prefix: "/cfb" },
+      { href: "/cfb", label: "Home", prefix: "/cfb", exact: true },
       { href: "/cfb/rankings", label: "Rankings", prefix: "/cfb/rankings" },
       { href: "/cfb/schedule", label: "Schedule", prefix: "/cfb/schedule" },
       { href: "/cfb/playoffs", label: "Playoffs", prefix: "/cfb/playoffs" },
@@ -34,7 +35,8 @@ export const SPORTS: Sport[] = [
   { key: "cbase", label: "CBASE", emoji: "⚾", name: "College Baseball", sections: [] },
 ]
 
-/** Is this page one of the section's pages? */
+/** Is this page one of the section's pages? (Whole path segments: /cfb/rankingsx isn't.) */
 export function inSection(pathname: string, section: SportSection): boolean {
-  return pathname.startsWith(section.prefix)
+  if (pathname === section.prefix) return true
+  return !section.exact && pathname.startsWith(`${section.prefix}/`)
 }

@@ -161,7 +161,10 @@ function SportMenu({
         className={cn("absolute top-full z-50 pt-1.5", leftward ? "right-0" : "left-0")}
       >
         <div className="min-w-44 rounded-md border border-border bg-card p-1.5">
-          <p className="px-2.5 pt-1 pb-1.5 text-xs text-muted-foreground">{sport.name}</p>
+          {/* The sport's name, then a thin divider before its sections (owner). */}
+          <p className="mx-1 mb-1 border-b border-border px-1.5 pt-1 pb-1.5 text-xs text-muted-foreground">
+            {sport.name}
+          </p>
           {soon && <p className="px-2.5 pt-0.5 pb-2 text-sm text-foreground">Coming Soon</p>}
           <ul>
             {sport.sections.map((section) => {
