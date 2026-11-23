@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [meta, teams] = await Promise.all([getMeta(), getTeams({ division: "all" })])
   const week = `/week/${meta.season}/${Math.max(1, meta.week)}`
   const pages = [
-    "",
+    "/cfb",
     "/rankings",
     "/rankings/fcs",
     "/rankings/all",

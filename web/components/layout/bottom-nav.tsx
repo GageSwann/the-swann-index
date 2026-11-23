@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const ITEMS = [
-  { href: "/", label: "Home", icon: House, match: (p: string) => p === "/" },
+  { href: "/cfb", label: "Home", icon: House, match: (p: string) => p.startsWith("/cfb") },
   {
     href: "/rankings",
     label: "Rankings",

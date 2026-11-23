@@ -24,6 +24,7 @@ export const SPORTS: Sport[] = [
     emoji: "🏈",
     name: "College Football",
     sections: [
+      { href: "/cfb", label: "Home", prefix: "/cfb" },
       { href: "/rankings", label: "Rankings", prefix: "/rankings" },
       { href: "/week", label: "Schedule", prefix: "/week" },
       { href: "/playoff", label: "Playoffs", prefix: "/playoff" },
