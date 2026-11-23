@@ -116,13 +116,6 @@
   .tsi-lit {
     box-shadow: 0 0 0 1px var(--light);
   }
-  /* Cards that open a page: the border takes the accent on hover. */
-  .tsi-lit-hover {
-    transition: border-color 120ms;
-  }
-  .tsi-lit-hover:hover {
-    border-color: var(--light);
-  }
 
   /* The selected main-nav item: a plain 2 px underline. */
   .tsi-nav-active {
@@ -177,6 +170,21 @@
   .dark .tsi-team-split {
     --bl-1: var(--bl-1-dark);
     --bl-2: var(--bl-2-dark);
+  }
+}
+
+/* Cards that open a page (#169): on hover the border takes the accent (the favored team's
+   color, or the text color on a neutral card) and the panel lifts one shade. In the
+   utilities layer so it wins over the card's own `border-border` and `bg-card`. */
+@layer utilities {
+  .tsi-lit-hover {
+    transition:
+      border-color 150ms,
+      background-color 150ms;
+  }
+  .tsi-lit-hover:hover {
+    border-color: color-mix(in oklab, var(--light) 75%, var(--border));
+    background-color: color-mix(in oklab, var(--foreground) 4%, var(--card));
   }
 }
 
