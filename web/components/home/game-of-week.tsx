@@ -104,45 +104,22 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
           )}
         </div>
 
-        {/* TSI's lines only (owner): a stat strip, each label above both sides of its line,
-            away on top and home below like the card (owner, 2026-11-23). */}
-        <dl className="grid grid-cols-3 divide-x divide-border rounded-md border border-border">
-          {[
+        <LinesBoard
+          rows={[
             {
-              label: "TSI Spread",
-              rows: [
-                [short(game.away), tsiSpread(-p.spread)],
-                [short(game.home), tsiSpread(p.spread)],
-              ],
+              team: game.away,
+              spread: tsiSpread(-p.spread),
+              total: ["O", tsiTotal(p.total)],
+              moneyline: tsiMoneyline(p.fair_away_ml),
             },
             {
-              label: "TSI Total",
-              rows: [
-                ["Over", tsiTotal(p.total)],
-                ["Under", tsiTotal(p.total)],
-              ],
+              team: game.home,
+              spread: tsiSpread(p.spread),
+              total: ["U", tsiTotal(p.total)],
+              moneyline: tsiMoneyline(p.fair_home_ml),
             },
-            {
-              label: "TSI Moneyline",
-              rows: [
-                [short(game.away), tsiMoneyline(p.fair_away_ml)],
-                [short(game.home), tsiMoneyline(p.fair_home_ml)],
-              ],
-            },
-          ].map(({ label, rows }) => (
-            <div key={label} className="flex flex-col items-center gap-1 px-2 py-2.5 text-center">
-              <dt className="text-xs text-muted-foreground">{label}</dt>
-              {rows.map(([side, value]) => (
-                <dd key={side} className="flex max-w-full gap-1.5 text-sm whitespace-nowrap">
-                  <span className="truncate text-muted-foreground" title={side}>
-                    {side}
-                  </span>
-                  <span className="shrink-0 font-semibold tabular-nums">{value}</span>
-                </dd>
-              ))}
-            </div>
-          ))}
-        </dl>
+          ]}
+        />
       </div>
     </section>
   )
@@ -206,4 +183,68 @@ function Score({ value, alignEnd = false }: { value: number; alignEnd?: boolean 
 /** A team's short name for the line rows: its abbreviation, else the school. */
 function short(team: TeamRef): string {
   return team.abbreviation ?? team.school
+}
+
+type LinesRow = {
+  team: TeamRef
+  spread: string
+  total: [string, string] // ["O" | "U", line]
+  moneyline: string
+}
+
+/**
+ * TSI's lines laid out like a sportsbook's board (owner, 2026-11-23): one row per team, away
+ * on top, and each market in its own cell under its column (Spread, Total, Moneyline), so
+ * the two sides of a line sit in separate cells instead of a stacked list.
+ */
+function LinesBoard({ rows }: { rows: LinesRow[] }) {
+  const cell =
+    "rounded-md border border-border bg-background px-1 py-2 text-center text-sm font-semibold tabular-nums"
+  return (
+    <table className="-mx-1.5 w-[calc(100%+0.75rem)] table-fixed border-separate border-spacing-1.5">
+      <caption className="sr-only">TSI&apos;s lines</caption>
+      <colgroup>
+        <col className="w-[34%]" />
+        <col />
+        <col />
+        <col />
+      </colgroup>
+      <thead>
+        <tr className="text-xs text-muted-foreground">
+          <th scope="col" className="text-left font-normal">
+            TSI lines
+          </th>
+          <th scope="col" className="font-normal">
+            Spread
+          </th>
+          <th scope="col" className="font-normal">
+            Total
+          </th>
+          <th scope="col" className="font-normal">
+            Moneyline
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.team.id}>
+            <th scope="row" className="text-left font-medium">
+              <span className="flex min-w-0 items-center gap-2">
+                <TeamLogo team={r.team} size={22} />
+                <span className="truncate text-sm" title={r.team.school}>
+                  {short(r.team)}
+                </span>
+              </span>
+            </th>
+            <td className={cell}>{r.spread}</td>
+            <td className={cell}>
+              <span className="mr-1 font-normal text-muted-foreground">{r.total[0]}</span>
+              {r.total[1]}
+            </td>
+            <td className={cell}>{r.moneyline}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
 }
