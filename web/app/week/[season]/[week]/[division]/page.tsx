@@ -30,9 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default function DivisionWeekPage(props: Props) {
   return (
-    <Suspense
-      fallback={<PageHeading title="This week">Loading the week&apos;s games.</PageHeading>}
-    >
+    <Suspense fallback={<PageHeading title="Schedule">Loading the week&apos;s games.</PageHeading>}>
       <Board {...props} />
     </Suspense>
   )

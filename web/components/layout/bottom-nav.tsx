@@ -16,7 +16,7 @@ const ITEMS = [
   },
   {
     href: "/week",
-    label: "This week",
+    label: "Schedule",
     icon: CalendarDays,
     match: (p: string) => p.startsWith("/week"),
   },

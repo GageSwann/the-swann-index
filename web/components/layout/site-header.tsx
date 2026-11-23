@@ -1,10 +1,13 @@
 import Link from "next/link"
 
-import { MainNav } from "./main-nav"
+import { SPORTS } from "@/lib/sports"
+
+import { SportMenu } from "./sport-menu"
 import { ThemeToggle } from "./theme-toggle"
 
 /**
- * The "score bug": the TSI block, the nav, and a 2 px rule underneath (white or black; a
+ * The "score bug": the TSI block, a menu per sport (CFB: Rankings, Schedule, Playoffs), the
+ * theme toggle, and a 2 px rule underneath (white or black; a
  * team page's color on team pages, `.tsi-header`). This strip is the site's one bold
  * element; pages stay quiet. The week is stated by each page, not here (owner, #160).
  */
@@ -20,10 +23,12 @@ export function SiteHeader() {
             The Swann Index
           </span>
         </Link>
-        {/* Phones: the sections live in the bottom bar (BottomNav, #163). */}
-        <div className="hidden items-center sm:ml-auto sm:flex">
-          <MainNav />
-        </div>
+        {/* One menu per sport (CFB now); phones keep the bottom bar (BottomNav, #163). */}
+        <nav aria-label="Main" className="hidden items-center gap-1 sm:ml-auto sm:flex">
+          {SPORTS.map((sport) => (
+            <SportMenu key={sport.key} sport={sport} />
+          ))}
+        </nav>
         <div className="ml-auto sm:ml-0">
           <ThemeToggle />
         </div>

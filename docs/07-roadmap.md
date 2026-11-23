@@ -60,7 +60,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [ ] **13.10 "TSI's Pick" on This week.** Next to spread, total and moneyline, a small college-football picket sign with a swan logo on the side of the team TSI expects to win (straight up, with its win chance). The model's prediction, not a Book bet, so it fits the Book being private (#127). Needs an original swan mark (SVG, our own artwork), sized for phones. Prototype a few designs and pick one with the owner.
   - [x] Prototypes and the swan mark (https://claude.ai/artifact/6u4D4JDPiwqwHMFA3W18Qn); owner: home page first (#180).
   - [x] **Home page, Game of the Week cards** (#180): the sign beside the predicted winner's logo, leaning outward; stays after the final.
-  - [ ] This week's cards (later, owner: perfect the home page first).
+  - [ ] Schedule's cards (the board, formerly This week; later, owner: perfect the home page first).
 
 ---
 
