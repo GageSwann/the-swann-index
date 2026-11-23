@@ -4,8 +4,8 @@ import type { TeamRef } from "@/lib/api/types"
 
 // Team colors are accents only and must stand out from the background (doc 06, #138).
 // Card backgrounds per theme (app/globals.css) and the fallback neutral.
-const CARD = { dark: "#0e0e0f", light: "#ffffff" }
-const NEUTRAL = { dark: "#9a9a9f", light: "#5a5a60" }
+const CARD = { dark: "#252526", light: "#ffffff" }
+const NEUTRAL = { dark: "#9d9d9d", light: "#616161" }
 const MIN_CONTRAST = 2 // graphical accent next to a text label, not text itself
 // An adjusted color aims a little higher: dark navies and greens lifted to exactly 2:1
 // still read as dull on black (contact sheet, 2026-11-06).

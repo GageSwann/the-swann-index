@@ -35,36 +35,38 @@
  * setting `--page-team-*` on :root through `<PageTeamLight>`).
  */
 
-/* Light ("white swan") */
+/* Light ("white swan"): VS Code's Light+ greys (owner, 2026-11-23, #167): a soft grey
+   page, white panels, near-black text instead of pure black. */
 :root {
   --radius: 0.25rem;
-  --background: #f4f4f4;
-  --foreground: #0a0a0a;
+  --background: #f3f3f3;
+  --foreground: #1f1f1f;
   --card: #ffffff;
   --popover: #ffffff;
-  --primary: #0a0a0a;
+  --primary: #1f1f1f;
   --primary-foreground: #ffffff;
-  --muted: #eaeaea;
-  --muted-foreground: #5a5a60;
-  --border: #d4d4d6;
-  --ring: #0a0a0a;
-  --up: #11806b;
+  --muted: #ececec;
+  --muted-foreground: #616161;
+  --border: #e5e5e5;
+  --ring: #1f1f1f;
+  --up: #0e7663;
   --down: #c2412f;
-  --light: var(--page-team-light, #0a0a0a);
+  --light: var(--page-team-light, #1f1f1f);
 }
 
-/* Dark ("black swan", default) */
+/* Dark ("black swan", default): VS Code's Dark+ charcoal (owner, 2026-11-23, #167): a
+   charcoal page and slightly lighter panels instead of pure black, softer off-white text. */
 .dark {
-  --background: #000000;
-  --foreground: #f5f5f3;
-  --card: #0e0e0f;
-  --popover: #0e0e0f;
-  --primary: #f5f5f3;
-  --primary-foreground: #000000;
-  --muted: #18181a;
-  --muted-foreground: #9a9a9f;
-  --border: #2b2b2e;
-  --ring: #f5f5f3;
+  --background: #1e1e1e;
+  --foreground: #d4d4d4;
+  --card: #252526;
+  --popover: #252526;
+  --primary: #e8e8e8;
+  --primary-foreground: #1e1e1e;
+  --muted: #2d2d30;
+  --muted-foreground: #9d9d9d;
+  --border: #3c3c3c;
+  --ring: #e8e8e8;
   --up: #3cc2a9;
   --down: #f07a6a;
   --light: var(--page-team-dark, #ffffff);

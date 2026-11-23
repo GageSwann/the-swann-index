@@ -9,17 +9,17 @@ const TOKENS = {
   // The brand has no hue (#137): TSI's own series are drawn in the text color, solid,
   // and other series are told apart by dash pattern and tone.
   dark: {
-    accent: "#f5f5f3",
-    text: "#f5f5f3",
-    muted: "#9a9a9f",
-    grid: "#2b2b2e",
-    surface: "#0e0e0f",
+    accent: "#e8e8e8",
+    text: "#d4d4d4",
+    muted: "#9d9d9d",
+    grid: "#3c3c3c",
+    surface: "#252526",
   },
   light: {
-    accent: "#0a0a0a",
-    text: "#0a0a0a",
-    muted: "#5a5a60",
-    grid: "#d4d4d6",
+    accent: "#1f1f1f",
+    text: "#1f1f1f",
+    muted: "#616161",
+    grid: "#e5e5e5",
     surface: "#ffffff",
   },
 }
