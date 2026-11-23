@@ -53,9 +53,12 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  // The body is the header's panel color: Safari paints the strip behind an iPhone's clock
+  // and battery with the body's background (#174). The page color starts below the header,
+  // on the wrapper around the content and footer.
   return (
     <html lang="en" className={`${instrument.variable} dark h-full`} suppressHydrationWarning>
-      <body className="flex min-h-full flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] antialiased sm:pb-0">
+      <body className="flex min-h-full flex-col bg-card pb-[calc(4rem+env(safe-area-inset-bottom))] antialiased sm:pb-0">
         <ThemeProvider>
           <a
             href="#main"
@@ -67,10 +70,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <SiteHeader />
           {/* At least a screen tall: content that streams in (Suspense) can't push a visible
               footer around, which Lighthouse counts as layout shift (decision #87). */}
-          <main id="main" className="tsi-safe-x mx-auto min-h-svh w-full max-w-7xl flex-1 py-8">
-            {children}
-          </main>
-          <SiteFooter />
+          <div className="flex flex-1 flex-col bg-background">
+            <main id="main" className="tsi-safe-x mx-auto min-h-svh w-full max-w-7xl flex-1 py-8">
+              {children}
+            </main>
+            <SiteFooter />
+          </div>
           <BottomNav />
         </ThemeProvider>
       </body>
