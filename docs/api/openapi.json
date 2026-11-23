@@ -734,6 +734,18 @@
             "title": "Field Size",
             "type": "integer"
           },
+          "games": {
+            "items": {
+              "$ref": "#/components/schemas/PlayoffGameView"
+            },
+            "title": "Games",
+            "type": "array"
+          },
+          "official": {
+            "default": false,
+            "title": "Official",
+            "type": "boolean"
+          },
           "projected": {
             "items": {
               "$ref": "#/components/schemas/PlayoffTeam"
@@ -793,6 +805,77 @@
           "teams"
         ],
         "title": "Playoff",
+        "type": "object"
+      },
+      "PlayoffGameView": {
+        "description": "A scheduled or played playoff game; the site matches it to a bracket game by its\ntwo teams.",
+        "properties": {
+          "away_points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Away Points"
+          },
+          "away_team_id": {
+            "title": "Away Team Id",
+            "type": "integer"
+          },
+          "completed": {
+            "title": "Completed",
+            "type": "boolean"
+          },
+          "game_id": {
+            "title": "Game Id",
+            "type": "integer"
+          },
+          "home_points": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Points"
+          },
+          "home_team_id": {
+            "title": "Home Team Id",
+            "type": "integer"
+          },
+          "home_win_prob": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Home Win Prob"
+          },
+          "start_time": {
+            "format": "date-time",
+            "title": "Start Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "game_id",
+          "start_time",
+          "home_team_id",
+          "away_team_id",
+          "home_points",
+          "away_points",
+          "completed",
+          "home_win_prob"
+        ],
+        "title": "PlayoffGameView",
         "type": "object"
       },
       "PlayoffTeam": {
@@ -2345,7 +2428,7 @@
     },
     "/playoff": {
       "get": {
-        "description": "Playoff odds, fair futures odds and a projected bracket (regular season only):\nthe College Football Playoff (`fbs`) or the 24-team FCS playoff (`fcs`).",
+        "description": "Playoff odds, fair futures odds and a projected bracket: the College Football\nPlayoff (`fbs`, regular season) or the 24-team FCS playoff (`fcs`; once the field is\nset, the official bracket with the real games: `official`, `games`).",
         "operationId": "get_playoff",
         "parameters": [
           {

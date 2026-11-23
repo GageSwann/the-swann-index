@@ -2,11 +2,12 @@
 
 Odds come from the nightly simulation: the College Football Playoff for FBS teams
 (decision #100), the 24-team FCS bracket for FCS teams (#125). Fair futures odds are the
-same chances as American odds without vig (doc 05 §7). Regular season only: None when
-the latest run has no playoff odds for that division.
+same chances as American odds without vig (doc 05 §7). None when the latest run has no
+playoff odds for that division. Once the FCS field is set, the FCS bracket is the official
+one, with the real games' scores and TSI's win chances (#157).
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -17,6 +18,11 @@ from tsi.db.queries.sim import StoredSim, stored_sims
 from tsi.db.queries.team_info import Record, TeamRef, records, stored_ratings, team_refs
 from tsi.divisions import FCS, RATED_DIVISION
 from tsi.services.read.bracket_rounds import BracketRound, cfp_rounds, fcs_rounds
+from tsi.services.read.playoff_bracket import (
+    PlayoffGameView,
+    fcs_playoff_games,
+    official_fcs_field,
+)
 from tsi.sim.cfp_format import FORMAT_2026, CfpFormat
 from tsi.sim.fcs_format import FCS_FORMAT_2026, FcsFormat
 from tsi.sim.projected_field import OddsRow, projected_fcs_field, projected_field
@@ -62,8 +68,10 @@ class Playoff:
     seeds: int  # seeded teams (12 CFP, 16 FCS); the rest are placed by rank
     byes: int  # seeds that skip the first round
     rounds: list[BracketRound]  # the bracket, first round first
-    projected: list[PlayoffTeam]  # one representative field, seed 1 first
+    projected: list[PlayoffTeam]  # one representative field (or the official one), seed 1 first
     teams: list[PlayoffTeam]  # every team in the division with a 1%+ chance, likeliest first
+    official: bool = False  # `projected` is the real field, in bracket position order (#157)
+    games: list[PlayoffGameView] = field(default_factory=list)  # the real playoff games
 
 
 def playoff(
@@ -72,6 +80,7 @@ def playoff(
     division: str = RATED_DIVISION,
     fmt: CfpFormat = FORMAT_2026,
     fcs_fmt: FcsFormat = FCS_FORMAT_2026,
+    now: datetime | None = None,  # for the real games' shown forecasts (official bracket)
 ) -> Playoff | None:
     run, _ = run_and_baseline(session, season)
     if run is None:
@@ -99,23 +108,41 @@ def playoff(
         for t, s in sims.items()
     ]
     fcs = division == FCS
-    field = projected_fcs_field(odds_rows, fcs_fmt) if fcs else projected_field(odds_rows, fmt)
+    params = run_params(session, run.id).get("sim", {})
+    official = _official(session, season, rows) if fcs and params.get("fcs_field") else None
+    if official is not None:
+        projected = official
+    else:
+        picked = projected_fcs_field(odds_rows, fcs_fmt) if fcs else projected_field(odds_rows, fmt)
+        projected = [rows[r.team_id] for r in picked]
     return Playoff(
         season=run.season,
         week=run.week,
         as_of=run.run_at,
-        sims=run_params(session, run.id).get("sim", {}).get("sims"),
+        sims=params.get("sims"),
         division=division,
         field_size=fcs_fmt.field_size if fcs else fmt.field_size,
         seeds=fcs_fmt.seeds if fcs else fmt.field_size,
         byes=fcs_fmt.byes if fcs else fmt.byes,
         rounds=fcs_rounds(fcs_fmt) if fcs else cfp_rounds(fmt),
-        projected=[rows[r.team_id] for r in field],
+        projected=projected,
         teams=sorted(
             (row for row in rows.values() if row.playoff_prob >= LISTED),
             key=lambda r: (-r.playoff_prob, -r.champion_prob, r.team.school),
         ),
+        official=official is not None,
+        games=fcs_playoff_games(session, season, now or run.run_at) if official else [],
     )
+
+
+def _official(
+    session: Session, season: int, rows: dict[int, "PlayoffTeam"]
+) -> list["PlayoffTeam"] | None:
+    """The official field in bracket order, if every team in it has stored odds."""
+    ids = official_fcs_field(session, season)
+    if ids is None or any(t not in rows for t in ids):
+        return None
+    return [rows[t] for t in ids]
 
 
 def _team(team: TeamRef, rec: Record, rank: int | None, s: StoredSim) -> PlayoffTeam:

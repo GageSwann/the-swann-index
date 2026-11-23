@@ -2,7 +2,9 @@
 
 Picked once per poll week, from the first nightly run on or after Sunday (Eastern), and
 held until the next Sunday (#126, #127): the coming games through the next Sunday, between
-two teams of the division.
+two teams of the division. A game added to the schedule after the pick (an FCS playoff
+round, announced Sunday afternoon) replaces it if it's better and the pick hasn't
+kicked off (#157).
 
 The pick comes from the chosen ranking (Power or Résumé) alone (owner, 2026-11-06): the best
 game is the one whose **lower-ranked team is ranked highest** (#3 vs #6 beats #1 vs #10:
@@ -87,9 +89,15 @@ def pick_games_of_week(
 
 
 def _order(p: GameOfWeekPick) -> tuple[int, int, float, int]:
+    return pick_order(p.home_rank, p.away_rank, p.closeness, p.game_id)
+
+
+def pick_order(
+    home_rank: int | None, away_rank: int | None, closeness: float, game_id: int
+) -> tuple[int, int, float, int]:
     """Best first: the lower-ranked team's rank, the higher-ranked team's, then closeness."""
-    home, away = p.home_rank or UNRANKED, p.away_rank or UNRANKED
-    return (max(home, away), min(home, away), -p.closeness, p.game_id)
+    home, away = home_rank or UNRANKED, away_rank or UNRANKED
+    return (max(home, away), min(home, away), -closeness, game_id)
 
 
 def _ranks(rows: Sequence[TeamRanking], kind: str) -> dict[int, int]:

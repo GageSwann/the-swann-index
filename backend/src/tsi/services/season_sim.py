@@ -7,7 +7,9 @@ already played count as they ended. Each conference's champion follows from the
 simulated standings (sim/conference.py): FBS title games count as a win for their
 champion; most FCS conferences have none (#125). Playoff odds follow from each
 simulated season's final records (services/season_playoffs.py: the CFP for FBS teams,
-the 24-team FCS bracket for FCS teams; regular season only). FBS and FCS teams share
+the 24-team FCS bracket for FCS teams; regular season only). Once the FCS field is set,
+FCS odds come from the official bracket instead, into the postseason (#157,
+services/fcs_bracket_projection.py). FBS and FCS teams share
 one simulation, so their games against each other agree. Nothing is stored here: the
 nightly `tsi run` saves the result (services/sim_store.py).
 """
@@ -30,6 +32,7 @@ from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
 from tsi.services.compute_rankings import Rankings, build_rankings
 from tsi.services.conference_setup import build_conferences
+from tsi.services.fcs_bracket_projection import official_fcs_odds
 from tsi.services.live_inputs import LiveInputs, load_live_inputs
 from tsi.services.playoff_projection import TeamPlayoff
 from tsi.services.predict import forecast_game
@@ -85,6 +88,7 @@ class SeasonProjection:
     game_stakes: dict[int, GameStakes] = field(default_factory=dict)
     # game id -> forecast, for every remaining regular-season game simulated (#144)
     game_forecasts: dict[int, GameOutlook] = field(default_factory=dict)
+    fcs_official: bool = False  # FCS odds come from the official bracket (#157)
 
 
 def project_season(
@@ -198,6 +202,22 @@ def project_season(
             now + timedelta(days=STAKES_DAYS),
         )
 
+    # After the CFP, so its odds use the same random draws as before (#157).
+    official = (
+        official_fcs_odds(
+            session,
+            season,
+            fcs,
+            index,
+            simulated,
+            lambda a, b, neutral: margin(teams[a], teams[b], neutral),
+            fcs_fmt,
+        )  # fmt: skip
+        if fcs_field_set
+        else None
+    )
+    if official is not None:
+        playoff |= official
     conference_of = {m.team_id: m.conference for m in members}
     projections = {
         t: _projection(
@@ -228,7 +248,16 @@ def project_season(
         for game_id, f in forecasts.items()
     }
     return SeasonProjection(
-        season, now, regular_week, tau, sims, ordered, team_names(session, rated), stakes, outlooks
+        season,
+        now,
+        regular_week,
+        tau,
+        sims,
+        ordered,
+        team_names(session, rated),
+        stakes,
+        outlooks,
+        fcs_official=official is not None,
     )
 
 

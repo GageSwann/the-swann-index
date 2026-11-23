@@ -56,3 +56,49 @@ def test_format_pairs_every_position_once() -> None:
     assert sorted(s for s, _ in FMT.second_round) == list(range(1, 9))
     assert sorted(g for _, g in FMT.second_round) == list(range(8))
     assert sorted(i for q in FMT.quarterfinals for i in q) == list(range(8))
+
+
+def test_known_games_keep_their_winner_and_real_site() -> None:
+    """Once the real bracket is set (#157): a finished upset stands in every simulated
+    season, and a scheduled game is played where it really is."""
+    from tsi.sim.fcs_playoff import KnownGames
+
+    sims = 4
+    field = np.tile(np.arange(24), (sims, 1))
+    sim = SimulatedGames(np.zeros((sims, 0)), np.zeros((sims, 24)), 1e-9, np.random.default_rng(0))
+    hosts = []
+
+    def margin(a: int, b: int, neutral: bool) -> float:
+        hosts.append((a, b, neutral))
+        return float(b - a)
+
+    # First round: 16 v 17 (positions -> indexes 15, 16): 17 already won at 16.
+    # Second round: 8 hosts the 9/24 winner, but the real game is at 9's stadium (8, 23 -> 8).
+    known = KnownGames(winners={(15, 16): 16}, sites={(15, 16): (15, False), (7, 8): (8, False)})
+    b = play_fcs_bracket(field, sim, margin, FMT, known)
+
+    assert all(16 in row for row in b.second_round.tolist())  # the upset stands
+    assert all(15 not in row for row in b.second_round.tolist())
+    assert (8, 7, False) in hosts and (7, 8, False) not in hosts  # 9 hosts 8
+    assert b.champion.tolist() == [0] * sims
+
+
+def test_the_2026_bracket_matches_the_announced_first_round() -> None:
+    from tsi.sim.fcs_brackets import FCS_BRACKETS
+
+    bracket = FCS_BRACKETS[2026]
+    assert len(set(bracket.field)) == 24
+    assert set(bracket.first_round(FMT)) == {
+        ("monmouth", "harvard"),
+        ("montana", "incarnate-word"),
+        ("weber-state", "western-illinois"),
+        ("illinois-state", "austin-peay"),
+        ("lehigh", "ualbany"),
+        ("tennessee-tech", "dayton"),
+        ("northern-arizona", "long-island-university"),
+        ("north-dakota", "idaho-state"),
+    }
+    # Bye seed s meets the winner of the game at seed 17 - s (1 v 16/17, ..., 8 v 9/24).
+    second = {bracket.field[s - 1]: bracket.field[8 + g] for s, g in FMT.second_round}
+    assert second["montana-state"] == "monmouth" and second["mercer"] == "north-dakota"
+    assert second["lamar"] == "illinois-state" and second["tarleton-state"] == "montana"

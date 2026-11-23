@@ -4,7 +4,8 @@ In every simulated season: the FCS Résumé order from each team's final record 
 committee stand-in, services/playoff_resume.py; it picked 88 of the 96 real fields'
 teams in 2022-25), the automatic bids (each auto-bid conference's best-placed eligible
 team), at-large bids by that order, 16 seeds, and the 24-team bracket (sim/fcs_playoff.py).
-Regular season only, and only until the real field is set.
+Regular season only, until the real field is set; then services/fcs_bracket_projection.py
+plays the official bracket (#157).
 """
 
 from collections.abc import Sequence
@@ -76,7 +77,7 @@ def project_fcs_playoff(
     if field is None:
         return PlayoffProjection({})
     bracket = play_fcs_bracket(field + inputs.offset, sim, mean_margin, fmt)
-    odds = {t: _odds(inputs.offset + i, bracket, fmt) for i, t in enumerate(inputs.fcs)}
+    odds = {t: bracket_odds(inputs.offset + i, bracket, fmt) for i, t in enumerate(inputs.fcs)}
     return PlayoffProjection(odds, field + inputs.offset)
 
 
@@ -94,7 +95,7 @@ def _bid(result: TitleResults, eligible: np.ndarray, offset: int, n: int) -> np.
     return np.where(ok[rows, first], standings[rows, first], -1)
 
 
-def _odds(i: int, b: FcsBracket, fmt: FcsFormat) -> TeamPlayoff:
+def bracket_odds(i: int, b: FcsBracket, fmt: FcsFormat) -> TeamPlayoff:
     seed_dist = [float((b.field[:, s] == i).mean()) for s in range(fmt.seeds)]
     return TeamPlayoff(
         make=float((b.field == i).any(axis=1).mean()),

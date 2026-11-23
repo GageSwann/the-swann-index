@@ -5,7 +5,9 @@ order) until 24; positions follow that order, so positions 1-16 are the seeds. B
 (sim/fcs_format.py): seeded and better-placed teams host until the neutral-site final.
 Game means come from the published model (the caller's `mean_margin`, cached per
 pairing) plus both teams' shifts from the same simulation and fresh game noise.
-Team values are whatever indexes the caller uses (the simulation's own).
+Team values are whatever indexes the caller uses (the simulation's own). Once the real
+bracket is set (#157), `KnownGames` holds what is already decided: finished games keep
+their winner, and scheduled games are played at their real site.
 """
 
 from dataclasses import dataclass
@@ -37,6 +39,15 @@ def fcs_field(
     return order[auto_in_order | at_large].reshape(sims, fmt.field_size)
 
 
+Pair = tuple[int, int]  # two teams, lower index first
+
+
+@dataclass(frozen=True)
+class KnownGames:
+    winners: dict[Pair, int]  # finished games: pair -> the winner
+    sites: dict[Pair, tuple[int, bool]]  # scheduled or finished: pair -> (home, neutral)
+
+
 @dataclass(frozen=True)
 class FcsBracket:
     field: np.ndarray  # (sims, 24) team per position
@@ -48,7 +59,11 @@ class FcsBracket:
 
 
 def play_fcs_bracket(
-    field: np.ndarray, sim: SimulatedGames, mean_margin: MeanMargin, fmt: FcsFormat
+    field: np.ndarray,
+    sim: SimulatedGames,
+    mean_margin: MeanMargin,
+    fmt: FcsFormat,
+    known: KnownGames | None = None,
 ) -> FcsBracket:
     """`sim.shift` is indexed by the same team values as `field`."""
     cache: dict[tuple[int, int, bool], float] = {}
@@ -65,12 +80,18 @@ def play_fcs_bracket(
         (ta, pa), (tb, pb) = a, b
         a_hosts = pa < pb
         host, guest = np.where(a_hosts, ta, tb), np.where(a_hosts, tb, ta)
-        pairs = zip(host.tolist(), guest.tolist(), strict=True)
-        means = np.array([mean(h, g, neutral) for h, g in pairs])
+        at_neutral = np.full(len(rows), neutral)
+        decided = None
+        if known is not None:
+            host, guest, at_neutral, decided = _apply_known(host, guest, at_neutral, known)
+        pairs = zip(host.tolist(), guest.tolist(), at_neutral.tolist(), strict=True)
+        means = np.array([mean(h, g, n) for h, g, n in pairs])
         margin = means + sim.shift[rows, host] - sim.shift[rows, guest]
         margin += sim.rng.normal(0.0, sim.noise, len(rows))
         host_won = margin > 0
         winner = np.where(host_won, host, guest)
+        if decided is not None:
+            winner = np.where(decided >= 0, decided, winner)
         return winner, np.where(winner == ta, pa, pb)
 
     def slot(position: int):
@@ -90,3 +111,21 @@ def play_fcs_bracket(
         finalists=np.stack([t for t, _ in semis], axis=1),
         champion=champion,
     )
+
+
+def _apply_known(
+    host: np.ndarray, guest: np.ndarray, neutral: np.ndarray, known: KnownGames
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """The real site of scheduled pairings, and the winner of finished ones (-1: not
+    decided). Looked up once per distinct pairing, not per simulated season."""
+    lo, hi = np.minimum(host, guest), np.maximum(host, guest)
+    pairs, inverse = np.unique(np.stack([lo, hi], axis=1), axis=0, return_inverse=True)
+    inverse = inverse.reshape(-1)
+    keys = [(int(a), int(b)) for a, b in pairs]
+    site_home = np.array([known.sites.get(k, (-1, False))[0] for k in keys])[inverse]
+    site_neutral = np.array([known.sites.get(k, (-1, False))[1] for k in keys])[inverse]
+    decided = np.array([known.winners.get(k, -1) for k in keys])[inverse]
+    scheduled = site_home >= 0
+    new_host = np.where(scheduled, site_home, host)
+    new_guest = np.where(scheduled & (site_home == guest), host, guest)
+    return new_host, new_guest, np.where(scheduled, site_neutral, neutral), decided

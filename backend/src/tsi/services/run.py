@@ -23,11 +23,18 @@ from tsi.ingest.client import CfbdClient
 from tsi.ingest.freshness import current_season
 from tsi.model.artifact import ModelArtifact
 from tsi.services.board import Board, build_board
+from tsi.services.compute_rankings import Rankings
 from tsi.services.daily import DailyResult, run_daily
 from tsi.services.games_of_week import GameOfWeekPick, pick_games_of_week
-from tsi.services.games_of_week_store import needs_picks, save_games_of_week
+from tsi.services.games_of_week_store import (
+    added_games,
+    needs_picks,
+    save_games_of_week,
+    upgrade_games_of_week,
+)
 from tsi.services.grade import GradeResult, grade_picks
 from tsi.services.live_inputs import load_live_inputs
+from tsi.services.predict import GameForecast
 from tsi.services.publish import PublishResult, publish_board
 from tsi.services.rate import LiveRatings, compute_live_ratings
 from tsi.services.rate_store import save_live_ratings
@@ -78,19 +85,13 @@ def run_pipeline(
             lambda: project_season(session, now, artifact, live=live, rankings=ratings.rankings),
         )
         board = build_board(session, now, artifact, week=week, live=live)
-        picks, gotw_error = _guarded(
+        week_picks, gotw_error = _guarded(
             "games of the week",
-            lambda: (
-                pick_games_of_week(
-                    [b.forecast for b in board.games],
-                    ratings.rankings,
-                    sim.game_stakes if sim else {},
-                    now,
-                )
-                if needs_picks(session, now)
-                else []
+            lambda: _games_of_week(
+                session, [b.forecast for b in board.games], ratings.rankings, sim, now
             ),
         )
+        fresh, picks = week_picks or (False, [])
     if dry_run:
         return RunResult(
             daily, error, ratings, None, sim, sim_error, None, board, None, picks or [], gotw_error
@@ -101,10 +102,11 @@ def run_pipeline(
             "saving the season sim", lambda: save_season_sim(sessions, run_id, sim)
         )
     if picks:
-        _, save_error = _guarded(
+        saved, save_error = _guarded(
             "saving the games of the week",
-            lambda: save_games_of_week(sessions, picks, current_season(now), now),
+            lambda: _store_games_of_week(sessions, picks, fresh, now),
         )
+        picks = saved or []
         gotw_error = gotw_error or save_error
     return RunResult(
         ingest=daily,
@@ -119,6 +121,30 @@ def run_pipeline(
         games_of_week=picks or [],
         games_of_week_error=gotw_error,
     )
+
+
+def _games_of_week(
+    session: Session,
+    forecasts: list[GameForecast],
+    rankings: Rankings,
+    sim: SeasonProjection | None,
+    now: datetime,
+) -> tuple[bool, list[GameOfWeekPick]]:
+    """(first run of the poll week?, picks): the first run picks from every game; later
+    runs only weigh games added since then against the stored picks (#157)."""
+    fresh = needs_picks(session, now)
+    candidates = forecasts if fresh else added_games(session, forecasts, now)
+    stakes = sim.game_stakes if sim else {}
+    return fresh, pick_games_of_week(candidates, rankings, stakes, now) if candidates else []
+
+
+def _store_games_of_week(
+    sessions: sessionmaker[Session], picks: list[GameOfWeekPick], fresh: bool, now: datetime
+) -> list[GameOfWeekPick]:
+    """The picks stored: a new week's, or the replacements a later run made."""
+    if fresh:
+        return picks if save_games_of_week(sessions, picks, current_season(now), now) else []
+    return upgrade_games_of_week(sessions, picks, now)
 
 
 def _guarded[T](step: str, fn: Callable[[], T]) -> tuple[T | None, str | None]:

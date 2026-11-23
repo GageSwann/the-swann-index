@@ -38,6 +38,7 @@ def save_season_sim(
                 "tau": projection.tau,
                 "week": projection.week,
                 "seed": DEFAULT_SEED,
+                **({"fcs_field": "official"} if projection.fcs_official else {}),
             },
         }
         saved = upsert_rows(session, SimResult, rows)
