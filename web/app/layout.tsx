@@ -3,7 +3,7 @@ import { Instrument_Sans } from "next/font/google"
 
 import { SiteHeader } from "@/components/layout/site-header"
 import { ThemeProvider } from "@/components/layout/theme-provider"
-import { UpdatedFooter } from "@/components/layout/updated-footer"
+import { SiteFooter } from "@/components/layout/site-footer"
 import { ALLOW_INDEXING, SITE_NAME, SITE_URL } from "@/lib/site"
 
 import "./globals.css"
@@ -53,7 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main id="main" className="mx-auto min-h-svh w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
             {children}
           </main>
-          <UpdatedFooter />
+          <SiteFooter />
         </ThemeProvider>
       </body>
     </html>
