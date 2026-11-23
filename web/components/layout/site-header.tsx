@@ -20,7 +20,8 @@ export function SiteHeader() {
             The Swann Index
           </span>
         </Link>
-        <div className="order-last flex w-full items-center sm:order-0 sm:ml-auto sm:w-auto">
+        {/* Phones: the sections live in the bottom bar (BottomNav, #163). */}
+        <div className="hidden items-center sm:ml-auto sm:flex">
           <MainNav />
         </div>
         <div className="ml-auto sm:ml-0">

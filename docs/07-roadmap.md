@@ -23,6 +23,13 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [ ] **12.5:** on Sunday Nov 22, ranking arrows and biggest movers match the previous Sunday's ranks (built #134; never checked live). Nov 22 showed the move since Nov 15 as intended; on Monday the arrows reset to the move since Nov 22 (all 0), so the owner changed the rule: the week's move stays up until the next Sunday (#156). Check live on Tuesday Nov 24 (arrows still vs. Nov 15).
 - [x] **Games of the week:** Kentucky at Missouri (FBS Résumé, 0.00) is the rule working: no game this week has two Résumé Top 25 teams, so the tiebreakers pick it; the replayed Sunday chose the same games (#152). The score now counts every rank in the division (#153; picks from Sunday Nov 22 on; this week's stored rows keep their old, unshown score).
 - [x] **Official FCS bracket + playoff games of the week (#157, 2026-11-23):** the FCS playoff page draws the announced bracket, played out nightly with real results; a better game added after Sunday's pick replaces it. Check live Tuesday Nov 24: `/playoff/fcs` shows "Bracket" with win chances, and the FCS game of the week is a first-round game.
+- [ ] **Mobile pass (owner, 2026-11-23: cluttered, too long, hard to navigate, unpolished):** one area at a time, pushed for the owner's review on a phone.
+  - [x] 1. Header, bottom navigation, home (#163)
+  - [ ] 2. Rankings (table, toggles, movers)
+  - [ ] 3. Week board
+  - [ ] 4. Game center
+  - [ ] 5. Team pages
+  - [ ] 6. Playoffs (bracket, odds)
 - [ ] **Each November, selection Sunday:** enter that season's FCS bracket in `sim/fcs_brackets.py` (seeds 1-16, the unseeded teams by the seed they visit) and confirm the quarterfinal pairings; push before the next nightly run.
 - [ ] **By Nov 30: keep or remove the Neon add-on.** If the daily figures fit (under ~80 MB a day on average), remove it so the Dec 1 period is free; if not, find the cause first.
 

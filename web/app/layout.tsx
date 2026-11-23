@@ -3,6 +3,7 @@ import { Instrument_Sans } from "next/font/google"
 
 import { SiteHeader } from "@/components/layout/site-header"
 import { ThemeProvider } from "@/components/layout/theme-provider"
+import { BottomNav } from "@/components/layout/bottom-nav"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { ALLOW_INDEXING, SITE_NAME, SITE_URL } from "@/lib/site"
 
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${instrument.variable} dark h-full`} suppressHydrationWarning>
-      <body className="flex min-h-full flex-col antialiased">
+      <body className="flex min-h-full flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] antialiased sm:pb-0">
         <ThemeProvider>
           <a
             href="#main"
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
+          <BottomNav />
         </ThemeProvider>
       </body>
     </html>

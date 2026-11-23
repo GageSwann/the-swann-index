@@ -29,9 +29,19 @@ const LABEL: Record<RankingType, string> = { power: "Power", resume: "Résumé" 
  */
 export function HomeView({ rails, picks, status }: Props) {
   const [type, setType] = useState<RankingType>("resume") // Résumé first (owner, 2026-11-23, #159)
+  // Phones and tablets: one division at a time, its Top 25 folded to 10 (owner, #163).
+  const [division, setDivision] = useState<Division>("fbs")
+  const [expanded, setExpanded] = useState(false)
+  const only = (d: Division) => (d === division ? "" : "max-lg:hidden")
   return (
     <div className="space-y-6">
-      <RankingTabs value={type} onChange={setType} status={status} />
+      <RankingTabs
+        value={type}
+        onChange={setType}
+        division={division}
+        onDivision={setDivision}
+        status={status}
+      />
       <div
         id="home-rankings"
         className="grid gap-8 lg:grid-cols-[15.5rem_minmax(0,1fr)_15.5rem] xl:grid-cols-[18rem_minmax(0,1fr)_18rem]"
@@ -40,34 +50,31 @@ export function HomeView({ rails, picks, status }: Props) {
           <GameOfWeekCard
             division="fbs"
             teams={rails.fbs[type]}
-            className="flex-1"
+            className={`flex-1 ${only("fbs")}`}
             {...picks.fbs[type]}
           />
           <GameOfWeekCard
             division="fcs"
             teams={rails.fcs[type]}
-            className="flex-1"
+            className={`flex-1 ${only("fcs")}`}
             {...picks.fcs[type]}
           />
         </div>
-        <div className="grid min-w-0 gap-8 sm:grid-cols-2 lg:contents">
-          <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+        {(["fbs", "fcs"] as const).map((d) => (
+          <div
+            key={d}
+            className={`min-w-0 lg:row-start-1 ${d === "fbs" ? "lg:col-start-1" : "lg:col-start-3"} ${only(d)}`}
+          >
             <RankingsRail
-              id="fbs"
-              title={`FBS ${LABEL[type]} Top 25`}
-              teams={rails.fbs[type]}
-              href="/rankings"
+              id={d}
+              title={`${d.toUpperCase()} ${LABEL[type]} Top 25`}
+              teams={rails[d][type]}
+              href={d === "fbs" ? "/rankings" : "/rankings/fcs"}
+              folded={!expanded}
+              onToggle={() => setExpanded((e) => !e)}
             />
           </div>
-          <div className="min-w-0 lg:col-start-3 lg:row-start-1">
-            <RankingsRail
-              id="fcs"
-              title={`FCS ${LABEL[type]} Top 25`}
-              teams={rails.fcs[type]}
-              href="/rankings/fcs"
-            />
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   )
