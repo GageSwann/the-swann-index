@@ -3,33 +3,25 @@
 import type { RankingType } from "@/lib/api/types"
 import { cn } from "@/lib/utils"
 
-const TABS: { value: RankingType; label: string; about: string }[] = [
-  {
-    value: "resume",
-    label: "Résumé Rankings",
-    about:
-      "Résumé ranks teams by what they have accomplished: their record against their schedule.",
-  },
-  {
-    value: "power",
-    label: "Power Rankings",
-    about: "Power ranks teams by how well they have played this season.",
-  },
+const TABS: { value: RankingType; label: string }[] = [
+  { value: "resume", label: "Résumé Rankings" },
+  { value: "power", label: "Power Rankings" },
 ]
 
 /**
  * The home page's one choice: which ranking drives the Top 25 lists and the games of the
- * week. Plain tabs (the active one underlined), with one sentence on what the active
- * ranking measures.
+ * week. Plain tabs (the active one underlined), with the week and when the rankings were
+ * last updated across from them (owner, #160).
  */
 export function RankingTabs({
   value,
   onChange,
+  status,
 }: {
   value: RankingType
   onChange: (value: RankingType) => void
+  status: string | null // "Week 13, 2026. Updated Nov 23, 6:04 AM EST."
 }) {
-  const active = TABS.find((t) => t.value === value)!
   return (
     <div className="flex flex-col gap-x-8 gap-y-2 border-b border-border md:flex-row md:items-end md:justify-between">
       <div role="group" aria-label="Rank teams by" className="flex gap-6">
@@ -54,9 +46,7 @@ export function RankingTabs({
           )
         })}
       </div>
-      <p className="pb-2 text-sm text-muted-foreground" aria-live="polite">
-        {active.about}
-      </p>
+      {status && <p className="pb-2 text-sm text-muted-foreground">{status}</p>}
     </div>
   )
 }

@@ -1,26 +1,14 @@
 import Link from "next/link"
 
-import { getMeta } from "@/lib/api/queries"
-
 import { MainNav } from "./main-nav"
 import { ThemeToggle } from "./theme-toggle"
 
 /**
- * The "score bug": the TSI block, the season/week in play, the nav, and a 2 px rule
- * underneath (white or black; a team page's color on team pages, `.tsi-header`). This
- * strip is the site's one bold element; pages stay quiet.
+ * The "score bug": the TSI block, the nav, and a 2 px rule underneath (white or black; a
+ * team page's color on team pages, `.tsi-header`). This strip is the site's one bold
+ * element; pages stay quiet. The week is stated by each page, not here (owner, #160).
  */
-export async function SiteHeader() {
-  const meta = await getMeta().catch(() => null)
-  const context =
-    meta === null
-      ? null
-      : meta.season_type === "postseason"
-        ? `Bowl season ${meta.season}`
-        : meta.week > 0
-          ? `Week ${meta.week}, ${meta.season}`
-          : `Preseason ${meta.season}`
-
+export function SiteHeader() {
   return (
     <header className="tsi-header border-b-2 bg-card">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6">
@@ -32,12 +20,6 @@ export async function SiteHeader() {
             The Swann Index
           </span>
         </Link>
-        {/* Hidden on phones so the theme toggle shares the first row; every page states the week. */}
-        {context && (
-          <span className="hidden text-sm text-muted-foreground font-stretch-semi-condensed sm:inline">
-            {context}
-          </span>
-        )}
         <div className="order-last flex w-full items-center sm:order-0 sm:ml-auto sm:w-auto">
           <MainNav />
         </div>

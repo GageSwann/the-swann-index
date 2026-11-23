@@ -16,6 +16,7 @@ export type HomePicks = Record<Division, PerType<Pick>>
 type Props = {
   rails: Record<Division, PerType<TopTeam[]>>
   picks: HomePicks
+  status: string | null // the week and when the rankings were last updated
 }
 
 const LABEL: Record<RankingType, string> = { power: "Power", resume: "Résumé" }
@@ -26,11 +27,11 @@ const LABEL: Record<RankingType, string> = { power: "Power", resume: "Résumé" 
  * desktop the three columns share one height, so the cards and the lists end level.
  * Phones: games first, then the lists.
  */
-export function HomeView({ rails, picks }: Props) {
+export function HomeView({ rails, picks, status }: Props) {
   const [type, setType] = useState<RankingType>("resume") // Résumé first (owner, 2026-11-23, #159)
   return (
     <div className="space-y-6">
-      <RankingTabs value={type} onChange={setType} />
+      <RankingTabs value={type} onChange={setType} status={status} />
       <div
         id="home-rankings"
         className="grid gap-8 lg:grid-cols-[15.5rem_minmax(0,1fr)_15.5rem] xl:grid-cols-[18rem_minmax(0,1fr)_18rem]"
