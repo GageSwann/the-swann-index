@@ -88,6 +88,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
             team={game.away}
             rank={rank.get(game.away.id) ?? null}
             rec={pick.away_record}
+            conf={pick.away_conf_record}
             picked={!homePicked}
           />
           <span className="self-center pt-8 text-sm text-muted-foreground">
@@ -97,6 +98,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
             team={game.home}
             rank={rank.get(game.home.id) ?? null}
             rec={pick.home_record}
+            conf={pick.home_conf_record}
             picked={homePicked}
             alignEnd
           />
@@ -111,7 +113,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
               ? "Final score. TSI's win probability before the game:"
               : "TSI's projected score and win probability:"}
           </p>
-          <WinProbBar homeProb={p.home_win_prob} home={game.home} away={game.away} />
+          <WinProbBar homeProb={p.home_win_prob} home={game.home} away={game.away} digits={1} />
           {final && (
             <p className="text-xs text-muted-foreground">
               TSI projected {points(p.proj_away)}–{points(p.proj_home)}.
@@ -151,12 +153,14 @@ function Side({
   team,
   rank: current,
   rec,
+  conf,
   picked,
   alignEnd = false,
 }: {
   team: TeamRef
   rank: number | null // in the chosen ranking's Top 25, if there
   rec: TeamRecord | null | undefined // from the pick (any team, ranked or not; #155)
+  conf?: TeamRecord | null // conference record (#190); none for independents
   picked: boolean // TSI expects this team to win: its sign stands by the logo (13.10)
   alignEnd?: boolean
 }) {
@@ -194,6 +198,7 @@ function Side({
       {rec && (
         <span className="text-sm text-muted-foreground">
           {record(rec.wins, rec.losses, rec.ties)}
+          {conf && ` (${record(conf.wins, conf.losses, conf.ties)})`}
         </span>
       )}
     </div>
