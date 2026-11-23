@@ -36,7 +36,15 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [ ] **Each November, selection Sunday:** enter that season's FCS bracket in `sim/fcs_brackets.py` (seeds 1-16, the unseeded teams by the seed they visit) and confirm the quarterfinal pairings; push before the next nightly run.
 - [ ] **By Nov 30: keep or remove the Neon add-on.** If the daily figures fit (under ~80 MB a day on average), remove it so the Dec 1 period is free; if not, find the cause first.
 
+**Check on Nov 24 after the 11:00 UTC run (evening work of Nov 23):** the run's summary shows the first Neon transfer reading from the new `transfer` job (#179): compare it with the console's project Overview; the run's log has no "saved component fit ... no longer matches" warning (#177: the carry was built on the work PC's copy); the page warm-up visits `/cfb/...` pages with 200s (#184); the live cards show TSI's odds under each line, one-decimal chances and conference records (#188, #190). The Nov 24 Neon reading also carries ~13 more site builds from that evening (~130 MB on top of the ~160 MB design day).
+
 ## Next
+
+**Open from the owner (2026-11-23):**
+- [ ] Phones: the sport menus (CFB, CBB, CBASE) in the phone header; phones keep the bottom bar for now (owner: "fix mobile later").
+- [ ] The site's own home for every sport at `/` (it redirects to `/cfb` for now, #182).
+- [ ] 13.10's sign on the Schedule cards (the home page's Game of the Week cards have it, #180).
+- [ ] "CBASE" is a placeholder abbreviation for college baseball (#181).
 
 **Sport namespaces (owner, #183):** everything college football lives under `/cfb`, on the site and in the API, so college basketball (CBB) and baseball (CBASE) can sit beside it later without rewiring. Backend code and database stay as they are (see #183 for how another sport fits in).
 - [x] **1. API under `/cfb`** (old paths still served, `legacy_` ids; spec + types; the owner's `/cfb/book` and `/cfb/model` never cached). Ship first.
