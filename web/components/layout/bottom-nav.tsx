@@ -9,22 +9,22 @@ import { cn } from "@/lib/utils"
 const ITEMS = [
   { href: "/cfb", label: "Home", icon: House, match: (p: string) => p.startsWith("/cfb") },
   {
-    href: "/rankings",
+    href: "/cfb/rankings",
     label: "Rankings",
     icon: ListOrdered,
-    match: (p: string) => p.startsWith("/rankings"),
+    match: (p: string) => p.startsWith("/cfb/rankings"),
   },
   {
-    href: "/week",
+    href: "/cfb/schedule",
     label: "Schedule",
     icon: CalendarDays,
-    match: (p: string) => p.startsWith("/week"),
+    match: (p: string) => p.startsWith("/cfb/schedule"),
   },
   {
-    href: "/playoff",
+    href: "/cfb/playoffs",
     label: "Playoffs",
     icon: Trophy,
-    match: (p: string) => p.startsWith("/playoff"),
+    match: (p: string) => p.startsWith("/cfb/playoffs"),
   },
 ]
 

@@ -7,7 +7,7 @@ import { RankingsPage } from "@/components/rankings/rankings-page"
 import type { DivisionView } from "@/lib/divisions"
 import { pageMeta } from "@/lib/metadata"
 
-type Props = PageProps<"/rankings/[division]">
+type Props = PageProps<"/cfb/rankings/[division]">
 
 const VIEWS = ["fcs", "all"] as const satisfies DivisionView[]
 

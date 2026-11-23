@@ -6,6 +6,7 @@ import { useState } from "react"
 import { TeamLogo } from "@/components/team/team-logo"
 import type { Playoff } from "@/lib/api/types"
 import { chance } from "@/lib/format/numbers"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 import { type BracketGame, buildBracket, type Entry } from "./bracket-layout"
@@ -87,7 +88,7 @@ function GameCard({ game, seeds }: { game: BracketGame; seeds: number }) {
     </div>
   )
   return game.real ? (
-    <Link href={`/games/${game.real.id}`} className="block active:opacity-80">
+    <Link href={cfb.game(game.real.id)} className="block active:opacity-80">
       {body}
     </Link>
   ) : (

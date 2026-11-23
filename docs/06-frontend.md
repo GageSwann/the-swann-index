@@ -62,14 +62,16 @@ The owner's brief: how light behaves, not a retro neon theme. Glows and a light 
 |---|---|
 | `/` | The site's own home, for every sport: for now it redirects to `/cfb` (#182) |
 | `/cfb` | **CFB Home** (13.4, #141; moved from `/` in #182): FBS and FCS games of the week, FBS and FCS Top 25 rails, one Résumé/Power toggle (Résumé first and default, #159); first in the CFB menu |
-| `/rankings` | **Rankings** (Résumé/Power toggle, opens on Résumé, #159), FBS (was `/` until 13.4) |
-| `/rankings/fcs`, `/rankings/all` | FCS rankings; FBS and FCS on one scale (Power only) (#115) |
-| `/week` → `/week/[season]/[week]` | **Matchup board** for the week (defaults to current week), games with an FBS team |
-| `/week/[season]/[week]/fcs`, `…/all` | the same board for games with an FCS team, or either (#115) |
-| `/games/[id]` | **Game center** |
-| `/teams/[slug]` | **Team page** |
-| `/playoff` | **CFP projections + bracket** (#101); `/playoff/fcs`: FCS playoff (#125) |
-| `/conferences/[slug]` | Standings + title odds (later) |
+| `/cfb/rankings` | **Rankings** (Résumé/Power toggle, opens on Résumé, #159), FBS (was `/` until 13.4, `/rankings` until #184) |
+| `/cfb/rankings/fcs`, `/cfb/rankings/all` | FCS rankings; FBS and FCS on one scale (Power only) (#115) |
+| `/cfb/schedule` → `/cfb/schedule/[season]/[week]` | **Schedule**, the matchup board for the week (defaults to current week), games with an FBS team (`/week/...` until #184) |
+| `/cfb/schedule/[season]/[week]/fcs`, `…/all` | the same board for games with an FCS team, or either (#115) |
+| `/cfb/games/[id]` | **Game center** |
+| `/cfb/teams/[slug]` | **Team page** |
+| `/cfb/playoffs` | **CFP projections + bracket** (#101); `/cfb/playoffs/fcs`: FCS playoff (#125) (`/playoff` until #184) |
+| `/cfb/conferences/[slug]` | Standings + title odds (later) |
+
+**Addresses (#183, #184):** every page address is built by `web/lib/routes.ts` (`cfb.rankings()`, `cfb.schedule(season, week, division)`, `cfb.team(slug, "resume")`, `cfb.game(id)`, ...); never write a path by hand. The old addresses (`/rankings`, `/week/...`, `/playoff`, `/teams/...`, `/games/...`) redirect permanently (308) in `next.config.ts`. Another sport gets its own prefix and its own entry in `lib/routes.ts` and `lib/sports.ts`.
 
 ## Page specs
 

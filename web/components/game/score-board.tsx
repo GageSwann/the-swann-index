@@ -6,6 +6,7 @@ import { TeamLogo } from "@/components/team/team-logo"
 import { borderLightVars } from "@/components/ui/border-light"
 import type { TeamProfile, TeamRef } from "@/lib/api/types"
 import { points, record } from "@/lib/format/numbers"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 type Side = {
@@ -68,7 +69,7 @@ function TeamScore({ side, alignEnd = false }: { side: Side; alignEnd?: boolean 
   return (
     <div className={cn("flex min-w-0 flex-col", alignEnd && "items-end text-right")}>
       <Link
-        href={`/teams/${team.slug}`}
+        href={cfb.team(team.slug)}
         // Phones: logo above the name, so long names ("Florida International") get the
         // column's full width; from `sm` up they sit side by side.
         className={cn(

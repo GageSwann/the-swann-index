@@ -5,11 +5,15 @@ import { DivisionNav } from "@/components/ui/division-nav"
 import { getPlayoff } from "@/lib/api/queries"
 import type { Division } from "@/lib/divisions"
 import { formatDay } from "@/lib/format/time"
+import { cfb } from "@/lib/routes"
 
 import { PlayoffOdds } from "./playoff-odds"
 import { ProjectedBracket } from "./projected-bracket"
 
-const PLAYOFF_HREF: Record<Division, string> = { fbs: "/playoff", fcs: "/playoff/fcs" }
+const PLAYOFF_HREF: Record<Division, string> = {
+  fbs: cfb.playoffs("fbs"),
+  fcs: cfb.playoffs("fcs"),
+}
 
 const COPY: Record<
   Division,
@@ -90,7 +94,7 @@ const COPY: Record<
   },
 }
 
-/** `/playoff` (the CFP, #101) and `/playoff/fcs` (the 24-team FCS playoff, #125). */
+/** `/cfb/playoffs` (the CFP, #101) and `/cfb/playoffs/fcs` (the 24-team FCS playoff, #125). */
 export async function PlayoffPage({ division }: { division: Division }) {
   const playoff = await getPlayoff(division)
   const copy = COPY[division]

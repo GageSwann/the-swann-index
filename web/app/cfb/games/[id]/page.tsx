@@ -15,7 +15,7 @@ import { getGame, getMeta, getTeam, getWeekGames } from "@/lib/api/queries"
 import { pageMeta } from "@/lib/metadata"
 import { chance, points } from "@/lib/format/numbers"
 
-type Props = PageProps<"/games/[id]">
+type Props = PageProps<"/cfb/games/[id]">
 
 /** Prerender this week's games; any other game renders on first visit and is cached. */
 export async function generateStaticParams() {

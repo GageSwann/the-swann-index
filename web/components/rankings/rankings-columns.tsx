@@ -12,6 +12,7 @@ import Link from "next/link"
 import { TeamLink } from "@/components/team/team-link"
 import type { RankedTeam } from "@/lib/api/types"
 import { chance, record, signed } from "@/lib/format/numbers"
+import { cfb } from "@/lib/routes"
 
 import { RankChange } from "./rank-change"
 
@@ -110,7 +111,7 @@ export const columns = col.columns([
       if (v === undefined) return "—"
       return (
         <Link
-          href={`/teams/${row.original.team.slug}#resume`}
+          href={cfb.team(row.original.team.slug, "resume")}
           className="underline-offset-4 hover:underline"
           title="See how this résumé was built"
         >
@@ -129,7 +130,7 @@ export const columns = col.columns([
       if (v === undefined) return "—"
       return (
         <Link
-          href={`/teams/${row.original.team.slug}#projection`}
+          href={cfb.team(row.original.team.slug, "projection")}
           className="underline-offset-4 hover:underline"
           title="See the projected record"
         >

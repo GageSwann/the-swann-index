@@ -7,6 +7,7 @@ import { teamColorVars } from "@/lib/format/color"
 import { chance, points } from "@/lib/format/numbers"
 import { favoriteLine, totalLine, tsiFavoriteLine, tsiTotal } from "@/lib/format/odds"
 import { formatKickoff } from "@/lib/format/time"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 import { type BoardRank, type BoardRanks, shownRank } from "./board-ranks"
@@ -38,7 +39,7 @@ export function MatchupCompact({ game, ranks }: { game: GameSummary; ranks: Boar
 
   return (
     <Link
-      href={`/games/${game.id}`}
+      href={cfb.game(game.id)}
       aria-label={`${game.away.school} ${game.neutral ? "vs." : "at"} ${game.home.school}: game center`}
       className={cn(
         "tsi-lit-hover block rounded-md border border-border bg-card px-3.5 py-3 active:bg-muted",

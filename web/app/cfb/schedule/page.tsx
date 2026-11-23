@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation"
 
 import { getMeta } from "@/lib/api/queries"
+import { cfb } from "@/lib/routes"
 
-/** `/week` always means the current week. */
+/** `/cfb/schedule` always means the current week. */
 export default async function CurrentWeekPage() {
   const meta = await getMeta()
-  redirect(`/week/${meta.season}/${Math.max(1, meta.week)}`)
+  redirect(cfb.schedule(meta.season, Math.max(1, meta.week)))
 }

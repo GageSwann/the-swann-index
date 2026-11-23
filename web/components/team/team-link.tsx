@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import type { TeamRef } from "@/lib/api/types"
+import { cfb } from "@/lib/routes"
 
 import { TeamLogo } from "./team-logo"
 
@@ -12,7 +13,7 @@ import { TeamLogo } from "./team-logo"
 export function TeamLink({ team, rank }: { team: TeamRef; rank?: number | null }) {
   return (
     <Link
-      href={`/teams/${team.slug}`}
+      href={cfb.team(team.slug)}
       className="group inline-flex min-w-0 items-center gap-2 font-medium"
     >
       <TeamLogo team={team} size={26} className="mx-0.5" />

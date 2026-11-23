@@ -3,13 +3,14 @@ import { DivisionNav } from "@/components/ui/division-nav"
 import { getRankings } from "@/lib/api/queries"
 import type { DivisionView } from "@/lib/divisions"
 import { formatShortDay, formatUpdated } from "@/lib/format/time"
+import { cfb } from "@/lib/routes"
 
 import { RankingsView } from "./rankings-view"
 
 const RANKINGS_HREF: Record<DivisionView, string> = {
-  fbs: "/rankings",
-  fcs: "/rankings/fcs",
-  all: "/rankings/all",
+  fbs: cfb.rankings("fbs"),
+  fcs: cfb.rankings("fcs"),
+  all: cfb.rankings("all"),
 }
 
 const TITLE: Record<DivisionView, string> = {
@@ -19,8 +20,8 @@ const TITLE: Record<DivisionView, string> = {
 }
 
 /**
- * One division's rankings page (decision #113): `/` is FBS, `/rankings/fcs` and
- * `/rankings/all` the others. "All" is Power only: Résumé ranks stay within a division.
+ * One division's rankings page (decision #113): `/cfb/rankings` is FBS,
+ * `/cfb/rankings/fcs` and `/cfb/rankings/all` the others. "All" is Power only: Résumé ranks stay within a division.
  */
 export async function RankingsPage({ division }: { division: DivisionView }) {
   const [power, resume] = await Promise.all([

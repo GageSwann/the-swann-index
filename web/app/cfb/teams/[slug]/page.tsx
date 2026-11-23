@@ -16,7 +16,7 @@ import { rankText, teamDivision } from "@/lib/divisions"
 import { pageMeta } from "@/lib/metadata"
 import { record, signed } from "@/lib/format/numbers"
 
-type Props = PageProps<"/teams/[slug]">
+type Props = PageProps<"/cfb/teams/[slug]">
 
 /** Prerender the current Top 25; every other team renders on first visit and is cached. */
 export async function generateStaticParams() {

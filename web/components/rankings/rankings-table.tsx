@@ -6,6 +6,7 @@ import { useMemo, useState } from "react"
 
 import type { RankedTeam } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 import { columns, features, HEADER_HELP } from "./rankings-columns"
@@ -97,7 +98,7 @@ export function RankingsTable({
               key={row.id}
               onClick={(e) => {
                 if (!(e.target instanceof Element && e.target.closest("a, button"))) {
-                  router.push(`/teams/${row.original.team.slug}`)
+                  router.push(cfb.team(row.original.team.slug))
                 }
               }}
               // Hover lights the row's left edge in the team's color (#137).

@@ -4,6 +4,7 @@ import { useState } from "react"
 
 import type { GameOfWeekView, RankingType, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
+import { cfb } from "@/lib/routes"
 
 import { GameOfWeekCard } from "./game-of-week"
 import { RankingTabs } from "./ranking-tabs"
@@ -69,7 +70,7 @@ export function HomeView({ rails, picks, status }: Props) {
               id={d}
               title={`${d.toUpperCase()} ${LABEL[type]} Top 25`}
               teams={rails[d][type]}
-              href={d === "fbs" ? "/rankings" : "/rankings/fcs"}
+              href={cfb.rankings(d)}
               folded={!expanded}
               onToggle={() => setExpanded((e) => !e)}
             />

@@ -25,9 +25,9 @@ export const SPORTS: Sport[] = [
     name: "College Football",
     sections: [
       { href: "/cfb", label: "Home", prefix: "/cfb" },
-      { href: "/rankings", label: "Rankings", prefix: "/rankings" },
-      { href: "/week", label: "Schedule", prefix: "/week" },
-      { href: "/playoff", label: "Playoffs", prefix: "/playoff" },
+      { href: "/cfb/rankings", label: "Rankings", prefix: "/cfb/rankings" },
+      { href: "/cfb/schedule", label: "Schedule", prefix: "/cfb/schedule" },
+      { href: "/cfb/playoffs", label: "Playoffs", prefix: "/cfb/playoffs" },
     ],
   },
   { key: "cbb", label: "CBB", emoji: "🏀", name: "College Basketball", sections: [] },

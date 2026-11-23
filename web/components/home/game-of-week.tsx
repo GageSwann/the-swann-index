@@ -6,6 +6,7 @@ import type { GameOfWeekView, TeamRecord, TeamRef, TopTeam } from "@/lib/api/typ
 import type { Division } from "@/lib/divisions"
 import { chance, points, record } from "@/lib/format/numbers"
 import { tsiMoneyline, tsiSpread, tsiTotal } from "@/lib/format/odds"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 import { PickSign } from "./pick-sign"
@@ -58,7 +59,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
       {heading}
       <div className="tsi-lit-hover relative flex flex-1 flex-col justify-between gap-5 rounded-md border border-border bg-card p-5">
         <Link
-          href={`/games/${game.id}`}
+          href={cfb.game(game.id)}
           aria-label={`Game center: ${matchup}`}
           className="absolute inset-0 rounded-md"
         />
@@ -161,7 +162,7 @@ function Side({
     >
       {/* Above the card's link, so a click here opens the team page. */}
       <Link
-        href={`/teams/${team.slug}`}
+        href={cfb.team(team.slug)}
         className={cn(
           "group relative z-10 flex min-w-0 flex-col gap-2",
           alignEnd ? "items-end" : "items-start",

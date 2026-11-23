@@ -6,6 +6,7 @@ import { TeamLogo } from "@/components/team/team-logo"
 import type { Playoff } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { chance } from "@/lib/format/numbers"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 import { BracketByRound } from "./bracket-by-round"
@@ -155,7 +156,7 @@ function SlotValue({ entry, real, side }: { entry: Entry; real: RealGame | null;
   if (real && (points != null || prob != null)) {
     return (
       <Link
-        href={`/games/${real.id}`}
+        href={cfb.game(real.id)}
         className="shrink-0 text-xs tabular-nums hover:underline"
         title={points != null ? "Final score" : "TSI's win chance"}
       >
@@ -230,7 +231,7 @@ function Champion({
         <p className="text-xs text-muted-foreground">
           {decided ? "Champion" : "Projected champion"}
         </p>
-        <Link href={`/teams/${t.team.slug}`} className="group flex min-w-0 items-center gap-2">
+        <Link href={cfb.team(t.team.slug)} className="group flex min-w-0 items-center gap-2">
           <TeamLogo team={t.team} size={36} />
           <span className="truncate text-xl font-bold font-stretch-condensed group-hover:underline">
             {t.team.school}

@@ -4,14 +4,11 @@ import { PageHeading } from "@/components/layout/page-heading"
 import { DivisionNav } from "@/components/ui/division-nav"
 import { getMeta, getRankings, getWeekGames } from "@/lib/api/queries"
 import { DIVISION_NAME, type DivisionView } from "@/lib/divisions"
+import { cfb } from "@/lib/routes"
 
 import { boardRanks } from "./board-ranks"
 import { BoardView } from "./board-view"
 import { WeekNav } from "./week-nav"
-
-function weekHref(season: number, week: number, division: DivisionView = "fbs"): string {
-  return `/week/${season}/${week}${division === "fbs" ? "" : `/${division}`}`
-}
 
 /**
  * One week's matchup board for a division (decision #113): every game with a team of that
@@ -58,9 +55,9 @@ export async function WeekPage({
             current={division}
             label="Games shown"
             hrefs={{
-              fbs: weekHref(season, week),
-              fcs: weekHref(season, week, "fcs"),
-              all: weekHref(season, week, "all"),
+              fbs: cfb.schedule(season, week),
+              fcs: cfb.schedule(season, week, "fcs"),
+              all: cfb.schedule(season, week, "all"),
             }}
           />
           <WeekNav season={season} week={week} division={division} />

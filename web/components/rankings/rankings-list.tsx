@@ -3,6 +3,7 @@ import Link from "next/link"
 import type { RankedTeam, RankingType } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { chance, record, signed } from "@/lib/format/numbers"
+import { cfb } from "@/lib/routes"
 
 import { TeamLogo } from "../team/team-logo"
 import { RankChange } from "./rank-change"
@@ -43,7 +44,7 @@ export function RankingsList({
             style={teamColorVars(t.team)}
           >
             <Link
-              href={`/teams/${t.team.slug}`}
+              href={cfb.team(t.team.slug)}
               className="grid min-h-13 grid-cols-[2rem_minmax(0,1fr)_4rem_2.5rem] items-center gap-2 px-3 py-1.5 active:bg-muted"
             >
               <span className="text-base font-semibold tabular-nums">{t.rank}</span>

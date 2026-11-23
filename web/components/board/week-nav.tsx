@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import type { DivisionView } from "@/lib/divisions"
+import { cfb } from "@/lib/routes"
 
 const LAST_REGULAR_WEEK = 16
 
@@ -14,12 +15,11 @@ export function WeekNav({
   week: number
   division?: DivisionView
 }) {
-  const suffix = division === "fbs" ? "" : `/${division}`
   return (
     <nav aria-label="Weeks" className="flex items-center gap-2 text-sm">
       {week > 1 ? (
         <Link
-          href={`/week/${season}/${week - 1}${suffix}`}
+          href={cfb.schedule(season, week - 1, division)}
           className="rounded-md border border-border bg-card px-3 py-1.5 hover:text-primary"
         >
           ‹ <span className="max-sm:sr-only">Week </span>
@@ -28,7 +28,7 @@ export function WeekNav({
       ) : null}
       {week < LAST_REGULAR_WEEK ? (
         <Link
-          href={`/week/${season}/${week + 1}${suffix}`}
+          href={cfb.schedule(season, week + 1, division)}
           className="rounded-md border border-border bg-card px-3 py-1.5 hover:text-primary"
         >
           <span className="max-sm:sr-only">Week </span>

@@ -7,8 +7,9 @@ import { PageHeading } from "@/components/layout/page-heading"
 import { getMeta } from "@/lib/api/queries"
 import type { DivisionView } from "@/lib/divisions"
 import { pageMeta } from "@/lib/metadata"
+import { cfb } from "@/lib/routes"
 
-type Props = PageProps<"/week/[season]/[week]/[division]">
+type Props = PageProps<"/cfb/schedule/[season]/[week]/[division]">
 
 const VIEWS = ["fcs", "all"] as const satisfies DivisionView[]
 
@@ -38,7 +39,7 @@ export default function DivisionWeekPage(props: Props) {
 
 async function Board({ params }: Props) {
   const { season, week, division } = await params
-  if (division === "fbs") redirect(`/week/${season}/${week}`)
+  if (division === "fbs") redirect(cfb.schedule(season, week))
   if (!(VIEWS as readonly string[]).includes(division)) notFound()
   return (
     <WeekPage season={Number(season)} week={Number(week)} division={division as DivisionView} />

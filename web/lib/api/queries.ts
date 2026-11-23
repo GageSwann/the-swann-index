@@ -26,7 +26,7 @@ export async function getMeta(): Promise<Meta> {
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.META)
-  return required("/meta/current", await apiClient().GET("/meta/current"))
+  return required("/cfb/meta/current", await apiClient().GET("/cfb/meta/current"))
 }
 
 export async function getRankings(
@@ -36,10 +36,10 @@ export async function getRankings(
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.RANKINGS)
   const { season, week, type = "power", division = "fbs" } = options
-  const result = await apiClient().GET("/rankings", {
+  const result = await apiClient().GET("/cfb/rankings", {
     params: { query: { season, week, type, division } },
   })
-  return orNull("/rankings", result)
+  return orNull("/cfb/rankings", result)
 }
 
 /** Teams of a division (or "all": FBS and FCS), alphabetical (the sitemap). */
@@ -52,7 +52,7 @@ export async function getTeams(
   const { season, division = "fbs" } = options
   return required(
     "/teams",
-    await apiClient().GET("/teams", { params: { query: { season, division } } }),
+    await apiClient().GET("/cfb/teams", { params: { query: { season, division } } }),
   )
 }
 
@@ -60,10 +60,10 @@ export async function getTeam(slug: string, season?: number): Promise<TeamProfil
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.team(slug))
-  const result = await apiClient().GET("/teams/{slug}", {
+  const result = await apiClient().GET("/cfb/teams/{slug}", {
     params: { path: { slug }, query: { season } },
   })
-  return orNull(`/teams/${slug}`, result)
+  return orNull(`/cfb/teams/${slug}`, result)
 }
 
 export async function getWeekGames(
@@ -75,10 +75,10 @@ export async function getWeekGames(
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.week(season, week))
-  const result = await apiClient().GET("/weeks/{season}/{week}/games", {
+  const result = await apiClient().GET("/cfb/weeks/{season}/{week}/games", {
     params: { path: { season, week }, query: { season_type: seasonType, division } },
   })
-  return required(`/weeks/${season}/${week}/games`, result)
+  return required(`/cfb/weeks/${season}/${week}/games`, result)
 }
 
 /**
@@ -89,8 +89,8 @@ export async function getTopRankings(division: "fbs" | "fcs"): Promise<TopRankin
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.RANKINGS)
-  const result = await apiClient().GET("/rankings/top", { params: { query: { division } } })
-  return orNull("/rankings/top", result)
+  const result = await apiClient().GET("/cfb/rankings/top", { params: { query: { division } } })
+  return orNull("/cfb/rankings/top", result)
 }
 
 /** This poll week's games of the week (picked with Sunday's rankings, held all week). */
@@ -98,17 +98,17 @@ export async function getGamesOfWeek(): Promise<GamesOfWeek> {
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL)
-  return required("/games-of-week", await apiClient().GET("/games-of-week"))
+  return required("/cfb/games-of-week", await apiClient().GET("/cfb/games-of-week"))
 }
 
 export async function getGame(id: number): Promise<GameCenter | null> {
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.game(id))
-  const result = await apiClient().GET("/games/{game_id}", {
+  const result = await apiClient().GET("/cfb/games/{game_id}", {
     params: { path: { game_id: id } },
   })
-  return orNull(`/games/${id}`, result)
+  return orNull(`/cfb/games/${id}`, result)
 }
 
 /** CFP or FCS playoff odds and a projected bracket; null outside the regular season. */
@@ -119,6 +119,6 @@ export async function getPlayoff(
   "use cache"
   cacheLife("tsi")
   cacheTag(tags.ALL, tags.PLAYOFF)
-  const result = await apiClient().GET("/playoff", { params: { query: { season, division } } })
-  return orNull("/playoff", result)
+  const result = await apiClient().GET("/cfb/playoff", { params: { query: { season, division } } })
+  return orNull("/cfb/playoff", result)
 }

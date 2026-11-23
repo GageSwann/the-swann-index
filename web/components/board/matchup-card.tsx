@@ -15,6 +15,7 @@ import {
   tsiTotal,
 } from "@/lib/format/odds"
 import { formatKickoff } from "@/lib/format/time"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 import { type BoardRank, type BoardRanks, shownRank } from "./board-ranks"
@@ -135,7 +136,7 @@ export function MatchupCard({ game, ranks }: Props) {
       )}
 
       <Link
-        href={`/games/${game.id}`}
+        href={cfb.game(game.id)}
         className="mt-auto inline-flex min-h-8 items-center self-start text-sm underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
       >
         Game center

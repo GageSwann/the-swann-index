@@ -5,6 +5,7 @@ import { TeamLogo } from "@/components/team/team-logo"
 import type { TopTeam } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { record } from "@/lib/format/numbers"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -55,7 +56,7 @@ export function RankingsRail({ id, title, teams, href, folded = false, onToggle 
               style={teamColorVars(t.team)}
             >
               <Link
-                href={`/teams/${t.team.slug}`}
+                href={cfb.team(t.team.slug)}
                 className="grid w-full grid-cols-[1.25rem_1.5rem_minmax(0,1fr)_auto_2.25rem] items-center gap-2 px-2.5 py-1.5"
               >
                 <span className="font-semibold">{t.rank}</span>

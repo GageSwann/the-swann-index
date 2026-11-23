@@ -98,11 +98,12 @@ jobs:
           # The refresh expires every page (Phase 12.2), so the first visit to each one waits
           # ~1 s while it builds. Visit the main pages and both Top 25s' team pages now, one at
           # a time (Render's free tier refuses bursts), so readers get them ready-made.
-          WEEK=$(curl -fsS --max-time 60 "$API_URL/meta/current" | jq -r '"\(.season)/\([.week, 1] | max)"')
-          PAGES="/ /rankings /week /playoff /playoff/fcs /rankings/fcs /rankings/all /week/$WEEK/fcs /week/$WEEK/all"
+          # College football's pages and API paths are under /cfb (#183).
+          WEEK=$(curl -fsS --max-time 60 "$API_URL/cfb/meta/current" | jq -r '"\(.season)/\([.week, 1] | max)"')
+          PAGES="/cfb /cfb/rankings /cfb/schedule/$WEEK /cfb/playoffs /cfb/playoffs/fcs /cfb/rankings/fcs /cfb/rankings/all /cfb/schedule/$WEEK/fcs /cfb/schedule/$WEEK/all"
           for division in fbs fcs; do
-            TEAMS=$(curl -fsS --max-time 60 "$API_URL/rankings?type=power&division=$division" | jq -r '.teams[:25][].team.slug')
-            for slug in $TEAMS; do PAGES="$PAGES /teams/$slug"; done
+            TEAMS=$(curl -fsS --max-time 60 "$API_URL/cfb/rankings?type=power&division=$division" | jq -r '.teams[:25][].team.slug')
+            for slug in $TEAMS; do PAGES="$PAGES /cfb/teams/$slug"; done
           done
           for page in $PAGES; do
             curl -fsS -L -o /dev/null -w "%{http_code} %{time_total}s $page\n" --max-time 120 \

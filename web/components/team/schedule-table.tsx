@@ -7,6 +7,7 @@ import type { ScheduleGame } from "@/lib/api/types"
 import { chance, points } from "@/lib/format/numbers"
 import { tsiSpread } from "@/lib/format/odds"
 import { formatShortDay } from "@/lib/format/time"
+import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
 import { benchmarkName, type Division } from "@/lib/divisions"
@@ -137,7 +138,7 @@ function Opponent({ game }: { game: ScheduleGame }) {
 function Result({ game, odds }: { game: ScheduleGame; odds: GameOdds | undefined }) {
   return (
     <Link
-      href={`/games/${game.game_id}`}
+      href={cfb.game(game.game_id)}
       className="inline-flex min-h-8 shrink-0 items-center whitespace-nowrap hover:underline"
     >
       {game.outcome ? (

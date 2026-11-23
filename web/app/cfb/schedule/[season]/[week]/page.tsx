@@ -6,7 +6,7 @@ import { PageHeading } from "@/components/layout/page-heading"
 import { getMeta } from "@/lib/api/queries"
 import { pageMeta } from "@/lib/metadata"
 
-type Props = PageProps<"/week/[season]/[week]">
+type Props = PageProps<"/cfb/schedule/[season]/[week]">
 
 /** Prerender the current week; other weeks render on first visit and are cached. */
 export async function generateStaticParams() {

@@ -28,6 +28,20 @@ const nextConfig: NextConfig = {
     },
   },
   poweredByHeader: false,
+  // College football moved under /cfb (#183), with the board renamed Schedule and the
+  // playoffs plural: every old address keeps working, permanently redirected.
+  redirects() {
+    return Promise.resolve([
+      { source: "/rankings", destination: "/cfb/rankings", permanent: true },
+      { source: "/rankings/:path*", destination: "/cfb/rankings/:path*", permanent: true },
+      { source: "/week", destination: "/cfb/schedule", permanent: true },
+      { source: "/week/:path*", destination: "/cfb/schedule/:path*", permanent: true },
+      { source: "/playoff", destination: "/cfb/playoffs", permanent: true },
+      { source: "/playoff/:path*", destination: "/cfb/playoffs/:path*", permanent: true },
+      { source: "/teams/:path*", destination: "/cfb/teams/:path*", permanent: true },
+      { source: "/games/:path*", destination: "/cfb/games/:path*", permanent: true },
+    ])
+  },
   // Baseline browser protections on every page (Phase 6 security pass, decision #81).
   // A full Content-Security-Policy needs per-request nonces for Next's inline scripts.
   headers() {

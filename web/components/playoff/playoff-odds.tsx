@@ -7,6 +7,7 @@ import type { PlayoffTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { chance } from "@/lib/format/numbers"
 import { american } from "@/lib/format/odds"
+import { cfb } from "@/lib/routes"
 
 type Column = { key: keyof PlayoffTeam; label: string; help: string }
 
@@ -127,7 +128,7 @@ function PhoneOdds({ teams, official }: { teams: PlayoffTeam[]; official: boolea
         {teams.map((t) => (
           <li key={t.team.slug}>
             <Link
-              href={`/teams/${t.team.slug}`}
+              href={cfb.team(t.team.slug)}
               className={`${grid} min-h-12 py-1.5 active:bg-muted`}
             >
               <span className="flex min-w-0 items-center gap-2">
