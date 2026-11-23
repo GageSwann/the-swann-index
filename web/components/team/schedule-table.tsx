@@ -5,7 +5,7 @@ import { TeamLink } from "@/components/team/team-link"
 import type { GameOdds } from "@/lib/api/schedule-odds"
 import type { ScheduleGame } from "@/lib/api/types"
 import { chance, points } from "@/lib/format/numbers"
-import { teamSpread } from "@/lib/format/odds"
+import { tsiSpread } from "@/lib/format/odds"
 import { formatShortDay } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
 import { HeadCell } from "@/components/ui/head-cell"
@@ -200,7 +200,7 @@ function Difficulty({ game }: { game: ScheduleGame }) {
 function Line({ odds }: { odds: GameOdds }) {
   return (
     <>
-      {teamSpread(Math.round(odds.spread * 10) / 10)}
+      {tsiSpread(odds.spread)}
       {odds.adjusted && (
         <span className="text-muted-foreground" title="Includes a manual adjustment">
           †

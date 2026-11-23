@@ -36,3 +36,59 @@ export function favoriteMoneyline(home: TeamRef, away: TeamRef, homeMl: number, 
   const team = homeFav ? home : away
   return `${team.abbreviation ?? team.school} ${american(homeFav ? homeMl : awayMl)}`
 }
+
+/*
+ * TSI's own lines as a sportsbook posts them (owner, 2026-11-23, #158): spreads, totals and
+ * team totals at the nearest half point (−8.8 → −9, −8.6 → −8.5, 44.9 → 45), moneylines at
+ * the nearest 5 (−273 → −275). Rounded by size, so both sides always mirror. Vegas lines
+ * are shown as the books post them and never pass through these.
+ */
+
+/** The nearest half point, rounding by size (a quarter rounds away from zero). */
+export function bookLine(value: number): number {
+  const size = Math.floor(Math.abs(value) * 2 + 0.5) / 2
+  return value < 0 ? -size : size
+}
+
+/** "−9", "−8.5", "45": whole numbers without a decimal, like a book. */
+export function halfText(value: number): string {
+  const size = Math.abs(value)
+  const text = Number.isInteger(size) ? size.toFixed(0) : size.toFixed(1)
+  return value < 0 ? `${MINUS}${text}` : text
+}
+
+/** A fair moneyline at the nearest 5, never inside ±100 (an even price reads "+100"). */
+export function bookMoneyline(odds: number): number {
+  const size = Math.max(100, Math.round(Math.abs(odds) / 5) * 5)
+  return odds < 0 && size > 100 ? -size : size
+}
+
+/** TSI's spread naming the favorite: "LSU −9", "Pick 'em". */
+export function tsiFavoriteLine(spread: number, home: TeamRef, away: TeamRef): string {
+  const line = bookLine(spread)
+  if (line === 0) return "Pick 'em"
+  const favorite = line < 0 ? home : away
+  return `${favorite.abbreviation ?? favorite.school} ${halfText(-Math.abs(line))}`
+}
+
+/** TSI's spread from one team's side: "+9", "−8.5", "PK". */
+export function tsiSpread(spread: number): string {
+  return teamSpread(bookLine(spread))
+}
+
+/** TSI's total or team total: "45", "56.5". */
+export function tsiTotal(total: number): string {
+  return halfText(bookLine(total))
+}
+
+/** TSI's fair moneyline as posted: "−275", "+155". */
+export function tsiMoneyline(odds: number): string {
+  return american(bookMoneyline(odds))
+}
+
+/** TSI's favorite on the moneyline: "ND −145" (home on a tie). */
+export function tsiFavoriteMoneyline(home: TeamRef, away: TeamRef, homeMl: number, awayMl: number) {
+  const homeFav = homeMl <= awayMl
+  const team = homeFav ? home : away
+  return `${team.abbreviation ?? team.school} ${tsiMoneyline(homeFav ? homeMl : awayMl)}`
+}

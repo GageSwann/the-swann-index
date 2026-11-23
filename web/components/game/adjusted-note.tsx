@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import type { GameSummary, SnapshotView } from "@/lib/api/types"
 import { describeAdjustment } from "@/lib/format/adjustments"
 import { chance } from "@/lib/format/numbers"
-import { favoriteLine } from "@/lib/format/odds"
+import { tsiFavoriteLine, tsiTotal } from "@/lib/format/odds"
 import { cn } from "@/lib/utils"
 
 type Props = { prediction: SnapshotView; game: GameSummary; className?: string }
@@ -22,8 +22,8 @@ export function AdjustedNote({ prediction: p, game, className }: Props) {
       {raw && favorite && (
         <>
           {" "}
-          The model alone: {favoriteLine(raw.spread, game.home, game.away)}, total{" "}
-          {raw.total.toFixed(1)}, {favorite.abbreviation ?? favorite.school} wins{" "}
+          The model alone: {tsiFavoriteLine(raw.spread, game.home, game.away)}, total{" "}
+          {tsiTotal(raw.total)}, {favorite.abbreviation ?? favorite.school} wins{" "}
           {chance(Math.max(raw.home_win_prob, 1 - raw.home_win_prob))}.
         </>
       )}

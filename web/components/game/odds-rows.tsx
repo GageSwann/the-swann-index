@@ -2,7 +2,15 @@ import type { ReactNode } from "react"
 
 import type { FairMarkets, GameCenter, TeamRef } from "@/lib/api/types"
 import { chance, percent } from "@/lib/format/numbers"
-import { american, favoriteLine, teamSpread, totalLine } from "@/lib/format/odds"
+import {
+  american,
+  favoriteLine,
+  teamSpread,
+  totalLine,
+  tsiFavoriteLine,
+  tsiMoneyline,
+  tsiTotal,
+} from "@/lib/format/odds"
 
 /** One market in an odds table: TSI's own line (no vig) and, for games, Vegas. */
 export type MarketRow = {
@@ -31,7 +39,7 @@ export function tsiRows({ markets, home, away, projHome, projAway }: Priced): Ma
       label: "Spread",
       fair: (
         <Line
-          value={favoriteLine(markets.fair_spread, home, away)}
+          value={tsiFavoriteLine(markets.fair_spread, home, away)}
           note={`${short(home)} ${teamSpread(markets.spread.line ?? 0)} covers ${chance(markets.spread.first.prob)}${pushNote(markets.spread.push)}`}
         />
       ),
@@ -40,17 +48,25 @@ export function tsiRows({ markets, home, away, projHome, projAway }: Priced): Ma
       label: "Total",
       fair: (
         <Line
-          value={markets.fair_total.toFixed(1)}
+          value={tsiTotal(markets.fair_total)}
           note={`over ${totalAt} ${chance(markets.total.first.prob)}${pushNote(markets.total.push)}`}
         />
       ),
     },
     {
       label: "Moneyline",
-      fair: <TeamPair home={home} away={away} homeOdds={ml.first.fair} awayOdds={ml.second.fair} />,
+      fair: (
+        <TeamPair
+          home={home}
+          away={away}
+          homeOdds={ml.first.fair}
+          awayOdds={ml.second.fair}
+          format={tsiMoneyline}
+        />
+      ),
     },
-    { label: `${home.school} points`, fair: projHome.toFixed(1) },
-    { label: `${away.school} points`, fair: projAway.toFixed(1) },
+    { label: `${home.school} points`, fair: tsiTotal(projHome) },
+    { label: `${away.school} points`, fair: tsiTotal(projAway) },
   ]
 }
 
@@ -84,14 +100,20 @@ function Line({ value, note }: { value: string; note?: string }) {
   )
 }
 
-type PairProps = { home: TeamRef; away: TeamRef; homeOdds: number; awayOdds: number }
+type PairProps = {
+  home: TeamRef
+  away: TeamRef
+  homeOdds: number
+  awayOdds: number
+  format?: (odds: number) => string // TSI's prices are rounded like a book's (#158)
+}
 
 /** Both sides' moneylines, away on top (as the teams are listed everywhere). */
-function TeamPair({ home, away, homeOdds, awayOdds }: PairProps) {
+function TeamPair({ home, away, homeOdds, awayOdds, format = american }: PairProps) {
   return (
     <span className="inline-flex flex-col items-end">
-      <span>{`${short(away)} ${american(awayOdds)}`}</span>
-      <span>{`${short(home)} ${american(homeOdds)}`}</span>
+      <span>{`${short(away)} ${format(awayOdds)}`}</span>
+      <span>{`${short(home)} ${format(homeOdds)}`}</span>
     </span>
   )
 }

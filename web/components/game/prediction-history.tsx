@@ -1,6 +1,6 @@
 import type { GameSummary, SnapshotPoint } from "@/lib/api/types"
 import { chance } from "@/lib/format/numbers"
-import { favoriteLine } from "@/lib/format/odds"
+import { bookLine, tsiFavoriteLine, tsiTotal } from "@/lib/format/odds"
 import { formatUpdated } from "@/lib/format/time"
 
 /** Every published TSI prediction for the game, oldest first (they are never edited). */
@@ -15,7 +15,7 @@ export function PredictionHistory({
   const first = history[0]
   const last = history[history.length - 1]
   // Compare the lines as shown (one decimal), so sub-display changes don't read as a move.
-  const moved = history.length > 1 && first.spread.toFixed(1) !== last.spread.toFixed(1)
+  const moved = history.length > 1 && bookLine(first.spread) !== bookLine(last.spread)
 
   return (
     <section aria-labelledby="history-heading" className="space-y-3">
@@ -24,7 +24,7 @@ export function PredictionHistory({
       </h2>
       <p className="text-sm text-muted-foreground">
         {moved
-          ? `TSI's line moved from ${favoriteLine(first.spread, game.home, game.away)} to ${favoriteLine(last.spread, game.home, game.away)}.`
+          ? `TSI's line moved from ${tsiFavoriteLine(first.spread, game.home, game.away)} to ${tsiFavoriteLine(last.spread, game.home, game.away)}.`
           : history.length > 1
             ? "TSI's line hasn't moved since it was first published."
             : "Published once so far."}
@@ -37,7 +37,7 @@ export function PredictionHistory({
           >
             <span className="text-muted-foreground">{formatUpdated(s.published_at)}</span>
             <span>
-              {favoriteLine(s.spread, game.home, game.away)}, total {s.total.toFixed(1)},{" "}
+              {tsiFavoriteLine(s.spread, game.home, game.away)}, total {tsiTotal(s.total)},{" "}
               {game.home.abbreviation ?? game.home.school} {chance(s.home_win_prob)} to win
             </span>
           </li>

@@ -6,7 +6,14 @@ import { TeamLink } from "@/components/team/team-link"
 import type { GameSummary, TeamRef } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { points } from "@/lib/format/numbers"
-import { favoriteLine, favoriteMoneyline, totalLine } from "@/lib/format/odds"
+import {
+  favoriteLine,
+  favoriteMoneyline,
+  totalLine,
+  tsiFavoriteLine,
+  tsiFavoriteMoneyline,
+  tsiTotal,
+} from "@/lib/format/odds"
 import { formatKickoff } from "@/lib/format/time"
 import { cn } from "@/lib/utils"
 
@@ -98,17 +105,17 @@ export function MatchupCard({ game, ranks }: Props) {
             <tbody>
               <LineRow
                 label="Spread"
-                tsi={favoriteLine(p.spread, game.home, game.away)}
+                tsi={tsiFavoriteLine(p.spread, game.home, game.away)}
                 market={m?.spread != null ? favoriteLine(m.spread, game.home, game.away) : null}
               />
               <LineRow
                 label="Total"
-                tsi={p.total.toFixed(1)}
+                tsi={tsiTotal(p.total)}
                 market={m?.total != null ? totalLine(m.total) : null}
               />
               <LineRow
                 label="Moneyline"
-                tsi={favoriteMoneyline(game.home, game.away, p.fair_home_ml, p.fair_away_ml)}
+                tsi={tsiFavoriteMoneyline(game.home, game.away, p.fair_home_ml, p.fair_away_ml)}
                 market={
                   m?.home_ml != null && m.away_ml != null
                     ? favoriteMoneyline(game.home, game.away, m.home_ml, m.away_ml)
