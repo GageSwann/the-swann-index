@@ -38,6 +38,11 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 
 ## Next
 
+**Sport namespaces (owner, #183):** everything college football lives under `/cfb`, on the site and in the API, so college basketball (CBB) and baseball (CBASE) can sit beside it later without rewiring. Backend code and database stay as they are (see #183 for how another sport fits in).
+- [x] **1. API under `/cfb`** (old paths still served, `legacy_` ids; spec + types; the owner's `/cfb/book` and `/cfb/model` never cached). Ship first.
+- [ ] **2. Site under `/cfb`**, once the live API serves `/cfb/meta/current`: pages at `/cfb/rankings`, `/cfb/schedule/{season}/{week}`, `/cfb/playoffs`, `/cfb/teams/{slug}`, `/cfb/games/{id}` (link previews move with them); permanent redirects from every old address (`/rankings`, `/week/...`, `/playoff`, `/teams/...`, `/games/...`); one place builds every link (`lib/routes.ts`); the site calls the `/cfb` API paths; sitemap; the sport menu and bottom bar; the nightly job's page warm-up list (`daily-refresh.yml`, the owner asked for this rewiring).
+- [ ] **3. Cleanup**, once the live site calls only `/cfb` paths: drop the old API paths and their `legacy_` ids; the nightly job's API calls (`/meta/current`, `/rankings`) and the weekly review script move to `/cfb`.
+
 **Neon: cheaper still** (each on the local copy with the transfer meter, outputs identical)
 - [x] Re-measure since #148 and the rebuild (2026-11-20, local copy, ~90 runs): nightly run 2.14 MB without ingest (~3 MB with), a full site build **9.95 MB** (was 17.6), the nightly ~60-page refresh ~4 MB, a team page 42 KB (was 8: its rating history reads both sets' full rows for every run), rankings 265 KB, `/playoff` 152 KB. **Untouched month:** ~7 MB a night (~210 MB) plus first visits; even a crawler opening every team, week and game page daily adds ~22 MB a day, so ~0.9 GB a month at worst, well under 5 GB. Each web push adds ~10 MB.
 - [x] Trim the two heavy reads found (#154): team page 41 → 20 KB (one compact history row per run), rankings 265 → 200 KB (the Sunday baseline reads only ranks); every response byte-identical. Also Next.js 16.4.2 → 16.4.6 for 7 moderate advisories (`npm audit --omit=dev` back to 0).
