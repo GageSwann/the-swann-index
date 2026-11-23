@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
 import { TeamLogo } from "@/components/team/team-logo"
-import { BorderLightRings, borderLightVars } from "@/components/ui/border-light"
+import { borderLightVars } from "@/components/ui/border-light"
 import type { TeamProfile, TeamRef } from "@/lib/api/types"
 import { points, record } from "@/lib/format/numbers"
 import { cn } from "@/lib/utils"
@@ -27,16 +27,20 @@ type Props = {
 /**
  * The scoreboard panel of the game center: both teams with
  * records and ranks, the score (projected or final), and the win-probability bar. It is
- * the page's focal point, so it carries the border light in both teams' colors (#137).
+ * the page's focal point, so a still strip in both teams' colors runs across its top
+ * (#168; was #137's moving border light).
  */
 export function ScoreBoard({ away, home, neutral, context, note, homeWinProb }: Props) {
   return (
     <section
       aria-label="Matchup"
-      className="tsi-border-light space-y-5 rounded-md border border-border bg-card p-5"
-      style={borderLightVars(away.team, home.team)}
+      className="space-y-5 overflow-hidden rounded-md border border-border bg-card p-5"
     >
-      <BorderLightRings />
+      <div
+        aria-hidden
+        className="tsi-team-split -mx-5 -mt-5 mb-4 h-1"
+        style={borderLightVars(away.team, home.team)}
+      />
       <p className="text-sm text-muted-foreground">{context}</p>
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 sm:gap-6">
         <TeamScore side={away} />

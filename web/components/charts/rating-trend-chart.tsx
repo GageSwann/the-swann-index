@@ -137,15 +137,7 @@ function endLabel(length: number, text: string, theme: ChartTheme, color: string
     const y = Number(props.y)
     return (
       <g>
-        <circle
-          cx={x}
-          cy={y}
-          r={4}
-          fill={color}
-          stroke={theme.surface}
-          strokeWidth={2}
-          style={{ filter: pointGlow(theme.mode, color) }}
-        />
+        <circle cx={x} cy={y} r={4} fill={color} stroke={theme.surface} strokeWidth={2} />
         <text x={x + 8} y={y + 4} fill={theme.text} fontSize={12}>
           {text}
         </text>
@@ -153,11 +145,4 @@ function endLabel(length: number, text: string, theme: ChartTheme, color: string
     )
   }
   return EndLabel
-}
-
-/** Night: bloom around the point; day: light cast below it. `color` is #rrggbb. */
-function pointGlow(mode: ChartTheme["mode"], color: string): string {
-  return mode === "dark"
-    ? `drop-shadow(0 0 5px ${color}) drop-shadow(0 1px 10px ${color}99)`
-    : `drop-shadow(0 3px 3px ${color}8c)`
 }
