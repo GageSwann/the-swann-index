@@ -5,7 +5,7 @@ import { TeamLogo } from "@/components/team/team-logo"
 import type { GameOfWeekView, TeamRecord, TeamRef, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { chance, points, record } from "@/lib/format/numbers"
-import { american, tsiMoneyline, tsiSpread, tsiTotal } from "@/lib/format/odds"
+import { tsiMoneyline, tsiSpread, tsiTotal } from "@/lib/format/odds"
 import { cfb } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
@@ -50,6 +50,7 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
     )
   }
   const { game } = pick
+  const lines = pick.lines ?? null // TSI's lines with their fair odds (#188)
   const rank = new Map(teams.map((t) => [t.team.id, t.rank]))
   const final = game.result?.final ? game.result : null
   const matchup = `${game.away.school} ${game.neutral ? "vs." : "at"} ${game.home.school}`
@@ -125,14 +126,18 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
           rows={[
             {
               team: game.away,
-              spread: tsiSpread(-p.spread),
-              total: ["O", tsiTotal(p.total)],
+              spread: tsiSpread(-(lines?.spread.line ?? p.spread)),
+              spreadOdds: lines?.spread.second.fair,
+              total: ["O", tsiTotal(lines?.total.line ?? p.total)],
+              totalOdds: lines?.total.first.fair,
               moneyline: tsiMoneyline(p.fair_away_ml),
             },
             {
               team: game.home,
-              spread: tsiSpread(p.spread),
-              total: ["U", tsiTotal(p.total)],
+              spread: tsiSpread(lines?.spread.line ?? p.spread),
+              spreadOdds: lines?.spread.first.fair,
+              total: ["U", tsiTotal(lines?.total.line ?? p.total)],
+              totalOdds: lines?.total.second.fair,
               moneyline: tsiMoneyline(p.fair_home_ml),
             },
           ]}
@@ -216,18 +221,18 @@ function short(team: TeamRef): string {
 type LinesRow = {
   team: TeamRef
   spread: string
+  spreadOdds?: number // TSI's fair odds for this side at that line (#188)
   total: [string, string] // ["O" | "U", line]
+  totalOdds?: number
   moneyline: string
 }
 
-/** The standard price under a spread or total, small, like a book's board (owner, #187). */
-const STANDARD_PRICE = -110
-
-function Price() {
+/** TSI's fair odds for one side of a spread or total, small under the line, like a book's
+ * board (owner, #188); rounded like TSI's moneylines. Nothing when the API sent none. */
+function Price({ odds }: { odds?: number }) {
+  if (odds === undefined) return null
   return (
-    <span className="block text-xs font-normal text-muted-foreground">
-      {american(STANDARD_PRICE)}
-    </span>
+    <span className="block text-xs font-normal text-muted-foreground">{tsiMoneyline(odds)}</span>
   )
 }
 
@@ -277,12 +282,12 @@ function LinesBoard({ rows }: { rows: LinesRow[] }) {
             </th>
             <td className={cell}>
               {r.spread}
-              <Price />
+              <Price odds={r.spreadOdds} />
             </td>
             <td className={cell}>
               <span className="mr-1 font-normal text-muted-foreground">{r.total[0]}</span>
               {r.total[1]}
-              <Price />
+              <Price odds={r.totalOdds} />
             </td>
             <td className={cell}>{r.moneyline}</td>
           </tr>

@@ -13,7 +13,6 @@ export type SportSection = {
 export type Sport = {
   key: string
   label: string // the header button: "CFB"
-  emoji: string // after the label, so sports tell apart at a glance (owner)
   name: string // the menu's heading and screen-reader name: "College Football"
   sections: SportSection[] // none yet: the menu says "Coming Soon"
 }
@@ -22,7 +21,6 @@ export const SPORTS: Sport[] = [
   {
     key: "cfb",
     label: "CFB",
-    emoji: "🏈",
     name: "College Football",
     sections: [
       { href: "/cfb", label: "Home", prefix: "/cfb", exact: true },
@@ -31,8 +29,8 @@ export const SPORTS: Sport[] = [
       { href: "/cfb/playoffs", label: "Playoffs", prefix: "/cfb/playoffs" },
     ],
   },
-  { key: "cbb", label: "CBB", emoji: "🏀", name: "College Basketball", sections: [] },
-  { key: "cbase", label: "CBASE", emoji: "⚾", name: "College Baseball", sections: [] },
+  { key: "cbb", label: "CBB", name: "College Basketball", sections: [] },
+  { key: "cbase", label: "CBASE", name: "College Baseball", sections: [] },
 ]
 
 /** Is this page one of the section's pages? (Whole path segments: /cfb/rankingsx isn't.) */

@@ -84,7 +84,8 @@ export function SportMenus({ sports }: { sports: Sport[] }) {
 }
 
 /**
- * One sport's menu: the sport's short name and a small emoji after it ("CFB 🏈"); a sport
+ * One sport's menu: the sport's short name ("CFB"), every button the same width with the name centered, so
+ * the sports sit evenly spaced; a sport
  * without sections yet says "Coming Soon". Opens when a mouse hovers it, and on click,
  * tap, Enter or Space; closes on Escape (focus back to the button). The list hangs off
  * the button's right side, unless that would run past the window: then it opens leftward.
@@ -144,15 +145,12 @@ function SportMenu({
           else onClose()
         }}
         className={cn(
-          "flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-sm font-semibold",
+          "flex min-w-18 items-center justify-center rounded-sm px-2.5 py-1.5 text-sm font-semibold",
           active || open ? "text-foreground" : "text-muted-foreground hover:text-foreground",
           active && "tsi-nav-active",
         )}
       >
         {sport.label}
-        <span aria-hidden className="text-xs leading-none">
-          {sport.emoji}
-        </span>
       </button>
       {/* pt-1.5 bridges the gap, so the pointer can travel from the button to the list. */}
       <div
