@@ -332,6 +332,60 @@
         "title": "FairTwoWay",
         "type": "object"
       },
+      "GameCard": {
+        "description": "A team page's next game (#199): the game with TSI's prediction and the market, as on\nthe week board, both teams' records and conference records, and TSI's lines.",
+        "properties": {
+          "away_conf_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "away_record": {
+            "$ref": "#/components/schemas/Record"
+          },
+          "game": {
+            "$ref": "#/components/schemas/GameSummary"
+          },
+          "home_conf_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "home_record": {
+            "$ref": "#/components/schemas/Record"
+          },
+          "lines": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameLines"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "game",
+          "home_record",
+          "away_record",
+          "home_conf_record",
+          "away_conf_record",
+          "lines"
+        ],
+        "title": "GameCard",
+        "type": "object"
+      },
       "GameCenter": {
         "properties": {
           "game": {
@@ -1908,6 +1962,16 @@
             "title": "Adjustments",
             "type": "array"
           },
+          "conf_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "history": {
             "items": {
               "$ref": "#/components/schemas/RatingPoint"
@@ -1918,6 +1982,16 @@
           "losses": {
             "title": "Losses",
             "type": "integer"
+          },
+          "next_game": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameCard"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "projection": {
             "anyOf": [

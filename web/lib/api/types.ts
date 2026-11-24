@@ -19,6 +19,7 @@ export type GameSummary = Schemas["GameSummary"]
 export type GameCenter = Schemas["GameCenter"]
 export type GamesOfWeek = Schemas["GamesOfWeek"]
 export type GameOfWeekView = Schemas["GameOfWeekView"]
+export type GameCard = Schemas["GameCard"]
 // TSI's chances and fair (no-vig) prices; the Book's prices are owner-only (#139).
 export type FairMarkets = Schemas["FairMarkets"]
 export type FairTwoWay = Schemas["FairTwoWay"]

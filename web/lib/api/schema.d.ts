@@ -294,6 +294,19 @@ export interface components {
             push: number;
             second: components["schemas"]["FairPrice"];
         };
+        /**
+         * GameCard
+         * @description A team page's next game (#199): the game with TSI's prediction and the market, as on
+         *     the week board, both teams' records and conference records, and TSI's lines.
+         */
+        GameCard: {
+            away_conf_record: components["schemas"]["Record"] | null;
+            away_record: components["schemas"]["Record"];
+            game: components["schemas"]["GameSummary"];
+            home_conf_record: components["schemas"]["Record"] | null;
+            home_record: components["schemas"]["Record"];
+            lines: components["schemas"]["GameLines"] | null;
+        };
         /** GameCenter */
         GameCenter: {
             game: components["schemas"]["GameSummary"];
@@ -778,10 +791,12 @@ export interface components {
         TeamProfile: {
             /** Adjustments */
             adjustments: components["schemas"]["AdjustmentNote"][];
+            conf_record?: components["schemas"]["Record"] | null;
             /** History */
             history: components["schemas"]["RatingPoint"][];
             /** Losses */
             losses: number;
+            next_game?: components["schemas"]["GameCard"] | null;
             projection: components["schemas"]["Projection"] | null;
             ratings: components["schemas"]["TeamRatings"] | null;
             resume: components["schemas"]["ResumeSummary"] | null;
