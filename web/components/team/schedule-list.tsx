@@ -11,11 +11,12 @@ import { TeamLogo } from "./team-logo"
 
 /**
  * The season's schedule as a compact vertical list (owner, #199), in the style of the home
- * page's Top 25 rails: date, opponent (its rank when in the Top 25; "vs" at home, "at" away, "vs" with an N tag on a
- * neutral field), then the result once final (W in the up color, L in the down color) or
- * TSI's win chance before it. The next game is highlighted; every row opens the game center.
- * The list stretches to the Next Game card's height (rows share the extra space). "Details"
- * jumps to this team's full schedule table further down the page.
+ * page's Top 25 rails: date (with "Neutral" under it for a neutral-site game, #201), the
+ * opponent with its rank when in the Top 25 ("vs" at home or neutral, "at" away), then the
+ * result once final (W in the up color, L in the down color) or TSI's win chance before it.
+ * The next game is highlighted; every row opens the game center. The list stretches to the
+ * Next Game card's height (rows share the extra space). "Details" jumps to this team's full
+ * schedule table further down the page.
  */
 export function ScheduleList({
   schedule,
@@ -53,8 +54,12 @@ export function ScheduleList({
                 aria-current={g.game_id === nextId ? "true" : undefined}
                 className="group grid w-full grid-cols-[3rem_1.5rem_minmax(0,1fr)_auto] items-center gap-2 px-2.5 py-1.5"
               >
-                <span className="text-xs text-muted-foreground tabular-nums">
+                {/* The date; a neutral-site game says so under it (owner, #201). */}
+                <span className="text-xs leading-tight text-muted-foreground tabular-nums">
                   {g.kickoff ? formatMonthDay(g.kickoff) : `Wk ${g.week}`}
+                  {g.site === "neutral" && (
+                    <span className="block text-[0.625rem] tracking-wide uppercase">Neutral</span>
+                  )}
                 </span>
                 <TeamLogo team={g.opponent} size={22} />
                 <span className="flex min-w-0 items-center gap-1.5">
@@ -70,14 +75,6 @@ export function ScheduleList({
                     )}
                     {g.opponent.school}
                   </span>
-                  {g.site === "neutral" && (
-                    <span
-                      title="Neutral site"
-                      className="shrink-0 rounded-sm border border-border px-1 text-[0.625rem] leading-4 font-semibold text-muted-foreground"
-                    >
-                      N<span className="sr-only">eutral site</span>
-                    </span>
-                  )}
                 </span>
                 <Outcome game={g} odds={odds.get(g.game_id)} />
               </Link>
