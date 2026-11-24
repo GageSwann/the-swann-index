@@ -17,6 +17,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
   |---|---|---|
   | Nov 20 (period start) | 0 GB | — |
 | Nov 23 | 0.48 GB | Nov 20–22 together (no daily readings sent Nov 21–22): ~250–300 MB of one-offs on Nov 20 (rebuild + verify, ~5 site builds) leave ~180–230 MB for ~2.5 normal days, **~70–90 MB a day** |
+| Nov 24 | 0.96 GB (nightly API reading at 11:04 UTC also 0.96) | Nov 23: **~480 MB**, a design day: ~29 Vercel builds **plus 38 CI site builds** (CI's web job prerenders the site from the live API on every push to `main`, docs- and backend-only pushes too; not counted in the ~10 MB-per-push estimate), so ~67 builds at roughly 7 MB each; two nightly runs (Nov 23 11:01 and a 14:23 backup that GitHub started 11 h late, at 01:44 Nov 24, and that ran in full because the gate checks the UTC day) |
 
   *Expect Nov 21 to be high:* it includes the one-off rebuild (~250 MB, #152), the rebuild's verify, today's pushes' site builds (~10 MB each) and the migrations. Nov 22 onward is the normal pattern.
 
@@ -58,8 +59,8 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 - [x] Save last season's fitted stats like the Elo carry (#177, 2026-11-23): `model/artifacts/component_carry.json` + `tsi model carry`; nightly read **2.15 → 1.56 MB** (local copy, `tsi run --no-ingest`), inputs and the week's forecasts `repr`-identical. Check the first production run's log for no "saved component fit ... no longer matches" warning (the carry was built on the work PC's copy).
 - [x] ~~"Save backtest to production" without reading the history from production (compute on a copy; upload only the saved run).~~ Measured and closed (#178, owner): a save reads ~13 MB, a few times a season; not worth a workflow change.
 - [x] The nightly job reads production's transfer from Neon's API and warns when the month is on pace to go over (#179, owner OK'd the workflow change): `tsi neon transfer`, the nightly `transfer` job (summary, warning over 80 MB a day, one GitHub issue per period when on pace to pass 5 GB or 80% used).
-  - [ ] **Owner:** create a Neon API key (console → Account settings → API keys), add it as the repo secret `NEON_API_KEY`, and add the variable `NEON_PROJECT_ID` (`nameless-morning-73071395`). Until then the job skips with a notice.
-  - [ ] First reading: compare the run summary's GB with the console's project Overview the same morning (Neon calls the API figure "not intended for billing").
+  - [x] **Owner:** create a Neon API key (console → Account settings → API keys), add it as the repo secret `NEON_API_KEY`, and add the variable `NEON_PROJECT_ID` (`nameless-morning-73071395`). Until then the job skips with a notice. (Set 2026-11-23.)
+  - [x] First reading (2026-11-24, 11:04 UTC): 0.96 GB, the same as the console that morning; "above target" warning (268 MB a day so far), pace 2.71 GB. Compare the run summary's GB with the console's project Overview the same morning (Neon calls the API figure "not intended for billing").
 
 **13.8 Fill in every day of 2026** (owner, #127; widened 2026-11-20 to the outage, #152)
 *Goal:* the site as if it had run every day since the season started: a rating run for every day (the rating trend, daily ranks and Sunday movement baselines), a TSI line and win chance for every game, and the games of the week for each poll week. Two gaps: **B** = the Neon outage (Nov 10–19) first, then **A** = the season's start to the first nightly run.
