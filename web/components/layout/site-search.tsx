@@ -63,6 +63,7 @@ export function SiteSearch() {
   const button = useRef<HTMLButtonElement>(null)
   const listId = useId()
 
+  const optionId = (i: number) => `${listId}-${i}`
   const results = useMemo(() => (teams ? searchTeams(teams, query) : []), [teams, query])
 
   const load = () => {
@@ -150,8 +151,6 @@ export function SiteSearch() {
         : results.length === 0
           ? `No teams match “${query.trim()}”.`
           : null
-  const optionId = (i: number) => `${listId}-${i}`
-
   return (
     <div ref={root} className="relative flex items-center">
       <button
