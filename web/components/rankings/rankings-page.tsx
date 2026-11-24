@@ -1,17 +1,12 @@
 import { PageHeading } from "@/components/layout/page-heading"
 import { DivisionNav } from "@/components/ui/division-nav"
 import { getRankings } from "@/lib/api/queries"
+import type { RankingType } from "@/lib/api/types"
 import type { DivisionView } from "@/lib/divisions"
 import { formatShortDay, formatUpdated } from "@/lib/format/time"
 import { cfb } from "@/lib/routes"
 
 import { RankingsView } from "./rankings-view"
-
-const RANKINGS_HREF: Record<DivisionView, string> = {
-  fbs: cfb.rankings("fbs"),
-  fcs: cfb.rankings("fcs"),
-  all: cfb.rankings("all"),
-}
 
 const TITLE: Record<DivisionView, string> = {
   fbs: "Rankings",
@@ -21,16 +16,30 @@ const TITLE: Record<DivisionView, string> = {
 
 /**
  * One division's rankings page (decision #113): `/cfb/rankings` is FBS,
- * `/cfb/rankings/fcs` and `/cfb/rankings/all` the others. "All" is Power only: Résumé ranks stay within a division.
+ * `/cfb/rankings/fcs` and `/cfb/rankings/all` the others. "All" is Power only: Résumé ranks stay
+ * within a division. Each ranking has its own address (#205): Résumé at the division's page,
+ * Power at `/power` under it, so the page arrives already showing it (no switch on load).
  */
-export async function RankingsPage({ division }: { division: DivisionView }) {
+export async function RankingsPage({
+  division,
+  type = "resume",
+}: {
+  division: DivisionView
+  type?: RankingType
+}) {
   const [power, resume] = await Promise.all([
     getRankings({ type: "power", division }).catch(() => null),
     division === "all"
       ? Promise.resolve(null)
       : getRankings({ type: "resume", division }).catch(() => null),
   ])
-  const nav = <DivisionNav current={division} hrefs={RANKINGS_HREF} label="Rankings division" />
+  // The division links keep the ranking shown (#205).
+  const hrefs: Record<DivisionView, string> = {
+    fbs: cfb.rankings("fbs", type),
+    fcs: cfb.rankings("fcs", type),
+    all: cfb.rankings("all"),
+  }
+  const nav = <DivisionNav current={division} hrefs={hrefs} label="Rankings division" />
 
   if (power === null || (division !== "all" && resume === null)) {
     return (
@@ -71,6 +80,7 @@ export async function RankingsPage({ division }: { division: DivisionView }) {
           resume={resume?.teams ?? null}
           since={since}
           division={division}
+          type={division === "all" ? "power" : type}
           benchmarkRank={resume?.benchmark_rank ?? null}
         />
       )}

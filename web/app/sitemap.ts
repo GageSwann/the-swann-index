@@ -12,7 +12,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages = [
     cfb.home,
     cfb.rankings(),
+    cfb.rankings("fbs", "power"),
     cfb.rankings("fcs"),
+    cfb.rankings("fcs", "power"),
     cfb.rankings("all"),
     cfb.schedule(),
     cfb.schedule(season, week),

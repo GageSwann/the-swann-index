@@ -1,10 +1,12 @@
 "use client"
 
-import { type ReactNode, useMemo, useState, useSyncExternalStore } from "react"
+import { useRouter } from "next/navigation"
+import { type ReactNode, useEffect, useMemo, useState } from "react"
 
 import { Segmented } from "@/components/ui/segmented"
 import type { RankedTeam, RankingType } from "@/lib/api/types"
 import { benchmarkName, type DivisionView } from "@/lib/divisions"
+import { cfb } from "@/lib/routes"
 
 import { Movers } from "./movers"
 import { RankingsList } from "./rankings-list"
@@ -24,16 +26,6 @@ function explainer(
     : "How good each team is right now, from this season's games only: no preseason expectations, no past seasons."
 }
 
-// The ranking in the address (#204): `#power` opens Power, so a "Full Rankings" link next to
-// a Power list lands on Power. Read from the URL, not the server, so the page stays one
-// cached page; a hash change (or a page change that brings one) re-reads it.
-function subscribeHash(onChange: () => void): () => void {
-  window.addEventListener("hashchange", onChange)
-  return () => window.removeEventListener("hashchange", onChange)
-}
-const readHash = () => window.location.hash
-const noHash = () => ""
-
 // Columns a view leaves out: the season sim is FBS only (decision #111), and SOR is
 // measured against each division's own benchmark, so it isn't comparable across them.
 const HIDDEN: Record<DivisionView, string[]> = {
@@ -48,21 +40,20 @@ type Props = {
   resume: RankedTeam[] | null // null: no Résumé view ("all")
   since: string | null
   division: DivisionView
+  type: RankingType // the ranking this page's address shows (#205)
   benchmarkRank: number | null // the Résumé benchmark the run used (#133)
 }
 
-export function RankingsView({ nav, power, resume, since, division, benchmarkRank }: Props) {
-  // Résumé first (owner, #159); "all" has no Résumé view, so it opens on Power. `#power` in
-  // the address opens Power (#204). A choice made here holds while the address it set stays.
-  const hash = useSyncExternalStore(subscribeHash, readHash, noHash)
-  const [picked, setPicked] = useState<{ type: RankingType; hash: string } | null>(null)
-  const fromHash: RankingType = hash === "#power" || resume === null ? "power" : "resume"
-  const type = picked?.hash === hash ? picked.type : fromHash
+export function RankingsView({ nav, power, resume, since, division, type, benchmarkRank }: Props) {
+  // Résumé and Power are separate pages (#205): the switch goes to the other one (prefetched,
+  // so it's instant), replacing this history entry so Back still leaves the rankings.
+  const router = useRouter()
+  const other: RankingType = type === "power" ? "resume" : "power"
+  useEffect(() => {
+    if (resume !== null) router.prefetch(cfb.rankings(division, other))
+  }, [router, division, other, resume])
   const setType = (next: RankingType) => {
-    // Keep the address in step, so a copied link opens the same ranking.
-    const nextHash = next === "power" && resume !== null ? "#power" : ""
-    window.history.replaceState(window.history.state, "", `${window.location.pathname}${nextHash}`)
-    setPicked({ type: next, hash: nextHash })
+    if (next !== type) router.replace(cfb.rankings(division, next), { scroll: false })
   }
   const [scope, setScope] = useState<"top25" | "all">("top25")
   const [conference, setConference] = useState("")

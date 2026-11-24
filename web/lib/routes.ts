@@ -11,10 +11,10 @@ const CFB = "/cfb"
 
 export const cfb = {
   home: CFB,
-  /** A division's rankings; `#power` opens Power (Résumé is the default, #204). */
+  /** A division's rankings: Résumé, or Power at `/power` (#205; "all" is Power only). */
   rankings: (division: DivisionView = "fbs", type?: RankingType) =>
     (division === "fbs" ? `${CFB}/rankings` : `${CFB}/rankings/${division}`) +
-    (type === "power" ? "#power" : ""),
+    (type === "power" && division !== "all" ? "/power" : ""),
   /** The board: no season means the current week. */
   schedule: (season?: number | string, week?: number | string, division: DivisionView = "fbs") =>
     season === undefined || week === undefined
