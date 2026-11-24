@@ -13,7 +13,7 @@ export async function GET() {
     ),
   )
   const teams: SearchTeam[] = [fbs, fcs].flatMap((rankings) =>
-    (rankings?.teams ?? []).map(({ team, rank }) => ({ team, rank })),
+    (rankings?.teams ?? []).map(({ team, rank }) => ({ sport: "cfb" as const, team, rank })),
   )
   return Response.json(teams)
 }

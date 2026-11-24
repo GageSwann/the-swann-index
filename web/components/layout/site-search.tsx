@@ -8,8 +8,10 @@ import { flushSync } from "react-dom"
 
 import { TeamLogo } from "@/components/team/team-logo"
 import { cfb } from "@/lib/routes"
-import { type SearchTeam, searchTeams } from "@/lib/search"
+import { type SearchTeam, searchTeams, sportLabel, teamHref } from "@/lib/search"
 import { cn } from "@/lib/utils"
+
+import { setSearchOpen, useSearchLayer } from "./header-layer"
 
 // The team list, fetched once per visit on first use (a cached file, never the API per key).
 let index: Promise<SearchTeam[]> | null = null
@@ -38,7 +40,9 @@ function isShortcut(e: KeyboardEvent): boolean {
 /**
  * The header's team search (owner, 2026-11-24, #193): a magnifying glass that opens a search
  * box; typing lists matching teams (school, mascot or abbreviation), best first, each linking
- * to its team page. Desktop: the box replaces the button and the list hangs below it. Phones:
+ * to its team page in its sport (each result says which: "CFB"). Desktop: the box opens over
+ * the sport menus' place (they step aside while it's open, so nothing in the header moves) and
+ * the list hangs below it, to the right like the sport menus. Phones:
  * a sheet across the top of the screen with Cancel. Keys: "/" or Ctrl/⌘+K opens, ↑/↓ pick,
  * Enter goes, Escape closes.
  */
@@ -46,8 +50,10 @@ export function SiteSearch() {
   const pathname = usePathname()
   const router = useRouter()
   // Open on which page: a page change closes it without an effect (like the sport menus).
+  // A sport menu opened by a click closes search through the shared layer (#193).
   const [openOn, setOpenOn] = useState<string | null>(null)
-  const open = openOn === pathname
+  const layer = useSearchLayer()
+  const open = openOn === pathname && layer.open
   const [query, setQuery] = useState("")
   const [active, setActive] = useState(0)
   const [teams, setTeams] = useState<SearchTeam[] | null>(null)
@@ -65,6 +71,7 @@ export function SiteSearch() {
   }
   const openSearch = () => {
     // Render the box and focus it in the same tap, or iPhones don't raise the keyboard.
+    setSearchOpen(true) // closes any sport menu (one header dropdown at a time)
     flushSync(() => {
       setQuery("")
       setActive(0)
@@ -74,14 +81,19 @@ export function SiteSearch() {
     if (!teams) load()
   }
   const close = (refocus = false) => {
+    setSearchOpen(false)
     setOpenOn(null)
     if (refocus) button.current?.focus()
   }
   const go = (entry: SearchTeam | undefined) => {
     if (!entry) return
     close()
-    router.push(cfb.team(entry.team.slug))
+    router.push(teamHref(entry))
   }
+
+  // Tell the sport menus, also when a page change closes search (an external store, not state).
+  useEffect(() => setSearchOpen(open), [open])
+  useEffect(() => () => setSearchOpen(false), [])
 
   // "/" or Ctrl/⌘+K opens search from anywhere on the page.
   useEffect(() => {
@@ -94,14 +106,17 @@ export function SiteSearch() {
     return () => document.removeEventListener("keydown", onKey)
   })
 
-  // Close on a press outside the box and its list.
+  // Close on a click outside the box and its list. A click, not a press: closing shrinks the
+  // box and moves the sport menus, so closing on the press made a click on one miss it.
   useEffect(() => {
     if (!open) return
-    const onPress = (e: PointerEvent) => {
-      if (!root.current?.contains(e.target as Node)) setOpenOn(null)
+    const onClick = (e: MouseEvent) => {
+      if (root.current?.contains(e.target as Node)) return
+      setSearchOpen(false)
+      setOpenOn(null)
     }
-    document.addEventListener("pointerdown", onPress)
-    return () => document.removeEventListener("pointerdown", onPress)
+    document.addEventListener("click", onClick)
+    return () => document.removeEventListener("click", onClick)
   }, [open])
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -133,16 +148,19 @@ export function SiteSearch() {
   const optionId = (i: number) => `${listId}-${i}`
 
   return (
-    <div ref={root} className="flex items-center">
+    <div ref={root} className="relative flex items-center">
       <button
         ref={button}
         type="button"
-        hidden={open}
         onClick={openSearch}
         onPointerEnter={() => !teams && loadIndex().then(setTeams, () => {})}
         aria-label="Search teams"
         aria-keyshortcuts="/ Control+K"
-        className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+        // Invisible, not removed, while open: the header keeps its layout.
+        className={cn(
+          "inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground",
+          open && "invisible",
+        )}
       >
         <SearchIcon className="size-4" aria-hidden />
       </button>
@@ -155,10 +173,10 @@ export function SiteSearch() {
       />
       <div
         hidden={!open}
-        className="z-50 max-sm:fixed max-sm:inset-x-0 max-sm:top-0 max-sm:border-b max-sm:border-border max-sm:bg-card max-sm:pt-[env(safe-area-inset-top)] sm:relative"
+        className="z-50 max-sm:fixed max-sm:inset-x-0 max-sm:top-0 max-sm:border-b max-sm:border-border max-sm:bg-card max-sm:pt-[env(safe-area-inset-top)] sm:absolute sm:top-1/2 sm:right-0 sm:-translate-y-1/2"
       >
         <div className="flex items-center gap-3 max-sm:py-2.5 max-sm:pr-[max(1rem,env(safe-area-inset-right))] max-sm:pl-[max(1rem,env(safe-area-inset-left))]">
-          <div className="relative flex-1 sm:w-56 lg:w-64">
+          <div className="relative flex-1 sm:w-60 lg:w-72">
             <SearchIcon
               className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden
@@ -195,7 +213,8 @@ export function SiteSearch() {
             Cancel
           </button>
         </div>
-        <div className="max-sm:border-t max-sm:border-border sm:absolute sm:top-full sm:right-0 sm:mt-1.5 sm:w-80 sm:rounded-md sm:border sm:border-border sm:bg-card">
+        {/* Desktop: from the box's left edge to the theme toggle's right edge (size-9). */}
+        <div className="max-sm:border-t max-sm:border-border sm:absolute sm:top-full sm:left-0 sm:mt-1.5 sm:w-[calc(100%+2.25rem)] sm:rounded-md sm:border sm:border-border sm:bg-card">
           {message && (
             <p className="px-4 py-3 text-sm text-muted-foreground sm:px-3" role="status">
               {message}
@@ -208,7 +227,7 @@ export function SiteSearch() {
                   id={optionId(i)}
                   role="option"
                   aria-selected={i === active}
-                  href={cfb.team(entry.team.slug)}
+                  href={teamHref(entry)}
                   onClick={() => close()}
                   onPointerMove={() => setActive(i)}
                   className={cn(
@@ -222,10 +241,16 @@ export function SiteSearch() {
                     <span className="block truncate text-sm font-medium text-foreground">
                       {[entry.team.school, entry.team.mascot].filter(Boolean).join(" ")}
                     </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {[entry.team.division?.toUpperCase(), entry.team.conference]
-                        .filter(Boolean)
-                        .join(" · ")}
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {/* Which sport's page this opens (owner: CBB and CBASE pages later). */}
+                      <span className="shrink-0 rounded-sm border border-border px-1 text-[0.625rem] leading-4 font-semibold tracking-wide text-foreground">
+                        {sportLabel(entry.sport)}
+                      </span>
+                      <span className="truncate">
+                        {[entry.team.division?.toUpperCase(), entry.team.conference]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
                     </span>
                   </span>
                   {entry.rank !== null && (

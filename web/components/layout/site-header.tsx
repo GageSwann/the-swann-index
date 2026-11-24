@@ -27,7 +27,8 @@ export function SiteHeader() {
         {/* One menu per sport, one open at a time; phones keep the bottom bar (#163). */}
         <SportMenus sports={SPORTS} />
         {/* Team search between the sport menus and the theme toggle (#193). */}
-        <div className="ml-auto flex items-center sm:ml-0">
+        {/* -ml-5: CBASE to the magnifier about as far apart as the sport names (owner). */}
+        <div className="ml-auto flex items-center sm:-ml-5">
           <SiteSearch />
           <ThemeToggle />
         </div>

@@ -7,23 +7,32 @@ import { useEffect, useId, useRef, useState } from "react"
 import { type Sport, inSection } from "@/lib/sports"
 import { cn } from "@/lib/utils"
 
+import { searchLayer, setSearchOpen, useSearchLayer } from "./header-layer"
+
 const CLOSE_DELAY_MS = 150 // time to move the pointer from a button into its list
 const LIST_WIDTH_PX = 176 // the list's width (min-w-44)
 const EDGE_GAP_PX = 8 // keep the list this far from the window's edge
 
-type Opened = { key: string; path: string; leftward: boolean }
+type Opened = { key: string; path: string; leftward: boolean; searches: number }
 
 /**
  * The header's sport menus (#181, #183): one per sport, and at most one open at a time.
  * Moving from one sport to the next switches menus at once; only leaving the menus
  * altogether waits a moment (so the pointer can travel from a button into its list).
+ * The header search counts too (#193): while it is open these don't open, and opening it
+ * closes them.
  * Desktop and tablets; phones use the bottom bar (#163).
  */
 export function SportMenus({ sports }: { sports: Sport[] }) {
   const pathname = usePathname()
   // Which menu is open, and on which page: a page change closes it without an effect.
   const [opened, setOpened] = useState<Opened | null>(null)
-  const openKey = opened?.path === pathname ? opened.key : null
+  // Closed while search is open, and for good once search has opened since (#193).
+  const search = useSearchLayer()
+  const openKey =
+    opened?.path === pathname && !search.open && opened.searches === search.opens
+      ? opened.key
+      : null
   const nav = useRef<HTMLElement>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -35,13 +44,20 @@ export function SportMenus({ sports }: { sports: Sport[] }) {
     cancelClose()
     setOpened(null)
   }
-  const open = (key: string, menu: HTMLElement | null) => {
+  // One header dropdown at a time (#193): hovering doesn't open a menu over an open search;
+  // a click closes the search and opens the menu.
+  const open = (key: string, menu: HTMLElement | null, byHover = false) => {
     cancelClose()
+    if (searchLayer().open) {
+      if (byHover) return
+      setSearchOpen(false)
+    }
     const left = menu?.getBoundingClientRect().left ?? 0
     setOpened({
       key,
       path: pathname,
       leftward: left + LIST_WIDTH_PX > window.innerWidth - EDGE_GAP_PX,
+      searches: searchLayer().opens,
     })
   }
   const closeSoon = () => {
@@ -64,7 +80,8 @@ export function SportMenus({ sports }: { sports: Sport[] }) {
     <nav
       ref={nav}
       aria-label="Main"
-      className="hidden items-center gap-1 sm:ml-auto sm:flex"
+      // While search is open its box sits over this spot: step aside (#193).
+      className={cn("hidden items-center gap-1 sm:ml-auto sm:flex", search.open && "invisible")}
       onPointerLeave={(e) => {
         if (e.pointerType === "mouse") closeSoon()
       }}
@@ -75,7 +92,7 @@ export function SportMenus({ sports }: { sports: Sport[] }) {
           sport={sport}
           open={openKey === sport.key}
           leftward={!!opened?.leftward}
-          onOpen={(menu) => open(sport.key, menu)}
+          onOpen={(menu, byHover) => open(sport.key, menu, byHover)}
           onClose={close}
         />
       ))}
@@ -102,7 +119,7 @@ function SportMenu({
   sport: Sport
   open: boolean
   leftward: boolean
-  onOpen: (menu: HTMLElement | null) => void
+  onOpen: (menu: HTMLElement | null, byHover?: boolean) => void
   onClose: () => void
 }) {
   const pathname = usePathname()
@@ -118,7 +135,7 @@ function SportMenu({
       ref={root}
       className="relative"
       onPointerEnter={(e) => {
-        if (e.pointerType === "mouse") onOpen(root.current)
+        if (e.pointerType === "mouse") onOpen(root.current, true)
       }}
       onKeyDown={(e) => {
         if (e.key === "Escape" && open) {
