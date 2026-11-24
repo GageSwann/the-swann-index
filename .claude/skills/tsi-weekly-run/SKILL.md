@@ -51,7 +51,7 @@ curl -s https://the-swann-index.vercel.app/ | grep -oE "Model updated [^<]{0,40}
 cron-job.org starts the run at 11:00 UTC (6 AM EST / 7 AM EDT) through GitHub's
 `workflow_dispatch` API (event `workflow_dispatch` in `gh run list`; #126). GitHub's own
 schedule (14:23 UTC, often hours late) is only a backup: its `gate` job skips the run
-when one already succeeded that UTC day. No run by ~12:00 UTC means cron-job.org didn't
+when one refreshed in the last 20 hours (#191; GitHub has started it after midnight UTC). No run by ~12:00 UTC means cron-job.org didn't
 fire: check its execution history (a 401/403 there = the GitHub token expired or lost
 its Actions permission; a new fine-grained token goes into the cron-job.org job's
 Authorization header, never into the repo).
@@ -145,8 +145,9 @@ second-round pairings**, so the bracket is entered by hand (#157):
 How a change ships:
 
 1. Push to `main` (the normal workflow; CLAUDE.md "How we work").
-2. CI runs (`gh run list --workflow ci.yml --limit 1`). Vercel builds the site at the same
-   time, from `web/`.
+2. CI runs (`gh run list --workflow ci.yml --limit 1`): backend tests and the site's checks,
+   no site build (#191). Vercel builds the site at the same time, from `web/`; that is the
+   only build, so a failed Vercel deployment is how a broken site build shows up.
 3. If the push touched `backend/` and CI passed, Render deploys the API
    (`autoDeployTrigger: checksPass`). Changes outside `backend/` (including `render.yaml`)
    don't deploy the API: after editing `render.yaml`, the owner clicks **Manual Sync** on

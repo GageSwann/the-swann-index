@@ -128,7 +128,7 @@ Behavior (decision #60):
 
 ## Data flow per week (in season)
 
-**Daily, 11:00 UTC** (`.github/workflows/daily-refresh.yml`, started by cron-job.org through the `workflow_dispatch` API; GitHub's own schedule at 14:23 UTC is a backup that skips itself when a run already succeeded that day, #126), one job:
+**Daily, 11:00 UTC** (`.github/workflows/daily-refresh.yml`, started by cron-job.org through the `workflow_dispatch` API; GitHub's own schedule at 14:23 UTC is a backup that skips itself when a run refreshed in the last 20 hours, #126, #191), one job:
 1. Ingest current-season games, advanced stats, lines (built: Phase 1)
 2. `tsi rate`: refit `season` + `predictive` ratings from the committed artifact → new `live` `model_run` + `team_ratings` rows (Power, Résumé, predictive) (built: Phase 2)
 3. Generate and publish prediction snapshots for upcoming games; grade finished picks (Phase 3)
@@ -152,7 +152,7 @@ All secrets come from environment variables; none are in code. See [09-conventio
 | `DATABASE_URL` | yes | `backend/.env`: Neon `dev` branch (copy of production, #82); GH secret + Render: Neon `production` branch |
 | `CFBD_MONTHLY_CALL_BUDGET` | no | `backend/.env` (default 980: ~1,000 free tier minus a margin); ingest refuses to exceed it |
 | `TSI_CORS_ORIGINS` | no | API host (the Vercel URL); `http://localhost:3000` locally |
-| `TSI_API_URL` | no | `web/.env.local`, Vercel env, GH Actions **variable** (CI build + nightly wake-up) |
+| `TSI_API_URL` | no | `web/.env.local`, Vercel env, GH Actions **variable** (nightly wake-up; CI no longer builds the site, #191) |
 | `SITE_URL` | no | GH Actions variable: the Vercel URL the nightly job refreshes |
 | `REVALIDATE_TOKEN` | yes | `web/.env.local`, Vercel env + GH secret (server-only; never `NEXT_PUBLIC_`) |
 | `NEON_API_KEY` | yes | GH secret (the nightly transfer check, #179); optional in `backend/.env`. A Neon personal API key, read here only for one GET of the project |

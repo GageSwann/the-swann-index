@@ -18,7 +18,7 @@ The plan lives in `docs/`. Read the roadmap and the doc for the area you're touc
 - `docs/03-data-sources.md`: CFBD endpoints, caching, call budget, data conventions, quality checks
 - `docs/04-model.md` / `docs/05-sportsbook.md`: model, Book and season-sim math, with backtest results
 - `docs/06-frontend.md`: design system, lighting, page specs
-- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#190 so far). Never rewrite old entries.
+- `docs/decisions.md`: append an entry when a meaningful decision is made or changed (newest at bottom; #1–#191 so far). Never rewrite old entries.
 
 ## How we work
 - **Step by step.** One roadmap item at a time: build → test → tick → commit → push. Stop for review between items; don't build ahead. When the owner says "finish phase X", do the whole phase, then stop and discuss.
@@ -59,7 +59,7 @@ The plan lives in `docs/`. Read the roadmap and the doc for the area you're touc
 ## Gotchas (the short list; details in doc 10)
 - **Upserts** only through `db/upsert.py`, de-duplicated; id lists via `one_of(col, ids)`, never `.in_()`. Scratch scripts `import tsi` before numpy.
 - **API endpoints are `async`** and do all DB work through `deps.read(sessions, lambda s: ...)` (#102). In-process caches that load from the DB are single-flight.
-- **Deploying:** Render deploys only the **newest commit of a push**, and only if it touches `backend/` and CI passes: make the backend commit last. Vercel builds only pushes that change `web/`. Ship API changes before the site. Migrations that add run before the code; drops run after.
+- **Deploying:** Render deploys only the **newest commit of a push**, and only if it touches `backend/` and CI passes: make the backend commit last. Vercel builds only pushes that change `web/`; CI checks the site but doesn't build it (#191), so Vercel's build is the only one. Ship API changes before the site. Migrations that add run before the code; drops run after.
 - **API changes:** `tsi openapi` + commit `docs/api/openapi.json`, then `npm run api:types` + commit `web/lib/api/schema.d.ts` **in the same push** (CI fails when they differ, and Render deploys nothing). Site code that needs a new endpoint goes in a later push, once the live API serves it.
 - **Additive API fields the site shows:** push the API (with spec + types), wait (bounded) until the live API serves the field, then push the site: pages refresh only nightly, so a site built first would lack it until the next morning (#188, #190; doc 10 §8).
 - **Snapshots:** pages read `current_snapshots`, the game center `snapshots_for_games`, the Book `snapshots_for_season` (never rebuilt forecasts). Read only what a page shows; profile new readers with the transfer meter.

@@ -58,13 +58,8 @@ jobs:
         run: npm ci
 
       # API types in sync with docs/api/openapi.json, typecheck, lint, Prettier.
+      # No production build here (decision #191): prerendering reads the live API, so each
+      # build costs ~7 MB of Neon transfer, and Vercel already builds every push that
+      # changes web/ (a failed Vercel build keeps the previous site live).
       - name: Checks
         run: npm run check
-
-      # Prerendering reads the live API, so the build runs once TSI_API_URL is set
-      # (repo Settings -> Secrets and variables -> Actions -> Variables).
-      - name: Production build
-        if: ${{ vars.TSI_API_URL != '' }}
-        run: npm run build
-        env:
-          TSI_API_URL: ${{ vars.TSI_API_URL }}
