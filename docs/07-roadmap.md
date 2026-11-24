@@ -42,10 +42,11 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 ## Next
 
 **Open from the owner (2026-11-23):**
-- [ ] Phones: the sport menus (CFB, CBB, CBASE) in the phone header; phones keep the bottom bar for now (owner: "fix mobile later").
-- [ ] The site's own home for every sport at `/` (it redirects to `/cfb` for now, #182).
-- [ ] 13.10's sign on the Schedule cards (the home page's Game of the Week cards have it, #180).
-- [ ] "CBASE" is a placeholder abbreviation for college baseball (#181).
+Owner's order (2026-11-24, #192): finish and polish the rest of the CFB site first; 13.10's sign on the Schedule cards comes sooner rather than later; the phone sport menus once the owner is happy with all of CFB; the all-sports home when CBB and CBASE arrive.
+- [ ] 13.10's sign on the Schedule cards (the home page's Game of the Week cards have it, #180). Sooner rather than later.
+- [ ] Phones: the sport menus (CFB, CBB, CBASE) in the phone header; phones keep the bottom bar until then. After the rest of CFB is finished.
+- [ ] The site's own home for every sport at `/`: waits for CBB and CBASE; until then `/` keeps redirecting to `/cfb` (#182).
+- [x] ~~"CBASE" is a placeholder abbreviation for college baseball (#181).~~ Kept (owner, #192): reads clearly and follows CFB / CBB; the usual alternative, "BSB", breaks the pattern.
 
 **Sport namespaces (owner, #183):** everything college football lives under `/cfb`, on the site and in the API, so college basketball (CBB) and baseball (CBASE) can sit beside it later without rewiring. Backend code and database stay as they are (see #183 for how another sport fits in).
 - [x] **1. API under `/cfb`** (old paths still served, `legacy_` ids; spec + types; the owner's `/cfb/book` and `/cfb/model` never cached). Ship first.
