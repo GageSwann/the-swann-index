@@ -10,6 +10,7 @@ import { ResumeCard } from "@/components/team/resume-card"
 import { ScheduleTable } from "@/components/team/schedule-table"
 import { PageTeamLight } from "@/components/team/page-team-light"
 import { TeamHeader } from "@/components/team/team-header"
+import { TeamOverview } from "@/components/team/team-overview"
 import { getRankings, getTeam } from "@/lib/api/queries"
 import { scheduleOdds } from "@/lib/api/schedule-odds"
 import { rankText, teamDivision } from "@/lib/divisions"
@@ -58,11 +59,13 @@ async function TeamView({ params }: Props) {
   const division = teamDivision(profile.team)
   const ranked = (division === "fcs" ? fcs : fbs)?.teams ?? []
   const row = ranked.find((t) => t.team.slug === slug)
+  const odds = scheduleOdds(profile.schedule)
 
   return (
     <div className="space-y-10">
       <PageTeamLight team={profile.team} />
       <TeamHeader profile={profile} />
+      <TeamOverview profile={profile} odds={odds} ranked={ranked} division={division} />
       {row && <RankProfile row={row} count={ranked.length} division={division} />}
       <ProjectionCard profile={profile} />
       {profile.history.length > 0 && (
@@ -76,7 +79,7 @@ async function TeamView({ params }: Props) {
       <ResumeCard profile={profile} />
       <ScheduleTable
         schedule={profile.schedule}
-        odds={scheduleOdds(profile.schedule)}
+        odds={odds}
         division={division}
         benchmarkRank={profile.resume?.benchmark_rank}
       />

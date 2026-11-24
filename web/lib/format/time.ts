@@ -61,3 +61,9 @@ const monthDayFormat = new Intl.DateTimeFormat("en-US", {
 export function formatMonthDay(iso: string): string {
   return monthDayFormat.format(new Date(iso))
 }
+
+/** A game card's kickoff line: "Saturday, Nov 28, 3:30 PM ET" (home page, team pages). */
+export function gameWhen(game: { kickoff: string | null; kickoff_tbd: boolean }): string | null {
+  if (!game.kickoff) return null
+  return `${formatDay(game.kickoff)}, ${formatKickoff(game.kickoff, game.kickoff_tbd)}`
+}

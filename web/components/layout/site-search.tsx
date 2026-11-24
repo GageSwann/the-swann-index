@@ -7,6 +7,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { flushSync } from "react-dom"
 
 import { TeamLogo } from "@/components/team/team-logo"
+import { SportTag } from "@/components/ui/sport-tag"
 import { cfb } from "@/lib/routes"
 import { type SearchTeam, searchTeams, sportLabel, teamHref } from "@/lib/search"
 import { cn } from "@/lib/utils"
@@ -249,9 +250,7 @@ export function SiteSearch() {
                     </span>
                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       {/* Which sport's page this opens (owner: CBB and CBASE pages later). */}
-                      <span className="shrink-0 rounded-sm border border-border px-1 text-[0.625rem] leading-4 font-semibold tracking-wide text-foreground">
-                        {sportLabel(entry.sport)}
-                      </span>
+                      <SportTag label={sportLabel(entry.sport)} />
                       <span className="truncate">
                         {[entry.team.division?.toUpperCase(), entry.team.conference]
                           .filter(Boolean)

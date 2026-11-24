@@ -2,7 +2,7 @@ import Link from "next/link"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
 import { TeamLogo } from "@/components/team/team-logo"
-import type { GameOfWeekView, TeamRecord, TeamRef, TopTeam } from "@/lib/api/types"
+import type { GameOfWeekView, TeamRecord, TeamRef } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { chance, points, record } from "@/lib/format/numbers"
 import { tsiMoneyline, tsiSpread, tsiTotal } from "@/lib/format/odds"
@@ -11,12 +11,21 @@ import { cn } from "@/lib/utils"
 
 import { PickSign } from "./pick-sign"
 
+/** What the card shows: a game of the week, or a team page's next game (#199). */
+export type CardGame = Pick<
+  GameOfWeekView,
+  "game" | "home_record" | "away_record" | "home_conf_record" | "away_conf_record" | "lines"
+>
+
 type Props = {
-  pick: GameOfWeekView | null // this poll week's pick (#141, #142)
-  teams: TopTeam[] // the chosen ranking's Top 25 now: the ranks shown
+  pick: CardGame | null // this poll week's pick (#141, #142), or a team's next game
+  teams: { team: { id: number }; rank: number }[] // the ranks shown (Top 25 only)
   division: Division
   when: string | null // kickoff, formatted on the server ("Saturday, Nov 7, 7:30 PM ET")
   className?: string
+  title?: string // default: "FBS Game of the Week"
+  id?: string // the heading's id (default: gotw-<division>)
+  empty?: string // shown without a game or a prediction
 }
 
 const TITLE: Record<Division, string> = {
@@ -30,11 +39,20 @@ const TITLE: Record<Division, string> = {
  * up the bottoms). The whole card opens the game center, except the team names and logos,
  * which open the team pages; it lights on hover in the page's plain light (owner).
  */
-export function GameOfWeekCard({ pick, teams, division, when, className }: Props) {
-  const headingId = `gotw-${division}`
+export function GameOfWeekCard({
+  pick,
+  teams,
+  division,
+  when,
+  className,
+  title,
+  id,
+  empty,
+}: Props) {
+  const headingId = id ?? `gotw-${division}`
   const heading = (
     <h2 id={headingId} className="text-lg font-semibold font-stretch-condensed">
-      {TITLE[division]}
+      {title ?? TITLE[division]}
     </h2>
   )
   const p = pick?.game.prediction
@@ -43,8 +61,8 @@ export function GameOfWeekCard({ pick, teams, division, when, className }: Props
       <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col gap-2", className)}>
         {heading}
         <p className="flex-1 rounded-md border border-border bg-card p-5 text-sm text-muted-foreground">
-          The games of the week are chosen each Sunday from the coming week&apos;s schedule, using
-          the new rankings.
+          {empty ??
+            "The games of the week are chosen each Sunday from the coming week's schedule, using the new rankings."}
         </p>
       </section>
     )

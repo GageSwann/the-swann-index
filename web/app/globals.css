@@ -140,12 +140,10 @@
     }
   }
 
-  /* The header rule: the text color, or the team's color on a team page. */
+  /* The header rule: the border color on every page, team pages too (owner, #199; was the
+     team's color there). */
   .tsi-header {
-    border-bottom-color: var(--page-team-light, var(--border));
-  }
-  .dark .tsi-header {
-    border-bottom-color: var(--page-team-dark, var(--border));
+    border-bottom-color: var(--border);
   }
 
   /* A row whose left edge takes the team's color on hover, over a muted background. */

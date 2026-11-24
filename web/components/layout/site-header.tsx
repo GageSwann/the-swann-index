@@ -8,8 +8,8 @@ import { ThemeToggle } from "./theme-toggle"
 
 /**
  * The "score bug": the TSI block, a menu per sport (CFB: Rankings, Schedule, Playoffs), team
- * search, the theme toggle, and a 2 px rule underneath (white or black; a
- * team page's color on team pages, `.tsi-header`). This strip is the site's one bold
+ * search, the theme toggle, and a 2 px rule underneath (the border color on every page, team
+ * pages too, #199; `.tsi-header`). This strip is the site's one bold
  * element; pages stay quiet. The week is stated by each page, not here (owner, #160).
  */
 export function SiteHeader() {

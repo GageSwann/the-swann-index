@@ -1,10 +1,10 @@
 import { type HomePicks, HomeView } from "@/components/home/home-view"
 import { PageHeading } from "@/components/layout/page-heading"
 import { getGamesOfWeek, getMeta, getTopRankings } from "@/lib/api/queries"
-import type { GameSummary, RankingType, TopTeam } from "@/lib/api/types"
+import type { RankingType, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
 import { weekName } from "@/lib/format/season"
-import { formatDay, formatKickoff, formatUpdated } from "@/lib/format/time"
+import { formatUpdated, gameWhen } from "@/lib/format/time"
 
 const DIVISIONS: Division[] = ["fbs", "fcs"]
 const TYPES: RankingType[] = ["resume", "power"]
@@ -38,7 +38,7 @@ export default async function CfbHomePage() {
       Object.fromEntries(
         TYPES.map((t) => {
           const pick = week?.picks.find((p) => p.division === d && p.ranking_type === t) ?? null
-          return [t, { pick, when: pick ? kickoff(pick.game) : null }]
+          return [t, { pick, when: pick ? gameWhen(pick.game) : null }]
         }),
       ),
     ]),
@@ -57,9 +57,4 @@ export default async function CfbHomePage() {
       <HomeView rails={rails} picks={picks} status={status} />
     </>
   )
-}
-
-function kickoff(game: GameSummary): string | null {
-  if (!game.kickoff) return null
-  return `${formatDay(game.kickoff)}, ${formatKickoff(game.kickoff, game.kickoff_tbd)}`
 }

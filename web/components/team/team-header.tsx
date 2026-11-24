@@ -1,37 +1,22 @@
 import type { TeamProfile } from "@/lib/api/types"
-import { rankText, teamDivision } from "@/lib/divisions"
 import { describeAdjustment } from "@/lib/format/adjustments"
 import { teamColorVars } from "@/lib/format/color"
-import { record, signed } from "@/lib/format/numbers"
+import { record } from "@/lib/format/numbers"
 import { AdjustedCallout } from "@/components/game/adjusted-note"
-import { Stat } from "@/components/ui/stat"
+import { SportTag } from "@/components/ui/sport-tag"
 
 import { TeamLogo } from "./team-logo"
 
 /**
  * Team identity and its headline numbers. A solid band in the team's (contrast-checked)
- * color tops the panel and casts light in that color (#137); no gradients.
+ * color tops the panel (#137, flat since #168). The name is the school and mascot ("Utah
+ * Utes"), then a CFB tag (the sport's page, as CBB and CBASE get their own), division and
+ * conference, and the record with the conference record in parentheses (owner, #199). The
+ * ranks and ratings moved out of the header (owner, #199): the rankings panels and Profile
+ * below show them.
  */
 export function TeamHeader({ profile }: { profile: TeamProfile }) {
   const { team, ratings: r } = profile
-  const division = teamDivision(team)
-  const rank = (n: number | null | undefined) => (n ? rankText(n, division) : "—")
-  const stats = r
-    ? [
-        { label: "Résumé rank", value: rank(r.rank_resume) },
-        { label: "Power rank", value: rank(r.rank_power) },
-        { label: "Rating", value: signed(r.rating) },
-        {
-          label: "Predictive",
-          value:
-            r.predictive_rating == null
-              ? "—"
-              : `${signed(r.predictive_rating)}${r.predictive_rank ? ` (${rank(r.predictive_rank)})` : ""}`,
-        },
-        { label: "Schedule strength", value: r.sos == null ? "—" : signed(r.sos) },
-      ]
-    : []
-
   return (
     <section
       aria-label="Team summary"
@@ -44,37 +29,51 @@ export function TeamHeader({ profile }: { profile: TeamProfile }) {
           <TeamLogo team={team} size={72} priority />
           <div className="min-w-0">
             <h1 className="text-4xl leading-tight font-bold font-stretch-condensed sm:text-5xl">
-              {team.school}
+              {[team.school, team.mascot].filter(Boolean).join(" ")}
             </h1>
-            <p className="text-muted-foreground">
-              {[team.mascot, team.conference].filter(Boolean).join(", ")}
-              {". "}
-              {record(profile.wins, profile.losses, profile.ties)} in {profile.season}
-              {r?.provisional && ". Provisional rating (fewer than 4 games)"}
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground">
+              <SportTag label="CFB" />
+              <span>
+                {[team.division?.toUpperCase(), team.conference].filter(Boolean).join(" · ")}
+              </span>
+              <span aria-hidden className="max-sm:hidden">
+                ·
+              </span>
+              <span>
+                <span className="font-semibold text-foreground">
+                  {record(profile.wins, profile.losses, profile.ties)}
+                </span>
+                {profile.conf_record && (
+                  <>
+                    {" "}
+                    (
+                    {record(
+                      profile.conf_record.wins,
+                      profile.conf_record.losses,
+                      profile.conf_record.ties,
+                    )}
+                    )
+                  </>
+                )}{" "}
+                in {profile.season}
+              </span>
             </p>
+            {r?.provisional && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                Provisional rating (fewer than 4 games)
+              </p>
+            )}
           </div>
         </div>
-        {r ? (
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-5">
-            {stats.map((s) => (
-              <Stat key={s.label} label={s.label} value={s.value} />
-            ))}
-          </dl>
-        ) : (
+        {!r && (
           <p className="text-sm text-muted-foreground">
             TSI rates FBS teams, and FCS teams from 2022 on, so this team has no rating.
-          </p>
-        )}
-        {r && (
-          <p className="text-xs text-muted-foreground">
-            Rating and ranks use this season&apos;s games only; the predictive rating also weighs
-            the preseason prior and drives TSI&apos;s game predictions.
           </p>
         )}
         {profile.adjustments.length > 0 && (
           <AdjustedCallout>
             {profile.adjustments.map(describeAdjustment).join("; ")}, points per game. TSI&apos;s
-            predictions for its upcoming games include this; the ratings and ranks above don&apos;t.
+            predictions for its upcoming games include this; its ratings and ranks don&apos;t.
           </AdjustedCallout>
         )}
       </div>
