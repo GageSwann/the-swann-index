@@ -1,3 +1,4 @@
+import type { RankingType } from "@/lib/api/types"
 import type { Division, DivisionView } from "@/lib/divisions"
 
 /**
@@ -10,8 +11,10 @@ const CFB = "/cfb"
 
 export const cfb = {
   home: CFB,
-  rankings: (division: DivisionView = "fbs") =>
-    division === "fbs" ? `${CFB}/rankings` : `${CFB}/rankings/${division}`,
+  /** A division's rankings; `#power` opens Power (Résumé is the default, #204). */
+  rankings: (division: DivisionView = "fbs", type?: RankingType) =>
+    (division === "fbs" ? `${CFB}/rankings` : `${CFB}/rankings/${division}`) +
+    (type === "power" ? "#power" : ""),
   /** The board: no season means the current week. */
   schedule: (season?: number | string, week?: number | string, division: DivisionView = "fbs") =>
     season === undefined || week === undefined

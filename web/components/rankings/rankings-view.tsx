@@ -1,6 +1,6 @@
 "use client"
 
-import { type ReactNode, useMemo, useState } from "react"
+import { type ReactNode, useMemo, useState, useSyncExternalStore } from "react"
 
 import { Segmented } from "@/components/ui/segmented"
 import type { RankedTeam, RankingType } from "@/lib/api/types"
@@ -24,6 +24,16 @@ function explainer(
     : "How good each team is right now, from this season's games only: no preseason expectations, no past seasons."
 }
 
+// The ranking in the address (#204): `#power` opens Power, so a "Full Rankings" link next to
+// a Power list lands on Power. Read from the URL, not the server, so the page stays one
+// cached page; a hash change (or a page change that brings one) re-reads it.
+function subscribeHash(onChange: () => void): () => void {
+  window.addEventListener("hashchange", onChange)
+  return () => window.removeEventListener("hashchange", onChange)
+}
+const readHash = () => window.location.hash
+const noHash = () => ""
+
 // Columns a view leaves out: the season sim is FBS only (decision #111), and SOR is
 // measured against each division's own benchmark, so it isn't comparable across them.
 const HIDDEN: Record<DivisionView, string[]> = {
@@ -42,8 +52,18 @@ type Props = {
 }
 
 export function RankingsView({ nav, power, resume, since, division, benchmarkRank }: Props) {
-  // Résumé first (owner, #159); "all" has no Résumé view, so it opens on Power.
-  const [type, setType] = useState<RankingType>(resume !== null ? "resume" : "power")
+  // Résumé first (owner, #159); "all" has no Résumé view, so it opens on Power. `#power` in
+  // the address opens Power (#204). A choice made here holds while the address it set stays.
+  const hash = useSyncExternalStore(subscribeHash, readHash, noHash)
+  const [picked, setPicked] = useState<{ type: RankingType; hash: string } | null>(null)
+  const fromHash: RankingType = hash === "#power" || resume === null ? "power" : "resume"
+  const type = picked?.hash === hash ? picked.type : fromHash
+  const setType = (next: RankingType) => {
+    // Keep the address in step, so a copied link opens the same ranking.
+    const nextHash = next === "power" && resume !== null ? "#power" : ""
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${nextHash}`)
+    setPicked({ type: next, hash: nextHash })
+  }
   const [scope, setScope] = useState<"top25" | "all">("top25")
   const [conference, setConference] = useState("")
 

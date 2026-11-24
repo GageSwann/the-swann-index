@@ -48,7 +48,7 @@ export function RankNeighbors({
                 {r.title}
               </h2>
               <Link
-                href={cfb.rankings(division)}
+                href={cfb.rankings(division, r.key)}
                 className="text-sm text-muted-foreground underline decoration-muted-foreground underline-offset-4 hover:text-foreground hover:decoration-foreground"
               >
                 Full Rankings

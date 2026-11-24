@@ -69,7 +69,7 @@ export function HomeView({ rails, picks, status }: Props) {
               id={d}
               title={`${d.toUpperCase()} ${LABEL[type]} Top 25`}
               teams={rails[d][type]}
-              href={cfb.rankings(d)}
+              href={cfb.rankings(d, type)}
             />
           </div>
         ))}
