@@ -1,5 +1,7 @@
 "use client"
 
+import type { ReactNode } from "react"
+
 import { cn } from "@/lib/utils"
 
 /** A row of toggle buttons for one choice (aria-pressed marks the current one). */
@@ -15,7 +17,7 @@ export function Segmented<T extends string>({
   label: string
   value: T
   onChange: (value: T) => void
-  options: { value: T; label: string }[]
+  options: { value: T; label: ReactNode }[]
   controls?: string // id of the region the choice changes (aria-controls)
   className?: string
   stretch?: boolean // the options share the control's full width (phones)
@@ -34,7 +36,7 @@ export function Segmented<T extends string>({
           aria-controls={controls}
           onClick={() => onChange(o.value)}
           className={cn(
-            "rounded-sm px-3 py-1 text-sm font-medium",
+            "rounded-sm px-3 py-1 text-sm font-medium whitespace-nowrap",
             stretch && "flex-1",
             value === o.value
               ? "tsi-lit bg-primary text-primary-foreground"

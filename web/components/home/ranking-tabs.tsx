@@ -1,5 +1,7 @@
 "use client"
 
+import type { ReactNode } from "react"
+
 import { Segmented } from "@/components/ui/segmented"
 import type { RankingType } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
@@ -10,9 +12,24 @@ export type HomeStatus = {
   updated: string | null // "Nov 23, 8:52 AM EST"
 }
 
-const TYPES: { value: RankingType; label: string }[] = [
-  { value: "resume", label: "Résumé" },
-  { value: "power", label: "Power" },
+// Desktop names the rankings in full ("Résumé Rankings"); phones keep it short (owner).
+const TYPES: { value: RankingType; label: ReactNode }[] = [
+  {
+    value: "resume",
+    label: (
+      <>
+        Résumé<span className="max-lg:hidden"> Rankings</span>
+      </>
+    ),
+  },
+  {
+    value: "power",
+    label: (
+      <>
+        Power<span className="max-lg:hidden"> Rankings</span>
+      </>
+    ),
+  },
 ]
 
 const DIVISIONS: { value: Division; label: string }[] = [
@@ -55,27 +72,28 @@ export function RankingTabs({
           <p className="mt-2 text-sm text-muted-foreground">Updated {status.updated}</p>
         )}
       </div>
-      <div className="flex items-center gap-2.5 max-lg:w-full">
-        <span className="text-sm text-muted-foreground max-lg:hidden">Rankings</span>
-        <Segmented
-          label="Rank teams by"
-          value={value}
-          onChange={onChange}
-          options={TYPES}
-          controls="home-rankings"
-          stretch
-          className="max-lg:flex-[3]"
-        />
-        {/* Phones and tablets show one division at a time; desktop has room for both. */}
-        <Segmented
-          label="Division"
-          value={division}
-          onChange={onDivision}
-          options={DIVISIONS}
-          controls="home-rankings"
-          stretch
-          className="flex-[2] lg:hidden"
-        />
+      <div className="flex flex-col gap-2 max-lg:w-full lg:items-end">
+        <div className="flex items-center gap-2.5">
+          <Segmented
+            label="Rank teams by"
+            value={value}
+            onChange={onChange}
+            options={TYPES}
+            controls="home-rankings"
+            stretch
+            className="max-lg:flex-[3]"
+          />
+          {/* Phones and tablets show one division at a time; desktop has room for both. */}
+          <Segmented
+            label="Division"
+            value={division}
+            onChange={onDivision}
+            options={DIVISIONS}
+            controls="home-rankings"
+            stretch
+            className="flex-[2] lg:hidden"
+          />
+        </div>
       </div>
     </div>
   )
