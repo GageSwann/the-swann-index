@@ -1,4 +1,5 @@
 import type { ScheduleGame } from "@/lib/api/types"
+import { cn } from "@/lib/utils"
 
 const MARK: Record<string, { mark: string; spoken: string }> = {
   home: { mark: "vs", spoken: "vs." },
@@ -10,11 +11,13 @@ const MARK: Record<string, { mark: string; spoken: string }> = {
  * teams on every game card (#209). Hover says "Neutral site"; screen readers hear it too.
  */
 export function NeutralTag({ className }: { className?: string }) {
+  // As wide as "vs" or "at" (~13 px) and centered on the line, so the gap to the name matches
+  // theirs (#210: the wider box nearly touched the name and sat low).
   return (
-    <span title="Neutral site" className={className}>
+    <span title="Neutral site" className={cn("inline-flex items-center", className)}>
       <span
         aria-hidden
-        className="rounded-sm border border-border px-1 text-[0.625rem] leading-4 font-semibold text-muted-foreground"
+        className="rounded-sm border border-border px-0.5 text-[0.625rem] leading-3.5 font-semibold text-muted-foreground"
       >
         N
       </span>
