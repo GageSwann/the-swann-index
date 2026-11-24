@@ -107,7 +107,8 @@ jobs:
           # a time (Render's free tier refuses bursts), so readers get them ready-made.
           # College football's pages and API paths are under /cfb (#183).
           WEEK=$(curl -fsS --max-time 60 "$API_URL/cfb/meta/current" | jq -r '"\(.season)/\([.week, 1] | max)"')
-          PAGES="/cfb /cfb/rankings /cfb/schedule/$WEEK /cfb/playoffs /cfb/playoffs/fcs /cfb/rankings/fcs /cfb/rankings/all /cfb/schedule/$WEEK/fcs /cfb/schedule/$WEEK/all"
+          # The Power pages right after their Résumé pages: the same cached reads, so no extra API calls (#206).
+          PAGES="/cfb /cfb/rankings /cfb/rankings/power /cfb/schedule/$WEEK /cfb/playoffs /cfb/playoffs/fcs /cfb/rankings/fcs /cfb/rankings/fcs/power /cfb/rankings/all /cfb/schedule/$WEEK/fcs /cfb/schedule/$WEEK/all"
           for division in fbs fcs; do
             TEAMS=$(curl -fsS --max-time 60 "$API_URL/cfb/rankings?type=power&division=$division" | jq -r '.teams[:25][].team.slug')
             for slug in $TEAMS; do PAGES="$PAGES /cfb/teams/$slug"; done

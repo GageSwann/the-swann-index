@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { type ReactNode, useEffect, useMemo, useState } from "react"
+import { type ReactNode, useEffect, useMemo } from "react"
 
 import { Segmented } from "@/components/ui/segmented"
 import type { RankedTeam, RankingType } from "@/lib/api/types"
@@ -9,6 +9,7 @@ import { benchmarkName, type DivisionView } from "@/lib/divisions"
 import { cfb } from "@/lib/routes"
 
 import { Movers } from "./movers"
+import { useRankingsFilters } from "./rankings-filters"
 import { RankingsList } from "./rankings-list"
 import { RankingsTable } from "./rankings-table"
 
@@ -55,8 +56,10 @@ export function RankingsView({ nav, power, resume, since, division, type, benchm
   const setType = (next: RankingType) => {
     if (next !== type) router.replace(cfb.rankings(division, next), { scroll: false })
   }
-  const [scope, setScope] = useState<"top25" | "all">("top25")
-  const [conference, setConference] = useState("")
+  // Shared by the Résumé and Power pages, so switching keeps them (#206).
+  const [{ scope, conference }, setFilters] = useRankingsFilters(division)
+  const setScope = (next: "top25" | "all") => setFilters({ scope: next })
+  const setConference = (next: string) => setFilters({ conference: next })
 
   const conferences = useMemo(
     () => [...new Set(power.map((t) => t.team.conference).filter((c): c is string => !!c))].sort(),
