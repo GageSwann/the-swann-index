@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useId, useRef, useState } from "react"
 
 import { type Sport, inSection } from "@/lib/sports"
@@ -103,8 +103,9 @@ export function SportMenus({ sports }: { sports: Sport[] }) {
 /**
  * One sport's menu: the sport's short name ("CFB") in a button that hugs it, with the same
  * padding and gap for every sport, so the names sit evenly spaced (#189); a sport without
- * sections yet says "Coming Soon". Opens when a mouse hovers it, and on click,
- * tap, Enter or Space; closes on Escape (focus back to the button). The list hangs off
+ * sections yet says "Coming Soon". Opens when a mouse hovers it, and on a tap, Enter or
+ * Space; a mouse click goes to the sport's home (#195; a sport without pages just opens);
+ * closes on Escape (focus back to the button). The list hangs off
  * the button's right side, unless that would run past the window: then it opens leftward.
  * A disclosure (button + list of links) rather than an ARIA menu, so screen readers read
  * it as plain links. The button is underlined while one of the sport's sections is shown.
@@ -126,6 +127,10 @@ function SportMenu({
   const root = useRef<HTMLDivElement>(null)
   const button = useRef<HTMLButtonElement>(null)
   const pointer = useRef<string | null>(null) // the pointer behind the next click, if any
+  const router = useRouter()
+  // A mouse click on the sport's name goes to its home (owner, #195): the menu already
+  // opened on hover. Taps and Enter/Space still open the menu (no hover there).
+  const home = sport.sections.find((s) => s.exact)?.href ?? sport.sections[0]?.href
   const listId = useId()
   const active = sport.sections.some((s) => inSection(pathname, s))
   const soon = sport.sections.length === 0 // not built yet: the menu says so
@@ -158,6 +163,11 @@ function SportMenu({
         onClick={() => {
           const byMouse = pointer.current === "mouse"
           pointer.current = null
+          if (byMouse && home) {
+            onClose()
+            router.push(home)
+            return
+          }
           if (byMouse || !open) onOpen(root.current)
           else onClose()
         }}
