@@ -6,25 +6,20 @@ import type { TopTeam } from "@/lib/api/types"
 import { teamColorVars } from "@/lib/format/color"
 import { record } from "@/lib/format/numbers"
 import { cfb } from "@/lib/routes"
-import { cn } from "@/lib/utils"
 
 type Props = {
   id: string // for the heading
   title: string // "FBS Top 25"
   teams: TopTeam[] // the chosen ranking (Power or Résumé), in order
   href: string // the full rankings page
-  folded?: boolean // phones and tablets: only the top 10 until "Show all 25" (#163)
-  onToggle?: () => void
 }
-
-const FOLDED = 10
 
 /**
  * A compact Top 25 for the home page's side rails; the full table lives at /rankings.
  * The list stretches to its column's height (rows share any extra space evenly), so its
  * bottom lines up with the games of the week beside it.
  */
-export function RankingsRail({ id, title, teams, href, folded = false, onToggle }: Props) {
+export function RankingsRail({ id, title, teams, href }: Props) {
   const top = teams.slice(0, 25)
   const headingId = `rail-${id}`
   return (
@@ -46,13 +41,10 @@ export function RankingsRail({ id, title, teams, href, folded = false, onToggle 
         </p>
       ) : (
         <ol className="flex flex-1 flex-col divide-y divide-border rounded-md border border-border bg-card text-sm">
-          {top.map((t, i) => (
+          {top.map((t) => (
             <li
               key={t.team.id}
-              className={cn(
-                "tsi-team-light tsi-row-light group flex flex-1",
-                folded && i >= FOLDED && "max-lg:hidden",
-              )}
+              className="tsi-team-light tsi-row-light group flex flex-1"
               style={teamColorVars(t.team)}
             >
               <Link
@@ -73,16 +65,6 @@ export function RankingsRail({ id, title, teams, href, folded = false, onToggle 
             </li>
           ))}
         </ol>
-      )}
-      {onToggle && top.length > FOLDED && (
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={!folded}
-          className="rounded-md border border-border py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground lg:hidden"
-        >
-          {folded ? `Show all ${top.length}` : `Show top ${FOLDED}`}
-        </button>
       )}
     </section>
   )

@@ -8,26 +8,34 @@ export function Segmented<T extends string>({
   value,
   onChange,
   options,
+  controls,
+  className,
+  stretch = false,
 }: {
   label: string
   value: T
   onChange: (value: T) => void
   options: { value: T; label: string }[]
+  controls?: string // id of the region the choice changes (aria-controls)
+  className?: string
+  stretch?: boolean // the options share the control's full width (phones)
 }) {
   return (
     <div
       role="group"
       aria-label={label}
-      className="inline-flex rounded-md border border-border bg-card p-0.5"
+      className={cn("inline-flex rounded-md border border-border bg-card p-0.5", className)}
     >
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           aria-pressed={value === o.value}
+          aria-controls={controls}
           onClick={() => onChange(o.value)}
           className={cn(
             "rounded-sm px-3 py-1 text-sm font-medium",
+            stretch && "flex-1",
             value === o.value
               ? "tsi-lit bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground",

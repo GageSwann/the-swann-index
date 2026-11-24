@@ -3,7 +3,7 @@ import { PageHeading } from "@/components/layout/page-heading"
 import { getGamesOfWeek, getMeta, getTopRankings } from "@/lib/api/queries"
 import type { GameSummary, RankingType, TopTeam } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
-import { weekLabel } from "@/lib/format/season"
+import { weekName } from "@/lib/format/season"
 import { formatDay, formatKickoff, formatUpdated } from "@/lib/format/time"
 
 const DIVISIONS: Division[] = ["fbs", "fcs"]
@@ -45,12 +45,15 @@ export default async function CfbHomePage() {
   ) as HomePicks
   // The week and when the rankings were last updated (owner, #160; was in the header).
   const updated = tops[0]?.as_of ?? meta.ratings_updated_at
-  const status = `${weekLabel(meta)}.${updated ? ` Updated ${formatUpdated(updated)}.` : ""}`
+  const status = {
+    week: weekName(meta),
+    season: meta.season,
+    updated: updated ? formatUpdated(updated) : null,
+  }
 
   return (
     <>
-      {/* No visible heading (owner): the page opens on the ranking switch and the games. */}
-      <h1 className="sr-only">The Swann Index: games of the week and Top 25</h1>
+      {/* The page's heading is in the home toolbar (#197). */}
       <HomeView rails={rails} picks={picks} status={status} />
     </>
   )

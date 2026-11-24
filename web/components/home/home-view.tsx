@@ -7,7 +7,7 @@ import type { Division } from "@/lib/divisions"
 import { cfb } from "@/lib/routes"
 
 import { GameOfWeekCard } from "./game-of-week"
-import { RankingTabs } from "./ranking-tabs"
+import { type HomeStatus, RankingTabs } from "./ranking-tabs"
 import { RankingsRail } from "./rankings-rail"
 
 type PerType<T> = Record<RankingType, T>
@@ -17,7 +17,7 @@ export type HomePicks = Record<Division, PerType<Pick>>
 type Props = {
   rails: Record<Division, PerType<TopTeam[]>>
   picks: HomePicks
-  status: string | null // the week and when the rankings were last updated
+  status: HomeStatus // the week and when the rankings were last updated
 }
 
 const LABEL: Record<RankingType, string> = { power: "Power", resume: "Résumé" }
@@ -30,9 +30,8 @@ const LABEL: Record<RankingType, string> = { power: "Power", resume: "Résumé" 
  */
 export function HomeView({ rails, picks, status }: Props) {
   const [type, setType] = useState<RankingType>("resume") // Résumé first (owner, 2026-11-23, #159)
-  // Phones and tablets: one division at a time, its Top 25 folded to 10 (owner, #163).
+  // Phones and tablets: one division at a time (#163), its whole Top 25 (owner, #197).
   const [division, setDivision] = useState<Division>("fbs")
-  const [expanded, setExpanded] = useState(false)
   const only = (d: Division) => (d === division ? "" : "max-lg:hidden")
   return (
     <div className="space-y-6">
@@ -71,8 +70,6 @@ export function HomeView({ rails, picks, status }: Props) {
               title={`${d.toUpperCase()} ${LABEL[type]} Top 25`}
               teams={rails[d][type]}
               href={cfb.rankings(d)}
-              folded={!expanded}
-              onToggle={() => setExpanded((e) => !e)}
             />
           </div>
         ))}
