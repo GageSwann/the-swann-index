@@ -11,7 +11,7 @@ import { TeamLogo } from "./team-logo"
 
 /**
  * The season's schedule as a compact vertical list (owner, #199), in the style of the home
- * page's Top 25 rails: date, opponent ("vs" at home, "at" away, "vs" with an N tag on a
+ * page's Top 25 rails: date, opponent (its rank when in the Top 25; "vs" at home, "at" away, "vs" with an N tag on a
  * neutral field), then the result once final (W in the up color, L in the down color) or
  * TSI's win chance before it. The next game is highlighted; every row opens the game center.
  * The list stretches to the Next Game card's height (rows share the extra space). "Details"
@@ -62,6 +62,12 @@ export function ScheduleList({
                     <span className="text-muted-foreground">
                       {g.site === "away" ? "at " : "vs "}
                     </span>
+                    {/* The opponent's rank when in the Top 25, like the full table below. */}
+                    {g.opponent_rank != null && g.opponent_rank <= 25 && (
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        #{g.opponent_rank}{" "}
+                      </span>
+                    )}
                     {g.opponent.school}
                   </span>
                   {g.site === "neutral" && (

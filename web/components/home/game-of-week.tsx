@@ -55,8 +55,8 @@ export function GameOfWeekCard({
       {title ?? TITLE[division]}
     </h2>
   )
-  const p = pick?.game.prediction
-  if (!pick || !p) {
+  const p = pick?.game.prediction ?? null
+  if (!pick) {
     return (
       <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col gap-2", className)}>
         {heading}
@@ -72,7 +72,8 @@ export function GameOfWeekCard({
   const rank = new Map(teams.map((t) => [t.team.id, t.rank]))
   const final = game.result?.final ? game.result : null
   const matchup = `${game.away.school} ${game.neutral ? "vs." : "at"} ${game.home.school}`
-  const homePicked = p.home_win_prob >= 0.5 // TSI's straight-up pick (13.10), home on a tie
+  // TSI's straight-up pick (13.10), home on a tie; none without a prediction (#200).
+  const homePicked = p ? p.home_win_prob >= 0.5 : null
   return (
     <section aria-labelledby={headingId} className={cn("flex min-w-0 flex-col gap-2", className)}>
       {heading}
@@ -91,23 +92,25 @@ export function GameOfWeekCard({
               final ? "border-foreground text-foreground" : "border-border text-foreground",
             )}
           >
-            {final ? "Final" : "Predicted Score"}
+            {final ? "Final" : p ? "Predicted Score" : "Upcoming"}
           </span>
         </div>
 
         {/* Logos above the names give each name the column's full width; the scores share
             one row, so they line up even if a long name wraps. */}
-        <p className="sr-only">
-          TSI&apos;s pick: {homePicked ? game.home.school : game.away.school},{" "}
-          {chance(homePicked ? p.home_win_prob : 1 - p.home_win_prob)}.
-        </p>
+        {p && homePicked !== null && (
+          <p className="sr-only">
+            TSI&apos;s pick: {homePicked ? game.home.school : game.away.school},{" "}
+            {chance(homePicked ? p.home_win_prob : 1 - p.home_win_prob)}.
+          </p>
+        )}
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-4 gap-y-1">
           <Side
             team={game.away}
             rank={rank.get(game.away.id) ?? null}
             rec={pick.away_record}
             conf={pick.away_conf_record}
-            picked={!homePicked}
+            picked={homePicked === false}
           />
           <span className="self-center pt-8 text-sm text-muted-foreground">
             {game.neutral ? "vs." : "at"}
@@ -117,54 +120,76 @@ export function GameOfWeekCard({
             rank={rank.get(game.home.id) ?? null}
             rec={pick.home_record}
             conf={pick.home_conf_record}
-            picked={homePicked}
+            picked={homePicked === true}
             alignEnd
           />
-          <Score value={final ? final.away_points : p.proj_away} />
-          <span aria-hidden />
-          <Score value={final ? final.home_points : p.proj_home} alignEnd />
-        </div>
-
-        <div className="space-y-1">
-          <p className="sr-only">
-            {final
-              ? "Final score. TSI's win probability before the game:"
-              : "TSI's projected score and win probability:"}
-          </p>
-          <WinProbBar homeProb={p.home_win_prob} home={game.home} away={game.away} digits={1} />
-          {final && (
-            <p className="text-xs text-muted-foreground">
-              TSI projected {points(p.proj_away)}–{points(p.proj_home)}.
-            </p>
+          {(final || p) && (
+            <>
+              <Score value={final ? final.away_points : p!.proj_away} />
+              <span aria-hidden />
+              <Score value={final ? final.home_points : p!.proj_home} alignEnd />
+            </>
           )}
         </div>
 
-        {/* A thin rule between the win chances and TSI's lines (owner). */}
-        <hr className="border-border" />
+        {p ? (
+          <>
+            <div className="space-y-1">
+              <p className="sr-only">
+                {final
+                  ? "Final score. TSI's win probability before the game:"
+                  : "TSI's projected score and win probability:"}
+              </p>
+              <WinProbBar homeProb={p.home_win_prob} home={game.home} away={game.away} digits={1} />
+              {final && (
+                <p className="text-xs text-muted-foreground">
+                  TSI projected {points(p.proj_away)}–{points(p.proj_home)}.
+                </p>
+              )}
+            </div>
 
-        <LinesBoard
-          rows={[
-            {
-              team: game.away,
-              spread: tsiSpread(-(lines?.spread.line ?? p.spread)),
-              spreadOdds: lines?.spread.second.fair,
-              total: ["O", tsiTotal(lines?.total.line ?? p.total)],
-              totalOdds: lines?.total.first.fair,
-              moneyline: tsiMoneyline(p.fair_away_ml),
-            },
-            {
-              team: game.home,
-              spread: tsiSpread(lines?.spread.line ?? p.spread),
-              spreadOdds: lines?.spread.first.fair,
-              total: ["U", tsiTotal(lines?.total.line ?? p.total)],
-              totalOdds: lines?.total.second.fair,
-              moneyline: tsiMoneyline(p.fair_home_ml),
-            },
-          ]}
-        />
+            {/* A thin rule between the win chances and TSI's lines (owner). */}
+            <hr className="border-border" />
+
+            <LinesBoard
+              rows={[
+                {
+                  team: game.away,
+                  spread: tsiSpread(-(lines?.spread.line ?? p.spread)),
+                  spreadOdds: lines?.spread.second.fair,
+                  total: ["O", tsiTotal(lines?.total.line ?? p.total)],
+                  totalOdds: lines?.total.first.fair,
+                  moneyline: tsiMoneyline(p.fair_away_ml),
+                },
+                {
+                  team: game.home,
+                  spread: tsiSpread(lines?.spread.line ?? p.spread),
+                  spreadOdds: lines?.spread.first.fair,
+                  total: ["U", tsiTotal(lines?.total.line ?? p.total)],
+                  totalOdds: lines?.total.second.fair,
+                  moneyline: tsiMoneyline(p.fair_home_ml),
+                },
+              ]}
+            />
+          </>
+        ) : (
+          // No prediction (#200): the card keeps the teams, ranks and records and says why.
+          <p className="border-t border-border pt-4 text-sm text-muted-foreground">
+            {noPredictionReason(game, !!final)}
+          </p>
+        )}
       </div>
     </section>
   )
+}
+
+/** Why a game has no TSI prediction (#200): an opponent TSI doesn't rate (D-II and below),
+ * or it is more than 8 days away (TSI publishes 8 days ahead). */
+function noPredictionReason(game: CardGame["game"], final: boolean): string {
+  const unrated = [game.home, game.away].some((t) => t.division !== "fbs" && t.division !== "fcs")
+  if (unrated) return "TSI doesn't predict games against teams outside FBS and FCS."
+  if (final) return "TSI didn't publish a prediction for this game."
+  return "TSI publishes its prediction for a game 8 days before kickoff."
 }
 
 function Side({

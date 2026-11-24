@@ -36,15 +36,11 @@ export function TeamOverview({
         <GameOfWeekCard
           id="next-game"
           title={final ? "Last Game" : "Next Game"}
-          pick={card?.game.prediction ? card : null}
+          pick={card}
           teams={resumeTop}
           division={division}
           when={card ? gameWhen(card.game) : null}
-          empty={
-            card
-              ? "TSI publishes its prediction for a game 8 days before kickoff."
-              : "No games on the schedule yet."
-          }
+          empty="No games on the schedule yet."
           className="h-full"
         />
       </div>
