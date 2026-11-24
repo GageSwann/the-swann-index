@@ -186,8 +186,10 @@
       border-color 150ms,
       background-color 150ms;
   }
+  /* The plain text color on every page (owner, #203): a team page's color here favored that
+     team on a matchup card. */
   .tsi-lit-hover:hover {
-    border-color: color-mix(in oklab, var(--light) 75%, var(--border));
+    border-color: color-mix(in oklab, var(--foreground) 75%, var(--border));
     background-color: color-mix(in oklab, var(--foreground) 4%, var(--card));
   }
 }

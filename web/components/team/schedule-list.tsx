@@ -12,11 +12,11 @@ import { TeamLogo } from "./team-logo"
 /**
  * The season's schedule as a compact vertical list (owner, #199), in the style of the home
  * page's Top 25 rails: date, the opponent with its Résumé rank when in the Top 25 ("vs" at
- * home or neutral, "at" away; "Neutral site" on a second line, #202), then the result once
- * final (W in the up color, L in the down color) or TSI's win chance before it. The next game
- * is highlighted; every row opens the game center. The list stretches to the Next Game card's
- * height (rows share the extra space). "Full Schedule" jumps to this team's full schedule
- * table further down the page.
+ * home or neutral, "at" away; "Neutral Site" centered on a second line, #202, #203), then the
+ * result once final (W in the up color, L in the down color) or TSI's win chance before it.
+ * The next game is highlighted; every row opens the game center. The list stretches to the
+ * Next Game card's height (rows share the extra space). "Full Schedule" jumps to this team's
+ * full schedule table further down the page.
  */
 export function ScheduleList({
   schedule,
@@ -73,12 +73,13 @@ export function ScheduleList({
 
 /**
  * "vs" / "at" and the opponent, with its Résumé rank in the Top 25 (#202); a neutral-site game
- * adds a second line, "Neutral site", like the detail line under a name in the rankings (#202).
+ * adds "Neutral Site" on a second line, centered under the name (#202, #203).
  */
 function Opponent({ game, rank }: { game: ScheduleGame; rank: number | null }) {
   return (
-    <span className="min-w-0 leading-tight">
-      <span className="block truncate group-hover:underline">
+    // A box as wide as its widest line, so "Neutral Site" centers under the name (owner, #203).
+    <span className="inline-flex max-w-full min-w-0 flex-col items-center justify-self-start leading-tight">
+      <span className="block max-w-full truncate group-hover:underline">
         <span className="text-muted-foreground">{game.site === "away" ? "at " : "vs "}</span>
         {rank != null && rank <= 25 && (
           <span className="text-xs text-muted-foreground tabular-nums">#{rank} </span>
@@ -86,7 +87,7 @@ function Opponent({ game, rank }: { game: ScheduleGame; rank: number | null }) {
         {game.opponent.school}
       </span>
       {game.site === "neutral" && (
-        <span className="block text-xs text-muted-foreground">Neutral site</span>
+        <span className="block text-xs text-muted-foreground">Neutral Site</span>
       )}
     </span>
   )

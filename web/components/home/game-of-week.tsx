@@ -321,9 +321,10 @@ function LinesBoard({ rows }: { rows: LinesRow[] }) {
         {rows.map((r) => (
           <tr key={r.team.id}>
             <th scope="row" className="text-left font-medium">
-              <span className="flex min-w-0 items-center gap-2">
-                <TeamLogo team={r.team} size={22} />
-                <span className="truncate text-sm" title={r.team.school}>
+              {/* A little larger than before (owner, #203): 28 px logos, base-size names. */}
+              <span className="flex min-w-0 items-center gap-2.5">
+                <TeamLogo team={r.team} size={28} />
+                <span className="truncate text-base" title={r.team.school}>
                   {short(r.team)}
                 </span>
               </span>
