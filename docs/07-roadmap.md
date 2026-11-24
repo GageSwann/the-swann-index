@@ -43,6 +43,7 @@ Work one item at a time: build → test → tick → commit, then stop for revie
 
 **Open from the owner (2026-11-23):**
 Owner's order (2026-11-24, #192): finish and polish the rest of the CFB site first; 13.10's sign on the Schedule cards comes sooner rather than later; the phone sport menus once the owner is happy with all of CFB; the all-sports home when CBB and CBASE arrive.
+- [x] **Footer and team search (#193, 2026-11-24):** a centered footer with the notices as sentences (dividers on desktop); a magnifying glass in the header that finds any FBS or FCS team ("Utah Utes") from a cached list, matched in the browser (no Neon per search). Phones included.
 - [ ] 13.10's sign on the Schedule cards (the home page's Game of the Week cards have it, #180). Sooner rather than later.
 - [ ] Phones: the sport menus (CFB, CBB, CBASE) in the phone header; phones keep the bottom bar until then. After the rest of CFB is finished.
 - [ ] The site's own home for every sport at `/`: waits for CBB and CBASE; until then `/` keeps redirecting to `/cfb` (#182).

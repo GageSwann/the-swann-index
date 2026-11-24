@@ -122,7 +122,7 @@ Both PCs have one; it is where heavy work runs (§1).
 - **Every page address comes from `lib/routes.ts`** (`cfb.team(slug)`, `cfb.schedule(season, week, division)`, ...; #184): college football lives under `/cfb`; the old addresses redirect (308) in `next.config.ts`.
 
 **Data and caching**
-- **Only through `web/lib/api/queries.ts`** (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).
+- **Only through `web/lib/api/queries.ts`** (server-only, `"use cache"` + `cacheLife("tsi")` + tags); never `fetch` the API elsewhere. Data the browser needs (the header search's team list, #193) goes through a route handler that calls those cached functions (`app/cfb/search-index/route.ts`: prerendered, refreshed by the nightly revalidation); with the same arguments as a page it shares that page's cache entry, so it adds no API or Neon reads. The browser fetches such a file once and works locally; never per keystroke. New `cacheLife` profiles need `next typegen` (part of `npm run typecheck`).
 - **The `tsi` profile re-checks daily** (#145); the nightly `/api/revalidate` (`revalidateTag("tsi", { expire: 0 })`, roadmap 12.2) updates pages. Anything that must change during the day happens in the browser: a game's state (scheduled / in progress / final score pending / final) comes from the viewer's clock (`lib/game-phase.ts`, `components/game/game-phase.tsx`: `useGamePhase` in client components, `PhaseScope` + `When` / `PhaseLabel` around server-rendered parts; #149).
 - **Team page sections appear for every ranked team** (owner, #90): when an input is missing, show the section with that value left out, never hide it.
 
