@@ -306,6 +306,7 @@ export interface components {
             home_conf_record: components["schemas"]["Record"] | null;
             home_record: components["schemas"]["Record"];
             lines: components["schemas"]["GameLines"] | null;
+            venue?: components["schemas"]["GameVenue"] | null;
         };
         /** GameCenter */
         GameCenter: {
@@ -355,6 +356,7 @@ export interface components {
             score: number;
             /** Stakes */
             stakes: number;
+            venue?: components["schemas"]["GameVenue"] | null;
         };
         /** GameSummary */
         GameSummary: {
@@ -381,6 +383,15 @@ export interface components {
             season_type: string;
             /** Week */
             week: number;
+        };
+        /** GameVenue */
+        GameVenue: {
+            /** City */
+            city: string | null;
+            /** Name */
+            name: string;
+            /** State */
+            state: string | null;
         };
         /** GamesOfWeek */
         GamesOfWeek: {

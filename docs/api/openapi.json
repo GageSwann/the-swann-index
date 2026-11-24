@@ -373,6 +373,16 @@
                 "type": "null"
               }
             ]
+          },
+          "venue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameVenue"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -578,6 +588,16 @@
           "stakes": {
             "title": "Stakes",
             "type": "number"
+          },
+          "venue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GameVenue"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -705,6 +725,43 @@
           "market"
         ],
         "title": "GameSummary",
+        "type": "object"
+      },
+      "GameVenue": {
+        "properties": {
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          }
+        },
+        "required": [
+          "name",
+          "city",
+          "state"
+        ],
+        "title": "GameVenue",
         "type": "object"
       },
       "GamesOfWeek": {
