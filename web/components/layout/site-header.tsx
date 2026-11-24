@@ -2,12 +2,13 @@ import Link from "next/link"
 
 import { SPORTS } from "@/lib/sports"
 
+import { SiteSearch } from "./site-search"
 import { SportMenus } from "./sport-menu"
 import { ThemeToggle } from "./theme-toggle"
 
 /**
- * The "score bug": the TSI block, a menu per sport (CFB: Rankings, Schedule, Playoffs), the
- * theme toggle, and a 2 px rule underneath (white or black; a
+ * The "score bug": the TSI block, a menu per sport (CFB: Rankings, Schedule, Playoffs), team
+ * search, the theme toggle, and a 2 px rule underneath (white or black; a
  * team page's color on team pages, `.tsi-header`). This strip is the site's one bold
  * element; pages stay quiet. The week is stated by each page, not here (owner, #160).
  */
@@ -25,7 +26,9 @@ export function SiteHeader() {
         </Link>
         {/* One menu per sport, one open at a time; phones keep the bottom bar (#163). */}
         <SportMenus sports={SPORTS} />
-        <div className="ml-auto sm:ml-0">
+        {/* Team search between the sport menus and the theme toggle (#193). */}
+        <div className="ml-auto flex items-center sm:ml-0">
+          <SiteSearch />
           <ThemeToggle />
         </div>
       </div>

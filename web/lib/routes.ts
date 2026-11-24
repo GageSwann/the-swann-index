@@ -22,4 +22,6 @@ export const cfb = {
   /** A team page, optionally at one of its sections (`#resume`, `#projection`). */
   team: (slug: string, section?: string) => `${CFB}/teams/${slug}${section ? `#${section}` : ""}`,
   game: (id: number) => `${CFB}/games/${id}`,
+  /** The header search's team list (JSON, #193). */
+  searchIndex: `${CFB}/search-index`,
 }
