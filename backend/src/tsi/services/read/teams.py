@@ -19,6 +19,7 @@ from tsi.db.queries.team_info import (
     team_id_by_slug,
     team_refs,
 )
+from tsi.db.queries.venues import game_venues
 from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION, rated_individually
 from tsi.services.read.common import AdjustmentNote, note_of, result_of
 from tsi.services.read.game_card import GameCard, game_card, team_records
@@ -131,7 +132,7 @@ def team_profile(
     card = None
     if shown is not None:
         summary = game_summaries(session, [shown], now, {shown.id: snaps.get(shown.id, [])}, refs)
-        card = game_card(summary[0], recs)
+        card = game_card(summary[0], recs, game_venues(session, [shown.id]).get(shown.id))
     return TeamProfile(
         team=refs[team_id],
         season=season,

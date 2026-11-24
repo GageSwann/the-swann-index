@@ -9,6 +9,7 @@ from tsi.db.queries.games import season_games
 from tsi.db.queries.games_of_week import latest_poll_date, picks_for
 from tsi.db.queries.runs import latest_rating_run
 from tsi.db.queries.team_info import Record
+from tsi.db.queries.venues import GameVenue, game_venues
 from tsi.services.games_of_week import poll_sunday
 from tsi.services.read.game_card import GameLines, game_lines, team_records
 from tsi.services.read.games import GameSummary, game_summaries
@@ -37,6 +38,7 @@ class GameOfWeekView:
     # Conference records (title games excluded, #190); None for independents.
     home_conf_record: Record | None = None
     away_conf_record: Record | None = None
+    venue: GameVenue | None = None  # where it's played, shown under the kickoff (#209)
 
 
 @dataclass(frozen=True)
@@ -62,6 +64,7 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
     teams = {t for s in summaries.values() for t in (s.home.id, s.away.id)}
     as_of = latest.run_at if latest else now
     recs = team_records(session, season, as_of, teams)
+    venues = game_venues(session, list(summaries))
     picks = [
         GameOfWeekView(
             division=r.division,
@@ -82,6 +85,7 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
             lines=game_lines(summaries[r.game_id]),
             home_conf_record=recs.conference_of(summaries[r.game_id].home),
             away_conf_record=recs.conference_of(summaries[r.game_id].away),
+            venue=venues.get(r.game_id),
         )
         for r in rows
         if r.game_id in summaries

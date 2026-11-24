@@ -120,8 +120,11 @@ def test_team_next_game_card(api: TestClient) -> None:
     center = ok(api, "/cfb/games/201")
     assert card["lines"]["spread"] == center["markets"]["spread"]
     assert card["lines"]["total"] == center["markets"]["total"]
+    # Where it's played (#209); a game without a venue has none.
+    assert card["venue"] == {"name": "Alpha Stadium", "city": "Alphaville", "state": "AL"}
     # Delta's next game is the upcoming one against Bravo.
-    assert ok(api, "/cfb/teams/delta")["next_game"]["game"]["id"] == 202
+    delta = ok(api, "/cfb/teams/delta")["next_game"]
+    assert delta["game"]["id"] == 202 and delta["venue"] is None
 
 
 def test_team_resume_breakdown(api: TestClient) -> None:

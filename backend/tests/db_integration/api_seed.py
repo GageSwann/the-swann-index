@@ -30,6 +30,7 @@ from tsi.db.models import (
     Team,
     TeamRating,
     TeamSeason,
+    Venue,
 )
 
 NOW = datetime(2026, 10, 21, 12, 0, tzinfo=UTC)
@@ -92,11 +93,14 @@ def seed(session) -> None:
             ),
         ]
     )
+    # Alpha's home stadium (#209): the live game Alpha-Charlie is played there.
+    session.add(Venue(id=900, name="Alpha Stadium", city="Alphaville", state="AL"))
+    session.flush()
     session.add_all(
         [
             _game(101, 1, datetime(2026, 10, 17, 19, tzinfo=UTC), 1, 2, 30, 20),
             _game(102, 1, datetime(2026, 10, 17, 23, tzinfo=UTC), 3, 4, 21, 24),
-            _game(201, 2, LIVE_KICKOFF, 1, 3),
+            _game(201, 2, LIVE_KICKOFF, 1, 3, venue=900),
             _game(202, 2, UPCOMING_KICKOFF, 2, 4),
             _game(203, 2, UPCOMING_KICKOFF, 5, 6),
         ]
@@ -107,7 +111,7 @@ def seed(session) -> None:
     session.flush()
 
 
-def _game(gid, week, kickoff, home, away, hp=None, ap=None) -> Game:
+def _game(gid, week, kickoff, home, away, hp=None, ap=None, venue=None) -> Game:
     done = hp is not None
     return Game(
         id=gid,
@@ -120,6 +124,7 @@ def _game(gid, week, kickoff, home, away, hp=None, ap=None) -> Game:
         home_points=hp,
         away_points=ap,
         completed=done,
+        venue_id=venue,
     )
 
 

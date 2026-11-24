@@ -8,6 +8,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from tsi.db.queries.team_info import Record, TeamRef, records
+from tsi.db.queries.venues import GameVenue
 from tsi.services.read.fair_markets import FairTwoWay
 from tsi.services.read.games import GameSummary, tsi_markets
 
@@ -32,6 +33,7 @@ class GameCard:
     home_conf_record: Record | None  # None for independents (no conference standings)
     away_conf_record: Record | None
     lines: GameLines | None  # None without a prediction
+    venue: GameVenue | None = None  # where it's played, shown under the kickoff (#209)
 
 
 @dataclass(frozen=True)
@@ -69,7 +71,7 @@ def game_lines(game: GameSummary) -> GameLines | None:
     return GameLines(spread=markets.spread, total=markets.total)
 
 
-def game_card(game: GameSummary, recs: Records) -> GameCard:
+def game_card(game: GameSummary, recs: Records, venue: GameVenue | None = None) -> GameCard:
     return GameCard(
         game=game,
         home_record=recs.overall_of(game.home),
@@ -77,4 +79,5 @@ def game_card(game: GameSummary, recs: Records) -> GameCard:
         home_conf_record=recs.conference_of(game.home),
         away_conf_record=recs.conference_of(game.away),
         lines=game_lines(game),
+        venue=venue,
     )
