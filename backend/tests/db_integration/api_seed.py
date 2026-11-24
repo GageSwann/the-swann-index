@@ -101,7 +101,8 @@ def seed(session) -> None:
             _game(101, 1, datetime(2026, 10, 17, 19, tzinfo=UTC), 1, 2, 30, 20),
             _game(102, 1, datetime(2026, 10, 17, 23, tzinfo=UTC), 3, 4, 21, 24),
             _game(201, 2, LIVE_KICKOFF, 1, 3, venue=900),
-            _game(202, 2, UPCOMING_KICKOFF, 2, 4),
+            # A named game (#211): CFBD's note, with its rescheduled suffix trimmed.
+            _game(202, 2, UPCOMING_KICKOFF, 2, 4, notes="Test Bowl - Rescheduled from Jan 1"),
             _game(203, 2, UPCOMING_KICKOFF, 5, 6),
         ]
     )
@@ -111,7 +112,7 @@ def seed(session) -> None:
     session.flush()
 
 
-def _game(gid, week, kickoff, home, away, hp=None, ap=None, venue=None) -> Game:
+def _game(gid, week, kickoff, home, away, hp=None, ap=None, venue=None, notes=None) -> Game:
     done = hp is not None
     return Game(
         id=gid,
@@ -125,6 +126,7 @@ def _game(gid, week, kickoff, home, away, hp=None, ap=None, venue=None) -> Game:
         away_points=ap,
         completed=done,
         venue_id=venue,
+        notes=notes,
     )
 
 

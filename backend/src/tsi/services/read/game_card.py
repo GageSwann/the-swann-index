@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from tsi.db.queries.team_info import Record, TeamRef, records
 from tsi.db.queries.venues import GameVenue
+from tsi.rivalries import rivalry_name
 from tsi.services.read.fair_markets import FairTwoWay
 from tsi.services.read.games import GameSummary, tsi_markets
 
@@ -34,6 +35,7 @@ class GameCard:
     away_conf_record: Record | None
     lines: GameLines | None  # None without a prediction
     venue: GameVenue | None = None  # where it's played, shown under the kickoff (#209)
+    title: str | None = None  # the game's name: bowl, playoff round, title game, rivalry (#211)
 
 
 @dataclass(frozen=True)
@@ -64,6 +66,15 @@ def team_records(
     )
 
 
+def game_title(notes: str | None, home_slug: str, away_slug: str) -> str | None:
+    """A game's name for its card (#211): CFBD's note when it has one (bowls, playoff rounds,
+    conference title games, classics; a trailing " - Rescheduled ..." dropped), else the
+    rivalry's name from our own list (`tsi/rivalries.py`), else None."""
+    if notes and notes.strip():
+        return notes.split(" - Rescheduled")[0].strip()
+    return rivalry_name(home_slug, away_slug)
+
+
 def game_lines(game: GameSummary) -> GameLines | None:
     if game.prediction is None:
         return None
@@ -71,7 +82,12 @@ def game_lines(game: GameSummary) -> GameLines | None:
     return GameLines(spread=markets.spread, total=markets.total)
 
 
-def game_card(game: GameSummary, recs: Records, venue: GameVenue | None = None) -> GameCard:
+def game_card(
+    game: GameSummary,
+    recs: Records,
+    venue: GameVenue | None = None,
+    notes: str | None = None,
+) -> GameCard:
     return GameCard(
         game=game,
         home_record=recs.overall_of(game.home),
@@ -80,4 +96,5 @@ def game_card(game: GameSummary, recs: Records, venue: GameVenue | None = None) 
         away_conf_record=recs.conference_of(game.away),
         lines=game_lines(game),
         venue=venue,
+        title=game_title(notes, game.home.slug, game.away.slug),
     )

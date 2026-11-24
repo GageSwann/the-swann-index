@@ -132,7 +132,8 @@ def team_profile(
     card = None
     if shown is not None:
         summary = game_summaries(session, [shown], now, {shown.id: snaps.get(shown.id, [])}, refs)
-        card = game_card(summary[0], recs, game_venues(session, [shown.id]).get(shown.id))
+        venue = game_venues(session, [shown.id]).get(shown.id)
+        card = game_card(summary[0], recs, venue, shown.notes)
     return TeamProfile(
         team=refs[team_id],
         season=season,

@@ -125,6 +125,8 @@ def test_team_next_game_card(api: TestClient) -> None:
     # Delta's next game is the upcoming one against Bravo.
     delta = ok(api, "/cfb/teams/delta")["next_game"]
     assert delta["game"]["id"] == 202 and delta["venue"] is None
+    # The game's name (#211): its note, trimmed; none for an unnamed game.
+    assert delta["title"] == "Test Bowl" and card["title"] is None
 
 
 def test_team_resume_breakdown(api: TestClient) -> None:

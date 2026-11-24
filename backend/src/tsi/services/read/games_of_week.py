@@ -11,7 +11,7 @@ from tsi.db.queries.runs import latest_rating_run
 from tsi.db.queries.team_info import Record
 from tsi.db.queries.venues import GameVenue, game_venues
 from tsi.services.games_of_week import poll_sunday
-from tsi.services.read.game_card import GameLines, game_lines, team_records
+from tsi.services.read.game_card import GameLines, game_lines, game_title, team_records
 from tsi.services.read.games import GameSummary, game_summaries
 
 
@@ -39,6 +39,7 @@ class GameOfWeekView:
     home_conf_record: Record | None = None
     away_conf_record: Record | None = None
     venue: GameVenue | None = None  # where it's played, shown under the kickoff (#209)
+    title: str | None = None  # the game's name: bowl, playoff round, title game, rivalry (#211)
 
 
 @dataclass(frozen=True)
@@ -54,12 +55,9 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
         return GamesOfWeek(None, None, [])
     rows = picks_for(session, poll)
     season = rows[0].season
-    summaries = {
-        s.id: s
-        for s in game_summaries(
-            session, season_games(session, season, [r.game_id for r in rows]), now
-        )
-    }
+    games = season_games(session, season, [r.game_id for r in rows])
+    notes = {g.id: g.notes for g in games}
+    summaries = {s.id: s for s in game_summaries(session, games, now)}
     latest = latest_rating_run(session, season)
     teams = {t for s in summaries.values() for t in (s.home.id, s.away.id)}
     as_of = latest.run_at if latest else now
@@ -86,6 +84,11 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
             home_conf_record=recs.conference_of(summaries[r.game_id].home),
             away_conf_record=recs.conference_of(summaries[r.game_id].away),
             venue=venues.get(r.game_id),
+            title=game_title(
+                notes.get(r.game_id),
+                summaries[r.game_id].home.slug,
+                summaries[r.game_id].away.slug,
+            ),
         )
         for r in rows
         if r.game_id in summaries
