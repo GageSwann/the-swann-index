@@ -22,6 +22,7 @@ export type CardGame = Pick<
   | "away_conf_record"
   | "lines"
   | "venue"
+  | "title"
 >
 
 type Props = {
@@ -94,6 +95,8 @@ export function GameOfWeekCard({
         {/* The kickoff, and where it's played on its own full-width line under it (owner,
             #209), so a long stadium name never shares a row with the badge. */}
         <div className="space-y-0.5">
+          {/* The game's name (owner, #211): a bowl, playoff round, title game or rivalry. */}
+          {pick.title && <p className="text-sm font-semibold text-foreground">{pick.title}</p>}
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{when}</p>
             <span
