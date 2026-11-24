@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { PhaseLabel, PhaseScope, When } from "@/components/game/game-phase"
+import { SiteMark } from "@/components/team/site-mark"
 import { TeamLink } from "@/components/team/team-link"
 import type { GameOdds } from "@/lib/api/schedule-odds"
 import type { ScheduleGame } from "@/lib/api/types"
@@ -131,11 +132,9 @@ export function ScheduleTable({
 function Opponent({ game, rank }: { game: ScheduleGame; rank: number | null }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <span className="w-5 shrink-0 text-muted-foreground">
-        {game.site === "away" ? "at" : "vs"}
-      </span>
+      {/* "vs", "at" or "N" (neutral) before the name, like the list above (#207). */}
+      <SiteMark site={game.site} />
       <TeamLink team={game.opponent} rank={rank != null && rank <= 25 ? rank : null} />
-      {game.site === "neutral" && <span className="text-xs text-muted-foreground">(neutral)</span>}
     </span>
   )
 }
