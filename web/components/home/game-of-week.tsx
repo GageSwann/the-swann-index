@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { WinProbBar } from "@/components/board/win-prob-bar"
+import { NeutralTag } from "@/components/team/site-mark"
 import { TeamLogo } from "@/components/team/team-logo"
 import type { GameOfWeekView, TeamRecord, TeamRef } from "@/lib/api/types"
 import type { Division } from "@/lib/divisions"
@@ -14,7 +15,13 @@ import { PickSign } from "./pick-sign"
 /** What the card shows: a game of the week, or a team page's next game (#199). */
 export type CardGame = Pick<
   GameOfWeekView,
-  "game" | "home_record" | "away_record" | "home_conf_record" | "away_conf_record" | "lines"
+  | "game"
+  | "home_record"
+  | "away_record"
+  | "home_conf_record"
+  | "away_conf_record"
+  | "lines"
+  | "venue"
 >
 
 type Props = {
@@ -84,16 +91,21 @@ export function GameOfWeekCard({
           className="absolute inset-0 rounded-md"
         />
         {/* The big numbers are TSI's prediction until the game is played (owner): say so. */}
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">{when}</p>
-          <span
-            className={cn(
-              "shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium",
-              final ? "border-foreground text-foreground" : "border-border text-foreground",
-            )}
-          >
-            {final ? "Final" : p ? "Predicted Score" : "Upcoming"}
-          </span>
+        {/* The kickoff, and where it's played on its own full-width line under it (owner,
+            #209), so a long stadium name never shares a row with the badge. */}
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{when}</p>
+            <span
+              className={cn(
+                "shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+                final ? "border-foreground text-foreground" : "border-border text-foreground",
+              )}
+            >
+              {final ? "Final" : p ? "Predicted Score" : "Upcoming"}
+            </span>
+          </div>
+          {pick.venue && <p className="text-xs text-muted-foreground">{venueLine(pick.venue)}</p>}
         </div>
 
         {/* Logos above the names give each name the column's full width; the scores share
@@ -112,8 +124,9 @@ export function GameOfWeekCard({
             conf={pick.away_conf_record}
             picked={homePicked === false}
           />
+          {/* "at", or the boxed N on a neutral field (owner, #209). */}
           <span className="self-center pt-8 text-sm text-muted-foreground">
-            {game.neutral ? "vs." : "at"}
+            {game.neutral ? <NeutralTag /> : "at"}
           </span>
           <Side
             team={game.home}
@@ -181,6 +194,12 @@ export function GameOfWeekCard({
       </div>
     </section>
   )
+}
+
+/** "Rice-Eccles Stadium · Salt Lake City, UT"; abroad without a state ("Aviva Stadium · Dublin"). */
+function venueLine(v: NonNullable<CardGame["venue"]>): string {
+  const place = [v.city, v.state].filter(Boolean).join(", ")
+  return place ? `${v.name} · ${place}` : v.name
 }
 
 /** Why a game has no TSI prediction (#200): an opponent TSI doesn't rate (D-II and below),
