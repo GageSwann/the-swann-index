@@ -91,6 +91,11 @@ export function SiteSearch() {
     router.push(teamHref(entry))
   }
 
+  // Keep the highlighted team in view as ↑/↓ move through a long, scrolling list.
+  useEffect(() => {
+    if (open) document.getElementById(optionId(active))?.scrollIntoView({ block: "nearest" })
+  })
+
   // Tell the sport menus, also when a page change closes search (an external store, not state).
   useEffect(() => setSearchOpen(open), [open])
   useEffect(() => () => setSearchOpen(false), [])
@@ -214,7 +219,9 @@ export function SiteSearch() {
           </button>
         </div>
         {/* Desktop: from the box's left edge to the theme toggle's right edge (size-9). */}
-        <div className="max-sm:border-t max-sm:border-border sm:absolute sm:top-full sm:left-0 sm:mt-1.5 sm:w-[calc(100%+2.25rem)] sm:rounded-md sm:border sm:border-border sm:bg-card">
+        {/* Every match, so the list scrolls: desktop up to ~28 rem, phones down to the screen's
+            bottom (the sheet's input row is ~3.5 rem). */}
+        <div className="overflow-y-auto overscroll-contain max-sm:max-h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] max-sm:border-t max-sm:border-border sm:absolute sm:top-full sm:left-0 sm:mt-1.5 sm:max-h-[min(28rem,calc(100dvh-5rem))] sm:w-[calc(100%+2.25rem)] sm:rounded-md sm:border sm:border-border sm:bg-card">
           {message && (
             <p className="px-4 py-3 text-sm text-muted-foreground sm:px-3" role="status">
               {message}

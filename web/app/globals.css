@@ -76,6 +76,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Buttons show the hand like links (owner, #196): Tailwind 4 dropped it from buttons, so
+     the sport menus, search and toggles gave no sign they could be clicked. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
   /* The root paints in the header's panel color (#165): Safari colors the strip behind the
      clock, and the overscroll above the page, from it, so the top of the screen runs
      straight into the header on every iPhone, island or notch or neither. The body

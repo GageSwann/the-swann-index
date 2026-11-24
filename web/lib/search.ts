@@ -21,8 +21,6 @@ export function sportLabel(sport: SearchSport): string {
   return SPORTS.find((s) => s.key === sport)?.label ?? sport.toUpperCase()
 }
 
-export const MAX_RESULTS = 8
-
 /** Lower case, no accents or punctuation, single spaces: "San José St." → "san jose st". */
 export function normalize(text: string): string {
   return text
@@ -42,7 +40,8 @@ function fits(name: string, query: string): boolean {
 /**
  * Teams matching the query in alphabetical order (owner, #195): first the teams whose school
  * name has a word starting with it, A to Z ("utah" → Southern Utah, Utah, Utah State, Utah
- * Tech), then teams matched only by mascot or abbreviation ("utes", "byu"), A to Z.
+ * Tech), then teams matched only by mascot or abbreviation ("utes", "byu"), A to Z. Every
+ * match, no cap: the list scrolls (owner, #196: "a" has to reach Auburn).
  * Contains-anywhere matches ("tah") are left out: they mostly add noise.
  */
 export function searchTeams(teams: SearchTeam[], query: string): SearchTeam[] {
@@ -56,5 +55,5 @@ export function searchTeams(teams: SearchTeam[], query: string): SearchTeam[] {
       scored.push({ entry, score: 1 })
   }
   scored.sort((a, b) => a.score - b.score || a.entry.team.school.localeCompare(b.entry.team.school))
-  return scored.slice(0, MAX_RESULTS).map((s) => s.entry)
+  return scored.map((s) => s.entry)
 }
