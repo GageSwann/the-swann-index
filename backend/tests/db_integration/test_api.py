@@ -103,6 +103,27 @@ def test_team_list_and_profile(api: TestClient) -> None:
     assert ok(api, "/cfb/teams/echo")["projection"]["expected_wins"] == 8.5  # FCS too (#125)
 
 
+def test_team_next_game_card(api: TestClient) -> None:
+    """The team page's next game (#199): the same data as a Game of the Week card."""
+    alpha = ok(api, "/cfb/teams/alpha")
+    card = alpha["next_game"]
+
+    # Alpha-Charlie is in progress, so it is still Alpha's next game (not final yet).
+    assert card["game"]["id"] == 201
+    assert (card["game"]["home"]["slug"], card["game"]["away"]["slug"]) == ("alpha", "charlie")
+    assert card["home_record"] == {"wins": 1, "losses": 0, "ties": 0}
+    assert card["away_record"] == {"wins": 0, "losses": 1, "ties": 0}
+    # Conference teams without conference games yet: 0-0, not missing (#190).
+    assert card["home_conf_record"] == {"wins": 0, "losses": 0, "ties": 0}
+    assert alpha["conf_record"] == {"wins": 0, "losses": 0, "ties": 0}
+    # TSI's lines priced exactly as the game center prices them (#188).
+    center = ok(api, "/cfb/games/201")
+    assert card["lines"]["spread"] == center["markets"]["spread"]
+    assert card["lines"]["total"] == center["markets"]["total"]
+    # Delta's next game is the upcoming one against Bravo.
+    assert ok(api, "/cfb/teams/delta")["next_game"]["game"]["id"] == 202
+
+
 def test_team_resume_breakdown(api: TestClient) -> None:
     alpha = ok(api, "/cfb/teams/alpha")
     first, live = alpha["schedule"]

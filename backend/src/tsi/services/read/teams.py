@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from tsi.db.queries.adjustments import season_adjustments
-from tsi.db.queries.games import team_games
+from tsi.db.queries.games import GameRow, team_games
 from tsi.db.queries.runs import latest_rating_run, rating_history
 from tsi.db.queries.sim import stored_outlooks, stored_sims
 from tsi.db.queries.snapshots import current_snapshots
@@ -20,7 +20,9 @@ from tsi.db.queries.team_info import (
     team_refs,
 )
 from tsi.divisions import LISTED_DIVISIONS, RATED_DIVISION, rated_individually
-from tsi.services.read.common import AdjustmentNote, note_of
+from tsi.services.read.common import AdjustmentNote, note_of, result_of
+from tsi.services.read.game_card import GameCard, game_card, team_records
+from tsi.services.read.games import game_summaries
 from tsi.services.read.projection import Projection, projection
 from tsi.services.read.resume_cache import ResumeCache
 from tsi.services.read.resume_view import (
@@ -69,6 +71,11 @@ class TeamProfile:
     resume: ResumeSummary | None  # None for unrated teams or before ratings exist
     projection: Projection | None  # season sim of the shown run (#98); FBS teams only
     adjustments: list[AdjustmentNote]  # manual adjustments in effect now (decision #104)
+    # Conference record (title games excluded, #190); None for independents (#199).
+    conf_record: Record | None = None
+    # The next game not yet final, as the Game of the Week card shows it; once the season's
+    # games are all final, the last one played (#199). None without games.
+    next_game: GameCard | None = None
 
 
 def team_list(session: Session, season: int, division: str = RATED_DIVISION) -> list[TeamRef]:
@@ -113,6 +120,18 @@ def team_profile(
     sim = stored_sims(session, latest.id, team_id).get(team_id) if latest and rated else None
     upcoming = [g.id for g in games if not g.completed]
     outlooks = stored_outlooks(session, latest.id, upcoming) if latest and upcoming else {}
+    # The next game's card, and both teams' records as of now, like the header's (#199).
+    shown = _next_game(games)
+    recs = team_records(
+        session,
+        season,
+        now,
+        {team_id} | ({shown.home_id, shown.away_id} if shown else set()),
+    )
+    card = None
+    if shown is not None:
+        summary = game_summaries(session, [shown], now, {shown.id: snaps.get(shown.id, [])}, refs)
+        card = game_card(summary[0], recs)
     return TeamProfile(
         team=refs[team_id],
         season=season,
@@ -138,7 +157,20 @@ def team_profile(
             for a in season_adjustments(session, season, open_at=now)
             if a.team_id == team_id and a.created_at <= now
         ],
+        conf_record=recs.conference_of(refs[team_id]),
+        next_game=card,
     )
+
+
+def _next_game(games: list[GameRow]) -> GameRow | None:
+    """The first game by kickoff that isn't final yet (one in progress counts); when every
+    game is final, the last one played."""
+    by_kickoff = sorted(games, key=lambda g: (g.start_time is None, g.start_time, g.id))
+    for g in by_kickoff:
+        result = result_of(g)
+        if result is None or not result.final:
+            return g
+    return by_kickoff[-1] if by_kickoff else None
 
 
 def _ratings(rows: list[StoredRating]) -> TeamRatings | None:

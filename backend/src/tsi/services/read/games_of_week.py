@@ -8,19 +8,10 @@ from sqlalchemy.orm import Session
 from tsi.db.queries.games import season_games
 from tsi.db.queries.games_of_week import latest_poll_date, picks_for
 from tsi.db.queries.runs import latest_rating_run
-from tsi.db.queries.team_info import Record, TeamRef, records
+from tsi.db.queries.team_info import Record
 from tsi.services.games_of_week import poll_sunday
-from tsi.services.read.fair_markets import FairTwoWay
-from tsi.services.read.games import GameSummary, game_summaries, tsi_markets
-
-
-@dataclass(frozen=True)
-class GameLines:
-    """TSI's spread and total as the card shows them, with TSI's fair odds for both sides at
-    that line (#188): the same pricing as the game center."""
-
-    spread: FairTwoWay  # home view: first = home covers, second = away covers
-    total: FairTwoWay  # first = over, second = under
+from tsi.services.read.game_card import GameLines, game_lines, team_records
+from tsi.services.read.games import GameSummary, game_summaries
 
 
 @dataclass(frozen=True)
@@ -70,8 +61,7 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
     latest = latest_rating_run(session, season)
     teams = {t for s in summaries.values() for t in (s.home.id, s.away.id)}
     as_of = latest.run_at if latest else now
-    record = records(session, season, as_of, teams)
-    conf = records(session, season, as_of, teams, conference_only=True)
+    recs = team_records(session, season, as_of, teams)
     picks = [
         GameOfWeekView(
             division=r.division,
@@ -87,28 +77,13 @@ def games_of_week(session: Session, now: datetime) -> GamesOfWeek:
             away_playoff_swing=r.away_playoff_swing,
             home_title_swing=r.home_title_swing,
             away_title_swing=r.away_title_swing,
-            home_record=record.get(summaries[r.game_id].home.id, Record()),
-            away_record=record.get(summaries[r.game_id].away.id, Record()),
-            lines=_lines(summaries[r.game_id]),
-            home_conf_record=_conf_record(summaries[r.game_id].home, conf),
-            away_conf_record=_conf_record(summaries[r.game_id].away, conf),
+            home_record=recs.overall_of(summaries[r.game_id].home),
+            away_record=recs.overall_of(summaries[r.game_id].away),
+            lines=game_lines(summaries[r.game_id]),
+            home_conf_record=recs.conference_of(summaries[r.game_id].home),
+            away_conf_record=recs.conference_of(summaries[r.game_id].away),
         )
         for r in rows
         if r.game_id in summaries
     ]
     return GamesOfWeek(poll, rows[0].picked_at, picks)
-
-
-def _lines(game: GameSummary) -> GameLines | None:
-    if game.prediction is None:
-        return None
-    markets = tsi_markets(game.prediction)
-    return GameLines(spread=markets.spread, total=markets.total)
-
-
-def _conf_record(team: TeamRef, conf: dict[int, Record]) -> Record | None:
-    """A conference team's conference record (0-0 before its first conference game); None
-    for an independent, which has no conference standings."""
-    if not team.conference or "independent" in team.conference.lower():
-        return None
-    return conf.get(team.id, Record())

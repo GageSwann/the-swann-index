@@ -100,9 +100,16 @@ def game_center(session: Session, game_id: int, now: datetime) -> GameCenter | N
     return GameCenter(summary, markets, history)
 
 
-def game_summaries(session: Session, games: list[GameRow], now: datetime) -> list[GameSummary]:
-    """Board entries for any games: snapshot shown, market, result (games of the week)."""
-    return _summaries(session, games, now)
+def game_summaries(
+    session: Session,
+    games: list[GameRow],
+    now: datetime,
+    snaps: dict[int, list[SnapshotRow]] | None = None,  # preloaded (a team page's, #199)
+    refs: dict[int, TeamRef] | None = None,
+) -> list[GameSummary]:
+    """Board entries for any games: snapshot shown, market, result (games of the week, a
+    team page's next game)."""
+    return _summaries(session, games, now, snaps, refs)
 
 
 def _summaries(
