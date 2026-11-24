@@ -306,6 +306,8 @@ export interface components {
             home_conf_record: components["schemas"]["Record"] | null;
             home_record: components["schemas"]["Record"];
             lines: components["schemas"]["GameLines"] | null;
+            /** Title */
+            title?: string | null;
             venue?: components["schemas"]["GameVenue"] | null;
         };
         /** GameCenter */
@@ -356,6 +358,8 @@ export interface components {
             score: number;
             /** Stakes */
             stakes: number;
+            /** Title */
+            title?: string | null;
             venue?: components["schemas"]["GameVenue"] | null;
         };
         /** GameSummary */

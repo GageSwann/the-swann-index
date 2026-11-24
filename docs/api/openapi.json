@@ -374,6 +374,17 @@
               }
             ]
           },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
           "venue": {
             "anyOf": [
               {
@@ -588,6 +599,17 @@
           "stakes": {
             "title": "Stakes",
             "type": "number"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
           },
           "venue": {
             "anyOf": [
