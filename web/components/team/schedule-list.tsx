@@ -11,19 +11,21 @@ import { TeamLogo } from "./team-logo"
 
 /**
  * The season's schedule as a compact vertical list (owner, #199), in the style of the home
- * page's Top 25 rails: date (with "Neutral" under it for a neutral-site game, #201), the
- * opponent with its rank when in the Top 25 ("vs" at home or neutral, "at" away), then the
- * result once final (W in the up color, L in the down color) or TSI's win chance before it.
- * The next game is highlighted; every row opens the game center. The list stretches to the
- * Next Game card's height (rows share the extra space). "Details" jumps to this team's full
- * schedule table further down the page.
+ * page's Top 25 rails: date, the opponent with its Résumé rank when in the Top 25 ("vs" at
+ * home or neutral, "at" away; "Neutral site" on a second line, #202), then the result once
+ * final (W in the up color, L in the down color) or TSI's win chance before it. The next game
+ * is highlighted; every row opens the game center. The list stretches to the Next Game card's
+ * height (rows share the extra space). "Full Schedule" jumps to this team's full schedule
+ * table further down the page.
  */
 export function ScheduleList({
   schedule,
   odds,
   nextId,
+  ranks,
 }: {
   schedule: ScheduleGame[]
+  ranks: Map<number, number> // opponent id -> current Résumé rank in the team's division (#202)
   odds: Map<number, GameOdds>
   nextId: number | null // the Next Game card's game
 }) {
@@ -35,10 +37,10 @@ export function ScheduleList({
         </h2>
         <Link
           href="#schedule-heading"
-          aria-label="Schedule details, further down this page"
+          aria-label="Full schedule, further down this page"
           className="text-sm text-muted-foreground underline decoration-muted-foreground underline-offset-4 hover:text-foreground hover:decoration-foreground"
         >
-          Details ↓
+          Full Schedule
         </Link>
       </div>
       {schedule.length === 0 ? (
@@ -54,28 +56,11 @@ export function ScheduleList({
                 aria-current={g.game_id === nextId ? "true" : undefined}
                 className="group grid w-full grid-cols-[3rem_1.5rem_minmax(0,1fr)_auto] items-center gap-2 px-2.5 py-1.5"
               >
-                {/* The date; a neutral-site game says so under it (owner, #201). */}
-                <span className="text-xs leading-tight text-muted-foreground tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {g.kickoff ? formatMonthDay(g.kickoff) : `Wk ${g.week}`}
-                  {g.site === "neutral" && (
-                    <span className="block text-[0.625rem] tracking-wide uppercase">Neutral</span>
-                  )}
                 </span>
                 <TeamLogo team={g.opponent} size={22} />
-                <span className="flex min-w-0 items-center gap-1.5">
-                  <span className="truncate group-hover:underline">
-                    <span className="text-muted-foreground">
-                      {g.site === "away" ? "at " : "vs "}
-                    </span>
-                    {/* The opponent's rank when in the Top 25, like the full table below. */}
-                    {g.opponent_rank != null && g.opponent_rank <= 25 && (
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        #{g.opponent_rank}{" "}
-                      </span>
-                    )}
-                    {g.opponent.school}
-                  </span>
-                </span>
+                <Opponent game={g} rank={ranks.get(g.opponent.id) ?? null} />
                 <Outcome game={g} odds={odds.get(g.game_id)} />
               </Link>
             </li>
@@ -83,6 +68,27 @@ export function ScheduleList({
         </ol>
       )}
     </section>
+  )
+}
+
+/**
+ * "vs" / "at" and the opponent, with its Résumé rank in the Top 25 (#202); a neutral-site game
+ * adds a second line, "Neutral site", like the detail line under a name in the rankings (#202).
+ */
+function Opponent({ game, rank }: { game: ScheduleGame; rank: number | null }) {
+  return (
+    <span className="min-w-0 leading-tight">
+      <span className="block truncate group-hover:underline">
+        <span className="text-muted-foreground">{game.site === "away" ? "at " : "vs "}</span>
+        {rank != null && rank <= 25 && (
+          <span className="text-xs text-muted-foreground tabular-nums">#{rank} </span>
+        )}
+        {game.opponent.school}
+      </span>
+      {game.site === "neutral" && (
+        <span className="block text-xs text-muted-foreground">Neutral site</span>
+      )}
+    </span>
   )
 }
 

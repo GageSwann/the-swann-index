@@ -18,11 +18,13 @@ export function TeamOverview({
   odds,
   ranked,
   division,
+  ranks,
 }: {
   profile: TeamProfile
   odds: Map<number, GameOdds>
   ranked: RankedTeam[] // the team's division, both ranks per team
   division: Division
+  ranks: Map<number, number> // team id -> current Résumé rank in the division (#202)
 }) {
   const card = profile.next_game ?? null
   const final = !!card?.game.result?.final
@@ -52,6 +54,7 @@ export function TeamOverview({
           schedule={profile.schedule}
           odds={odds}
           nextId={card && !final ? card.game.id : null}
+          ranks={ranks}
         />
       </div>
     </div>

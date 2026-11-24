@@ -17,6 +17,7 @@ type Props = {
   odds: Map<number, GameOdds>
   division?: Division
   benchmarkRank?: number | null // the API's, from the team's Résumé summary (#133)
+  ranks?: Map<number, number> // opponent id -> current Résumé rank in the team's division (#202)
 }
 
 /**
@@ -25,7 +26,13 @@ type Props = {
  * table from `sm` up; on
  * phones each game is a two-line row so nothing scrolls sideways.
  */
-export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank }: Props) {
+export function ScheduleTable({
+  schedule,
+  odds,
+  division = "fbs",
+  benchmarkRank,
+  ranks = new Map(),
+}: Props) {
   const bench = benchmarkName(division, benchmarkRank)
   const anyForecast = [...odds.values()].some((o) => o.source === "forecast")
   const anyAdjusted = [...odds.values()].some((o) => o.adjusted)
@@ -59,7 +66,7 @@ export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank 
                 <tr key={g.game_id} className="border-b border-border last:border-0">
                   <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">{date(g)}</td>
                   <td className="px-3 py-2">
-                    <Opponent game={g} />
+                    <Opponent game={g} rank={ranks.get(g.opponent.id) ?? null} />
                   </td>
                   <td className="px-3 py-1 whitespace-nowrap">
                     <Result game={g} odds={o} />
@@ -85,7 +92,7 @@ export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank 
           return (
             <li key={g.game_id} className="space-y-1 px-3 py-2">
               <div className="flex items-center justify-between gap-3">
-                <Opponent game={g} />
+                <Opponent game={g} rank={ranks.get(g.opponent.id) ?? null} />
                 <Result game={g} odds={o} />
               </div>
               <p className="flex justify-between gap-3 text-muted-foreground tabular-nums">
@@ -120,8 +127,8 @@ export function ScheduleTable({ schedule, odds, division = "fbs", benchmarkRank 
   )
 }
 
-function Opponent({ game }: { game: ScheduleGame }) {
-  const rank = game.opponent_rank
+/** Opponent with its Résumé rank in the Top 25 (owner, #202: every schedule uses Résumé). */
+function Opponent({ game, rank }: { game: ScheduleGame; rank: number | null }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
       <span className="w-5 shrink-0 text-muted-foreground">

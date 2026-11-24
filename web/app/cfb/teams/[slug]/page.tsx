@@ -60,12 +60,22 @@ async function TeamView({ params }: Props) {
   const ranked = (division === "fcs" ? fcs : fbs)?.teams ?? []
   const row = ranked.find((t) => t.team.slug === slug)
   const odds = scheduleOdds(profile.schedule)
+  // Every schedule on the page shows Résumé ranks (owner, #202), within the team's division.
+  const ranks = new Map(
+    ranked.flatMap((t) => (t.rank_resume != null ? [[t.team.id, t.rank_resume] as const] : [])),
+  )
 
   return (
     <div className="space-y-10">
       <PageTeamLight team={profile.team} />
       <TeamHeader profile={profile} />
-      <TeamOverview profile={profile} odds={odds} ranked={ranked} division={division} />
+      <TeamOverview
+        profile={profile}
+        odds={odds}
+        ranked={ranked}
+        division={division}
+        ranks={ranks}
+      />
       {row && <RankProfile row={row} count={ranked.length} division={division} />}
       <ProjectionCard profile={profile} />
       {profile.history.length > 0 && (
@@ -82,6 +92,7 @@ async function TeamView({ params }: Props) {
         odds={odds}
         division={division}
         benchmarkRank={profile.resume?.benchmark_rank}
+        ranks={ranks}
       />
     </div>
   )
